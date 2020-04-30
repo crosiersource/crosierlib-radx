@@ -22,7 +22,16 @@ class Cliente implements EntityId
 
     /**
      *
-     * @ORM\Column(name="nome", type="string", nullable=true, length=200)
+     * @ORM\Column(name="documento", type="string")
+     * @var null|string
+     *
+     * @Groups("entity")
+     */
+    public $documento;
+
+    /**
+     *
+     * @ORM\Column(name="nome", type="string")
      * @var null|string
      *
      * @Groups("entity")

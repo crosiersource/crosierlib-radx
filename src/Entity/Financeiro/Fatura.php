@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -14,36 +15,45 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  * Agrupa diversas movimentações que são pagas com referência a um documento fiscal.
  *
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\FaturaRepository")
  * @ORM\Table(name="fin_fatura")
  *
  * @author Carlos Eduardo Pauluk
  */
 class Fatura implements EntityId
 {
+
     use EntityIdTrait;
 
-
     /**
-     * Documento Fiscal.
+     * Data em que a movimentação efetivamente aconteceu.
      *
-     * @ORM\Column(name="fis_documento_id", type="bigint", nullable=true)
+     * @ORM\Column(name="dt_fatura", type="datetime")
      * @Groups("entity")
      *
-     * @var null|integer
+     * @var \DateTime|null
      */
-    private $fisDocumentoId;
+    public ?\DateTime $dtFatura = null;
 
     /**
      *
      * Se for fechada, não é possível incluir outras movimentações na cadeia.
      *
-     * @ORM\Column(name="fechada", type="boolean", nullable=false)
+     * @ORM\Column(name="fechada", type="boolean")
      * @Groups("entity")
      *
      * @var bool|null
      */
-    private $fechada = false;
+    public ?bool $fechada = false;
+
+    /**
+     *
+     * @ORM\Column(name="json_data", type="json")
+     * @var null|array
+     * @NotUppercase()
+     * @Groups("entity")
+     */
+    public ?array $jsonData = null;
 
     /**
      *
@@ -57,45 +67,10 @@ class Fatura implements EntityId
      */
     private $movimentacoes;
 
+
     public function __construct()
     {
         $this->movimentacoes = new ArrayCollection();
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getFisDocumentoId(): ?int
-    {
-        return $this->fisDocumentoId;
-    }
-
-    /**
-     * @param int|null $fisDocumentoId
-     * @return Fatura
-     */
-    public function setFisDocumentoId(?int $fisDocumentoId): Fatura
-    {
-        $this->fisDocumentoId = $fisDocumentoId;
-        return $this;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getFechada(): ?bool
-    {
-        return $this->fechada;
-    }
-
-    /**
-     * @param bool|null $fechada
-     * @return Fatura
-     */
-    public function setFechada(?bool $fechada): Fatura
-    {
-        $this->fechada = $fechada;
-        return $this;
     }
 
     /**
