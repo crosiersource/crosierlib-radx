@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <!-- ClienteRepository -->
+        <service id="crosier_source.crosier_lib_radx_bundle.repository.crm.cliente_repository"
+                 class="CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository"
+                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+            <tag name="doctrine.repository_service"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository"
+                 alias="crosier_source.crosier_lib_radx_bundle.repository.crm.cliente_repository"/>
+
+        <!-- ClienteEntityHandler -->
+        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"
+                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler"
+                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+            <argument type="service" id="security.helper"/>
+            <argument type="service" id="parameter_bag"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler"
+                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
+
+
+    </services>
+</container>
