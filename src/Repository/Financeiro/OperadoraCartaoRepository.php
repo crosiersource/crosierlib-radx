@@ -2,10 +2,10 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
-use App\Entity\Financeiro\OperadoraCartao;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\OperadoraCartao;
 use Doctrine\ORM\QueryBuilder;
-use App\Entity\Financeiro\Carteira;
 
 /**
  * Repository para a entidade OperadoraCartao.

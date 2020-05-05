@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
-use App\Entity\Financeiro\Cadeia;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia;
 
 /**
  * Repository para a entidade Cadeia.
@@ -17,6 +17,6 @@ class CadeiaRepository extends FilterRepository
     {
         return Cadeia::class;
     }
-    
+
 
 }

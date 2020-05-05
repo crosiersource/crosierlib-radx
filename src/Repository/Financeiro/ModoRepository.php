@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
-use App\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 
 /**
  * Repository para a entidade Modo.

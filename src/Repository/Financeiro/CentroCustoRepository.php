@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
-use App\Entity\Financeiro\CentroCusto;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto;
 
 /**
  * Repository para a entidade CentroCusto.

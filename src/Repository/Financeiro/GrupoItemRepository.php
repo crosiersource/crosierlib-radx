@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
-use App\Entity\Financeiro\GrupoItem;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem;
 
 /**
  * Repository para a entidade GrupoItem.

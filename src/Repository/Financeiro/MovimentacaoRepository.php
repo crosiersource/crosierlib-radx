@@ -2,15 +2,15 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
-use App\Entity\Financeiro\Carteira;
-use App\Entity\Financeiro\Categoria;
-use App\Entity\Financeiro\CentroCusto;
-use App\Entity\Financeiro\Modo;
-use App\Entity\Financeiro\Movimentacao;
-use App\Entity\Financeiro\OperadoraCartao;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\RepositoryUtils\FilterData;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\OperadoraCartao;
 use DateInterval;
 use DateTime;
 use Doctrine\DBAL\Connection;
@@ -179,7 +179,7 @@ class MovimentacaoRepository extends FilterRepository
      * @return array
      * @throws ViewException
      */
-    public function findTotaisExtratoCartoes(Carteira $carteira, \DateTime $dtIni, \DateTime $dtFim)
+    public function findTotaisExtratoCartoes(Carteira $carteira, DateTime $dtIni, DateTime $dtFim)
     {
 
         try {

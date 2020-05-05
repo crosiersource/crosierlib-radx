@@ -2,10 +2,10 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
-use App\Entity\Financeiro\BandeiraCartao;
-use App\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use Doctrine\ORM\QueryBuilder;
 
 /**

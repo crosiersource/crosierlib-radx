@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
-use App\Entity\Financeiro\ImportExtratoCabec;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\ImportExtratoCabec;
 
 /**
  * Repository para a entidade ImportExtratoCabec.
@@ -18,5 +18,5 @@ class ImportExtratoCabecRepository extends FilterRepository
         return ImportExtratoCabec::class;
     }
 
-    
+
 }

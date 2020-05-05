@@ -2,12 +2,12 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
-use App\Entity\Financeiro\Carteira;
-use App\Entity\Financeiro\Categoria;
-use App\Entity\Financeiro\CentroCusto;
-use App\Entity\Financeiro\Modo;
-use App\Entity\Financeiro\RegraImportacaoLinha;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\RegraImportacaoLinha;
 use Doctrine\ORM\QueryBuilder;
 
 /**
