@@ -37,7 +37,7 @@ class BandeiraCartaoRepository extends FilterRepository
     {
         try {
             $str = strtoupper($str);
-            $ql = "SELECT bc FROM App\Entity\Financeiro\BandeiraCartao bc WHERE bc.modo = :modo AND (bc.descricao LIKE :str OR bc.labels LIKE :str)";
+            $ql = "SELECT bc FROM CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao bc WHERE bc.modo = :modo AND (bc.descricao LIKE :str OR bc.labels LIKE :str)";
             $qry = $this->getEntityManager()->createQuery($ql);
             $qry->setParameter('modo', $modo);
             $qry->setParameter('str', '%' . $str . '%');

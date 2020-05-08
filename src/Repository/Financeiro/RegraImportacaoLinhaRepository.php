@@ -35,7 +35,7 @@ class RegraImportacaoLinhaRepository extends FilterRepository
 
     public function findAllBy(Carteira $carteira)
     {
-        $ql = 'SELECT r FROM App\\Entity\\Financeiro\\RegraImportacaoLinha r WHERE '
+        $ql = 'SELECT r FROM CrosierSource\CrosierLibRadxBundle\\Entity\\Financeiro\\RegraImportacaoLinha r WHERE '
             . 'r.carteira IS NULL OR '
             . 'r.carteiraDestino IS NULL OR '
             . 'r.carteiraDestino = :carteira OR '

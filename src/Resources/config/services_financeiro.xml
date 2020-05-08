@@ -14,7 +14,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\BancoRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.banco_repository"/>
-
         <!-- BancoEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.banco_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\BancoEntityHandler"
@@ -35,7 +34,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\BandeiraCartaoRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.bandeira_cartao_repository"/>
-
         <!-- BandeiraCartaoEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.bandeira_cartao_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\BandeiraCartaoEntityHandler"
@@ -56,7 +54,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CarteiraRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.carteira_repository"/>
-
         <!-- CarteiraEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.carteira_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CarteiraEntityHandler"
@@ -77,7 +74,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CadeiaRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.cadeia_repository"/>
-
         <!-- CadeiaEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.cadeia_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CadeiaEntityHandler"
@@ -98,7 +94,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CategoriaRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.categoria_repository"/>
-
         <!-- CategoriaEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.categoria_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CategoriaEntityHandler"
@@ -119,7 +114,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CentroCustoRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.centro_custo_repository"/>
-
         <!-- CentroCustoEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.centro_custo_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CentroCustoEntityHandler"
@@ -140,7 +134,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\GrupoRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.grupo_repository"/>
-
         <!-- GrupoEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoEntityHandler"
@@ -161,7 +154,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\GrupoItemRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.grupo_item_repository"/>
-
         <!-- GrupoItemEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_item_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoItemEntityHandler"
@@ -182,7 +174,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\ModoRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.modo_repository"/>
-
         <!-- ModoEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.modo_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\ModoEntityHandler"
@@ -203,7 +194,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\MovimentacaoRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.movimentacao_repository"/>
-
         <!-- MovimentacaoEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler"
@@ -224,7 +214,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\OperadoraCartaoRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.operadora_cartao_repository"/>
-
         <!-- OperadoraCartaoEntityHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.operadora_cartao_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\OperadoraCartaoEntityHandler"
@@ -245,7 +234,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\RegistroConferenciaRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.registro_conferencia_repository"/>
-
         <!-- RegistroConferenciaEntityHandler -->
         <service
                 id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.registro_conferencia_entity_handler"
@@ -267,7 +255,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\RegraImportacaoLinhaRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.regra_importacao_linha_repository"/>
-
         <!-- RegraImportacaoLinhaEntityHandler -->
         <service
                 id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.regra_importacao_linha_entity_handler"
