@@ -75,9 +75,10 @@
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalCartaCorrecaoRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_carta_correcao_repository"/>
         <!-- NotaFiscalCartaCorrecaoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+        <service
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"
+                class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler"
+                parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
@@ -151,6 +152,8 @@
                  class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalVendaRepository"
                  parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
             <tag name="doctrine.repository_service"/>
+            <argument type="service" id="doctrine"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalVendaRepository"
                  alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_venda_repository"/>
@@ -164,6 +167,75 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"/>
+
+
+        <!-- NFeUtils -->
+        <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"
+                 class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils">
+            <argument type="service" id="doctrine.dbal.default_connection"/>
+            <argument type="service" id="monolog.logger"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
+            <argument type="service" id="security.helper"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils"
+                 alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+
+
+        <!-- SpedNFeBusiness -->
+        <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"
+                 class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\SpedNFeBusiness">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"/>
+            <argument type="service" id="monolog.logger"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+            <argument type="service" id="parameter_bag"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\SpedNFeBusiness"
+                 alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"/>
+
+
+        <!-- NotaFiscalBusiness -->
+        <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business"
+                 class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness">
+            <argument type="service" id="doctrine.dbal.default_connection"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_repository"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness"
+                 alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business"/>
+
+
+        <!-- DistDFeBusiness -->
+        <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"
+                 class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\DistDFeBusiness">
+            <argument type="service" id="doctrine.dbal.default_connection"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
+            <argument type="service" id="monolog.logger"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\DistDFeBusiness"
+                 alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"/>
 
 
     </services>
