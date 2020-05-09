@@ -383,7 +383,7 @@ class NotaFiscalBusiness extends BaseBusiness
      *
      * @param
      *            $tipoNotaFiscal
-     * @return NULL|\App\Entity\Fiscal\NotaFiscal
+     * @return NotaFiscal|null
      * @throws \Exception
      */
     public function saveNotaFiscal(NotaFiscal $notaFiscal): ?NotaFiscal

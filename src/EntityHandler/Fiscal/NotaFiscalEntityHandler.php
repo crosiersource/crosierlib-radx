@@ -2,10 +2,13 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
-use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
 /**
@@ -16,38 +19,29 @@ use Symfony\Component\Security\Core\Security;
 class NotaFiscalEntityHandler extends EntityHandler
 {
 
-    /** @var Security */
-    protected $security;
-
-    private NotaFiscalBusiness $notaFiscalBusiness;
+    public ContainerInterface $container;
 
     private NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler;
 
     /**
+     * NotaFiscalEntityHandler constructor.
+     * @param EntityManagerInterface $doctrine
      * @param Security $security
-     */
-    public function setSecurity(Security $security): void
-    {
-        $this->security = $security;
-    }
-
-    /**
-     * @required
-     * @param NotaFiscalBusiness $notaFiscalBusiness
-     */
-    public function setNotaFiscalBusiness(NotaFiscalBusiness $notaFiscalBusiness): void
-    {
-        $this->notaFiscalBusiness = $notaFiscalBusiness;
-    }
-
-    /**
-     * @required
+     * @param ParameterBagInterface $parameterBag
+     * @param ContainerInterface $container
      * @param NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler
      */
-    public function setNotaFiscalItemEntityHandler(NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler): void
+    public function __construct(EntityManagerInterface $doctrine,
+                                Security $security,
+                                ParameterBagInterface $parameterBag,
+                                ContainerInterface $container,
+                                NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler)
     {
+        parent::__construct($doctrine, $security, $parameterBag);
+        $this->container = $container;
         $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
     }
+
 
     public function getEntityClass()
     {
@@ -61,7 +55,9 @@ class NotaFiscalEntityHandler extends EntityHandler
     public function beforeSave(/** @var NotaFiscal $notaFiscal */ $notaFiscal)
     {
         if ($notaFiscal->getItens() && $notaFiscal->getItens()->count() > 0) {
-            $this->notaFiscalBusiness->calcularTotais($notaFiscal);
+            /** @var NotaFiscalBusiness $notaFiscalBusiness */
+            $notaFiscalBusiness = $this->container->get('CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness');
+            $notaFiscalBusiness->calcularTotais($notaFiscal);
         }
 
         $i = 1;

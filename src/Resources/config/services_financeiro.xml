@@ -298,7 +298,7 @@
                 id="crosier_source.crosier_lib_radx_bundle.business.financeiro.grupo_business"
                 class="CrosierSource\CrosierLibRadxBundle\Business\Financeiro\GrupoBusiness">
             <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_entity_handler"/>
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_item_entity_handler"/>
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Business\Financeiro\GrupoBusiness"
                  alias="crosier_source.crosier_lib_radx_bundle.business.financeiro.grupo_business"/>
