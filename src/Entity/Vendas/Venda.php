@@ -22,16 +22,6 @@ class Venda implements EntityId
 
     use EntityIdTrait;
 
-
-    /**
-     *
-     * @ORM\Column(name="pv", type="integer", nullable=true)
-     * @Groups("entity")
-     *
-     * @var null|integer
-     */
-    public ?int $pv = null;
-
     /**
      *
      * @ORM\Column(name="dt_venda", type="datetime", nullable=false)
@@ -53,76 +43,31 @@ class Venda implements EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto")
-     * @ORM\JoinColumn(name="plano_pagto_id", nullable=false)
-     * @Groups("entity")
-     *
-     * @var null|PlanoPagto
-     */
-    public ?PlanoPagto $planoPagto = null;
-
-    /**
-     *
-     * @ORM\Column(name="sub_total", type="decimal", nullable=false, precision=15, scale=2)
+     * @ORM\Column(name="subtotal", type="decimal")
      * @Groups("entity")
      *
      * @var null|float
      */
-    public ?float $subTotal = null;
+    public ?float $subtotal = null;
 
     /**
      *
-     * @ORM\Column(name="desconto_especial", type="decimal", nullable=false, precision=15, scale=2)
-     * @var null|float
-     *
-     * @Groups("entity")
-     */
-    public ?float $descontoEspecial = null;
-
-    /**
-     *
-     * @ORM\Column(name="historico_desconto", type="string", nullable=true, length=2000)
-     * @Groups("entity")
-     *
-     * @var null|string
-     */
-    public ?string $historicoDesconto = null;
-
-    /**
-     *
-     * @ORM\Column(name="desconto_plano", type="decimal", nullable=false, precision=15, scale=2)
+     * @ORM\Column(name="desconto", type="decimal")
      * @Groups("entity")
      *
      * @var null|float
      */
-    public ?float $descontoPlano = null;
+    public ?float $desconto = null;
 
     /**
      *
-     * @ORM\Column(name="valor_total", type="decimal", nullable=false, precision=15, scale=2)
+     * @ORM\Column(name="valor_total", type="decimal")
      * @Groups("entity")
      *
      * @var null|float
      */
     public ?float $valorTotal = null;
 
-    /**
-     *
-     * @ORM\Column(name="status", type="string", nullable=false, length=30)
-     * @Groups("entity")
-     *
-     * @var null|string
-     */
-    public ?string $status = null;
-
-    /**
-     *
-     * @ORM\Column(name="obs", type="string", nullable=true, length=3000)
-     * @Groups("entity")
-     *
-     * @var null|string
-     */
-    public ?string $obs = null;
 
     /**
      *

@@ -60,6 +60,15 @@ class VendaItem implements EntityId
 
     /**
      *
+     * @ORM\Column(name="descricao", type="string")
+     * @Groups("entity")
+     *
+     * @var null|string
+     */
+    public ?string $descricao = null;
+
+    /**
+     *
      * @ORM\Column(name="preco_venda", type="decimal", nullable=false, precision=19, scale=2)
      * @Groups("entity")
      *
