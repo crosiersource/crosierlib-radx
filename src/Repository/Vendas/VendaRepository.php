@@ -9,6 +9,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\RH\Funcionario;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\Repository\RH\FuncionarioRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
+use Psr\Log\LoggerInterface;
 
 /**
  * Repository para a entidade Venda.

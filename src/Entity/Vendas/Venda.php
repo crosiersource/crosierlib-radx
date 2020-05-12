@@ -6,6 +6,7 @@ use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
+use CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -53,6 +54,16 @@ class Venda implements EntityId
 
     /**
      *
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador")
+     * @ORM\JoinColumn(name="vendedor_id")
+     * @Groups("entity")
+     *
+     * @var null|Colaborador
+     */
+    public ?Colaborador $vendedor = null;
+
+    /**
+     *
      * @ORM\Column(name="subtotal", type="decimal")
      * @Groups("entity")
      *
@@ -86,7 +97,6 @@ class Venda implements EntityId
      * @var null|string
      */
     public ?string $status = null;
-
 
     /**
      *
@@ -136,7 +146,6 @@ class Venda implements EntityId
         return $this;
     }
 
-    
 
     public function addItem(?VendaItem $i): void
     {
@@ -144,7 +153,7 @@ class Venda implements EntityId
             $this->itens->add($i);
         }
     }
-    
-    
+
+
 }
     
