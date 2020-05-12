@@ -1,12 +1,10 @@
 <?php
 
-namespace CrosierSource\CrosierLibBaseBundle\Business\Vendas;
+namespace CrosierSource\CrosierLibRadxBundle\Business\Vendas;
 
-use CrosierSource\CrosierLibBaseBundle\APIClient\CrosierEntityIdAPIClient;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * Class VendaBusiness
@@ -21,20 +19,12 @@ class VendaBusiness
 
     private VendaEntityHandler $vendaEntityHandler;
 
-    private CrosierEntityIdAPIClient $crosierEntityIdAPIClient;
-
-    private LoggerInterface $logger;
-
 
     public function __construct(EntityManagerInterface $doctrine,
-                                VendaEntityHandler $vendaEntityHandler,
-                                CrosierEntityIdAPIClient $crosierEntityIdAPIClient,
-                                LoggerInterface $logger)
+                                VendaEntityHandler $vendaEntityHandler)
     {
         $this->doctrine = $doctrine;
         $this->vendaEntityHandler = $vendaEntityHandler;
-        $this->crosierEntityIdAPIClient = $crosierEntityIdAPIClient;
-        $this->logger = $logger;
     }
 
 

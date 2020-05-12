@@ -3,12 +3,11 @@
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Vendas;
 
 
+use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
 use CrosierSource\CrosierLibRadxBundle\Entity\RH\Funcionario;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\Repository\RH\FuncionarioRepository;
-use CrosierSource\CrosierLibBaseBundle\APIClient\CrosierEntityIdAPIClient;
-use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
-use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
 
 /**
@@ -19,19 +18,6 @@ use Doctrine\ORM\Query\ResultSetMapping;
  */
 class VendaRepository extends FilterRepository
 {
-
-    /** @var CrosierEntityIdAPIClient */
-    private $crosierEntityIdAPIClient;
-
-    /**
-     * @required
-     * @param CrosierEntityIdAPIClient $crosierEntityIdAPIClient
-     */
-    public function setCrosierEntityIdAPIClient(CrosierEntityIdAPIClient $crosierEntityIdAPIClient): void
-    {
-        $this->crosierEntityIdAPIClient = $crosierEntityIdAPIClient;
-    }
-
 
     public function getEntityClass(): string
     {
@@ -82,45 +68,6 @@ class VendaRepository extends FilterRepository
         return $this->findByPVAndMesAno($pv, $mesano);
     }
 
-    public function findTotalAVistaEKT(\DateTime $dtIni, \DateTime $dtFim, $bonsucesso)
-    {
-        $ql = 'SELECT sum(v.valor_total) as total ' .
-            'FROM ven_venda v, ven_plano_pagto pp, rh_funcionario vendedor ' .
-            'WHERE ' .
-            'vendedor.id = v.vendedor_id AND ' .
-            'v.plano_pagto_id = pp.id ' .
-            'AND v.pv IS NOT NULL ' .
-            'AND (' .
-            "pp.codigo LIKE '1.00' OR " .
-            "pp.codigo LIKE '9.99' OR " .
-            "pp.codigo LIKE '3.0' OR " .
-            "pp.codigo LIKE '5%' OR " .
-            "pp.codigo LIKE '2%') AND " .
-            'v.dt_venda BETWEEN :dtIni AND :dtFim ' .
-            'AND v.deletado = false';
-
-        if ($bonsucesso == true) {
-            $ql .= ' AND (vendedor.codigo < 90 OR vendedor.codigo = 99)';
-        } else {
-            $ql .= ' AND vendedor.codigo = 95';
-        }
-
-        $rsm = new ResultSetMapping();
-        $qry = $this->getEntityManager()->createNativeQuery($ql, $rsm);
-        $dtIni->setTime(0, 0, 0, 0);
-        $qry->setParameter('dtIni', $dtIni);
-        $dtFim->setTime(23, 59, 59, 999999);
-        $qry->setParameter('dtFim', $dtFim);
-        $qry->getSQL();
-        $qry->getParameters();
-        $rsm->addScalarResult('total', 'total');
-        $r = $qry->getResult();
-        if ($r) {
-            return $r[0]['total'];
-        } else {
-            return null;
-        }
-    }
 
     /**
      *

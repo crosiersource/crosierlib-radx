@@ -33,6 +33,16 @@ class Venda implements EntityId
 
     /**
      *
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto")
+     * @ORM\JoinColumn(name="plano_pagto_id")
+     * @Groups("entity")
+     *
+     * @var null|PlanoPagto
+     */
+    public ?PlanoPagto $planoPagto = null;
+
+    /**
+     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente")
      * @ORM\JoinColumn(name="cliente_id")
      * @Groups("entity")
@@ -66,7 +76,16 @@ class Venda implements EntityId
      *
      * @var null|float
      */
-    public ?float $valorTotal = null;
+    private ?float $valorTotal = null;
+
+    /**
+     *
+     * @ORM\Column(name="status", type="string")
+     * @Groups("entity")
+     *
+     * @var null|string
+     */
+    public ?string $status = null;
 
 
     /**
@@ -98,6 +117,26 @@ class Venda implements EntityId
         $this->itens = new ArrayCollection();
     }
 
+    /**
+     * @return float|null
+     */
+    public function getValorTotal(): ?float
+    {
+        $this->valorTotal = bcsub(abs($this->subtotal), abs($this->desconto), 2);
+        return $this->valorTotal;
+    }
+
+    /**
+     * @param float|null $valorTotal
+     * @return Venda
+     */
+    public function setValorTotal(?float $valorTotal): Venda
+    {
+        $this->valorTotal = $valorTotal;
+        return $this;
+    }
+
+    
 
     public function addItem(?VendaItem $i): void
     {
@@ -105,5 +144,7 @@ class Venda implements EntityId
             $this->itens->add($i);
         }
     }
+    
+    
 }
     

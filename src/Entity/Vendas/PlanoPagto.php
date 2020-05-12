@@ -22,7 +22,7 @@ class PlanoPagto implements EntityId
 
     /**
      *
-     * @ORM\Column(name="codigo", type="string", nullable=false, length=255)
+     * @ORM\Column(name="codigo", type="string")
      * @Groups("entity")
      *
      * @var null|string
@@ -31,12 +31,21 @@ class PlanoPagto implements EntityId
 
     /**
      *
-     * @ORM\Column(name="descricao", type="string", nullable=false, length=255)
+     * @ORM\Column(name="descricao", type="string")
      * @Groups("entity")
      *
      * @var null|string
      */
     public ?string $descricao = null;
+
+    /**
+     *
+     * @ORM\Column(name="ativo", type="boolean")
+     * @Groups("entity")
+     *
+     * @var bool|null
+     */
+    public ?bool $ativo = true;
 
     /**
      *

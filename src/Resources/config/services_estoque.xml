@@ -287,5 +287,32 @@
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.unidade_produto_entity_handler"/>
 
 
+
+
+        <!-- CalculoPreco -->
+        <service id="crosier_source.crosier_lib_radx_bundle.business.estoque.calculo_preco"
+                 class="CrosierSource\CrosierLibRadxBundle\Business\Estoque\CalculoPreco">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Business\Estoque\CalculoPreco"
+                 alias="crosier_source.crosier_lib_radx_bundle.business.estoque.calculo_preco"/>
+
+        <!-- FornecedorBusiness -->
+        <service id="crosier_source.crosier_lib_radx_bundle.business.estoque.fornecedor_business"
+                 class="CrosierSource\CrosierLibRadxBundle\Business\Estoque\FornecedorBusiness">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Business\Estoque\FornecedorBusiness"
+                 alias="crosier_source.crosier_lib_radx_bundle.business.estoque.fornecedor_business"/>
+
+        <!-- ProdutoBusiness -->
+        <service id="crosier_source.crosier_lib_radx_bundle.business.estoque.produto_business"
+                 class="CrosierSource\CrosierLibRadxBundle\Business\Estoque\ProdutoBusiness">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Business\Estoque\ProdutoBusiness"
+                 alias="crosier_source.crosier_lib_radx_bundle.business.estoque.produto_business"/>
+
+
     </services>
 </container>

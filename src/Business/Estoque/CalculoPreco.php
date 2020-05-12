@@ -5,7 +5,9 @@ namespace CrosierSource\CrosierLibRadxBundle\Business\Estoque;
 
 
 
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\DepreciacaoPreco;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DepreciacaoPrecoRepository;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Lógicas para cálculo de preços.
@@ -15,17 +17,17 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DepreciacaoPrecoReposi
 class CalculoPreco
 {
 
-    /** @var DepreciacaoPrecoRepository */
-    private $depreciacaoPrecoRepository;
+    private EntityManagerInterface $doctrine;
 
     /**
-     * @required
-     * @param DepreciacaoPrecoRepository $depreciacaoPrecoRepository
+     * CalculoPreco constructor.
+     * @param EntityManagerInterface $doctrine
      */
-    public function setDepreciacaoPrecoRepository(DepreciacaoPrecoRepository $depreciacaoPrecoRepository): void
+    public function __construct(EntityManagerInterface $doctrine)
     {
-        $this->depreciacaoPrecoRepository = $depreciacaoPrecoRepository;
+        $this->doctrine = $doctrine;
     }
+
 
     /**
      * Cálculo:
@@ -78,7 +80,7 @@ class CalculoPreco
         if ($preco['prazo'] === null || $preco['prazo'] === '' || $preco['prazo'] < 0) {
             throw new \LogicException('Prazo deve ser um número inteiro igual ou maior que 0.');
         }
-        $depreciacaoPrazo = $this->depreciacaoPrecoRepository->findDepreciacaoByPrazo($preco['prazo']);
+        $depreciacaoPrazo = $this->doctrine->getRepository(DepreciacaoPreco::class)->findDepreciacaoByPrazo($preco['prazo']);
 
         $margemPorcent = (float)bcdiv($preco['margem'], '100.00', 4);
         $custoOperacPorcent = (float)bcdiv($preco['custoOperacional'], '100.0', 3);

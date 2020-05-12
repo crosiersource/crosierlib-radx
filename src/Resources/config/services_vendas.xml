@@ -46,5 +46,14 @@
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"/>
 
 
+        <!-- VendaBusiness -->
+        <service id="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"
+                 class="CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness"
+                 alias="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"/>
+
     </services>
 </container>
