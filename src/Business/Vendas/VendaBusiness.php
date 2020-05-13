@@ -3,7 +3,6 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Vendas;
 
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
-use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -17,14 +16,9 @@ class VendaBusiness
 
     private EntityManagerInterface $doctrine;
 
-    private VendaEntityHandler $vendaEntityHandler;
-
-
-    public function __construct(EntityManagerInterface $doctrine,
-                                VendaEntityHandler $vendaEntityHandler)
+    public function __construct(EntityManagerInterface $doctrine)
     {
         $this->doctrine = $doctrine;
-        $this->vendaEntityHandler = $vendaEntityHandler;
     }
 
 
@@ -35,13 +29,14 @@ class VendaBusiness
      */
     public function recalcularTotais(Venda $venda): Venda
     {
-        $bdTotalItens = 0.0;
+        $totalSubtotais = 0.0;
+        $totalDescontos = 0.0;
         foreach ($venda->itens as $item) {
-            $bdTotalItens += $item->total;
+            $totalSubtotais += $item->subtotal;
+            $totalDescontos += $item->desconto;
         }
-        $totalVenda = $bdTotalItens - abs($venda->desconto);
-        $venda->subtotal = $bdTotalItens;
-        $venda->valorTotal = $totalVenda;
+        $venda->subtotal = $totalSubtotais;
+        $venda->desconto = $totalDescontos;
 
         $this->doctrine->persist($venda);
         $this->doctrine->flush();

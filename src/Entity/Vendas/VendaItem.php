@@ -69,7 +69,7 @@ class VendaItem implements EntityId
 
     /**
      *
-     * @ORM\Column(name="preco_venda", type="decimal", nullable=false, precision=19, scale=2)
+     * @ORM\Column(name="preco_venda", type="decimal")
      * @Groups("entity")
      *
      * @var null|float
@@ -77,7 +77,25 @@ class VendaItem implements EntityId
     public ?float $precoVenda = null;
 
     /**
-     * @ORM\Column(name="total", type="decimal", nullable=false, precision=19, scale=2)
+     *
+     * @ORM\Column(name="subtotal", type="decimal")
+     * @Groups("entity")
+     *
+     * @var null|float
+     */
+    public ?float $subtotal = null;
+
+    /**
+     *
+     * @ORM\Column(name="desconto", type="decimal")
+     * @Groups("entity")
+     *
+     * @var null|float
+     */
+    public ?float $desconto = null;
+
+    /**
+     * @ORM\Column(name="total", type="decimal")
      * @Groups("entity")
      *
      * @var null|float
