@@ -9,7 +9,6 @@ use CrosierSource\CrosierLibRadxBundle\Entity\RH\Funcionario;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\Repository\RH\FuncionarioRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
-use Psr\Log\LoggerInterface;
 
 /**
  * Repository para a entidade Venda.
@@ -132,6 +131,37 @@ class VendaRepository extends FilterRepository
         $rc['total'] = $total;
 
         return $rc;
+    }
+
+    /**
+     * @param \DateTime $dtIni
+     * @param \DateTime $dtFim
+     * @return array
+     */
+    public function findVendedoresComVendasNoPeriodo_select2js(\DateTime $dtIni, \DateTime $dtFim, bool $addTodos = true)
+    {
+        $sql = 'select json_data->>"$.vendedor_codigo" as codigo, json_data->>"$.vendedor_nome" as nome from ven_venda where dt_venda between :dtIni and :dtFim group by json_data->>"$.vendedor_codigo", json_data->>"$.vendedor_nome" order by json_data->>"$.vendedor_nome"';
+        $dtIniF = $dtIni->setTime(0, 0)->format('Y-m-d H:i:s');
+        $dtFimF = $dtFim->setTime(23, 59, 59, 9999)->format('Y-m-d H:i:s');
+        /** @var Connection $conn */
+        $conn = $this->getEntityManager()->getConnection();
+        $rs = $conn->fetchAll($sql, ['dtIni' => $dtIniF, 'dtFim' => $dtFimF]);
+        $result = [];
+        if ($addTodos) {
+            $result[] = [
+                'id' => '',
+                'text' => 'TODOS'
+            ];
+        }
+        foreach ($rs as $r) {
+            if ($r['nome']) {
+                $result[] = [
+                    'id' => $r['codigo'],
+                    'text' => $r['nome']
+                ];
+            }
+        }
+        return $result;
     }
 
 }

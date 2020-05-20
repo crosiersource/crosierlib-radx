@@ -112,7 +112,7 @@ class Venda implements EntityId
      * @var null|VendaItem[]|ArrayCollection
      *
      * @ORM\OneToMany(
-     *      targetEntity="VendaItem",
+     *      targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem",
      *      cascade={"persist"},
      *      mappedBy="venda",
      *      orphanRemoval=true)
