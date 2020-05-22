@@ -149,6 +149,7 @@ class Venda implements EntityId
 
     public function addItem(?VendaItem $i): void
     {
+        $i->venda = $this;
         if (!$this->itens->contains($i)) {
             $this->itens->add($i);
         }
