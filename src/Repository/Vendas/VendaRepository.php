@@ -3,11 +3,11 @@
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Vendas;
 
 
-use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
 use CrosierSource\CrosierLibRadxBundle\Entity\RH\Funcionario;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\Repository\RH\FuncionarioRepository;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Query\ResultSetMapping;
 
 /**
@@ -24,43 +24,69 @@ class VendaRepository extends FilterRepository
         return Venda::class;
     }
 
-    public function findByDtVendaAndPV(\DateTime $dtVenda, $pv)
+    /**
+     * @param \DateTime $dtVenda
+     * @param $pv
+     * @return null|Venda
+     * @throws \Exception
+     */
+    public function findByDtVendaAndPV(\DateTime $dtVenda, $pv): ?Venda
     {
-        $dtVenda->setTime(0, 0, 0, 0);
-        $ql = "SELECT v FROM CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda v WHERE v.dtVenda = :dtVenda AND v.pv = :pv";
-        $query = $this->getEntityManager()->createQuery($ql);
-        $query->setParameters(array(
-            'dtVenda' => $dtVenda,
-            'pv' => $pv
-        ));
+        $r = $this->getEntityManager()->getConnection()
+            ->fetchAll('SELECT id FROM ven_venda WHERE json_data->>"$.pv" = :pv AND date(dt_venda) = :dtVenda',
+                [
+                    'pv' => $pv,
+                    'dtVenda' => $dtVenda->format('Y-m-d')
+                ]
+            );
 
-        $results = $query->getResult();
-
-        if (count($results) > 1) {
-            throw new \Exception('Mais de uma venda encontrada para [' . $dtVenda . '] e [' . $pv . ']');
+        if (!$r || count($r) === 0) {
+            return null;
         }
 
-        return count($results) == 1 ? $results[0] : null;
+        if (count($r) > 1) {
+            throw new \Exception('Mais de uma venda encontrada para [' . $dtVenda->format('d/m/Y') . '] e [' . $pv . ']');
+        }
+
+        /** @var Venda $venda */
+        $venda = $this->find($r[0]['id']);
+        return $venda;
     }
 
+    /**
+     * @param $pv
+     * @param $mesano
+     * @return Venda|null |null
+     * @throws \Exception
+     */
     public function findByPVAndMesAno($pv, $mesano)
     {
-        $ql = "SELECT v FROM CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda v WHERE v.mesano = :mesano AND v.pv = :pv";
-        $query = $this->getEntityManager()->createQuery($ql);
-        $query->setParameters(array(
-            'mesano' => $mesano,
-            'pv' => $pv
-        ));
+        $r = $this->getEntityManager()->getConnection()
+            ->fetchAll('SELECT id FROM ven_venda WHERE json_data->>"$.pv" = :pv AND DATE_FORMAT(dt_venda, \'%Y%m\') = :mesano',
+                [
+                    'pv' => $pv,
+                    'mesno' => $mesano
+                ]
+            );
 
-        $results = $query->getResult();
-
-        if (count($results) > 1) {
-            throw new \Exception('Mais de uma venda encontrada para [' . $pv . '] e [' . $mesano . ']');
+        if (!$r || count($r) === 0) {
+            return null;
         }
 
-        return count($results) == 1 ? $results[0] : null;
+        if (count($r) > 1) {
+            throw new \Exception('Mais de uma venda encontrada para [' . $mesano . '] e [' . $pv . ']');
+        }
+
+        /** @var Venda $venda */
+        $venda = $this->find($r[0]['id']);
+        return $venda;
     }
 
+    /**
+     * @param $pv
+     * @return Venda|null
+     * @throws \Exception
+     */
     public function findByPV($pv)
     {
         $hoje = new \DateTime();
@@ -77,8 +103,6 @@ class VendaRepository extends FilterRepository
      * @param $codVendedorIni
      * @param $codVendedorFim
      * @return mixed
-     * @throws ViewException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function findTotalVendasPorPeriodoVendedores(\DateTime $dtIni, \DateTime $dtFim, $codVendedorIni = null, $codVendedorFim = null)
     {
@@ -136,6 +160,7 @@ class VendaRepository extends FilterRepository
     /**
      * @param \DateTime $dtIni
      * @param \DateTime $dtFim
+     * @param bool $addTodos
      * @return array
      */
     public function findVendedoresComVendasNoPeriodo_select2js(\DateTime $dtIni, \DateTime $dtFim, bool $addTodos = true)
