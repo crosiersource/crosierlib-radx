@@ -21,25 +21,20 @@ class NotaFiscalEntityHandler extends EntityHandler
 
     public ContainerInterface $container;
 
-    private NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler;
-
     /**
      * NotaFiscalEntityHandler constructor.
      * @param EntityManagerInterface $doctrine
      * @param Security $security
      * @param ParameterBagInterface $parameterBag
      * @param ContainerInterface $container
-     * @param NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler
      */
     public function __construct(EntityManagerInterface $doctrine,
                                 Security $security,
                                 ParameterBagInterface $parameterBag,
-                                ContainerInterface $container,
-                                NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler)
+                                ContainerInterface $container)
     {
         parent::__construct($doctrine, $security, $parameterBag);
         $this->container = $container;
-        $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
     }
 
 
@@ -137,7 +132,6 @@ class NotaFiscalEntityHandler extends EntityHandler
     {
         foreach ($notaFiscal->getItens() as $item) {
             $item->setNotaFiscal(null);
-            $this->notaFiscalItemEntityHandler->delete($item);
         }
         $notaFiscal->getItens()->clear();
         /** @var NotaFiscal $notaFiscal */
