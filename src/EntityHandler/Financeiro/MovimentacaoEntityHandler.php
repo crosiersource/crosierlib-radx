@@ -2,15 +2,6 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
-use CrosierSource\CrosierLibRadxBundle\Business\Financeiro\MovimentacaoBusiness;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
-use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\TipoLanctoRepository;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\DiaUtil;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\Pessoa;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
@@ -19,8 +10,24 @@ use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\DiaUtilRepository;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\PessoaRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
+use CrosierSource\CrosierLibRadxBundle\Business\Financeiro\MovimentacaoBusiness;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Banco;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\OperadoraCartao;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
+use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\TipoLanctoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Security\Core\Security;
 
 /**
  * Class MovimentacaoEntityHandler
@@ -31,14 +38,31 @@ use Psr\Log\LoggerInterface;
 class MovimentacaoEntityHandler extends EntityHandler
 {
 
-    /** @var MovimentacaoBusiness */
-    private $movimentacaoBusiness;
-
     /** @var CadeiaEntityHandler */
-    private $cadeiaEntityHandler;
+    private CadeiaEntityHandler $cadeiaEntityHandler;
 
     /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
+
+    /**
+     *
+     * @param EntityManagerInterface $doctrine
+     * @param Security $security
+     * @param ParameterBagInterface $parameterBag
+     * @param CadeiaEntityHandler $cadeiaEntityHandler
+     * @param LoggerInterface $logger
+     */
+    public function __construct(EntityManagerInterface $doctrine,
+                                Security $security,
+                                ParameterBagInterface $parameterBag,
+                                CadeiaEntityHandler $cadeiaEntityHandler,
+                                LoggerInterface $logger)
+    {
+        parent::__construct($doctrine, $security, $parameterBag);
+        $this->cadeiaEntityHandler = $cadeiaEntityHandler;
+        $this->logger = $logger;
+    }
+
 
     /**
      * Descrição das regras em http://docs.crosier.com.br/books/finan/page/regras-para-movimenta%C3%A7%C3%B5es/edit
@@ -300,7 +324,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                 if ($cadeia) {
                     $mov->setCadeia($cadeia);
                 }
-                $this->movimentacaoBusiness->refindAll($mov);
+                $this->refindAll($mov);
                 $this->save($mov);
                 $this->doctrine->clear();
             }
@@ -326,7 +350,7 @@ class MovimentacaoEntityHandler extends EntityHandler
      *
      * @param EntityId $movimentacao
      * @param bool $flush
-     * @return \CrosierSource\CrosierLibBaseBundle\Entity\EntityId|Movimentacao|EntityId|null|object
+     * @return EntityId|Movimentacao|EntityId|null|object
      * @throws ViewException
      */
     public function save(EntityId $movimentacao, $flush = true)
@@ -644,6 +668,81 @@ class MovimentacaoEntityHandler extends EntityHandler
     public function getEntityClass()
     {
         return Movimentacao::class;
+    }
+
+
+    /**
+     * @param Movimentacao $movimentacao
+     * @throws ViewException
+     */
+    public function refindAll(Movimentacao $movimentacao): void
+    {
+        try {
+            $em = $this->doctrine;
+
+            if ($movimentacao->getCategoria() && $movimentacao->getCategoria()->getId()) {
+                /** @var Categoria $categoria */
+                $categoria = $em->find(Categoria::class, $movimentacao->getCategoria()->getId());
+                $movimentacao->setCategoria($categoria);
+            }
+            if ($movimentacao->getTipoLancto() && $movimentacao->getTipoLancto()->getId()) {
+                /** @var TipoLancto $tipoLancto */
+                $tipoLancto = $em->find(TipoLancto::class, $movimentacao->getTipoLancto()->getId());
+                $movimentacao->setTipoLancto($tipoLancto);
+            }
+            if ($movimentacao->getCarteira() && $movimentacao->getCarteira()->getId()) {
+                /** @var Carteira $carteira */
+                $carteira = $em->find(Carteira::class, $movimentacao->getCarteira()->getId());
+                $movimentacao->setCarteira($carteira);
+            }
+            if ($movimentacao->getCarteiraDestino() && $movimentacao->getCarteiraDestino()->getId()) {
+                /** @var Carteira $carteiraDestino */
+                $carteiraDestino = $em->find(Carteira::class, $movimentacao->getCarteiraDestino()->getId());
+                $movimentacao->setCarteiraDestino($carteiraDestino);
+            }
+            if ($movimentacao->getCentroCusto() && $movimentacao->getCentroCusto()->getId()) {
+                /** @var CentroCusto $centroCusto */
+                $centroCusto = $em->find(CentroCusto::class, $movimentacao->getCentroCusto()->getId());
+                $movimentacao->setCentroCusto($centroCusto);
+            }
+            if ($movimentacao->getModo() && $movimentacao->getModo()->getId()) {
+                /** @var Modo $modo */
+                $modo = $em->find(Modo::class, $movimentacao->getModo()->getId());
+                $movimentacao->setModo($modo);
+            }
+            if ($movimentacao->getGrupoItem() && $movimentacao->getGrupoItem()->getId()) {
+                /** @var GrupoItem $grupoItem */
+                $grupoItem = $em->find(GrupoItem::class, $movimentacao->getGrupoItem()->getId());
+                $movimentacao->setGrupoItem($grupoItem);
+            }
+            if ($movimentacao->getOperadoraCartao() && $movimentacao->getOperadoraCartao()->getId()) {
+                /** @var OperadoraCartao $operadoraCartao */
+                $operadoraCartao = $em->find(OperadoraCartao::class, $movimentacao->getOperadoraCartao()->getId());
+                $movimentacao->setOperadoraCartao($operadoraCartao);
+            }
+            if ($movimentacao->getBandeiraCartao() && $movimentacao->getBandeiraCartao()->getId()) {
+                /** @var BandeiraCartao $bandeiraCartao */
+                $bandeiraCartao = $em->find(BandeiraCartao::class, $movimentacao->getBandeiraCartao()->getId());
+                $movimentacao->setBandeiraCartao($bandeiraCartao);
+            }
+            if ($movimentacao->getCadeia() && $movimentacao->getCadeia()->getId()) {
+                /** @var Cadeia $cadeia */
+                $cadeia = $em->find(Cadeia::class, $movimentacao->getCadeia()->getId());
+                $movimentacao->setCadeia($cadeia);
+            }
+            if ($movimentacao->getDocumentoBanco() && $movimentacao->getDocumentoBanco()->getId()) {
+                /** @var Banco $documentoBanco */
+                $documentoBanco = $em->find(Banco::class, $movimentacao->getDocumentoBanco()->getId());
+                $movimentacao->setDocumentoBanco($documentoBanco);
+            }
+            if ($movimentacao->getChequeBanco() && $movimentacao->getChequeBanco()->getId()) {
+                /** @var Banco $chequeBanco */
+                $chequeBanco = $em->find(Banco::class, $movimentacao->getChequeBanco()->getId());
+                $movimentacao->setChequeBanco($chequeBanco);
+            }
+        } catch (\Exception $e) {
+            throw new ViewException('Erro ao realizar o refindAll');
+        }
     }
 
 

@@ -734,7 +734,7 @@ class MovimentacaoBusiness
         /** @var Movimentacao $mov */
         foreach ($lote as $mov) {
 
-            $this->refindAll($movComAlteracoes);
+            $this->movimentacaoEntityHandler->refindAll($movComAlteracoes);
 
             if ($movComAlteracoes->getModo()) {
                 $mov->setModo($movComAlteracoes->getModo());
@@ -879,80 +879,6 @@ class MovimentacaoBusiness
             if ($movComAlteracoes->getObs()) {
                 $mov->setObs($movComAlteracoes->getObs());
             }
-        }
-    }
-
-    /**
-     * @param Movimentacao $movimentacao
-     * @throws ViewException
-     */
-    public function refindAll(Movimentacao $movimentacao): void
-    {
-        try {
-            $em = $this->doctrine;
-
-            if ($movimentacao->getCategoria() && $movimentacao->getCategoria()->getId()) {
-                /** @var Categoria $categoria */
-                $categoria = $em->find(Categoria::class, $movimentacao->getCategoria()->getId());
-                $movimentacao->setCategoria($categoria);
-            }
-            if ($movimentacao->getTipoLancto() && $movimentacao->getTipoLancto()->getId()) {
-                /** @var TipoLancto $tipoLancto */
-                $tipoLancto = $em->find(TipoLancto::class, $movimentacao->getTipoLancto()->getId());
-                $movimentacao->setTipoLancto($tipoLancto);
-            }
-            if ($movimentacao->getCarteira() && $movimentacao->getCarteira()->getId()) {
-                /** @var Carteira $carteira */
-                $carteira = $em->find(Carteira::class, $movimentacao->getCarteira()->getId());
-                $movimentacao->setCarteira($carteira);
-            }
-            if ($movimentacao->getCarteiraDestino() && $movimentacao->getCarteiraDestino()->getId()) {
-                /** @var Carteira $carteiraDestino */
-                $carteiraDestino = $em->find(Carteira::class, $movimentacao->getCarteiraDestino()->getId());
-                $movimentacao->setCarteiraDestino($carteiraDestino);
-            }
-            if ($movimentacao->getCentroCusto() && $movimentacao->getCentroCusto()->getId()) {
-                /** @var CentroCusto $centroCusto */
-                $centroCusto = $em->find(CentroCusto::class, $movimentacao->getCentroCusto()->getId());
-                $movimentacao->setCentroCusto($centroCusto);
-            }
-            if ($movimentacao->getModo() && $movimentacao->getModo()->getId()) {
-                /** @var Modo $modo */
-                $modo = $em->find(Modo::class, $movimentacao->getModo()->getId());
-                $movimentacao->setModo($modo);
-            }
-            if ($movimentacao->getGrupoItem() && $movimentacao->getGrupoItem()->getId()) {
-                /** @var GrupoItem $grupoItem */
-                $grupoItem = $em->find(GrupoItem::class, $movimentacao->getGrupoItem()->getId());
-                $movimentacao->setGrupoItem($grupoItem);
-            }
-            if ($movimentacao->getOperadoraCartao() && $movimentacao->getOperadoraCartao()->getId()) {
-                /** @var OperadoraCartao $operadoraCartao */
-                $operadoraCartao = $em->find(OperadoraCartao::class, $movimentacao->getOperadoraCartao()->getId());
-                $movimentacao->setOperadoraCartao($operadoraCartao);
-            }
-            if ($movimentacao->getBandeiraCartao() && $movimentacao->getBandeiraCartao()->getId()) {
-                /** @var BandeiraCartao $bandeiraCartao */
-                $bandeiraCartao = $em->find(BandeiraCartao::class, $movimentacao->getBandeiraCartao()->getId());
-                $movimentacao->setBandeiraCartao($bandeiraCartao);
-            }
-            if ($movimentacao->getCadeia() && $movimentacao->getCadeia()->getId()) {
-                /** @var Cadeia $cadeia */
-                $cadeia = $em->find(Cadeia::class, $movimentacao->getCadeia()->getId());
-                $movimentacao->setCadeia($cadeia);
-            }
-            if ($movimentacao->getDocumentoBanco() && $movimentacao->getDocumentoBanco()->getId()) {
-                /** @var Banco $documentoBanco */
-                $documentoBanco = $em->find(Banco::class, $movimentacao->getDocumentoBanco()->getId());
-                $movimentacao->setDocumentoBanco($documentoBanco);
-            }
-            if ($movimentacao->getChequeBanco() && $movimentacao->getChequeBanco()->getId()) {
-                /** @var Banco $chequeBanco */
-                $chequeBanco = $em->find(Banco::class, $movimentacao->getChequeBanco()->getId());
-                $movimentacao->setChequeBanco($chequeBanco);
-            }
-        } catch (\Exception $e) {
-            throw new ViewException('Erro ao realizar o refindAll');
         }
     }
 

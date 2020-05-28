@@ -198,9 +198,8 @@
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler"
                  parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.cadeia_entity_handler"/>
+            <argument type="service" id="monolog.logger"/>
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"/>
