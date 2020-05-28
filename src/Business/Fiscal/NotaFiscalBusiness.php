@@ -24,7 +24,6 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntity
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
-use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalVendaRepository;
 use Doctrine\DBAL\Connection;
 
 /**
@@ -108,14 +107,14 @@ class NotaFiscalBusiness
     public function saveNotaFiscalVenda(Venda $venda, NotaFiscal $notaFiscal, bool $alterouTipo): ?NotaFiscal
     {
         try {
+            $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
+            $jaExiste = $conn->fetchAll('SELECT * FROM fis_nf_venda WHERE venda_id = :vendaId', ['vendaId' => $venda->getId()]);
 
-
-            /** @var NotaFiscalVendaRepository $repoNotaFiscalVenda */
-            $repoNotaFiscalVenda = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NotaFiscalVenda::class);
-            /** @var NotaFiscal $jaExiste */
-            $jaExiste = $repoNotaFiscalVenda->findNotaFiscalByVenda($venda);
             if ($jaExiste) {
-                $notaFiscal = $jaExiste;
+                /** @var NotaFiscalRepository $repoNotaFiscal */
+                $repoNotaFiscal = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NotaFiscal::class);
+                /** @var NotaFiscal $notaFiscal */
+                $notaFiscal = $repoNotaFiscal->find($jaExiste[0]['nota_fiscal_id']);
                 $novaNota = false;
             } else {
                 $novaNota = true;
