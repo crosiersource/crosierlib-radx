@@ -2,10 +2,13 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
-use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Security\Core\Security;
 
 /**
  * Class NotaFiscalItemEntityHandler
@@ -17,30 +20,34 @@ class NotaFiscalItemEntityHandler extends EntityHandler
 {
 
     /** @var NotaFiscalBusiness */
-    private $notaFiscalBusiness;
+    private NotaFiscalBusiness $notaFiscalBusiness;
 
     /** @var NotaFiscalEntityHandler */
-    private $notaFiscalEntityHandler;
+    private NotaFiscalEntityHandler $notaFiscalEntityHandler;
 
     /**
-     * @required
+     * @param EntityManagerInterface $doctrine
+     * @param Security $security
+     * @param ParameterBagInterface $parameterBag
      * @param NotaFiscalBusiness $notaFiscalBusiness
-     */
-    public function setNotaFiscalBusiness(NotaFiscalBusiness $notaFiscalBusiness): void
-    {
-        $this->notaFiscalBusiness = $notaFiscalBusiness;
-    }
-
-    /**
-     * @required
      * @param NotaFiscalEntityHandler $notaFiscalEntityHandler
      */
-    public function setNotaFiscalEntityHandler(NotaFiscalEntityHandler $notaFiscalEntityHandler): void
+    public function __construct(EntityManagerInterface $doctrine,
+                                Security $security,
+                                ParameterBagInterface $parameterBag,
+                                NotaFiscalBusiness $notaFiscalBusiness,
+                                NotaFiscalEntityHandler $notaFiscalEntityHandler)
     {
+        parent::__construct($doctrine, $security, $parameterBag);
+        $this->notaFiscalBusiness = $notaFiscalBusiness;
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
     }
 
 
+    /**
+     * @param $nfItem
+     * @return mixed|void
+     */
     public function beforeSave($nfItem)
     {
         /** @var NotaFiscalItem $nfItem */
@@ -59,25 +66,38 @@ class NotaFiscalItemEntityHandler extends EntityHandler
         $nfItem->calculaTotais();
     }
 
+    /**
+     * @param $nfItem
+     * @throws \CrosierSource\CrosierLibBaseBundle\Exception\ViewException
+     */
     public function afterSave(/** @var NotaFiscalItem $nfItem */ $nfItem)
     {
+        /** @var NotaFiscal $notaFiscal */
         $notaFiscal = $this->getDoctrine()->getRepository(NotaFiscal::class)->findOneBy(['id' => $nfItem->getNotaFiscal()->getId()]);
-        $this->notaFiscalBusiness->calcularTotais($notaFiscal);
+        $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
         $this->notaFiscalEntityHandler->save($notaFiscal);
     }
 
+    /**
+     * @param $nfItem
+     * @throws \CrosierSource\CrosierLibBaseBundle\Exception\ViewException
+     */
     public function afterDelete(/** @var NotaFiscalItem $nfItem */ $nfItem)
     {
         if ($nfItem->getNotaFiscal()) {
+            /** @var NotaFiscal $notaFiscal */
             $notaFiscal = $this->getDoctrine()->getRepository(NotaFiscal::class)->findOneBy(['id' => $nfItem->getNotaFiscal()->getId()]);
-            $this->notaFiscalBusiness->calcularTotais($notaFiscal);
+            $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
             $this->notaFiscalEntityHandler->save($notaFiscal);
         }
     }
 
-
+    /**
+     * @return mixed|string
+     */
     public function getEntityClass()
     {
         return NotaFiscalItem::class;
     }
+    
 }

@@ -229,7 +229,7 @@ class NotaFiscalBusiness
                 $notaFiscal->addItem($nfItem);
             }
 
-            $this->calcularTotais($notaFiscal);
+            $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
             $totalDescontos = bcsub($notaFiscal->getSubTotal(), $notaFiscal->getValorTotal(), 2);
 
             if ((float)bcsub(abs($totalDescontos), abs($somaDescontosItens), 2) !== 0.0) {
@@ -357,26 +357,6 @@ class NotaFiscalBusiness
     }
 
     /**
-     * Calcula o total da nota e o total de descontos.
-     *
-     * @param
-     *            nf
-     */
-    public function calcularTotais(NotaFiscal $notaFiscal): void
-    {
-        $subTotal = 0.0;
-        $descontos = 0.0;
-        foreach ($notaFiscal->getItens() as $item) {
-            $item->calculaTotais();
-            $subTotal += $item->getSubTotal();
-            $descontos += $item->getValorDesconto() ? $item->getValorDesconto() : 0.0;
-        }
-        $notaFiscal->setSubTotal($subTotal);
-        $notaFiscal->setTotalDescontos($descontos);
-        $notaFiscal->setValorTotal($subTotal - $descontos);
-    }
-
-    /**
      * Salvar uma notaFiscal normal.
      *
      * @param
@@ -411,7 +391,7 @@ class NotaFiscalBusiness
                 $notaFiscal->setCnf($cNF);
             }
 
-            $this->calcularTotais($notaFiscal);
+            $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
             $this->notaFiscalEntityHandler->save($notaFiscal);
             $this->notaFiscalEntityHandler->getDoctrine()->commit();
             return $notaFiscal;

@@ -145,4 +145,24 @@ class NotaFiscalEntityHandler extends EntityHandler
         return $notaFiscal;
     }
 
+    /**
+     * Calcula o total da nota e o total de descontos.
+     *
+     * @param
+     *            nf
+     */
+    public function calcularTotais(NotaFiscal $notaFiscal): void
+    {
+        $subTotal = 0.0;
+        $descontos = 0.0;
+        foreach ($notaFiscal->getItens() as $item) {
+            $item->calculaTotais();
+            $subTotal += $item->getSubTotal();
+            $descontos += $item->getValorDesconto() ? $item->getValorDesconto() : 0.0;
+        }
+        $notaFiscal->setSubTotal($subTotal);
+        $notaFiscal->setTotalDescontos($descontos);
+        $notaFiscal->setValorTotal($subTotal - $descontos);
+    }
+
 }
