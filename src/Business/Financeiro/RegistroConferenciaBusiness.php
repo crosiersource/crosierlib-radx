@@ -4,7 +4,6 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Financeiro;
 
 
-use CrosierSource\CrosierLibBaseBundle\Business\BaseBusiness;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\RegistroConferencia;
