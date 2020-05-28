@@ -3,7 +3,6 @@
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
-use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use Doctrine\ORM\EntityManagerInterface;
@@ -50,9 +49,7 @@ class NotaFiscalEntityHandler extends EntityHandler
     public function beforeSave(/** @var NotaFiscal $notaFiscal */ $notaFiscal)
     {
         if ($notaFiscal->getItens() && $notaFiscal->getItens()->count() > 0) {
-            /** @var NotaFiscalBusiness $notaFiscalBusiness */
-            $notaFiscalBusiness = $this->container->get('CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness');
-            $notaFiscalBusiness->calcularTotais($notaFiscal);
+            $this->calcularTotais($notaFiscal);
         }
 
         $i = 1;
