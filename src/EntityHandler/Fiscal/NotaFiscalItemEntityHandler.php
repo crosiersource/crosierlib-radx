@@ -3,7 +3,6 @@
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
-use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,9 +18,6 @@ use Symfony\Component\Security\Core\Security;
 class NotaFiscalItemEntityHandler extends EntityHandler
 {
 
-    /** @var NotaFiscalBusiness */
-    private NotaFiscalBusiness $notaFiscalBusiness;
-
     /** @var NotaFiscalEntityHandler */
     private NotaFiscalEntityHandler $notaFiscalEntityHandler;
 
@@ -29,17 +25,14 @@ class NotaFiscalItemEntityHandler extends EntityHandler
      * @param EntityManagerInterface $doctrine
      * @param Security $security
      * @param ParameterBagInterface $parameterBag
-     * @param NotaFiscalBusiness $notaFiscalBusiness
      * @param NotaFiscalEntityHandler $notaFiscalEntityHandler
      */
     public function __construct(EntityManagerInterface $doctrine,
                                 Security $security,
                                 ParameterBagInterface $parameterBag,
-                                NotaFiscalBusiness $notaFiscalBusiness,
                                 NotaFiscalEntityHandler $notaFiscalEntityHandler)
     {
         parent::__construct($doctrine, $security, $parameterBag);
-        $this->notaFiscalBusiness = $notaFiscalBusiness;
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
     }
 
@@ -99,5 +92,5 @@ class NotaFiscalItemEntityHandler extends EntityHandler
     {
         return NotaFiscalItem::class;
     }
-    
+
 }

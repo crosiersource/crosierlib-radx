@@ -140,7 +140,6 @@
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler"
                  parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business"/>
             <argument type="service"
                       id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
         </service>
