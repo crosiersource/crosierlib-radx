@@ -2,7 +2,6 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Business\Fiscal;
 
-use CrosierSource\CrosierLibBaseBundle\Business\BaseBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\Municipio;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\MunicipioRepository;
@@ -33,7 +32,7 @@ use Doctrine\DBAL\Connection;
  * @package App\Business\Fiscal
  * @author Carlos Eduardo Pauluk
  */
-class NotaFiscalBusiness extends BaseBusiness
+class NotaFiscalBusiness
 {
 
     private Connection $conn;
@@ -112,7 +111,7 @@ class NotaFiscalBusiness extends BaseBusiness
 
 
             /** @var NotaFiscalVendaRepository $repoNotaFiscalVenda */
-            $repoNotaFiscalVenda = $this->getDoctrine()->getRepository(NotaFiscalVenda::class);
+            $repoNotaFiscalVenda = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NotaFiscalVenda::class);
             /** @var NotaFiscal $jaExiste */
             $jaExiste = $repoNotaFiscalVenda->findNotaFiscalByVenda($venda);
             if ($jaExiste) {
@@ -130,7 +129,7 @@ class NotaFiscalBusiness extends BaseBusiness
             $notaFiscal->deleteAllItens();
 
 
-            $this->getDoctrine()->beginTransaction();
+            $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
 
             $notaFiscal->setEntradaSaida('S');
 
@@ -163,11 +162,11 @@ class NotaFiscalBusiness extends BaseBusiness
                 $venda->planoPagto->codigo === '1.00' ? IndicadorFormaPagto::VISTA['codigo'] : IndicadorFormaPagto::PRAZO['codigo']);
 
             $notaFiscal = $this->notaFiscalEntityHandler->deleteAllItens($notaFiscal);
-            $this->getDoctrine()->flush();
+            $this->notaFiscalEntityHandler->getDoctrine()->flush();
 
             // Atenção, aqui tem que verificar a questão do arredondamento
-            if ($venda->subTotal > 0.0) {
-                $fatorDesconto = 1 - round(bcdiv($venda->valorTotal, $venda->subTotal, 4), 2);
+            if ($venda->subtotal > 0.0) {
+                $fatorDesconto = 1 - round(bcdiv($venda->getValorTotal(), $venda->subtotal, 4), 2);
             } else {
                 $fatorDesconto = 1;
             }
@@ -183,7 +182,7 @@ class NotaFiscalBusiness extends BaseBusiness
 
                 if ($vendaItem->jsonData['ncm'] ?? null) {
                     /** @var NCMRepository $repoNCM */
-                    $repoNCM = $this->getDoctrine()->getRepository(NCM::class);
+                    $repoNCM = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NCM::class);
                     $existe = $repoNCM->findBy(['codigo' => $vendaItem->jsonData['ncm']]);
                     if (!$existe) {
                         $nfItem->setNcm('62179000'); // FIXME: RTA
@@ -219,7 +218,7 @@ class NotaFiscalBusiness extends BaseBusiness
                 }
 
                 if ($vendaItem->produto !== null) {
-                    $produto = $this->getDoctrine()->getRepository(Produto::class)->findOneBy(['id' => $vendaItem->produto->getId()]);
+                    $produto = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Produto::class)->findOneBy(['id' => $vendaItem->produto->getId()]);
                     $nfItem->setCodigo($vendaItem->produto->getId());
                     $nfItem->setDescricao(trim($vendaItem->produto->nome));
                 } else {
@@ -248,7 +247,7 @@ class NotaFiscalBusiness extends BaseBusiness
 
             /** @var NotaFiscal $notaFiscal */
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
-            $this->getDoctrine()->flush();
+            $this->notaFiscalEntityHandler->getDoctrine()->flush();
 
             if ($novaNota) {
                 $notaFiscalVenda = new NotaFiscalVenda();
@@ -257,10 +256,10 @@ class NotaFiscalBusiness extends BaseBusiness
                 $this->notaFiscalVendaEntityHandler->save($notaFiscalVenda);
             }
 
-            $this->getDoctrine()->commit();
+            $this->notaFiscalEntityHandler->getDoctrine()->commit();
             return $notaFiscal;
         } catch (\Exception $e) {
-            $this->getDoctrine()->rollback();
+            $this->notaFiscalEntityHandler->getDoctrine()->rollback();
             $erro = 'Erro ao gerar registro da Nota Fiscal';
             throw new \RuntimeException($erro, null, $e);
         }
@@ -392,7 +391,7 @@ class NotaFiscalBusiness extends BaseBusiness
             if (!$notaFiscal->getTipoNotaFiscal()) {
                 throw new ViewException('Tipo da Nota não informado');
             }
-            $this->getDoctrine()->beginTransaction();
+            $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
 
             $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
 
@@ -415,10 +414,10 @@ class NotaFiscalBusiness extends BaseBusiness
 
             $this->calcularTotais($notaFiscal);
             $this->notaFiscalEntityHandler->save($notaFiscal);
-            $this->getDoctrine()->commit();
+            $this->notaFiscalEntityHandler->getDoctrine()->commit();
             return $notaFiscal;
         } catch (\Exception $e) {
-            $this->getDoctrine()->rollback();
+            $this->notaFiscalEntityHandler->getDoctrine()->rollback();
             $erro = 'Erro ao salvar Nota Fiscal';
             if ($e instanceof ViewException) {
                 $erro .= ' (' . $e->getMessage() . ')';
@@ -435,18 +434,18 @@ class NotaFiscalBusiness extends BaseBusiness
      */
     public function corrigirNCMs(NotaFiscal $notaFiscal): NotaFiscal
     {
-        $this->getDoctrine()->refresh($notaFiscal);
+        $this->notaFiscalEntityHandler->getDoctrine()->refresh($notaFiscal);
         if ($notaFiscal->getItens()) {
             foreach ($notaFiscal->getItens() as $item) {
                 /** @var NCMRepository $repoNCM */
-                $repoNCM = $this->getDoctrine()->getRepository(NCM::class);
+                $repoNCM = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NCM::class);
                 $existe = $repoNCM->findByNCM($item->getNcm());
                 if (!$existe) {
                     $item->setNcm('62179000');
                 }
             }
         }
-        $this->getDoctrine()->flush();
+        $this->notaFiscalEntityHandler->getDoctrine()->flush();
         return $notaFiscal;
     }
 
@@ -503,7 +502,7 @@ class NotaFiscalBusiness extends BaseBusiness
         if ($notaFiscal->getCidadeDestinatario()) {
 
             /** @var MunicipioRepository $repoMunicipio */
-            $repoMunicipio = $this->getDoctrine()->getRepository(Municipio::class);
+            $repoMunicipio = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Municipio::class);
 
             /** @var Municipio $r */
             $r = $repoMunicipio->findOneByFiltersSimpl([
@@ -706,7 +705,7 @@ class NotaFiscalBusiness extends BaseBusiness
             $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
 
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
-            $this->getDoctrine()->flush();
+            $this->notaFiscalEntityHandler->getDoctrine()->flush();
         }
         return $notaFiscal;
     }

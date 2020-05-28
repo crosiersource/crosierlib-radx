@@ -14,7 +14,7 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegistroConferen
  * Class RegistroConferenciaBusiness
  * @package CrosierSource\CrosierLibRadxBundle\Business\Financeiro
  */
-class RegistroConferenciaBusiness extends BaseBusiness
+class RegistroConferenciaBusiness
 {
 
     private RegistroConferenciaEntityHandler $registroConferenciaEntityHandler;
@@ -36,7 +36,7 @@ class RegistroConferenciaBusiness extends BaseBusiness
     public function gerarProximo(RegistroConferencia $registroConferencia)
     {
         $proxMes = DateTimeUtils::incMes($registroConferencia->getDtRegistro());
-        $existeProximo = $this->getDoctrine()->getRepository(RegistroConferencia::class)->findBy(['dtRegistro' => $proxMes, 'descricao' => $registroConferencia->getDescricao()]);
+        $existeProximo = $this->registroConferenciaEntityHandler->getDoctrine()->getRepository(RegistroConferencia::class)->findBy(['dtRegistro' => $proxMes, 'descricao' => $registroConferencia->getDescricao()]);
         if ($existeProximo) {
             throw new ViewException('Próximo registro já existe');
         } else {

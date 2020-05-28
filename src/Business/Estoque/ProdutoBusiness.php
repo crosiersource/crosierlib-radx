@@ -3,7 +3,6 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Estoque;
 
 
-use CrosierSource\CrosierLibBaseBundle\Business\BaseBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -11,7 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
  * Class ProdutoBusiness
  * @package App\Business\Estoque
  */
-class ProdutoBusiness extends BaseBusiness
+class ProdutoBusiness
 {
 
     /** @var EntityManagerInterface */
