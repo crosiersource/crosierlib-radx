@@ -4,9 +4,9 @@ namespace CrosierSource\CrosierLibRadxBundle\Repository\Vendas;
 
 
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
-use CrosierSource\CrosierLibRadxBundle\Entity\RH\Funcionario;
+use CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
-use CrosierSource\CrosierLibRadxBundle\Repository\RH\FuncionarioRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Query\ResultSetMapping;
 
@@ -108,7 +108,7 @@ class VendaRepository extends FilterRepository
     {
 
         $sql = 'SELECT vendedor.id as vendedor_id, sum(valor_total) as total ' .
-            'FROM ven_venda v, rh_funcionario vendedor, ven_plano_pagto pp ' .
+            'FROM ven_venda v, rh_colaborador vendedor, ven_plano_pagto pp ' .
             'WHERE v.vendedor_id = vendedor.id AND ' .
             'v.plano_pagto_id = pp.id AND ' .
             "pp.codigo != '6.00' AND " .
@@ -142,12 +142,12 @@ class VendaRepository extends FilterRepository
         $rc['rs'] = [];
 
 
-        /** @var FuncionarioRepository $repoFuncionario */
-        $repoFuncionario = $this->getEntityManager()->getRepository(Funcionario::class);
+        /** @var ColaboradorRepository $repoColaborador */
+        $repoColaborador = $this->getEntityManager()->getRepository(Colaborador::class);
 
 
         foreach ($results as $r) {
-            $vendedor = $repoFuncionario->find($r['vendedor_id']);
+            $vendedor = $repoColaborador->find($r['vendedor_id']);
             $rc['rs'][] = ['vendedor' => $vendedor, 'total' => $r['total']];
             $total = bcadd($total, $r['total'], 2);
         }

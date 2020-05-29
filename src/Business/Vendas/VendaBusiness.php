@@ -38,8 +38,6 @@ class VendaBusiness
         $venda->subtotal = $totalSubtotais;
         $venda->desconto = $totalDescontos;
         $venda->getValorTotal();
-        $this->doctrine->persist($venda);
-        $this->doctrine->flush();
         return $venda;
     }
 
