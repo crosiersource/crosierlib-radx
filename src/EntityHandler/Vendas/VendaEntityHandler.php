@@ -47,7 +47,7 @@ class VendaEntityHandler extends EntityHandler
             }
             $venda->jsonData['ecommerce_status_descricao'] = $jsonMetadata['campos']['ecommerce_status']['sugestoes'][$venda->jsonData['ecommerce_status']];
         }
-        $this->vendaBusiness->recalcularTotais($venda);
+        // $this->vendaBusiness->recalcularTotais($venda);
     }
 
     public function getEntityClass(): string
