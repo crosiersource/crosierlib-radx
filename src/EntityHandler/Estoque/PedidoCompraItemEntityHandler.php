@@ -24,7 +24,7 @@ class PedidoCompraItemEntityHandler extends EntityHandler
             $ultimaOrdem = 0;
             foreach ($item->pedidoCompra->itens as $item) {
                 if ($item->ordem > $ultimaOrdem) {
-                    $ultimaOrdem = $item->getOrdem();
+                    $ultimaOrdem = $item->ordem;
                 }
             }
             $item->ordem = ($ultimaOrdem + 1);
