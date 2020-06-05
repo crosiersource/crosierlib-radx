@@ -201,7 +201,10 @@
         <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business"
                  class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness">
             <argument type="service" id="doctrine.dbal.default_connection"/>
+            <argument type="service" id="monolog.logger"/>
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
             <argument type="service"
                       id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
             <argument type="service"

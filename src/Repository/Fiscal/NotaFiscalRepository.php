@@ -2,11 +2,11 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Fiscal;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Psr\Log\LoggerInterface;
@@ -20,11 +20,9 @@ use Psr\Log\LoggerInterface;
 class NotaFiscalRepository extends FilterRepository
 {
 
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /** @var AppConfigEntityHandler */
-    private $appConfigEntityHandler;
+    private AppConfigEntityHandler $appConfigEntityHandler;
 
     /**
      * @required
@@ -92,106 +90,20 @@ class NotaFiscalRepository extends FilterRepository
      */
     public function findAllNSUs(): ?array
     {
-        try {
-            $sql = 'SELECT nsu FROM fis_nf WHERE nsu IS NOT NULL ORDER BY nsu';
-            $rsm = new ResultSetMapping();
-            $rsm->addScalarResult('nsu', 'nsu');
-            $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
-            $result = $query->getResult();
-            $ret = [];
-            foreach ($result as $r) {
-                $ret[] = intval($r['nsu']);
-            }
-            return $ret;
-        } catch (NonUniqueResultException $e) {
-            return null;
-        }
-    }
-
-
-    /**
-     * @param $producao
-     * @param $serie
-     * @param $tipoNotaFiscal
-     * @return int
-     * @throws \Exception
-     */
-    public function findProxNumFiscal(string $ambiente, string $serie, string $tipoNotaFiscal)
-    {
-        try {
-
-            $this->getEntityManager()->beginTransaction();
-
-            // Ex.: sequenciaNumNF_HOM_NFE_40
-            $chave = 'sequenciaNumNF_' . $ambiente . '_' . $tipoNotaFiscal . '_' . $serie;
-
-            $rs = $this->selectAppConfigSequenciaNumNFForUpdate($chave);
-
-            if (!$rs || !$rs[0]) {
-                $appConfig = new AppConfig();
-                $appConfig->setAppUUID($_SERVER['CROSIERAPP_UUID']);
-                $appConfig->setChave($chave);
-                $appConfig->setValor(1);
-                $this->appConfigEntityHandler->save($appConfig);
-                $rs = $this->selectAppConfigSequenciaNumNFForUpdate($chave);
-            }
-            $prox = $rs[0]['valor'];
-            $configId = $rs[0]['id'];
-
-            // Verificação se por algum motivo a numeração na fis_nf já não está pra frente...
-            $ultimoNaBase = null;
-            $sqlUltimo = "SELECT nf FROM CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal nf WHERE nf.ambiente = :ambiente AND nf.serie = :serie AND nf.tipoNotaFiscal = :tipoNotaFiscal ORDER BY nf.numero DESC";
-            $query = $this->getEntityManager()->createQuery($sqlUltimo);
-            $query->setParameters([
-                'ambiente' => $ambiente,
-                'serie' => $serie,
-                'tipoNotaFiscal' => $tipoNotaFiscal
-            ]);
-            $query->setMaxResults(1);
-            $results = $query->getResult();
-            if ($results) {
-                /** @var NotaFiscal $u */
-                $u = $results[0];
-                $ultimoNaBase = $u->getNumero();
-                if ($ultimoNaBase && $ultimoNaBase !== $prox) {
-                    $prox = $ultimoNaBase; // para não pular numeração a toa
-                }
-            } else {
-                $prox = 0;
-            }
-            $prox++;
-
-            $updateSql = 'UPDATE cfg_app_config SET valor = :valor WHERE id = :id';
-            $this->getEntityManager()->getConnection()
-                ->executeUpdate($updateSql, ['valor' => $prox, 'id' => $configId]);
-
-            $this->getEntityManager()->commit();
-
-            return $prox;
-        } catch (\Exception $e) {
-            $this->getEntityManager()->rollback();
-            $this->logger->error($e);
-            $this->logger->error('Erro ao pesquisar próximo número de nota fiscal para [' . $producao . '] [' . $serie . '] [' . $tipoNotaFiscal . ']');
-            throw new \RuntimeException('Erro ao pesquisar próximo número de nota fiscal para [' . $producao . '] [' . $serie . '] [' . $tipoNotaFiscal . ']');
-        }
-    }
-
-    /**
-     * @param string $chave
-     * @return mixed
-     */
-    public function selectAppConfigSequenciaNumNFForUpdate(string $chave)
-    {
-        // FOR UPDATE para garantir que ninguém vai alterar este valor antes de terminar esta transação
-        $sql = 'SELECT id, valor FROM cfg_app_config WHERE app_uuid = :app_uuid AND chave LIKE :chave FOR UPDATE';
+        $sql = 'SELECT nsu FROM fis_nf WHERE nsu IS NOT NULL ORDER BY nsu';
         $rsm = new ResultSetMapping();
-        $rsm->addScalarResult('valor', 'valor');
-        $rsm->addScalarResult('id', 'id');
+        $rsm->addScalarResult('nsu', 'nsu');
         $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
-        $query->setParameter('app_uuid', $_SERVER['CROSIERAPP_UUID']);
-        $query->setParameter('chave', $chave);
-        return $query->getResult();
+        $result = $query->getResult();
+        $ret = [];
+        foreach ($result as $r) {
+            $ret[] = intval($r['nsu']);
+        }
+        return $ret;
     }
+
+
+
 
     public function getDefaultOrders()
     {

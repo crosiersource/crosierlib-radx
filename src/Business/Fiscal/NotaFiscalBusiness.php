@@ -3,6 +3,8 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Fiscal;
 
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\Municipio;
+use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
+use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\MunicipioRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
@@ -25,6 +27,8 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntit
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use Doctrine\DBAL\Connection;
+use Doctrine\ORM\Query\ResultSetMapping;
+use Psr\Log\LoggerInterface;
 
 /**
  *
@@ -36,7 +40,11 @@ class NotaFiscalBusiness
 
     private Connection $conn;
 
+    private LoggerInterface $logger;
+
     private SpedNFeBusiness $spedNFeBusiness;
+
+    private AppConfigEntityHandler $appConfigEntityHandler;
 
     private NotaFiscalEntityHandler $notaFiscalEntityHandler;
 
@@ -57,7 +65,9 @@ class NotaFiscalBusiness
     /**
      * NotaFiscalBusiness constructor.
      * @param Connection $conn
+     * @param LoggerInterface $logger
      * @param SpedNFeBusiness $spedNFeBusiness
+     * @param AppConfigEntityHandler $appConfigEntityHandler
      * @param NotaFiscalEntityHandler $notaFiscalEntityHandler
      * @param NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler
      * @param NotaFiscalVendaEntityHandler $notaFiscalVendaEntityHandler
@@ -66,7 +76,9 @@ class NotaFiscalBusiness
      * @param NotaFiscalRepository $repoNotaFiscal
      */
     public function __construct(Connection $conn,
+                                LoggerInterface $logger,
                                 SpedNFeBusiness $spedNFeBusiness,
+                                AppConfigEntityHandler $appConfigEntityHandler,
                                 NotaFiscalEntityHandler $notaFiscalEntityHandler,
                                 NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler,
                                 NotaFiscalVendaEntityHandler $notaFiscalVendaEntityHandler,
@@ -75,7 +87,9 @@ class NotaFiscalBusiness
                                 NotaFiscalRepository $repoNotaFiscal)
     {
         $this->conn = $conn;
+        $this->logger = $logger;
         $this->spedNFeBusiness = $spedNFeBusiness;
+        $this->appConfigEntityHandler = $appConfigEntityHandler;
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
         $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
         $this->notaFiscalVendaEntityHandler = $notaFiscalVendaEntityHandler;
@@ -217,7 +231,7 @@ class NotaFiscalBusiness
                 }
 
                 if ($vendaItem->produto !== null) {
-                    $produto = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Produto::class)->findOneBy(['id' => $vendaItem->produto->getId()]);
+                    $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Produto::class)->findOneBy(['id' => $vendaItem->produto->getId()]);
                     $nfItem->setCodigo($vendaItem->produto->getId());
                     $nfItem->setDescricao(trim($vendaItem->produto->nome));
                 } else {
@@ -283,8 +297,10 @@ class NotaFiscalBusiness
                 $cNF = random_int(10000000, 99999999);
                 $notaFiscal->setCnf($cNF);
                 $mudou = true;
-            }// Rejeição 539: Duplicidade de NF-e, com diferença na Chave de Acesso
-            if (!$notaFiscal->getNumero() || $notaFiscal->getCStat() === 539) {
+            }
+            // Rejeição 539: Duplicidade de NF-e, com diferença na Chave de Acesso
+            // Rejeição 266: 266 - SERIE UTILIZADA FORA DA FAIXA PERMITIDA NO WEB SERVICE (0-889).
+            if (!$notaFiscal->getNumero() || in_array($notaFiscal->getCStat(), [539, 266], true)) {
                 $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
 
                 $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
@@ -301,7 +317,7 @@ class NotaFiscalBusiness
                 $notaFiscal->setSerie($serie);
 
                 /** @var NotaFiscalRepository $repoNotaFiscal */
-                $nnf = $this->repoNotaFiscal->findProxNumFiscal($ambiente, $notaFiscal->getSerie(), $notaFiscal->getTipoNotaFiscal());
+                $nnf = $this->findProxNumFiscal($ambiente, $notaFiscal->getSerie(), $notaFiscal->getTipoNotaFiscal());
                 $notaFiscal->setNumero($nnf);
                 $mudou = true;
             }
@@ -318,8 +334,8 @@ class NotaFiscalBusiness
             }
             return $mudou;
         } catch (\Throwable $e) {
-            $this->getLogger()->error('handleIdeFields');
-            $this->getLogger()->error($e->getMessage());
+            $this->logger->error('handleIdeFields');
+            $this->logger->error($e->getMessage());
             throw new ViewException('Erro ao gerar campos ide');
         }
     }
@@ -339,6 +355,9 @@ class NotaFiscalBusiness
         $mes = $notaFiscal->getDtEmissao()->format('m');
         $mod = TipoNotaFiscal::get($notaFiscal->getTipoNotaFiscal())['codigo'];
         $serie = $notaFiscal->getSerie();
+        if (strlen($serie) > 3) {
+            throw new ViewException('Série deve ter no máximo 3 dígitos');
+        }
         $nNF = $notaFiscal->getNumero();
         $cNF = $notaFiscal->getCnf();
 
@@ -359,10 +378,9 @@ class NotaFiscalBusiness
     /**
      * Salvar uma notaFiscal normal.
      *
-     * @param
-     *            $tipoNotaFiscal
+     * @param NotaFiscal $notaFiscal
      * @return NotaFiscal|null
-     * @throws \Exception
+     * @throws ViewException
      */
     public function saveNotaFiscal(NotaFiscal $notaFiscal): ?NotaFiscal
     {
@@ -524,9 +542,8 @@ class NotaFiscalBusiness
      * Só exibe o botão faturar se tiver nestas condições.
      * Lembrando que o botão "Faturar" serve tanto para faturar a primeira vez, como para tentar faturar novamente nos casos de erros.
      *
-     * @param
-     *            venda
-     * @return
+     * @param NotaFiscal $notaFiscal
+     * @return bool
      */
     public function permiteFaturamento(NotaFiscal $notaFiscal): bool
     {
@@ -544,9 +561,8 @@ class NotaFiscalBusiness
      * Só exibe o botão faturar se tiver nestas condições.
      * Lembrando que o botão "Faturar" serve tanto para faturar a primeira vez, como para tentar faturar novamente nos casos de erros.
      *
-     * @param
-     *            venda
-     * @return
+     * @param NotaFiscal $notaFiscal
+     * @return bool
      */
     public function permiteSalvar(NotaFiscal $notaFiscal)
     {
@@ -891,6 +907,90 @@ class NotaFiscalBusiness
         /** @var NotaFiscal $notaFiscal */
         $notaFiscal = $repoNotaFiscal->find($results[0]['id']);
         return $notaFiscal;
+    }
+
+
+    /**
+     * @param string $ambiente
+     * @param string $serie
+     * @param string $tipoNotaFiscal
+     * @return int
+     */
+    public function findProxNumFiscal(string $ambiente, string $serie, string $tipoNotaFiscal)
+    {
+        try {
+
+            $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
+
+            // Ex.: sequenciaNumNF_HOM_NFE_40
+            $chave = 'sequenciaNumNF_' . $ambiente . '_' . $tipoNotaFiscal . '_' . $serie;
+
+            $rs = $this->selectAppConfigSequenciaNumNFForUpdate($chave);
+
+            if (!$rs || !$rs[0]) {
+                $appConfig = new AppConfig();
+                $appConfig->setAppUUID($_SERVER['CROSIERAPP_UUID']);
+                $appConfig->setChave($chave);
+                $appConfig->setValor(1);
+                $this->appConfigEntityHandler->save($appConfig);
+                $rs = $this->selectAppConfigSequenciaNumNFForUpdate($chave);
+            }
+            $prox = $rs[0]['valor'];
+            $configId = $rs[0]['id'];
+
+            // Verificação se por algum motivo a numeração na fis_nf já não está pra frente...
+            $ultimoNaBase = null;
+            $sqlUltimo = "SELECT nf FROM CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal nf WHERE nf.ambiente = :ambiente AND nf.serie = :serie AND nf.tipoNotaFiscal = :tipoNotaFiscal ORDER BY nf.numero DESC";
+            $query = $this->notaFiscalEntityHandler->getDoctrine()->createQuery($sqlUltimo);
+            $query->setParameters([
+                'ambiente' => $ambiente,
+                'serie' => $serie,
+                'tipoNotaFiscal' => $tipoNotaFiscal
+            ]);
+            $query->setMaxResults(1);
+            $results = $query->getResult();
+            if ($results) {
+                /** @var NotaFiscal $u */
+                $u = $results[0];
+                $ultimoNaBase = $u->getNumero();
+                if ($ultimoNaBase && $ultimoNaBase !== $prox) {
+                    $prox = $ultimoNaBase; // para não pular numeração a toa
+                }
+            } else {
+                $prox = 0;
+            }
+            $prox++;
+
+            $updateSql = 'UPDATE cfg_app_config SET valor = :valor WHERE id = :id';
+            $this->notaFiscalEntityHandler->getDoctrine()->getConnection()
+                ->executeUpdate($updateSql, ['valor' => $prox, 'id' => $configId]);
+
+            $this->notaFiscalEntityHandler->getDoctrine()->commit();
+
+            return $prox;
+        } catch (\Exception $e) {
+            $this->notaFiscalEntityHandler->getDoctrine()->rollback();
+            $this->logger->error($e);
+            $this->logger->error('Erro ao pesquisar próximo número de nota fiscal para [' . $ambiente . '] [' . $serie . '] [' . $tipoNotaFiscal . ']');
+            throw new \RuntimeException('Erro ao pesquisar próximo número de nota fiscal para [' . $ambiente . '] [' . $serie . '] [' . $tipoNotaFiscal . ']');
+        }
+    }
+
+    /**
+     * @param string $chave
+     * @return mixed
+     */
+    public function selectAppConfigSequenciaNumNFForUpdate(string $chave)
+    {
+        // FOR UPDATE para garantir que ninguém vai alterar este valor antes de terminar esta transação
+        $sql = 'SELECT id, valor FROM cfg_app_config WHERE app_uuid = :app_uuid AND chave LIKE :chave FOR UPDATE';
+        $rsm = new ResultSetMapping();
+        $rsm->addScalarResult('valor', 'valor');
+        $rsm->addScalarResult('id', 'id');
+        $query = $this->notaFiscalEntityHandler->getDoctrine()->createNativeQuery($sql, $rsm);
+        $query->setParameter('app_uuid', $_SERVER['CROSIERAPP_UUID']);
+        $query->setParameter('chave', $chave);
+        return $query->getResult();
     }
 
 }
