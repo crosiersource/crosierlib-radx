@@ -224,7 +224,7 @@
         <!-- DistDFeBusiness -->
         <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"
                  class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\DistDFeBusiness">
-            <argument type="service" id="doctrine.dbal.default_connection"/>
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <argument type="service"
                       id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"/>
             <argument type="service"

@@ -278,9 +278,11 @@ class DistDFeBusiness
         $nf->setResumo(false);
         $nf->setXmlNota($xml->asXML());
 
-        $nf->setDocumentoDestinatario(preg_replace("/[^0-9]/", '', $nfeConfigs['cnpj']));
-        $nf->setXNomeDestinatario($nfeConfigs['razaosocial']);
-        $nf->setInscricaoEstadualDestinatario($nfeConfigs['ie']);
+        if ($xml->NFe->infNFe->ide->mod->__toString() !== '65') {
+            $nf->setDocumentoDestinatario($xml->NFe->infNFe->dest->CNPJ->__toString());
+            $nf->setXNomeDestinatario($xml->NFe->infNFe->dest->xNome->__toString());
+            $nf->setInscricaoEstadualDestinatario($xml->NFe->infNFe->dest->IE->__toString());
+        }
 
         $nf->setNumero((int)$xml->NFe->infNFe->ide->nNF->__toString());
         $nf->setCnf((int)$xml->NFe->infNFe->ide->cNF->__toString());
@@ -293,6 +295,7 @@ class DistDFeBusiness
         $nf->setSerie((int)$xml->NFe->infNFe->ide->serie->__toString());
         $nf->setNaturezaOperacao($xml->NFe->infNFe->ide->natOp->__toString());
         $nf->setDtEmissao(DateTimeUtils::parseDateStr($xml->NFe->infNFe->ide->dhEmi->__toString()));
+
         if ($xml->NFe->infNFe->ide->dhSaiEnt->__toString() ?: null) {
             $nf->setDtSaiEnt(DateTimeUtils::parseDateStr($xml->NFe->infNFe->ide->dhSaiEnt->__toString()));
         }
@@ -302,16 +305,19 @@ class DistDFeBusiness
             $nf->setA03idNfReferenciada($xml->NFe->infNFe->ide->NFref->refNFe->__toString());
         }
 
-        $documentoEmitente = $xml->NFe->infNFe->emit->CNPJ->__toString() ?? $xml->NFe->infNFe->emit->CPF->__toString();
-
-        $nf->setDocumentoEmitente($documentoEmitente);
+        $nf->setDocumentoEmitente($xml->NFe->infNFe->emit->CNPJ->__toString());
         $nf->setXNomeEmitente($xml->NFe->infNFe->emit->xNome->__toString());
-        $nf->setInscricaoEstadualDestinatario($xml->NFe->infNFe->emit->ie->__toString()); // ????
-
+        $nf->setInscricaoEstadualEmitente($xml->NFe->infNFe->emit->IE->__toString()); // ????
 
         if ($nf->getId()) {
             $nf->deleteAllItens();
         }
+        $nf->setChaveAcesso($xml->protNFe->infProt->chNFe->__toString());
+        $nf->setProtocoloAutorizacao($xml->protNFe->infProt->nProt->__toString());
+        $nf->setDtProtocoloAutorizacao(DateTimeUtils::parseDateStr($xml->protNFe->infProt->dhRecbto->__toString()));
+
+
+
         /** @var NotaFiscal $nf */
         $nf = $this->notaFiscalEntityHandler->save($nf);
 
