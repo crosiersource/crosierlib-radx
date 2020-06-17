@@ -266,7 +266,7 @@ class DistDFeBusiness
     public function nfeProc2NotaFiscal(\SimpleXMLElement $xml, NotaFiscal $nf = null): NotaFiscal
     {
         if (!$nf) {
-            $nf = $this->doctrine->getRepository(NotaFiscal::class)->findOneBy(['chaveAcesso' => substr($xml->NFe->infNFe['Id'][0], 3)]);
+            $nf = $this->doctrine->getRepository(NotaFiscal::class)->findOneBy(['chaveAcesso' => $xml->protNFe->infProt->chNFe->__toString()]);
             if (!$nf) {
                 $nf = new NotaFiscal();
             }
@@ -366,7 +366,9 @@ class DistDFeBusiness
             $nf->setTranspPesoBruto((float)$xml->NFe->infNFe->transp->vol->pesoB->__toString());
         }
 
-        $nf->setValorTotal((float)$xml->NFe->infNFe->pag->detPag->vPag->__toString());
+        $valorPago = (float)($xml->NFe->infNFe->pag->detPag->vPag ?? $xml->NFe->infNFe->pag->vPag ?? 0.0);
+
+        $nf->setValorTotal($valorPago);
 
         if ($xml->NFe->infNFe->infAdic->infCpl ?? null) {
             $nf->setInfoCompl($xml->NFe->infNFe->infAdic->infCpl->__toString());
