@@ -166,6 +166,44 @@
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.pedido_compra_item_entity_handler"/>
 
 
+        <!-- RomaneioRepository -->
+        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_repository"
+                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioRepository"
+                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+            <tag name="doctrine.repository_service"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioRepository"
+                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_repository"/>
+        <!-- RomaneioEntityHandler -->
+        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_entity_handler"
+                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioEntityHandler"
+                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.fornecedor_entity_handler"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioEntityHandler"
+                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_entity_handler"/>
+
+
+        <!-- RomaneioItemRepository -->
+        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_item_repository"
+                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioItemRepository"
+                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+            <tag name="doctrine.repository_service"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioItemRepository"
+                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_item_repository"/>
+        <!-- RomaneioItemEntityHandler -->
+        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_item_entity_handler"
+                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioItemEntityHandler"
+                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+            <argument type="service" id="security.helper"/>
+            <argument type="service" id="parameter_bag"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioItemEntityHandler"
+                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_item_entity_handler"/>
+
+
         <!-- ProdutoRepository -->
         <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_repository"
                  class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository"
@@ -180,7 +218,8 @@
                  parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
 
             <argument type="service" id="monolog.logger"/>
-            <argument type="service" id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
             <argument type="service" id="Vich\UploaderBundle\Templating\Helper\UploaderHelper"/>
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler"
@@ -285,8 +324,6 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\UnidadeProdutoEntityHandler"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.unidade_produto_entity_handler"/>
-
-
 
 
         <!-- CalculoPreco -->

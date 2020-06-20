@@ -3,10 +3,11 @@
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Estoque;
 
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibBaseBundle\Utils\ViewUtils\Select2JsUtils;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 
 /**
  *
@@ -31,6 +32,14 @@ class ProdutoRepository extends FilterRepository
                 'chave' => 'est_produto_json_metadata'
             ]
         )->getValor();
+    }
+
+    public function getUnidadesSelect2js()
+    {
+        $arrUnidades = json_decode($this->getJsonMetadata(), true)['campos']['unidade']['sugestoes'];
+        $arrUnidades = array_combine($arrUnidades, $arrUnidades);
+
+        return json_encode(Select2JsUtils::arrayToSelect2Data($arrUnidades));
     }
 
 
