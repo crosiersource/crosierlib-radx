@@ -147,12 +147,33 @@ class Venda implements EntityId
     }
 
 
+    /**
+     * @param VendaItem|null $i
+     */
     public function addItem(?VendaItem $i): void
     {
         $i->venda = $this;
         if (!$this->itens->contains($i)) {
             $this->itens->add($i);
         }
+    }
+
+    /**
+     *
+     */
+    public function recalcularTotais()
+    {
+        $subtotal = 0.0;
+        $descontos = 0.0;
+        $valorTotal = 0.0;
+        foreach ($this->itens as $item) {
+            $subtotal = bcadd($subtotal, $item->subtotal, 2);
+            $descontos = bcadd($descontos, $item->desconto, 2);
+            $valorTotal = bcadd($valorTotal, $item->total, 2);
+        }
+        $this->subtotal = $subtotal;
+        $this->desconto = $descontos;
+        $this->valorTotal = $valorTotal;
     }
 
 
