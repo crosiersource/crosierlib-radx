@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Business\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\Municipio;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
@@ -56,6 +57,8 @@ class NotaFiscalBusiness
 
     private NFeUtils $nfeUtils;
 
+    private SyslogBusiness $syslog;
+
     /**
      * Não podemos usar o doctrine->getRepository porque ele não injeta as depêndencias que estão com @ required lá
      * @var NotaFiscalRepository
@@ -73,6 +76,7 @@ class NotaFiscalBusiness
      * @param NotaFiscalVendaEntityHandler $notaFiscalVendaEntityHandler
      * @param NotaFiscalHistoricoEntityHandler $notaFiscalHistoricoEntityHandler
      * @param NFeUtils $nfeUtils
+     * @param SyslogBusiness $syslog
      * @param NotaFiscalRepository $repoNotaFiscal
      */
     public function __construct(Connection $conn,
@@ -84,6 +88,7 @@ class NotaFiscalBusiness
                                 NotaFiscalVendaEntityHandler $notaFiscalVendaEntityHandler,
                                 NotaFiscalHistoricoEntityHandler $notaFiscalHistoricoEntityHandler,
                                 NFeUtils $nfeUtils,
+                                SyslogBusiness $syslog,
                                 NotaFiscalRepository $repoNotaFiscal)
     {
         $this->conn = $conn;
@@ -95,6 +100,7 @@ class NotaFiscalBusiness
         $this->notaFiscalVendaEntityHandler = $notaFiscalVendaEntityHandler;
         $this->notaFiscalHistoricoEntityHandler = $notaFiscalHistoricoEntityHandler;
         $this->nfeUtils = $nfeUtils;
+        $this->syslog = $syslog;
         $this->repoNotaFiscal = $repoNotaFiscal;
     }
 
@@ -117,12 +123,16 @@ class NotaFiscalBusiness
      * @param NotaFiscal $notaFiscal
      * @param bool $alterouTipo
      * @return null|NotaFiscal
+     * @throws ViewException
      */
     public function saveNotaFiscalVenda(Venda $venda, NotaFiscal $notaFiscal, bool $alterouTipo): ?NotaFiscal
     {
         try {
             $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
             $jaExiste = $conn->fetchAll('SELECT * FROM fis_nf_venda WHERE venda_id = :vendaId', ['vendaId' => $venda->getId()]);
+
+            $rNcmPadrao = $conn->fetchAll('SELECT valor FROM cfg_app_config WHERE chave = \'ncm_padrao\'');
+            $ncmPadrao = $rNcmPadrao[0]['valor'] ?? null;
 
             if ($jaExiste) {
                 /** @var NotaFiscalRepository $repoNotaFiscal */
@@ -189,23 +199,14 @@ class NotaFiscalBusiness
             /** @var VendaItem $vendaItem */
             foreach ($venda->itens as $vendaItem) {
 
-
                 $nfItem = new NotaFiscalItem();
                 $nfItem->setNotaFiscal($notaFiscal);
 
-                if ($vendaItem->jsonData['ncm'] ?? null) {
-                    /** @var NCMRepository $repoNCM */
-                    $repoNCM = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NCM::class);
-                    $existe = $repoNCM->findBy(['codigo' => $vendaItem->jsonData['ncm']]);
-                    if (!$existe) {
-                        $nfItem->setNcm('62179000'); // FIXME: RTA
-                    } else {
-                        $nfItem->setNcm($vendaItem->jsonData['ncm']);
-                    }
-                } else {
-                    $nfItem->setNcm('62179000'); // FIXME: RTA
+                $ncm = $vendaItem->jsonData['ncm'] ?? $vendaItem->produto->jsonData['ncm'] ?? $ncmPadrao ?? null;
+                if (!$ncm) {
+                    throw new ViewException('Item da Venda sem NCM');
                 }
-
+                $nfItem->setNcm($ncm);
 
                 $nfItem->setOrdem($ordem++);
 
@@ -273,6 +274,9 @@ class NotaFiscalBusiness
             return $notaFiscal;
         } catch (\Exception $e) {
             $this->notaFiscalEntityHandler->getDoctrine()->rollback();
+            if ($e instanceof ViewException) {
+                throw $e;
+            }
             $erro = 'Erro ao gerar registro da Nota Fiscal';
             throw new \RuntimeException($erro, null, $e);
         }
