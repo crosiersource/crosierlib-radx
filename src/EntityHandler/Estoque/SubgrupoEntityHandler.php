@@ -26,6 +26,7 @@ class SubgrupoEntityHandler extends EntityHandler
         $subgrupo->jsonData['depto_id'] = $subgrupo->grupo->depto->getId();
         $subgrupo->jsonData['depto_codigo'] = $subgrupo->grupo->depto->codigo;
         $subgrupo->jsonData['depto_nome'] = $subgrupo->grupo->depto->nome;
+        $subgrupo->jsonData['grupo_id'] = $subgrupo->grupo->getId();
         $subgrupo->jsonData['grupo_codigo'] = $subgrupo->grupo->codigo;
         $subgrupo->jsonData['grupo_nome'] = $subgrupo->grupo->nome;
     }
