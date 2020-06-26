@@ -263,14 +263,29 @@ class DistDFeBusiness
      * @return NotaFiscal
      * @throws ViewException
      */
-    public function nfeProc2NotaFiscal(\SimpleXMLElement $xml, NotaFiscal $nf = null): NotaFiscal
+    public function nfeProc2NotaFiscal(\SimpleXMLElement $xml, NotaFiscal $nf = null): ?NotaFiscal
     {
+
+        if ($xml->getName() === 'NFe') {
+            $this->logger->info('xml não é "nfeProc", e sim "NFe". Alterando apenas para poder importar...');
+            $xmlStr = strtr($xml->asXML(),
+                [
+                    '<NFe' => '<nfeProc versao="4.00" xmlns="http://www.portalfiscal.inf.br/nfe"><NFe',
+                    '</NFe>' => '</NFe></nfeProc>'
+                ]);
+            $xml = new \SimpleXMLElement($xmlStr);
+        }
+
+        $chaveAcesso = substr($xml->NFe->infNFe['Id']->__toString(), 3);
         if (!$nf) {
-            $nf = $this->doctrine->getRepository(NotaFiscal::class)->findOneBy(['chaveAcesso' => $xml->protNFe->infProt->chNFe->__toString()]);
+            $nf = $this->doctrine->getRepository(NotaFiscal::class)->findOneBy(['chaveAcesso' => $chaveAcesso]);
             if (!$nf) {
                 $nf = new NotaFiscal();
+            } else {
+                return null;
             }
         }
+
 
         $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
         $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
@@ -312,11 +327,10 @@ class DistDFeBusiness
         if ($nf->getId()) {
             $nf->deleteAllItens();
         }
-        $nf->setChaveAcesso($xml->protNFe->infProt->chNFe->__toString());
-        $nf->setProtocoloAutorizacao($xml->protNFe->infProt->nProt->__toString());
-        $nf->setDtProtocoloAutorizacao(DateTimeUtils::parseDateStr($xml->protNFe->infProt->dhRecbto->__toString()));
+        $nf->setChaveAcesso($chaveAcesso);
 
-
+        $nf->setProtocoloAutorizacao($xml->protNFe->infProt->nProt ?? null);
+        $nf->setDtProtocoloAutorizacao(DateTimeUtils::parseDateStr($xml->protNFe->infProt->dhRecbto ?? null));
 
         /** @var NotaFiscal $nf */
         $nf = $this->notaFiscalEntityHandler->save($nf);
