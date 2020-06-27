@@ -132,6 +132,10 @@ class DistDFeBusiness
         } catch (\Exception $e) {
             $this->logger->error('Erro ao obter DFes (NSU: ' . $nsu . ')');
             $this->logger->error($e->getMessage());
+            if ($e instanceof ViewException) {
+                throw $e;
+            }
+            // else
             throw new ViewException('Erro ao obter DFes (NSU: ' . $nsu . ')');
         }
 

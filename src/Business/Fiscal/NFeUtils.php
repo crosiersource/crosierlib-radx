@@ -115,7 +115,7 @@ class NFeUtils
         /** @var AppConfig $appConfig_nfeConfigsIdEmUso */
         $appConfig_nfeConfigsIdEmUso = $repoAppConfig->findOneBy(['appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a', 'chave' => 'nfeConfigsIdEmUso_' . $username]);
         if ($appConfig_nfeConfigsIdEmUso) {
-            return (int) $appConfig_nfeConfigsIdEmUso->getValor();
+            return (int)$appConfig_nfeConfigsIdEmUso->getValor();
         } else {
             $appConfig_nfeConfigsIdEmUso_padrao = $repoAppConfig->findOneBy(['appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a', 'chave' => 'nfeConfigsIdEmUso_padrao']);
             $appConfig_nfeConfigsIdEmUso = new AppConfig();
@@ -159,6 +159,10 @@ class NFeUtils
         } catch (\Exception $e) {
             $this->logger->error('Erro ao obter tools do cachê');
             $this->logger->error($e->getMessage());
+            if ($e instanceof ViewException) {
+                throw $e;
+            }
+            // else
             throw new ViewException('Erro ao obter tools do cachê');
         }
     }
@@ -186,6 +190,7 @@ class NFeUtils
     /**
      * @param int $idNfeConfigs
      * @return Tools
+     * @throws ViewException
      */
     private function getTools(int $idNfeConfigs): Tools
     {
@@ -204,8 +209,15 @@ class NFeUtils
         }
 
         $pfx = base64_decode($configs['certificado']);
+        if (!$pfx) {
+            throw new ViewException('Certificado não encontrado');
+        }
         $pwd = $configs['certificadoPwd'];
-        $certificate = Certificate::readPfx($pfx, $pwd);
+        try {
+            $certificate = Certificate::readPfx($pfx, $pwd);
+        } catch (\Exception $e) {
+            throw new ViewException('Erro ao ler certificado');
+        }
         return new Tools(json_encode($configs), $certificate);
     }
 
