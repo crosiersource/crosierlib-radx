@@ -25,5 +25,25 @@ class OperadoraCartaoRepository extends FilterRepository
         return $qb->from($this->getEntityClass(), 'e')
             ->join(Carteira::class, 'c', 'WITH', 'e.carteira = c');
     }
+
+    /**
+     * @param array $sel
+     * @return false|string|void
+     */
+    public function getSelect2js($sel = [])
+    {
+        $rs = $this->getEntityManager()->getConnection()->fetchAll('SELECT * FROM fin_operadora_cartao ORDER BY descricao');
+        if (!is_array($sel)) {
+            $sel = [$sel];
+        }
+        foreach ($rs as $e) {
+            $r[] = [
+                'id' => $e['id'],
+                'text' => $e['descricao'],
+                'selected' => in_array($e['id'], $sel) ? 'selected' : ''
+            ];
+        }
+        return json_encode($r);
+    }
 }
     

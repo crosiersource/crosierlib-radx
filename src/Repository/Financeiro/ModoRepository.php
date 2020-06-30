@@ -17,4 +17,24 @@ class ModoRepository extends FilterRepository
     {
         return Modo::class;
     }
+
+    /**
+     * @param array $sel
+     * @return false|string|void
+     */
+    public function getSelect2js($sel = [])
+    {
+        $rs = $this->getEntityManager()->getConnection()->fetchAll('SELECT * FROM fin_modo ORDER BY codigo');
+        if (!is_array($sel)) {
+            $sel = [$sel];
+        }
+        foreach ($rs as $e) {
+            $r[] = [
+                'id' => $e['id'],
+                'text' => $e['codigo'] . ' - ' . $e['descricao'],
+                'selected' => in_array($e['id'], $sel) ? 'selected' : ''
+            ];
+        }
+        return json_encode($r);
+    }
 }

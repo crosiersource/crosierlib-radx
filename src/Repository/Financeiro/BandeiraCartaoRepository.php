@@ -66,4 +66,24 @@ class BandeiraCartaoRepository extends FilterRepository
             throw new ViewException('Bandeira não encontrada para "' . $str . '"');
         }
     }
+
+    /**
+     * @param array $sel
+     * @return false|string|void
+     */
+    public function getSelect2js($sel = [])
+    {
+        $rs = $this->getEntityManager()->getConnection()->fetchAll('SELECT * FROM fin_bandeira_cartao ORDER BY descricao');
+        if (!is_array($sel)) {
+            $sel = [$sel];
+        }
+        foreach ($rs as $e) {
+            $r[] = [
+                'id' => $e['id'],
+                'text' => $e['descricao'],
+                'selected' => in_array($e['id'], $sel) ? 'selected' : ''
+            ];
+        }
+        return json_encode($r);
+    }
 }
