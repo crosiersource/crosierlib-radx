@@ -269,7 +269,6 @@ class DistDFeBusiness
      */
     public function nfeProc2NotaFiscal(\SimpleXMLElement $xml, NotaFiscal $nf = null): ?NotaFiscal
     {
-
         if ($xml->getName() === 'NFe') {
             $this->logger->info('xml não é "nfeProc", e sim "NFe". Alterando apenas para poder importar...');
             $xmlStr = strtr($xml->asXML(),
