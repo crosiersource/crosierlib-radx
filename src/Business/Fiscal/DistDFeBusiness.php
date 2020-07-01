@@ -285,8 +285,6 @@ class DistDFeBusiness
             $nf = $this->doctrine->getRepository(NotaFiscal::class)->findOneBy(['chaveAcesso' => $chaveAcesso]);
             if (!$nf) {
                 $nf = new NotaFiscal();
-            } else {
-                return null;
             }
         }
 
