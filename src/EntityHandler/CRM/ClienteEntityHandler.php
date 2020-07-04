@@ -18,4 +18,14 @@ class ClienteEntityHandler extends EntityHandler
     {
         return Cliente::class;
     }
+
+    public function beforeSave(/** @var Cliente $cliente */ $cliente)
+    {
+        if (strlen($cliente->documento) === 14) {
+            $cliente->jsonData['tipo_pessoa'] = 'PJ';
+        } else {
+            $cliente->jsonData['tipo_pessoa'] = 'PF';
+        }
+    }
+
 }

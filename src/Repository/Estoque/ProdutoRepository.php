@@ -22,6 +22,9 @@ class ProdutoRepository extends FilterRepository
         return Produto::class;
     }
 
+    /**
+     * @return mixed
+     */
     public function getJsonMetadata()
     {
         /** @var AppConfigRepository $repoAppConfig */
