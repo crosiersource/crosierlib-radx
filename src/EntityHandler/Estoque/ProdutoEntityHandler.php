@@ -2,6 +2,13 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque;
 
+use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
+use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
+use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
+use CrosierSource\CrosierLibBaseBundle\Utils\ImageUtils\ImageUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
@@ -9,12 +16,6 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoImagem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoImagemRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
-use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
-use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
-use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
-use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
-use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
-use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -86,18 +87,60 @@ class ProdutoEntityHandler extends EntityHandler
         $produto->jsonData['subgrupo_codigo'] = $produto->subgrupo->codigo;
         $produto->jsonData['subgrupo_nome'] = $produto->subgrupo->nome;
 
+
         /** @var ProdutoImagemRepository $repoProdutoImagem */
         $repoProdutoImagem = $this->getDoctrine()->getRepository(ProdutoImagem::class);
         $imagens = $repoProdutoImagem->findBy(['produto' => $produto], ['ordem' => 'ASC']);
 
         $produto->jsonData['qtde_imagens'] = count($imagens);
-        $produto->jsonData['imagem1'] = $imagens ? $imagens[0]->getImageName() : '';
+
+        // Se já tem registrado a imagem1...
+        if ($produto->jsonData['imagem1'] ?? false) {
+            $primeiraDasImagens_semExtensao = substr($imagens[0]->getImageName(), 0, strpos($imagens[0]->getImageName(), '.'));
+            $imagem1_semExtensao = substr($produto->jsonData['imagem1'], 0, strpos($produto->jsonData['imagem1'], '.'));
+            // Verifica se é a mesma da primeira imagem, porém já em thumbnail. Se não...
+            if ($primeiraDasImagens_semExtensao . '_thumbnail' !== $imagem1_semExtensao) {
+                $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
+                $produto->jsonData['imagem1'] = $imgName_thumbnail;
+            }
+        } else {
+            $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
+            $produto->jsonData['imagem1'] = $imgName_thumbnail;
+        }
+
+
 
         if (!isset($produto->jsonData['ecommerce_id'])) {
             $produto->jsonData['ecommerce_id'] = 0;
         }
 
         $this->calcPorcentPreench($produto);
+    }
+
+    /**
+     * @param Produto $produto
+     * @param string|null $img
+     * @return string
+     */
+    public function gerarThumbnail(Produto $produto, string $img = null)
+    {
+        $url = $_SERVER['CROSIERAPP_URL'] . '/images/produtos/' . $produto->depto->getId() . '/' . $produto->grupo->getId() . '/' . $produto->subgrupo->getId() . '/' . $img;
+
+        $imgUtils = new ImageUtils();
+        $imgUtils->load($url);
+
+        $pathinfo = pathinfo($url);
+        $parsedUrl = parse_url($url);
+
+        $imgUtils->resizeToWidth(50);
+
+        // '%kernel.project_dir%/public/images/produtos'
+        $thumbnail = $_SERVER['DOCUMENT_ROOT'] .
+            str_replace($pathinfo['basename'], '', $parsedUrl['path']) .
+            $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
+        $imgUtils->save($thumbnail);
+
+        return $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
     }
 
 
