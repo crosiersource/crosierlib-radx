@@ -213,6 +213,8 @@
                       id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"/>
             <argument type="service"
                       id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"/>
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
             <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
             <argument type="service"

@@ -511,6 +511,15 @@ class Movimentacao implements EntityId
     private $obs;
 
     /**
+     *
+     * @ORM\Column(name="json_data", type="json")
+     * @var null|array
+     * @NotUppercase()
+     * @Groups("entity")
+     */
+    public ?array $jsonData = null;
+
+    /**
      * @return null|string
      */
     public function getUUID(): ?string

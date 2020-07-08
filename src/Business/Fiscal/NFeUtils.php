@@ -28,7 +28,7 @@ class NFeUtils
 
     private AppConfigEntityHandler $appConfigEntityHandler;
 
-    private Security $security;
+    public Security $security;
 
 
     /**

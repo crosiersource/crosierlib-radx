@@ -572,6 +572,15 @@ class NotaFiscal implements EntityId
 
     /**
      *
+     * @ORM\Column(name="json_data", type="json")
+     * @var null|array
+     * @NotUppercase()
+     * @Groups("entity")
+     */
+    public ?array $jsonData = null;
+
+    /**
+     *
      * @var NotaFiscalItem[]|ArrayCollection
      *
      * @ORM\OneToMany(

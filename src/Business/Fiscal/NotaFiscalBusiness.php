@@ -8,8 +8,16 @@ use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\MunicipioRepository;
+use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Fatura;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\FinalidadeNF;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\IndicadorFormaPagto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NCM;
@@ -21,6 +29,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalVenda;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\TipoNotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler;
@@ -55,6 +64,8 @@ class NotaFiscalBusiness
 
     private NotaFiscalHistoricoEntityHandler $notaFiscalHistoricoEntityHandler;
 
+    private MovimentacaoEntityHandler $movimentacaoEntityHandler;
+
     private NFeUtils $nfeUtils;
 
     private SyslogBusiness $syslog;
@@ -75,6 +86,7 @@ class NotaFiscalBusiness
      * @param NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler
      * @param NotaFiscalVendaEntityHandler $notaFiscalVendaEntityHandler
      * @param NotaFiscalHistoricoEntityHandler $notaFiscalHistoricoEntityHandler
+     * @param MovimentacaoEntityHandler $movimentacaoEntityHandler
      * @param NFeUtils $nfeUtils
      * @param SyslogBusiness $syslog
      * @param NotaFiscalRepository $repoNotaFiscal
@@ -87,6 +99,7 @@ class NotaFiscalBusiness
                                 NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler,
                                 NotaFiscalVendaEntityHandler $notaFiscalVendaEntityHandler,
                                 NotaFiscalHistoricoEntityHandler $notaFiscalHistoricoEntityHandler,
+                                MovimentacaoEntityHandler $movimentacaoEntityHandler,
                                 NFeUtils $nfeUtils,
                                 SyslogBusiness $syslog,
                                 NotaFiscalRepository $repoNotaFiscal)
@@ -99,6 +112,7 @@ class NotaFiscalBusiness
         $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
         $this->notaFiscalVendaEntityHandler = $notaFiscalVendaEntityHandler;
         $this->notaFiscalHistoricoEntityHandler = $notaFiscalHistoricoEntityHandler;
+        $this->movimentacaoEntityHandler = $movimentacaoEntityHandler;
         $this->nfeUtils = $nfeUtils;
         $this->syslog = $syslog;
         $this->repoNotaFiscal = $repoNotaFiscal;
@@ -995,6 +1009,110 @@ class NotaFiscalBusiness
         $query->setParameter('app_uuid', $_SERVER['CROSIERAPP_UUID']);
         $query->setParameter('chave', $chave);
         return $query->getResult();
+    }
+
+    /**
+     * Gera uma fatura e suas movimentações a partir dos dados de uma nota fiscal.
+     *
+     * @param NotaFiscal $notaFiscal
+     * @throws ViewException
+     */
+    public function gerarFatura(NotaFiscal $notaFiscal)
+    {
+        if ($notaFiscal->jsonData['fatura'] ?? false) {
+            if ($notaFiscal->jsonData['fatura']['fatura_id'] ?? false) {
+                throw new ViewException('Nota Fiscal com fatura já vinculada: ' . $notaFiscal->jsonData['fatura']['fatura_id']);
+            }
+
+            $conn = $this->movimentacaoEntityHandler->getDoctrine()->getConnection();
+            $conn->beginTransaction();
+
+
+            try {
+                $fatura = [];
+                $fatura['json_data']['notaFiscal_id'] = $notaFiscal->getId();
+                $fatura['json_data']['notaFiscal_nFat'] = $notaFiscal->jsonData['fatura']['nFat'];
+                $fatura['json_data'] = json_encode($fatura['json_data']);
+                $fatura['dt_fatura'] = $notaFiscal->getDtEmissao()->format('Y-m-d');
+                $fatura['fechada'] = true;
+                $fatura['inserted'] = (new \DateTime())->format('Y-m-d H:i:s');
+                $fatura['updated'] = (new \DateTime())->format('Y-m-d H:i:s');
+                $fatura['user_inserted_id'] = $this->nfeUtils->security->getUser() ? $this->nfeUtils->security->getUser()->getId() : 1;
+                $fatura['user_updated_id'] = $this->nfeUtils->security->getUser() ? $this->nfeUtils->security->getUser()->getId() : 1;
+                $fatura['estabelecimento_id'] = 1;
+
+                $conn->insert('fin_fatura', $fatura);
+                $faturaId = $conn->lastInsertId();
+
+                $doctrine = $this->movimentacaoEntityHandler->getDoctrine();
+
+                $repoFatura = $doctrine->getRepository(Fatura::class);
+                /** @var Fatura $fatura */
+                $fatura = $repoFatura->find($faturaId);
+
+
+                $repoTipoLancto = $doctrine->getRepository(TipoLancto::class);
+                /** @var TipoLancto $tipoLancto_parcelamento */
+                $tipoLancto_parcelamento = $repoTipoLancto->findOneBy(['codigo' => 21]);
+
+                $repoModo = $doctrine->getRepository(Modo::class);
+                /** @var Modo $modo_boleto */
+                $modo_boleto = $repoModo->findOneBy(['codigo' => 6]);
+
+                $repoCarteira = $doctrine->getRepository(Carteira::class);
+                /** @var Carteira $carteira_indefinida */
+                $carteira_indefinida = $repoCarteira->findOneBy(['codigo' => 999]);
+
+                $repoCategoria = $doctrine->getRepository(Categoria::class);
+                /** @var Categoria $categoria_CustosMercadoria */
+                $categoria_CustosMercadoria = $repoCategoria->findOneBy(['codigo' => 202001]);
+
+                $repoCentroCusto = $doctrine->getRepository(CentroCusto::class);
+                /** @var CentroCusto $centroCusto */
+                $centroCusto = $repoCentroCusto->findOneBy(['codigo' => 1]);
+
+                $qtdeTotal = count($notaFiscal->jsonData['fatura']['duplicatas']);
+                $i = 1;
+                foreach ($notaFiscal->jsonData['fatura']['duplicatas'] as $duplicada) {
+
+                    $movimentacao = new Movimentacao();
+
+                    $movimentacao->setFatura($fatura);
+                    $movimentacao->setTipoLancto($tipoLancto_parcelamento);
+                    $movimentacao->setModo($modo_boleto);
+                    $movimentacao->setCarteira($carteira_indefinida);
+                    $movimentacao->setCategoria($categoria_CustosMercadoria);
+                    $movimentacao->setCentroCusto($centroCusto);
+                    $movimentacao->setStatus('ABERTA');
+
+                    $movimentacao->setDtMoviment($notaFiscal->getDtEmissao());
+                    $movimentacao->setDtVencto(DateTimeUtils::parseDateStr($duplicada['dVenc']));
+                    $movimentacao->setValor($duplicada['vDup']);
+                    $movimentacao->setParcelamento(true);
+                    $movimentacao->setCadeiaOrdem($i);
+                    $movimentacao->setCadeiaQtde($qtdeTotal);
+
+                    $movimentacao->jsonData['notafiscal_id'] = $notaFiscal->getId();
+
+                    $movimentacao->setDescricao('DUPLICATA ' . $duplicada['nDup'] . ' DE ' . $notaFiscal->getXNomeEmitente() . ' ' . StringUtils::strpad($i, 2) . '/' . StringUtils::strpad($qtdeTotal, 2));
+
+                    $movimentacao->setQuitado(false);
+                    $this->movimentacaoEntityHandler->save($movimentacao);
+                    $i++;
+                }
+
+                $notaFiscal->jsonData['fatura']['fatura_id'] = $faturaId;
+                $this->notaFiscalEntityHandler->save($notaFiscal);
+
+
+                $conn->commit();
+            } catch (\Exception $e) {
+                if ($e instanceof ViewException) {
+                    throw $e;
+                }
+                $this->syslog->err('Erro ao gerar fatura', $e->getTraceAsString());
+            }
+        }
     }
 
 }

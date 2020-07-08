@@ -287,6 +287,7 @@ class DistDFeBusiness
             }
         }
 
+        $nf_jsonData = $nf->jsonData ?? [];
 
         $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
         $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
@@ -380,6 +381,41 @@ class DistDFeBusiness
         if ($xml->NFe->infNFe->transp->vol->pesoB ?? null) {
             $nf->setTranspPesoBruto((float)$xml->NFe->infNFe->transp->vol->pesoB->__toString());
         }
+        if ($xml->NFe->infNFe->transp->transporta->xNome ?? null) {
+            $nf->setTranspNome($xml->NFe->infNFe->transp->transporta->xNome->__toString());
+        }
+        if ($xml->NFe->infNFe->transp->transporta->CNPJ ?? null) {
+            $nf->setTranspDocumento($xml->NFe->infNFe->transp->transporta->CNPJ->__toString());
+        }
+        if ($xml->NFe->infNFe->transp->transporta->IE ?? null) {
+            $nf->setTranspInscricaoEstadual($xml->NFe->infNFe->transp->transporta->IE->__toString());
+        }
+        if ($xml->NFe->infNFe->transp->transporta->xEnder ?? null) {
+            $nf->setTranspEndereco($xml->NFe->infNFe->transp->transporta->xEnder->__toString());
+        }
+        if ($xml->NFe->infNFe->transp->transporta->xMun ?? null) {
+            $nf->setTranspCidade($xml->NFe->infNFe->transp->transporta->xMun->__toString());
+        }
+        if ($xml->NFe->infNFe->transp->transporta->xMun ?? null) {
+            $nf->setTranspEstado($xml->NFe->infNFe->transp->transporta->UF->__toString());
+        }
+
+        if ($xml->NFe->infNFe->cobr->fat ?? null) {
+            $nf_jsonData['fatura'] = [
+                'nFat' => $xml->NFe->infNFe->cobr->fat->nFat->__toString(),
+                'vOrig' => $xml->NFe->infNFe->cobr->fat->vOrig->__toString(),
+                'vDesc' => $xml->NFe->infNFe->cobr->fat->vDesc->__toString(),
+                'vLiq' => $xml->NFe->infNFe->cobr->fat->vLiq->__toString()
+            ];
+            foreach ($xml->NFe->infNFe->cobr->dup as $dup) {
+                $nf_jsonData['fatura']['duplicatas'][] = [
+                    'nDup' => $dup->nDup->__toString(),
+                    'dVenc' => $dup->dVenc->__toString(),
+                    'vDup' => $dup->vDup->__toString(),
+                ];
+            }
+        }
+
 
         $valorPago = (float)($xml->NFe->infNFe->pag->detPag->vPag ?? $xml->NFe->infNFe->pag->vPag ?? 0.0);
 
@@ -388,6 +424,9 @@ class DistDFeBusiness
         if ($xml->NFe->infNFe->infAdic->infCpl ?? null) {
             $nf->setInfoCompl($xml->NFe->infNFe->infAdic->infCpl->__toString());
         }
+
+
+        $nf->jsonData = $nf_jsonData;
 
         /** @var NotaFiscal $nf */
         $nf = $this->notaFiscalEntityHandler->save($nf);
