@@ -150,7 +150,7 @@ class NotaFiscalEntityHandler extends EntityHandler
         foreach ($notaFiscal->getItens() as $item) {
             $item->calculaTotais();
             $subTotal = bcadd($subTotal, DecimalUtils::round($item->getSubTotal()), 2);
-            $descontos = bcadd($descontos, DecimalUtils::round(($item->getValorDesconto() ? $item->getValorDesconto() : 0.0), 2));
+            $descontos = bcadd($descontos, DecimalUtils::round($item->getValorDesconto() ? $item->getValorDesconto() : 0.0), 2);
         }
         $notaFiscal->setSubTotal($subTotal);
         $notaFiscal->setTotalDescontos($descontos);
