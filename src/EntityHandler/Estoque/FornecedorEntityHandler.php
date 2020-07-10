@@ -17,6 +17,16 @@ class FornecedorEntityHandler extends EntityHandler
         return Fornecedor::class;
     }
 
+    public function beforeSave(/** @var Fornecedor $fornecedor */ $fornecedor)
+    {
+        $fornecedor->documento = preg_replace("/[^0-9]/", "", $fornecedor->documento);
+        if (strlen($fornecedor->documento) === 14) {
+            $fornecedor->jsonData['tipo_pessoa'] = 'PJ';
+        } else {
+            $fornecedor->jsonData['tipo_pessoa'] = 'PF';
+        }
+    }
+
     /**
      * @param NotaFiscal $notaFiscal
      * @return Fornecedor
