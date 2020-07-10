@@ -237,8 +237,8 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $movimentacao->setParcelamento($movimentacao->getCadeia() &&
             !$movimentacao->getRecorrente() &&
-            !$movimentacao->isTransferenciaEntradaCaixa() &&
-            !$movimentacao->isTransferenciaEntreCarteiras());
+            $movimentacao->getTipoLancto()->getCodigo() !== 60 &&
+            $movimentacao->getTipoLancto()->getCodigo() !== 61);
 
 
         // Regras para movimentações com cheque
