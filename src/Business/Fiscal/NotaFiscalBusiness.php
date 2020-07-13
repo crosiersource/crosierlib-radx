@@ -1061,7 +1061,7 @@ class NotaFiscalBusiness
 
                 $repoCarteira = $doctrine->getRepository(Carteira::class);
                 /** @var Carteira $carteira_indefinida */
-                $carteira_indefinida = $repoCarteira->findOneBy(['codigo' => 999]);
+                $carteira_indefinida = $repoCarteira->findOneBy(['codigo' => 99]);
 
                 $repoCategoria = $doctrine->getRepository(Categoria::class);
                 /** @var Categoria $categoria_CustosMercadoria */
