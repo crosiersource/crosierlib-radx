@@ -2,9 +2,9 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
-use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
@@ -28,11 +28,16 @@ class VendaEntityHandler extends EntityHandler
      * @param EntityManagerInterface $doctrine
      * @param Security $security
      * @param ParameterBagInterface $parameterBag
+     * @param SyslogBusiness $syslog
      * @param VendaBusiness $vendaBusiness
      */
-    public function __construct(EntityManagerInterface $doctrine, Security $security, ParameterBagInterface $parameterBag, VendaBusiness $vendaBusiness)
+    public function __construct(EntityManagerInterface $doctrine,
+                                Security $security,
+                                ParameterBagInterface $parameterBag,
+                                SyslogBusiness $syslog,
+                                VendaBusiness $vendaBusiness)
     {
-        parent::__construct($doctrine, $security, $parameterBag);
+        parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->vendaBusiness = $vendaBusiness;
     }
 

@@ -46,4 +46,35 @@ class ProdutoRepository extends FilterRepository
     }
 
 
+    /**
+     * @param string $str
+     * @return array
+     */
+    public function findProdutosByNomeOuFinalCodigo_select2js(string $str, int $max = 20): array
+    {
+        $sql = 'SELECT prod.id, prod.nome, prod.json_data, preco.preco_prazo FROM est_produto prod LEFT JOIN est_produto_preco preco ON prod.id = preco.produto_id ' .
+            'WHERE preco.atual AND (' .
+            'prod.nome LIKE :nome OR ' .
+            'json_data->>"$.codigo" LIKE :codigo) ORDER BY prod.nome LIMIT ' . $max;
+
+        $rs = $this->getEntityManager()->getConnection()->fetchAll($sql,
+            [
+                'nome' => '%' . $str . '%',
+                'codigo' => '%' . $str
+            ]);
+
+        $results = [];
+
+        foreach ($rs as $r) {
+            $jsonData = json_decode($r['json_data'], true);
+            $results[] = [
+                'id' => $r['id'],
+                'text' => $jsonData['codigo'] . ' - ' . $r['nome'],
+                'preco_prazo' => $r['preco_prazo']
+            ];
+        }
+
+        return $results;
+    }
+
 }

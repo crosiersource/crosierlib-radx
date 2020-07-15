@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
@@ -47,11 +48,12 @@ class ProdutoEntityHandler extends EntityHandler
     public function __construct(EntityManagerInterface $doctrine,
                                 Security $security,
                                 ParameterBagInterface $parameterBag,
+                                SyslogBusiness $syslog,
                                 LoggerInterface $logger,
                                 AppConfigEntityHandler $appConfigEntityHandler,
                                 UploaderHelper $uploaderHelper)
     {
-        parent::__construct($doctrine, $security, $parameterBag);
+        parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->logger = $logger;
         $this->appConfigEntityHandler = $appConfigEntityHandler;
         $this->uploaderHelper = $uploaderHelper;

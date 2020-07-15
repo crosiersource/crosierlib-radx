@@ -15,8 +15,7 @@ use Symfony\Component\Security\Core\Security;
 class DistDFeEntityHandler extends EntityHandler
 {
 
-    /** @var Security */
-    protected $security;
+    protected Security $security;
 
     /** @var NotaFiscalBusiness */
     private $notaFiscalBusiness;
