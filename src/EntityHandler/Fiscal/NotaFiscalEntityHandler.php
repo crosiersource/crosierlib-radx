@@ -107,19 +107,11 @@ class NotaFiscalEntityHandler extends EntityHandler
         $notaFiscal->setCnf(null);
         $notaFiscal->setMotivoCancelamento(null);
         $notaFiscal->setProtocoloAutorizacao(null);
+        $notaFiscal->setNRec(null);
+        $notaFiscal->setProtocoloAutorizacao(null);
+        $notaFiscal->setDtProtocoloAutorizacao(null);
         $notaFiscal->setXmlNota(null);
-
-        $notaFiscal->setDocumentoEmitente(null);
-        $notaFiscal->setXNomeEmitente(null);
-        $notaFiscal->setInscricaoEstadualEmitente(null);
-        $notaFiscal->setLogradouroEmitente(null);
-        $notaFiscal->setNumeroEmitente(null);
-        $notaFiscal->setBairroEmitente(null);
-        $notaFiscal->setCepEmitente(null);
-        $notaFiscal->setCidadeEmitente(null);
-        $notaFiscal->setEstadoEmitente(null);
-        $notaFiscal->setFoneEmitente(null);
-
+        $notaFiscal->setResumo(null);
 
         if ($notaFiscal->getItens() && $notaFiscal->getItens()->count() > 0) {
             $oldItens = clone $notaFiscal->getItens();

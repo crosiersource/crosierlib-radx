@@ -971,6 +971,7 @@ class NotaFiscalBusiness
 
 
     /**
+     * @param string $documentoEmitente
      * @param string $ambiente
      * @param string $serie
      * @param string $tipoNotaFiscal
@@ -1000,11 +1001,11 @@ class NotaFiscalBusiness
 
             // Verificação se por algum motivo a numeração na fis_nf já não está pra frente...
             $ultimoNaBase = null;
-            $sqlUltimoNumero = 'SELECT max(numero) as numero FROM fis_nf WHERE documento_emitente = :documento_emitente AND ambiente = :ambiente AND serie = :serie AND tipo = :tipoNotaFiscal';
+            $sqlUltimoNumero = 'SELECT max(numero) as numero FROM fis_nf WHERE cstat = 100 AND documento_emitente = :documento_emitente AND ambiente = :ambiente AND serie = :serie AND tipo = :tipoNotaFiscal';
 
             $rUltimoNumero = $conn->fetchAll($sqlUltimoNumero,
                 [
-                    'documento_emitente' => $documentoEmiente,
+                    'documento_emitente' => $documentoEmitente,
                     'ambiente' => $ambiente,
                     'serie' => $serie,
                     'tipoNotaFiscal' => $tipoNotaFiscal
