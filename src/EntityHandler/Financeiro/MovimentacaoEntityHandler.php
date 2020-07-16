@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\DiaUtil;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\Pessoa;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
@@ -55,10 +56,11 @@ class MovimentacaoEntityHandler extends EntityHandler
     public function __construct(EntityManagerInterface $doctrine,
                                 Security $security,
                                 ParameterBagInterface $parameterBag,
+                                SyslogBusiness $syslog,
                                 CadeiaEntityHandler $cadeiaEntityHandler,
                                 LoggerInterface $logger)
     {
-        parent::__construct($doctrine, $security, $parameterBag);
+        parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->cadeiaEntityHandler = $cadeiaEntityHandler;
         $this->logger = $logger;
     }

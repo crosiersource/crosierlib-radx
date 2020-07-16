@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
@@ -25,14 +26,16 @@ class NotaFiscalItemEntityHandler extends EntityHandler
      * @param EntityManagerInterface $doctrine
      * @param Security $security
      * @param ParameterBagInterface $parameterBag
+     * @param SyslogBusiness $syslog
      * @param NotaFiscalEntityHandler $notaFiscalEntityHandler
      */
     public function __construct(EntityManagerInterface $doctrine,
                                 Security $security,
                                 ParameterBagInterface $parameterBag,
+                                SyslogBusiness $syslog,
                                 NotaFiscalEntityHandler $notaFiscalEntityHandler)
     {
-        parent::__construct($doctrine, $security, $parameterBag);
+        parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
     }
 
