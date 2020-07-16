@@ -73,17 +73,19 @@ class NotaFiscalEntityHandler extends EntityHandler
 
         $notaFiscalBusiness = $this->container->get(NotaFiscalBusiness::class);
 
-        $arrEmitente = $notaFiscalBusiness->getEmitenteFromNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
+        if ($notaFiscalBusiness->isCnpjEmitente($notaFiscal->getDocumentoEmitente())) {
+            $arrEmitente = $notaFiscalBusiness->getEmitenteFromNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
 
-        $notaFiscal->setXNomeEmitente($arrEmitente['razaosocial']);
-        $notaFiscal->setInscricaoEstadualEmitente($arrEmitente['ie']);
-        $notaFiscal->setLogradouroEmitente($arrEmitente['logradouro']);
-        $notaFiscal->setNumeroEmitente($arrEmitente['numero']);
-        $notaFiscal->setBairroEmitente($arrEmitente['bairro']);
-        $notaFiscal->setCepEmitente($arrEmitente['cep']);
-        $notaFiscal->setCidadeEmitente($arrEmitente['cidade']);
-        $notaFiscal->setEstadoEmitente($arrEmitente['estado']);
-        $notaFiscal->setFoneEmitente($arrEmitente['fone1']);
+            $notaFiscal->setXNomeEmitente($arrEmitente['razaosocial']);
+            $notaFiscal->setInscricaoEstadualEmitente($arrEmitente['ie']);
+            $notaFiscal->setLogradouroEmitente($arrEmitente['logradouro']);
+            $notaFiscal->setNumeroEmitente($arrEmitente['numero']);
+            $notaFiscal->setBairroEmitente($arrEmitente['bairro']);
+            $notaFiscal->setCepEmitente($arrEmitente['cep']);
+            $notaFiscal->setCidadeEmitente($arrEmitente['cidade']);
+            $notaFiscal->setEstadoEmitente($arrEmitente['estado']);
+            $notaFiscal->setFoneEmitente($arrEmitente['fone1']);
+        }
     }
 
     /**
