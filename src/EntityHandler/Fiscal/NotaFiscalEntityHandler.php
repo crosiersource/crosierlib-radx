@@ -5,6 +5,7 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
+use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use Doctrine\ORM\EntityManagerInterface;
@@ -69,6 +70,20 @@ class NotaFiscalEntityHandler extends EntityHandler
         if ($notaFiscal->getChaveAcesso() === '') {
             $notaFiscal->setChaveAcesso(null);
         }
+
+        $notaFiscalBusiness = $this->container->get(NotaFiscalBusiness::class);
+
+        $arrEmitente = $notaFiscalBusiness->getEmitenteFromNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
+
+        $notaFiscal->setXNomeEmitente($arrEmitente['razaosocial']);
+        $notaFiscal->setInscricaoEstadualEmitente($arrEmitente['ie']);
+        $notaFiscal->setLogradouroEmitente($arrEmitente['logradouro']);
+        $notaFiscal->setNumeroEmitente($arrEmitente['numero']);
+        $notaFiscal->setBairroEmitente($arrEmitente['bairro']);
+        $notaFiscal->setCepEmitente($arrEmitente['cep']);
+        $notaFiscal->setCidadeEmitente($arrEmitente['cidade']);
+        $notaFiscal->setEstadoEmitente($arrEmitente['estado']);
+        $notaFiscal->setFoneEmitente($arrEmitente['fone1']);
     }
 
     /**

@@ -887,9 +887,51 @@ class NotaFiscalBusiness
         $emitentes = [];
         foreach ($nfeConfigs as $nfeConfig) {
             $dados = json_decode($nfeConfig['valor'], true);
-            $emitentes[] = ['cnpj' => $dados['cnpj'], 'razaosocial' => $dados['razaosocial']];
+            $emitentes[] = [
+                'cnpj' => $dados['cnpj'],
+                'razaosocial' => $dados['razaosocial'],
+                'ie' => $dados['ie'],
+                'logradouro' => $dados['enderEmit_xLgr'],
+                'numero' => $dados['enderEmit_nro'],
+                'bairro' => $dados['enderEmit_xBairro'],
+                'cep' => $dados['enderEmit_cep'],
+                'cidade' => $dados['enderEmit_xCidade'] ?? '',
+                'estado' => $dados['siglaUF'],
+                'fone1' => $dados['fone1'] ?? '',
+            ];
         }
         return $emitentes;
+    }
+
+    /**
+     * @param string $cnpj
+     * @return bool
+     */
+    public function isCnpjEmitente(string $cnpj): bool
+    {
+        $emitentes = $this->getEmitentes();
+        foreach ($emitentes as $emitente) {
+            if ($emitente['cnpj'] === $cnpj) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param string $cnpj
+     * @return array
+     * @throws ViewException
+     */
+    public function getEmitenteFromNFeConfigsByCNPJ(string $cnpj): array
+    {
+        $emitentes = $this->getEmitentes();
+        foreach ($emitentes as $emitente) {
+            if ($emitente['cnpj'] === $cnpj) {
+                return $emitente;
+            }
+        }
+        throw new ViewException('CNPJ não encontrado nos emitentes');
     }
 
 
