@@ -335,7 +335,7 @@ class NotaFiscalBusiness
                 $notaFiscal->setSerie($serie);
 
                 /** @var NotaFiscalRepository $repoNotaFiscal */
-                $nnf = $this->findProxNumFiscal($ambiente, $notaFiscal->getSerie(), $notaFiscal->getTipoNotaFiscal());
+                $nnf = $this->findProxNumFiscal($notaFiscal->getDocumentoEmitente(), $ambiente, $notaFiscal->getSerie(), $notaFiscal->getTipoNotaFiscal());
                 $notaFiscal->setNumero($nnf);
                 $mudou = true;
             }
@@ -934,11 +934,11 @@ class NotaFiscalBusiness
      * @param string $tipoNotaFiscal
      * @return int
      */
-    public function findProxNumFiscal(string $ambiente, string $serie, string $tipoNotaFiscal)
+    public function findProxNumFiscal(string $documentoEmitente, string $ambiente, string $serie, string $tipoNotaFiscal)
     {
         try {
-
-            $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
+            $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
+            $conn->beginTransaction();
 
             // Ex.: sequenciaNumNF_HOM_NFE_40
             $chave = 'sequenciaNumNF_' . $ambiente . '_' . $tipoNotaFiscal . '_' . $serie;
@@ -958,32 +958,24 @@ class NotaFiscalBusiness
 
             // Verificação se por algum motivo a numeração na fis_nf já não está pra frente...
             $ultimoNaBase = null;
-            $sqlUltimo = "SELECT nf FROM CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal nf WHERE nf.ambiente = :ambiente AND nf.serie = :serie AND nf.tipoNotaFiscal = :tipoNotaFiscal ORDER BY nf.numero DESC";
-            $query = $this->notaFiscalEntityHandler->getDoctrine()->createQuery($sqlUltimo);
-            $query->setParameters([
-                'ambiente' => $ambiente,
-                'serie' => $serie,
-                'tipoNotaFiscal' => $tipoNotaFiscal
-            ]);
-            $query->setMaxResults(1);
-            $results = $query->getResult();
-            if ($results) {
-                /** @var NotaFiscal $u */
-                $u = $results[0];
-                $ultimoNaBase = $u->getNumero();
-                if ($ultimoNaBase && $ultimoNaBase !== $prox) {
-                    $prox = $ultimoNaBase; // para não pular numeração a toa
-                }
-            } else {
-                $prox = 0;
+            $sqlUltimoNumero = 'SELECT max(numero) as numero FROM fis_nf WHERE documento_emitente = :documento_emitente AND ambiente = :ambiente AND serie = :serie AND tipo = :tipoNotaFiscal';
+
+            $rUltimoNumero = $conn->fetchAll($sqlUltimoNumero,
+                [
+                    'documento_emitente' => $documentoEmiente,
+                    'ambiente' => $ambiente,
+                    'serie' => $serie,
+                    'tipoNotaFiscal' => $tipoNotaFiscal
+                ]);
+            $ultimoNaBase = $rUltimoNumero[0]['numero'] ?? 0;
+            if ($ultimoNaBase && $ultimoNaBase !== $prox) {
+                $prox = $ultimoNaBase; // para não pular numeração a toa
             }
             $prox++;
 
             $updateSql = 'UPDATE cfg_app_config SET valor = :valor WHERE id = :id';
-            $this->notaFiscalEntityHandler->getDoctrine()->getConnection()
-                ->executeUpdate($updateSql, ['valor' => $prox, 'id' => $configId]);
-
-            $this->notaFiscalEntityHandler->getDoctrine()->commit();
+            $conn->executeUpdate($updateSql, ['valor' => $prox, 'id' => $configId]);
+            $conn->commit();
 
             return $prox;
         } catch (\Exception $e) {
