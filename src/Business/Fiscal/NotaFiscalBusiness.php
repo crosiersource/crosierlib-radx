@@ -999,21 +999,21 @@ class NotaFiscalBusiness
             $prox = $rs[0]['valor'];
             $configId = $rs[0]['id'];
 
-            // Verificação se por algum motivo a numeração na fis_nf já não está pra frente...
-            $ultimoNaBase = null;
-            $sqlUltimoNumero = 'SELECT max(numero) as numero FROM fis_nf WHERE cstat = 100 AND documento_emitente = :documento_emitente AND ambiente = :ambiente AND serie = :serie AND tipo = :tipoNotaFiscal';
-
-            $rUltimoNumero = $conn->fetchAll($sqlUltimoNumero,
-                [
-                    'documento_emitente' => $documentoEmitente,
-                    'ambiente' => $ambiente,
-                    'serie' => $serie,
-                    'tipoNotaFiscal' => $tipoNotaFiscal
-                ]);
-            $ultimoNaBase = $rUltimoNumero[0]['numero'] ?? 0;
-            if ($ultimoNaBase && $ultimoNaBase !== $prox) {
-                $prox = $ultimoNaBase; // para não pular numeração a toa
-            }
+//            // Verificação se por algum motivo a numeração na fis_nf já não está pra frente...
+//            $ultimoNaBase = null;
+//            $sqlUltimoNumero = 'SELECT max(numero) as numero FROM fis_nf WHERE cstat in (100,135 AND documento_emitente = :documento_emitente AND ambiente = :ambiente AND serie = :serie AND tipo = :tipoNotaFiscal';
+//
+//            $rUltimoNumero = $conn->fetchAll($sqlUltimoNumero,
+//                [
+//                    'documento_emitente' => $documentoEmitente,
+//                    'ambiente' => $ambiente,
+//                    'serie' => $serie,
+//                    'tipoNotaFiscal' => $tipoNotaFiscal
+//                ]);
+//            $ultimoNaBase = $rUltimoNumero[0]['numero'] ?? 0;
+//            if ($ultimoNaBase && $ultimoNaBase !== $prox) {
+//                $prox = $ultimoNaBase; // para não pular numeração a toa
+//            }
             $prox++;
 
             $updateSql = 'UPDATE cfg_app_config SET valor = :valor WHERE id = :id';
