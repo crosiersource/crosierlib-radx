@@ -46,6 +46,7 @@ class EntradaItem implements EntityId
      * @var null|float
      */
     public ?float $qtde = null;
+
     /**
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade")

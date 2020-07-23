@@ -6,6 +6,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -23,7 +24,7 @@ class VendaItem implements EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\vendas\Venda", inversedBy="itens")
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda", inversedBy="itens")
      * @ORM\JoinColumn(name="venda_id", nullable=false)     *
      *
      * @var null|Venda
@@ -32,7 +33,7 @@ class VendaItem implements EntityId
 
     /**
      *
-     * @ORM\Column(name="ordem", type="integer", nullable=true)
+     * @ORM\Column(name="ordem", type="integer")
      * @Groups("entity")
      *
      * @var null|integer
@@ -41,7 +42,7 @@ class VendaItem implements EntityId
 
     /**
      *
-     * @ORM\Column(name="qtde", type="decimal", nullable=false, precision=15, scale=2)
+     * @ORM\Column(name="qtde", type="decimal", nullable=false)
      * @Groups("entity")
      *
      * @var null|float
@@ -50,8 +51,17 @@ class VendaItem implements EntityId
 
     /**
      *
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade")
+     * @ORM\JoinColumn(name="unidade_id", nullable=false)
+     *
+     * @var null|Unidade
+     */
+    public ?Unidade $unidade = null;
+
+    /**
+     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto")
-     * @ORM\JoinColumn(name="produto_id", nullable=true)
+     * @ORM\JoinColumn(name="produto_id")
      * @Groups("entity")
      *
      * @var null|Produto
@@ -101,6 +111,15 @@ class VendaItem implements EntityId
      * @var null|float
      */
     public ?float $total = null;
+
+    /**
+     *
+     * @ORM\Column(name="devolucao", type="boolean")
+     * @Groups("entity")
+     *
+     * @var bool|null
+     */
+    public ?bool $devolucao = false;
 
     /**
      *

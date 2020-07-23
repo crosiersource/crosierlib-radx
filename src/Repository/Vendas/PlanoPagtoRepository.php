@@ -36,4 +36,23 @@ class PlanoPagtoRepository extends FilterRepository
 
         return count($results) == 1 ? $results[0] : null;
     }
+
+    public function findAtuaisSelect2JS(): array
+    {
+        $sql = 'SELECT * FROM ven_plano_pagto WHERE ativo IS TRUE ORDER BY codigo';
+        $rs = $this->getEntityManager()->getConnection()->fetchAll($sql);
+        $results = [
+            [
+                'id' => 0,
+                'text' => '...'
+            ]
+        ];
+        foreach ($rs as $r) {
+            $results[] = [
+                'id' => $r['id'],
+                'text' => $r['codigo'] . ' - ' . $r['descricao'],
+            ];
+        }
+        return $results;
+    }
 }

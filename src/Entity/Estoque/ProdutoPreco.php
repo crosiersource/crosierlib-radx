@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Entity\Estoque;
 
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\ORM\Mapping as ORM;
@@ -19,6 +20,14 @@ class ProdutoPreco implements EntityId
 
     use EntityIdTrait;
 
+    /**
+     *
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ListaPreco")
+     * @ORM\JoinColumn(name="produto_id", nullable=false)
+     *
+     * @var null|Produto
+     */
+    public ?ListaPreco $lista = null;
 
     /**
      *
@@ -28,6 +37,15 @@ class ProdutoPreco implements EntityId
      * @var null|Produto
      */
     public ?Produto $produto = null;
+
+    /**
+     *
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade")
+     * @ORM\JoinColumn(name="unidade_id", nullable=false)
+     *
+     * @var null|Unidade
+     */
+    public ?Unidade $unidade = null;
 
     /**
      *
@@ -127,6 +145,24 @@ class ProdutoPreco implements EntityId
      * @var null|float
      */
     public ?float $custoFinanceiro = null;
+
+    /**
+     *
+     * @ORM\Column(name="atual", type="boolean")
+     * @Groups("entity")
+     *
+     * @var bool|null
+     */
+    public ?bool $atual = false;
+
+    /**
+     *
+     * @ORM\Column(name="json_data", type="json")
+     * @var null|array
+     * @NotUppercase()
+     * @Groups("entity")
+     */
+    public ?array $jsonData = null;
 
 
 }

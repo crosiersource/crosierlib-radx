@@ -71,6 +71,15 @@ class Produto implements EntityId
 
     /**
      *
+     * @ORM\Column(name="codigo", type="string", nullable=false)
+     * @Groups("entity")
+     *
+     * @var null|string
+     */
+    public ?string $codigo = null;
+
+    /**
+     *
      * @ORM\Column(name="nome", type="string", nullable=false)
      * @Groups("entity")
      *
@@ -87,6 +96,15 @@ class Produto implements EntityId
      * @var null|string
      */
     public ?string $status = null;
+
+    /**
+     *
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade")
+     * @ORM\JoinColumn(name="unidade_padrao_id", nullable=false)
+     *
+     * @var null|Unidade
+     */
+    public ?Unidade $unidadePadrao = null;
 
     /**
      * S,N
@@ -118,6 +136,14 @@ class Produto implements EntityId
 
     /**
      *
+     * @ORM\OneToMany(targetEntity="ProdutoPreco", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @var ProdutoPreco[]|ArrayCollection|null
+     *
+     */
+    public $precos;
+
+    /**
+     *
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
@@ -129,6 +155,7 @@ class Produto implements EntityId
     {
         $this->imagens = new ArrayCollection();
         $this->composicoes = new ArrayCollection();
+        $this->precos = new ArrayCollection();
     }
 
 

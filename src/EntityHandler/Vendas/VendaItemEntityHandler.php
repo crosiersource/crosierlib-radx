@@ -63,7 +63,7 @@ class VendaItemEntityHandler extends EntityHandler
             $vendaItem->descricao = $vendaItem->produto->nome;
         }
 
-        $this->vendaBusiness->recalcularTotais($vendaItem->venda);
+        $this->vendaBusiness->recalcularTotais($vendaItem->venda->getId());
     }
 
 }

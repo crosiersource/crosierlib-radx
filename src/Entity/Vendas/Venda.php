@@ -34,16 +34,6 @@ class Venda implements EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto")
-     * @ORM\JoinColumn(name="plano_pagto_id")
-     * @Groups("entity")
-     *
-     * @var null|PlanoPagto
-     */
-    public ?PlanoPagto $planoPagto = null;
-
-    /**
-     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente")
      * @ORM\JoinColumn(name="cliente_id")
      * @Groups("entity")
@@ -113,7 +103,7 @@ class Venda implements EntityId
      *
      * @ORM\OneToMany(
      *      targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem",
-     *      cascade={"persist"},
+     *      cascade={"refresh"},
      *      mappedBy="venda",
      *      orphanRemoval=true)
      * @ORM\OrderBy({"ordem" = "ASC"})
@@ -121,10 +111,24 @@ class Venda implements EntityId
      */
     public $itens;
 
+    /**
+     *
+     * @var null|VendaPagto[]|ArrayCollection
+     *
+     * @ORM\OneToMany(
+     *      targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaPagto",
+     *      cascade={"refresh"},
+     *      mappedBy="venda",
+     *      orphanRemoval=true)
+     * @Groups("entity")
+     */
+    public $pagtos;
+
 
     public function __construct()
     {
         $this->itens = new ArrayCollection();
+        $this->pagtos = new ArrayCollection();
     }
 
     /**
@@ -132,7 +136,6 @@ class Venda implements EntityId
      */
     public function getValorTotal(): ?float
     {
-        $this->valorTotal = bcsub(abs($this->subtotal), abs($this->desconto), 2);
         return $this->valorTotal;
     }
 
