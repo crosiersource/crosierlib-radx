@@ -57,12 +57,6 @@ class VendaEntityHandler extends EntityHandler
         $venda->valorTotal = $venda->valorTotal ?? 0.0;
     }
 
-    public function afterSave(/** @var Venda $venda */ $venda)
-    {
-        $this->vendaBusiness->recalcularTotais($venda->getId());
-    }
-
-
     public function getEntityClass(): string
     {
         return Venda::class;
