@@ -77,7 +77,7 @@ class Venda implements EntityId
      *
      * @var null|float
      */
-    private ?float $valorTotal = null;
+    public ?float $valorTotal = null;
 
     /**
      *
@@ -129,24 +129,6 @@ class Venda implements EntityId
     {
         $this->itens = new ArrayCollection();
         $this->pagtos = new ArrayCollection();
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getValorTotal(): ?float
-    {
-        return $this->valorTotal;
-    }
-
-    /**
-     * @param float|null $valorTotal
-     * @return Venda
-     */
-    public function setValorTotal(?float $valorTotal): Venda
-    {
-        $this->valorTotal = $valorTotal;
-        return $this;
     }
 
 
