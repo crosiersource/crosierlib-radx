@@ -80,6 +80,11 @@ class ProdutoEntityHandler extends EntityHandler
         if (!$produto->subgrupo) {
             $produto->subgrupo = $this->doctrine->getRepository(Subgrupo::class)->find(1);
         }
+
+        if (!$produto->codigo) {
+            $produto->codigo = StringUtils::guidv4();
+        }
+
         $produto->jsonData['depto_codigo'] = $produto->depto->codigo;
         $produto->jsonData['depto_nome'] = $produto->depto->nome;
 
