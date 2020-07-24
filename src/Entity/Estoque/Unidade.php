@@ -56,6 +56,15 @@ class Unidade implements EntityId
 
     /**
      *
+     * @ORM\Column(name="json_data", type="json")
+     * @var null|array
+     * @NotUppercase()
+     * @Groups("entity")
+     */
+    public ?array $jsonData = null;
+
+    /**
+     *
      * @ORM\Column(name="atual", type="boolean")
      * @Groups("entity")
      *
