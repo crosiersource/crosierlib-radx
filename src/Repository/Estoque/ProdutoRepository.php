@@ -53,7 +53,7 @@ class ProdutoRepository extends FilterRepository
      */
     public function findProdutosByNomeOuFinalCodigo_select2js(string $str, int $max = 20): array
     {
-        $sql = 'SELECT prod.id, prod.nome, prod.json_data, preco.preco_prazo FROM est_produto prod LEFT JOIN est_produto_preco preco ON prod.id = preco.produto_id ' .
+        $sql = 'SELECT prod.id, prod.codigo, prod.nome, preco.preco_prazo FROM est_produto prod LEFT JOIN est_produto_preco preco ON prod.id = preco.produto_id ' .
             'WHERE preco.atual AND (' .
             'prod.nome LIKE :nome OR ' .
             'prod.json_data->>"$.codigo" LIKE :codigo) ORDER BY prod.nome LIMIT ' . $max;
@@ -70,7 +70,7 @@ class ProdutoRepository extends FilterRepository
             $jsonData = json_decode($r['json_data'], true);
             $results[] = [
                 'id' => $r['id'],
-                'text' => $jsonData['codigo'] . ' - ' . $r['nome'],
+                'text' => str_pad($r['codigo'], 13, '0', STR_PAD_LEFT) . ' - ' . $r['nome'],
                 'preco_prazo' => $r['preco_prazo']
             ];
         }
