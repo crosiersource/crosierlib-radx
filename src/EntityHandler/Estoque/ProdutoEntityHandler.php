@@ -268,7 +268,7 @@ class ProdutoEntityHandler extends EntityHandler
             foreach ($produto->composicoes as $itemComposicao) {
 
                 $itemComposicao->qtdeEmEstoque = $itemComposicao->produtoFilho->jsonData['qtde_estoque_total'] ?? 0.0;
-                $valorTotal += $itemComposicao->getTotalComposicao();
+                $valorTotal = bcadd($valorTotal, $itemComposicao->getTotalComposicao(), 2);
 
                 $qtdeDisponivel = $itemComposicao->qtdeEmEstoque >= $itemComposicao->qtde ? bcdiv($itemComposicao->qtdeEmEstoque, $itemComposicao->qtde, 0) : 0;
                 $menorQtdeDisponivel = ($menorQtdeDisponivel !== null && $menorQtdeDisponivel < $qtdeDisponivel) ? $menorQtdeDisponivel : $qtdeDisponivel;
@@ -276,6 +276,7 @@ class ProdutoEntityHandler extends EntityHandler
             }
             // dinâmicos...
             $produto->jsonData['preco_tabela'] = $valorTotal;
+            $produto->jsonData['preco_site'] = $valorTotal;
             $produto->jsonData['qtde_estoque_total'] = $menorQtdeDisponivel;
         }
     }
