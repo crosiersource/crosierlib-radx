@@ -20,7 +20,6 @@ class UnidadeRepository extends FilterRepository
         return Unidade::class;
     }
 
-
     public function findUnidadesAtuaisSelect2JS(): array
     {
         $sql = 'SELECT * FROM est_unidade ORDER BY label';

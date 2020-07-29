@@ -3,6 +3,7 @@
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Estoque;
 
 
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ListaPreco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
@@ -32,4 +33,5 @@ class ProdutoPrecoRepository extends FilterRepository
         $results = $query->getResult();
         return count($results) >= 1 ? $results[0] : null;
     }
+
 }
