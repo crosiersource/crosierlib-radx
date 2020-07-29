@@ -22,7 +22,11 @@ class DeptoRepository extends FilterRepository
     }
 
     /**
+     * @param int|null $deptoIdSelected
+     * @param int|null $grupoIdSelected
+     * @param int|null $subgrupoIdSelected
      * @return false|string
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function buildDeptosGruposSubgruposSelect2(?int $deptoIdSelected = null, ?int $grupoIdSelected = null, ?int $subgrupoIdSelected = null)
     {
