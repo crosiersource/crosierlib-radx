@@ -100,8 +100,6 @@ class ProdutoEntityHandler extends EntityHandler
         $produto->jsonData['fornecedor_nomeFantasia'] = $produto->fornecedor->nomeFantasia;
 
 
-
-
         /** @var ProdutoImagemRepository $repoProdutoImagem */
         $repoProdutoImagem = $this->getDoctrine()->getRepository(ProdutoImagem::class);
         $imagens = $repoProdutoImagem->findBy(['produto' => $produto], ['ordem' => 'ASC']);
@@ -134,6 +132,10 @@ class ProdutoEntityHandler extends EntityHandler
         }
 
         $this->calcPorcentPreench($produto);
+
+        $this->corrigirEstoqueProdutoComposicao($produto);
+
+        $this->verificaPathDasImagens($produto);
     }
 
     /**
@@ -202,8 +204,6 @@ class ProdutoEntityHandler extends EntityHandler
         $produto->jsonData['porcent_preench'] = $totalPreench;
         $produto->jsonData['porcent_preench_campos_faltantes'] = $camposFaltantes;
 
-        $this->verificaPathDasImagens($produto);
-
     }
 
     /**
@@ -253,6 +253,31 @@ class ProdutoEntityHandler extends EntityHandler
             $this->logger->error('Erro ao pesquisar AppConfig para "qtdeFotosMinima"');
         }
         return $qtdeFotosMinima;
+    }
+
+    /**
+     * Corrige o preco_tabela e o qtde_estoque_total para o produto
+     * @param Produto $produto
+     */
+    public function corrigirEstoqueProdutoComposicao(Produto $produto): void
+    {
+        $valorTotal = 0.0;
+        $menorQtdeDisponivel = null;
+        if ($produto->composicao === 'S') {
+
+            foreach ($produto->composicoes as $itemComposicao) {
+
+                $itemComposicao->qtdeEmEstoque = $itemComposicao->produtoFilho->jsonData['qtde_estoque_total'] ?? 0.0;
+                $valorTotal += $itemComposicao->getTotalComposicao();
+
+                $qtdeDisponivel = $itemComposicao->qtdeEmEstoque >= $itemComposicao->qtde ? bcdiv($itemComposicao->qtdeEmEstoque, $itemComposicao->qtde, 0) : 0;
+                $menorQtdeDisponivel = ($menorQtdeDisponivel !== null && $menorQtdeDisponivel < $qtdeDisponivel) ? $menorQtdeDisponivel : $qtdeDisponivel;
+
+            }
+            // dinâmicos...
+            $produto->jsonData['preco_tabela'] = $valorTotal;
+            $produto->jsonData['qtde_estoque_total'] = $menorQtdeDisponivel;
+        }
     }
 
 }
