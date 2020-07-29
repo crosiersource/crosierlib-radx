@@ -85,14 +85,21 @@ class ProdutoEntityHandler extends EntityHandler
             $produto->codigo = StringUtils::guidv4();
         }
 
-        $produto->jsonData['depto_codigo'] = $produto->depto->codigo;
-        $produto->jsonData['depto_nome'] = $produto->depto->nome;
-
-        $produto->jsonData['grupo_codigo'] = $produto->grupo->codigo;
-        $produto->jsonData['grupo_nome'] = $produto->grupo->nome;
-
         $produto->jsonData['subgrupo_codigo'] = $produto->subgrupo->codigo;
         $produto->jsonData['subgrupo_nome'] = $produto->subgrupo->nome;
+
+        $produto->jsonData['grupo_id'] = $produto->subgrupo->grupo->getId();
+        $produto->jsonData['grupo_codigo'] = $produto->subgrupo->grupo->codigo;
+        $produto->jsonData['grupo_nome'] = $produto->subgrupo->grupo->nome;
+
+        $produto->jsonData['depto_id'] = $produto->subgrupo->grupo->depto->getId();
+        $produto->jsonData['depto_codigo'] = $produto->subgrupo->grupo->depto->codigo;
+        $produto->jsonData['depto_nome'] = $produto->subgrupo->grupo->depto->nome;
+
+        $produto->jsonData['fornecedor_nome'] = $produto->fornecedor->nome;
+        $produto->jsonData['fornecedor_nomeFantasia'] = $produto->fornecedor->nomeFantasia;
+
+
 
 
         /** @var ProdutoImagemRepository $repoProdutoImagem */
