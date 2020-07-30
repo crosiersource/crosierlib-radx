@@ -24,7 +24,7 @@ class ProdutoPreco implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ListaPreco")
      * @ORM\JoinColumn(name="lista_id", nullable=false)
-     *
+     * @Groups("entity")
      * @var null|ListaPreco
      */
     public ?ListaPreco $lista = null;
@@ -42,6 +42,7 @@ class ProdutoPreco implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade")
      * @ORM\JoinColumn(name="unidade_id", nullable=false)
+     * @Groups("entity")
      *
      * @var null|Unidade
      */

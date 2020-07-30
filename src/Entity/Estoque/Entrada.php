@@ -30,7 +30,7 @@ class Entrada implements EntityId
      */
     public ?\DateTime $dtLote = null;
 
-    
+
     /**
      *
      * @ORM\Column(name="descricao", type="string")
@@ -89,6 +89,7 @@ class Entrada implements EntityId
      *      cascade={"persist"},
      *      mappedBy="entrada",
      *      orphanRemoval=true)
+     * @ORM\OrderBy({"updated" = "DESC"})
      * @Groups("entity")
      */
     public $itens;
