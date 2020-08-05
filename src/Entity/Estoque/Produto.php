@@ -137,6 +137,7 @@ class Produto implements EntityId
     /**
      *
      * @ORM\OneToMany(targetEntity="ProdutoPreco", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OrderBy({"atual" = "DESC"})
      * @var ProdutoPreco[]|ArrayCollection|null
      *
      */
