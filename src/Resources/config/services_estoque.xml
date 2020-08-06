@@ -320,9 +320,7 @@
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_preco_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoPrecoEntityHandler"
                  parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.estoque.calculo_preco"/>
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoPrecoEntityHandler"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_preco_entity_handler"/>

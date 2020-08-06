@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Estoque;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\DepreciacaoPreco;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\DepreciacaoPreco;
 
 /**
  *
@@ -24,7 +24,6 @@ class DepreciacaoPrecoRepository extends FilterRepository
      */
     public function findDepreciacaoByPrazo(int $prazo): ?float
     {
-
         try {
             $dql = 'SELECT dp FROM CrosierSource\CrosierLibRadxBundle\Entity\Estoque\DepreciacaoPreco dp WHERE dp.prazoIni <= :prazo AND dp.prazoFim >= :prazo';
             $qry = $this->getEntityManager()->createQuery($dql);

@@ -6,6 +6,7 @@ use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\ImageUtils\ImageUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
@@ -14,10 +15,12 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoImagem;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoImagemRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -37,7 +40,7 @@ class ProdutoEntityHandler extends EntityHandler
     private UploaderHelper $uploaderHelper;
 
     /**
-     * ProdutoEntityHandler constructor.
+     *
      * @param EntityManagerInterface $doctrine
      * @param Security $security
      * @param ParameterBagInterface $parameterBag
@@ -280,5 +283,54 @@ class ProdutoEntityHandler extends EntityHandler
             $produto->jsonData['qtde_estoque_total'] = $menorQtdeDisponivel;
         }
     }
+
+    public function beforeClone(/** @var Produto $clone */ $clone)
+    {
+        $clone->nome .= ' (CLONADO)';
+        $clone->UUID = null;
+        $clone->codigo = null;
+    }
+
+    /**
+     * @param $clone
+     * @param $old
+     * @throws ViewException
+     */
+    public function afterClone(/** @var Produto $clone */ $clone, /** @var Produto $old */ $old)
+    {
+        try {
+            $conn = $this->getDoctrine()->getConnection();
+            /** @var ProdutoPreco $oldPreco */
+            foreach ($old->precos as $oldPreco) {
+
+                $preco['margem'] = $oldPreco->margem;
+                $preco['preco_custo'] = $oldPreco->precoCusto;
+                $preco['preco_vista'] = $oldPreco->precoVista;
+                $preco['preco_prazo'] = $oldPreco->precoPrazo;
+                $preco['preco_promo'] = $oldPreco->precoPromo;
+                $preco['custo_operacional'] = $oldPreco->custoOperacional;
+                $preco['custo_financeiro'] = $oldPreco->custoFinanceiro;
+                $preco['prazo'] = $oldPreco->prazo;
+                $preco['unidade_id'] = $oldPreco->unidade->getId();
+                $preco['produto_id'] = $clone->getId();
+                $preco['lista_id'] = $oldPreco->lista->getId();
+                $preco['atual'] = $oldPreco->atual ? 1 : 0;
+                $preco['json_data'] = json_encode($oldPreco->jsonData);
+                $preco['coeficiente'] = $oldPreco->coeficiente;
+                $preco['dt_custo'] = $oldPreco->dtCusto->format('Y-m-d H:i:s');
+                $preco['dt_preco_venda'] = $oldPreco->dtPrecoVenda->format('Y-m-d H:i:s');;
+                $preco['inserted'] = (new \DateTime())->format('Y-m-d H:i:s');
+                $preco['updated'] = (new \DateTime())->format('Y-m-d H:i:s');
+                $preco['version'] = 0;
+                $preco['user_inserted_id'] = 1;
+                $preco['user_updated_id'] = 1;
+                $preco['estabelecimento_id'] = 1;
+                $conn->insert('est_produto_preco', $preco);
+            }
+        } catch (DBALException $e) {
+            throw new ViewException('Erro ao clonar preços');
+        }
+    }
+
 
 }

@@ -4,7 +4,6 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Estoque;
 
 
-
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\DepreciacaoPreco;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DepreciacaoPrecoRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,7 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * Lógicas para cálculo de preços.
  *
- * @package App\Business\Estoque
+ * @author Carlos Eduardo Pauluk
  */
 class CalculoPreco
 {
@@ -42,7 +41,7 @@ class CalculoPreco
     {
         $this->calcularCoeficiente($preco);
 
-        if (!$preco || !$preco['coeficiente']) {
+        if (!($preco['coeficiente'] ?? false)) {
             throw new \LogicException('É necessário o coeficiente para calcular os preços');
         }
 
@@ -55,12 +54,10 @@ class CalculoPreco
             throw new \LogicException('Preço de custo nulo.');
         }
         $custoFinanceiroInv = round($custoFinanceiroInv, 13);
-        $precoPrazo4 = bcmul($precoCusto, $custoFinanceiroInv, 13);
-        // $precoPrazo4 = round($precoPrazo4, 2, PHP_ROUND_HALF_DOWN);
-        $precoPrazo3 = (float)bcmul($precoPrazo4, $coeficiente, 13);
-        // $precoPrazo3 = round($precoPrazo3, 2, PHP_ROUND_HALF_DOWN);
-        $precoPrazo2 = round($precoPrazo3, 2, PHP_ROUND_HALF_UP);
-        $precoPrazo = round($precoPrazo2, 1, PHP_ROUND_HALF_UP);
+        $pc_cfinv = bcmul($precoCusto, $custoFinanceiroInv, 13);
+        $pc_cfinv_coef = (float)bcmul($pc_cfinv, $coeficiente, 13);
+        $pc_cfinv_coef = round($pc_cfinv_coef, 2, PHP_ROUND_HALF_UP);
+        $precoPrazo = round($pc_cfinv_coef, 1, PHP_ROUND_HALF_UP);
 
         $descontoAVista = 1.00 - 0.1;
 
@@ -106,7 +103,9 @@ class CalculoPreco
      */
     public function calcularMargem(array &$preco): void
     {
-        $depreciacaoPrazo = $this->depreciacaoPrecoRepository->findDepreciacaoByPrazo($preco['prazo']);
+        /** @var DepreciacaoPrecoRepository $repoDepreciacaoPreco */
+        $repoDepreciacaoPreco = $this->doctrine->getRepository(DepreciacaoPreco::class);
+        $depreciacaoPrazo = $repoDepreciacaoPreco->findDepreciacaoByPrazo($preco['prazo']);
 
         $precoCusto = $preco['precoCusto'];
         $precoPrazo = $preco['precoPrazo'];

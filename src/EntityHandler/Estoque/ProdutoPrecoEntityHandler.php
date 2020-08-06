@@ -2,8 +2,13 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Business\Estoque\CalculoPreco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Security\Core\Security;
 
 /**
  *
@@ -12,10 +17,59 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco;
 class ProdutoPrecoEntityHandler extends EntityHandler
 {
 
+    private CalculoPreco $calculoPreco;
+
+    /**
+     * @param EntityManagerInterface $doctrine
+     * @param Security $security
+     * @param ParameterBagInterface $parameterBag
+     * @param SyslogBusiness $syslog
+     * @param CalculoPreco $calculoPreco
+     */
+    public function __construct(EntityManagerInterface $doctrine,
+                                Security $security,
+                                ParameterBagInterface $parameterBag,
+                                SyslogBusiness $syslog,
+                                CalculoPreco $calculoPreco)
+    {
+        parent::__construct($doctrine, $security, $parameterBag, $syslog);
+        $this->calculoPreco = $calculoPreco;
+    }
+
+
     public function getEntityClass(): string
     {
         return ProdutoPreco::class;
     }
+
+    public function beforeSave(/** @var ProdutoPreco $produtoPreco * */ $produtoPreco)
+    {
+        $produtoPreco->prazo = $produtoPreco->prazo ?? 0;
+        $produtoPreco->prazo = $produtoPreco->prazo ?? 0;
+
+
+        $precoArr = [
+            'prazo' => $produtoPreco->prazo,
+            'margem' => $produtoPreco->margem,
+            'custoOperacional' => bcdiv($produtoPreco->custoOperacional, 100.0, 4),
+            'custoFinanceiro' => bcdiv($produtoPreco->custoFinanceiro, 100.0, 4),
+            'precoCusto' => $produtoPreco->precoCusto,
+            'precoPrazo' => $produtoPreco->precoPrazo
+        ];
+
+
+
+        if (!$produtoPreco->precoPrazo || ($produtoPreco->precoPrazo && $produtoPreco->margem)) {
+            $this->calculoPreco->calcularPreco($precoArr);
+            $produtoPreco->precoPrazo = $precoArr['precoPrazo'];
+            $produtoPreco->precoVista = $precoArr['precoVista'];
+        } else {
+            $this->calculoPreco->calcularMargem($precoArr);
+            $produtoPreco->margem = $precoArr['margem'];
+        }
+
+    }
+
 
     public function afterSave(/** @var ProdutoPreco $produtoPreco * */ $produtoPreco)
     {
