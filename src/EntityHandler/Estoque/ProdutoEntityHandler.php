@@ -134,11 +134,22 @@ class ProdutoEntityHandler extends EntityHandler
             $produto->jsonData['ecommerce_id'] = 0;
         }
 
+
+        $sqlPrecos = 'select lista.descricao as lista, u.label as unidade, preco.preco_prazo from est_produto_preco preco, est_unidade u, est_lista_preco lista where preco.produto_id = :produtoId and preco.lista_id = lista.id and preco.unidade_id = u.id and preco.atual IS TRUE';
+        $rsPrecos = $this->getDoctrine()->getConnection()->fetchAll($sqlPrecos, ['produtoId' => $produto->getId()]);
+        foreach ($rsPrecos as $rPreco) {
+            $produto->jsonData['info_precos'] = $rPreco['lista'] . ': R$ ' . number_format($rPreco['preco_prazo'], 2, ',', '.') . ' (' . $rPreco['unidade'] . ')<br>';
+        }
+        $produto->jsonData['info_precos'] = isset($produto->jsonData['info_precos']) ? substr($produto->jsonData['info_precos'], 0, -4) : '';
+
+
         $this->calcPorcentPreench($produto);
 
         $this->corrigirEstoqueProdutoComposicao($produto);
 
         $this->verificaPathDasImagens($produto);
+
+
     }
 
     /**
