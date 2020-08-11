@@ -103,7 +103,7 @@ class Venda implements EntityId
      *
      * @ORM\OneToMany(
      *      targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem",
-     *      cascade={"refresh"},
+     *      cascade={"all"},
      *      mappedBy="venda",
      *      orphanRemoval=true)
      * @ORM\OrderBy({"ordem" = "ASC"})

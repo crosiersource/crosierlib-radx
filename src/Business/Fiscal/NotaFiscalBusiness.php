@@ -195,15 +195,17 @@ class NotaFiscalBusiness
             // Aqui somente coisas que fazem sentido serem alteradas depois de já ter sido (provavelmente) tentado o faturamento da Notafiscal.
             $notaFiscal->setTranspModalidadeFrete('SEM_FRETE');
 
-            $notaFiscal->setIndicadorFormaPagto(
-                $venda->planoPagto->codigo === '1.00' ? IndicadorFormaPagto::VISTA['codigo'] : IndicadorFormaPagto::PRAZO['codigo']);
+//            $notaFiscal->setIndicadorFormaPagto(
+//                $venda->planoPagto->codigo === '1.00' ? IndicadorFormaPagto::VISTA['codigo'] : IndicadorFormaPagto::PRAZO['codigo']);
+
+            $notaFiscal->setIndicadorFormaPagto(IndicadorFormaPagto::VISTA['codigo']);
 
             $notaFiscal = $this->notaFiscalEntityHandler->deleteAllItens($notaFiscal);
             $this->notaFiscalEntityHandler->getDoctrine()->flush();
 
             // Atenção, aqui tem que verificar a questão do arredondamento
             if ($venda->subtotal > 0.0) {
-                $fatorDesconto = 1 - round(bcdiv($venda->getValorTotal(), $venda->subtotal, 4), 2);
+                $fatorDesconto = 1 - round(bcdiv($venda->valorTotal, $venda->subtotal, 4), 2);
             } else {
                 $fatorDesconto = 1;
             }
