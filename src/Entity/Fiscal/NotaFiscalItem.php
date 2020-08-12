@@ -71,6 +71,20 @@ class NotaFiscalItem implements EntityId
 
     /**
      *
+     * @ORM\Column(name="cest", type="string", nullable=true, length=20)
+     * @var null|string
+     */
+    private $cest;
+
+    /**
+     *
+     * @ORM\Column(name="cst", type="string", nullable=true, length=10)
+     * @var null|string
+     */
+    private $cst;
+
+    /**
+     *
      * @ORM\Column(name="ordem", type="integer", nullable=false)
      * @var null|int
      */
@@ -127,6 +141,13 @@ class NotaFiscalItem implements EntityId
 
     /**
      *
+     * @ORM\Column(name="icms_mod_bc", type="string")
+     * @var null|float
+     */
+    private $icmsModBC;
+
+    /**
+     *
      * @ORM\Column(name="icms_valor_bc", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
@@ -138,6 +159,50 @@ class NotaFiscalItem implements EntityId
      * @var null|float
      */
     private $icmsAliquota;
+
+
+    /**
+     *
+     * @ORM\Column(name="pis_valor", type="decimal", nullable=true, precision=15, scale=2)
+     * @var null|float
+     */
+    private $pisValor;
+
+    /**
+     *
+     * @ORM\Column(name="pis_valor_bc", type="decimal", nullable=true, precision=15, scale=2)
+     * @var null|float
+     */
+    private $pisValorBc;
+
+    /**
+     *
+     * @ORM\Column(name="pis", type="decimal", nullable=true, precision=15, scale=2)
+     * @var null|float
+     */
+    private $pisAliquota;
+
+
+    /**
+     *
+     * @ORM\Column(name="cofins_valor", type="decimal", nullable=true, precision=15, scale=2)
+     * @var null|float
+     */
+    private $cofinsValor;
+
+    /**
+     *
+     * @ORM\Column(name="cofins_valor_bc", type="decimal", nullable=true, precision=15, scale=2)
+     * @var null|float
+     */
+    private $cofinsValorBc;
+
+    /**
+     *
+     * @ORM\Column(name="cofins", type="decimal", nullable=true, precision=15, scale=2)
+     * @var null|float
+     */
+    private $cofinsAliquota;
 
     /**
      *
@@ -251,6 +316,42 @@ class NotaFiscalItem implements EntityId
     public function setNcm(?string $ncm): NotaFiscalItem
     {
         $this->ncm = $ncm;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCest(): ?string
+    {
+        return $this->cest;
+    }
+
+    /**
+     * @param string|null $cest
+     * @return NotaFiscalItem
+     */
+    public function setCest(?string $cest): NotaFiscalItem
+    {
+        $this->cest = $cest;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCst(): ?string
+    {
+        return $this->cst;
+    }
+
+    /**
+     * @param string|null $cst
+     * @return NotaFiscalItem
+     */
+    public function setCst(?string $cst): NotaFiscalItem
+    {
+        $this->cst = $cst;
         return $this;
     }
 
@@ -419,6 +520,24 @@ class NotaFiscalItem implements EntityId
     /**
      * @return float|null
      */
+    public function getIcmsModBC(): ?float
+    {
+        return $this->icmsModBC;
+    }
+
+    /**
+     * @param float|null $icmsModBC
+     * @return NotaFiscalItem
+     */
+    public function setIcmsModBC(?float $icmsModBC): NotaFiscalItem
+    {
+        $this->icmsModBC = $icmsModBC;
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
     public function getIcmsValorBc(): ?float
     {
         return $this->icmsValorBc;
@@ -449,6 +568,114 @@ class NotaFiscalItem implements EntityId
     public function setIcmsAliquota(?float $icmsAliquota): NotaFiscalItem
     {
         $this->icmsAliquota = $icmsAliquota;
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getPisValor(): ?float
+    {
+        return $this->pisValor;
+    }
+
+    /**
+     * @param float|null $pisValor
+     * @return NotaFiscalItem
+     */
+    public function setPisValor(?float $pisValor): NotaFiscalItem
+    {
+        $this->pisValor = $pisValor;
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getPisValorBc(): ?float
+    {
+        return $this->pisValorBc;
+    }
+
+    /**
+     * @param float|null $pisValorBc
+     * @return NotaFiscalItem
+     */
+    public function setPisValorBc(?float $pisValorBc): NotaFiscalItem
+    {
+        $this->pisValorBc = $pisValorBc;
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getPisAliquota(): ?float
+    {
+        return $this->pisAliquota;
+    }
+
+    /**
+     * @param float|null $pisAliquota
+     * @return NotaFiscalItem
+     */
+    public function setPisAliquota(?float $pisAliquota): NotaFiscalItem
+    {
+        $this->pisAliquota = $pisAliquota;
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getCofinsValor(): ?float
+    {
+        return $this->cofinsValor;
+    }
+
+    /**
+     * @param float|null $cofinsValor
+     * @return NotaFiscalItem
+     */
+    public function setCofinsValor(?float $cofinsValor): NotaFiscalItem
+    {
+        $this->cofinsValor = $cofinsValor;
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getCofinsValorBc(): ?float
+    {
+        return $this->cofinsValorBc;
+    }
+
+    /**
+     * @param float|null $cofinsValorBc
+     * @return NotaFiscalItem
+     */
+    public function setCofinsValorBc(?float $cofinsValorBc): NotaFiscalItem
+    {
+        $this->cofinsValorBc = $cofinsValorBc;
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getCofinsAliquota(): ?float
+    {
+        return $this->cofinsAliquota;
+    }
+
+    /**
+     * @param float|null $cofinsAliquota
+     * @return NotaFiscalItem
+     */
+    public function setCofinsAliquota(?float $cofinsAliquota): NotaFiscalItem
+    {
+        $this->cofinsAliquota = $cofinsAliquota;
         return $this;
     }
 

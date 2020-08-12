@@ -9,6 +9,7 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandl
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\MunicipioRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
@@ -163,14 +164,21 @@ class NotaFiscalBusiness
                 $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
                 $conn->delete('fis_nf_item', ['nota_fiscal_id' => $notaFiscal->getId()]);
             }
-            $notaFiscal->deleteAllItens();
-
 
             $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
 
             $notaFiscal->setEntradaSaida('S');
 
             $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
+
+
+
+            $dentro_ou_fora = $notaFiscal->getEstadoDestinatario() !== $nfeConfigs['siglaUF'] ? 'fora' : 'dentro';
+
+            $cfop_padrao_dentro_do_estado = $this->conn->fetchAll('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.cfop_padrao_dentro_do_estado']);
+            $cfop_padrao_dentro_do_estado = $cfop_padrao_dentro_do_estado[0]['valor'] ?? '5102';
+            $cfop_padrao_fora_do_estado = $this->conn->fetchAll('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.cfop_padrao_fora_do_estado']);
+            $cfop_padrao_fora_do_estado = $cfop_padrao_fora_do_estado[0]['valor'] ?? '6102';
 
             $notaFiscal->setDocumentoEmitente($nfeConfigs['cnpj']);
             $notaFiscal->setXNomeEmitente($nfeConfigs['razaosocial']);
@@ -192,11 +200,7 @@ class NotaFiscalBusiness
                 $notaFiscal->setChaveAcesso(null);
             }
 
-            // Aqui somente coisas que fazem sentido serem alteradas depois de já ter sido (provavelmente) tentado o faturamento da Notafiscal.
             $notaFiscal->setTranspModalidadeFrete('SEM_FRETE');
-
-//            $notaFiscal->setIndicadorFormaPagto(
-//                $venda->planoPagto->codigo === '1.00' ? IndicadorFormaPagto::VISTA['codigo'] : IndicadorFormaPagto::PRAZO['codigo']);
 
             $notaFiscal->setIndicadorFormaPagto(IndicadorFormaPagto::VISTA['codigo']);
 
@@ -218,10 +222,8 @@ class NotaFiscalBusiness
                 $nfItem = new NotaFiscalItem();
                 $nfItem->setNotaFiscal($notaFiscal);
 
-                $ncm = $vendaItem->jsonData['ncm'] ?? $vendaItem->produto->jsonData['ncm'] ?? $ncmPadrao ?? null;
-                if (!$ncm) {
-                    throw new ViewException('Item da Venda sem NCM');
-                }
+                $ncm = $vendaItem->jsonData['ncm'] ?? $vendaItem->produto->jsonData['ncm'] ?? $ncmPadrao ?? '00000000';
+
                 $nfItem->setNcm($ncm);
 
                 $nfItem->setOrdem($ordem++);
@@ -239,9 +241,16 @@ class NotaFiscalBusiness
 
                 $nfItem->setSubTotal($valorTotalItem);
 
-                $nfItem->setIcmsAliquota(0.0);
-                $nfItem->setCfop('5102');
-                if ($vendaItem->produto->jsonData['unidade_produto'] ?? null) {
+
+
+                $cfop = $vendaItem->produto->jsonData['cfop_' . $dentro_ou_fora] ?? ($dentro_ou_fora === 'dentro' ? $cfop_padrao_dentro_do_estado : $cfop_padrao_fora_do_estado);
+
+                $nfItem->setCfop($cfop);
+
+
+                if ($vendaItem->unidade) {
+                    $nfItem->setUnidade($vendaItem->unidade->label);
+                } else if ($vendaItem->unidadeproduto->jsonData['unidade_produto'] ?? null) {
                     $nfItem->setUnidade($vendaItem->produto->jsonData['unidade_produto']);
                 } else {
                     $nfItem->setUnidade('PC');
@@ -254,6 +263,32 @@ class NotaFiscalBusiness
                 } else {
                     $nfItem->setCodigo($vendaItem->jsonData['produto']['reduzido'] ?? 00000);
                     $nfItem->setDescricao(trim($vendaItem->jsonData['produto']['descricao']) ?? 'PRODUTO 00000');
+                }
+
+                $nfItem->setCst($vendaItem->produto->jsonData['cst_icms'] ?? null);
+                $nfItem->setCest($vendaItem->produto->jsonData['cest'] ?? null);
+
+
+                if (isset($vendaItem->produto->jsonData['aliquota_icms']) && ($vendaItem->produto->jsonData['aliquota_icms'] > 0)) {
+                    $nfItem->setIcmsAliquota($vendaItem->produto->jsonData['aliquota_icms']);
+                    $icmsValor = DecimalUtils::round(bcmul(bcdiv($vendaItem->produto->jsonData['aliquota_icms'], 100.0, 6), $nfItem->getSubTotal(), 4));
+                    $nfItem->setIcmsValor($icmsValor);
+                    $nfItem->setIcmsValorBc($nfItem->getSubTotal());
+                    $nfItem->setIcmsModBC($vendaItem->produto->jsonData['modalidade_icms'] ?? null);
+                }
+
+                if ($vendaItem->produto->jsonData['pis'] ?? false) {
+                    $nfItem->setPisAliquota($vendaItem->produto->jsonData['pis']);
+                    $pisValor = DecimalUtils::round(bcmul(bcdiv($vendaItem->produto->jsonData['pis'], 100.0, 6), $nfItem->getSubTotal(), 4));
+                    $nfItem->setPisValor($pisValor);
+                    $nfItem->setPisValorBc($nfItem->getSubTotal());
+                }
+
+                if ($vendaItem->produto->jsonData['cofins'] ?? false) {
+                    $nfItem->setCofinsAliquota($vendaItem->produto->jsonData['cofins']);
+                    $cofinsValor = DecimalUtils::round(bcmul(bcdiv($vendaItem->produto->jsonData['cofins'], 100.0, 6), $nfItem->getSubTotal(), 4));
+                    $nfItem->setCofinsValor($cofinsValor);
+                    $nfItem->setCofinsValorBc($nfItem->getSubTotal());
                 }
 
                 $this->notaFiscalEntityHandler->handleSavingEntityId($nfItem);

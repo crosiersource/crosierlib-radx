@@ -228,6 +228,7 @@ class ProdutoEntityHandler extends EntityHandler
         /** @var ProdutoImagem $imagem */
         foreach ($produto->imagens as $imagem) {
             $arquivo = $this->parameterBag->get('kernel.project_dir') . '/public' . $this->uploaderHelper->asset($imagem, 'imageFile');
+
             if (!file_exists($arquivo)) {
                 /** @var Connection $conn */
                 $conn = $this->getDoctrine()->getConnection();
@@ -240,10 +241,16 @@ class ProdutoEntityHandler extends EntityHandler
                     $rImagem[0]['grupo_id'] . '/' .
                     $rImagem[0]['subgrupo_id'] . '/' . $rImagem[0]['image_name'];
 
-                $somenteNovaPasta = str_replace(basename($arquivo), '', $arquivo);
+                if (file_exists($caminhoAntigo)) {
+                    // Se existe no caminhoAntigo, então é porque foi alterado o depto_id, grupo_id e/ou subgrupo_id
+                    $somenteNovaPasta = str_replace(basename($arquivo), '', $arquivo);
 
-                @mkdir($somenteNovaPasta, 0777, true);
-                rename($caminhoAntigo, $arquivo);
+                    @mkdir($somenteNovaPasta, 0777, true);
+                    rename($caminhoAntigo, $arquivo);
+                } else {
+                    $this->logger->info('Arquivo (id = ' . $imagem->getId() . ') não existe no sistema de arquivos.');
+                }
+
 
             }
         }

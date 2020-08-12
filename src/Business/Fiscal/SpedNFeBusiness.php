@@ -3,8 +3,10 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Fiscal;
 
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\Municipio;
+use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\MunicipioRepository;
+use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\FinalidadeNF;
@@ -12,6 +14,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\ModalidadeFrete;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalCartaCorrecao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalEvento;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\TipoNotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler;
@@ -74,6 +77,7 @@ class SpedNFeBusiness
         $this->params = $params;
     }
 
+
     /**
      * @param NotaFiscal $notaFiscal
      * @return NotaFiscal
@@ -81,11 +85,42 @@ class SpedNFeBusiness
      */
     public function gerarXML(NotaFiscal $notaFiscal): NotaFiscal
     {
-        $exemploNFe = file_get_contents($this->params->get('kernel.project_dir') . '/files/Fiscal/exemplos/exemplo-nfe.xml');
-        $nfe = simplexml_load_string($exemploNFe);
+        /** @var AppConfigRepository $repoAppConfig */
+        $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
+        $layoutXMLpadrao = $repoAppConfig->findByChave('fiscal.layoutPadraoXML');
+        if (!$layoutXMLpadrao) {
+            // antes era configurado no arquivo
+            $layoutXMLpadrao = file_get_contents($this->params->get('kernel.project_dir') . '/files/Fiscal/exemplos/exemplo-nfe.xml');
+        }
+
+        $nfe = simplexml_load_string($layoutXMLpadrao);
         if (!$nfe) {
             throw new \RuntimeException('Não foi possível obter o template XML da NFe');
         }
+
+        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
+
+
+        if ($nfeConfigs['cUF'] ?? false) {
+            $nfe->infNFe->ide->cUF = $nfeConfigs['cUF'];
+        }
+        if ($nfeConfigs['cMunFG'] ?? false) {
+            $nfe->infNFe->ide->cMunFG = $nfeConfigs['cMunFG'];
+        }
+        if ($nfeConfigs['tpImp'] ?? false) {
+            $nfe->infNFe->ide->tpImp = $nfeConfigs['tpImp'];
+        }
+        if ($nfeConfigs['tpEmis'] ?? false) {
+            $nfe->infNFe->ide->tpEmis = $nfeConfigs['tpEmis'];
+        }
+        if ($nfeConfigs['indFinal'] ?? false) {
+            $nfe->infNFe->ide->indFinal = $nfeConfigs['indFinal'];
+        }
+        if ($nfeConfigs['indPres'] ?? false) {
+            $nfe->infNFe->ide->indPres = $nfeConfigs['indPres'];
+        }
+
+
         $nfe->infNFe->ide->nNF = $notaFiscal->getNumero();
 
         $nfe->infNFe->ide->cNF = $notaFiscal->getCnf();
@@ -124,7 +159,6 @@ class SpedNFeBusiness
             $nfe->infNFe->ide->idDest = 1;
         }
 
-        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
 
         $nfe->infNFe->emit->CNPJ = $nfeConfigs['cnpj'];
         $nfe->infNFe->emit->xNome = $nfeConfigs['razaosocial'];
@@ -136,6 +170,9 @@ class SpedNFeBusiness
         $nfe->infNFe->emit->enderEmit->CEP = preg_replace('/\D/', '', $nfeConfigs['enderEmit_cep']);
         $nfe->infNFe->emit->enderEmit->fone = preg_replace('/\D/', '', $nfeConfigs['telefone']);
 
+        if ($nfeConfigs['CRT'] ?? false) {
+            $nfe->infNFe->emit->CRT = $nfeConfigs['CRT'];
+        }
 
         // 1=Operação interna;
         // 2=Operação interestadual;
@@ -240,18 +277,18 @@ class SpedNFeBusiness
 
         // 1=Produção
         // 2=Homologação
-        if ($notaFiscal->getAmbiente() === 'PROD') {
-            $nfe->infNFe->ide->tpAmb = 1;
-        } else {
-            $nfe->infNFe->ide->tpAmb = 2;
-        }
-
+        $nfe->infNFe->ide->tpAmb = $notaFiscal->getAmbiente() === 'PROD' ? 1 : 2;
 
         unset($nfe->infNFe->det);
         $i = 1;
 
         $total_bcICMS = 0;
         $total_vICMS = 0;
+
+        $total_vPIS = 0;
+
+        $total_vCOFINS = 0;
+
         foreach ($notaFiscal->getItens() as $nfItem) {
             $itemXML = $nfe->infNFe->addChild('det');
             $itemXML['nItem'] = $nfItem->getOrdem();
@@ -266,6 +303,9 @@ class SpedNFeBusiness
 
             $itemXML->prod->xProd = $xProd;
             $itemXML->prod->NCM = $nfItem->getNcm();
+            if ($nfItem->getCest()) {
+                $itemXML->prod->CEST = $nfItem->getCest();
+            }
             $itemXML->prod->CFOP = $nfItem->getCfop();
             $itemXML->prod->uCom = $nfItem->getUnidade();
             $itemXML->prod->qCom = $nfItem->getQtde();
@@ -280,28 +320,22 @@ class SpedNFeBusiness
             }
             $itemXML->prod->indTot = '1';
 
-
             if (!$nfItem->getCsosn()) {
-                $nfItem->setCsosn(103);
+                $csosn = $nfeConfigs['CSOSN'] ?? 103;
+                $nfItem->setCsosn($csosn);
             }
 
-            if ($nfItem->getCsosn() === 900) {
-                $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
-                $itemXML->imposto->ICMS->ICMSSN900->CSOSN = $nfItem->getCsosn();
-                $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
-                $itemXML->imposto->ICMS->ICMSSN900->vBC = number_format(abs($nfItem->getIcmsValorBc()), 2, '.', '');
-                $itemXML->imposto->ICMS->ICMSSN900->pICMS = $nfItem->getIcmsAliquota();
-                $itemXML->imposto->ICMS->ICMSSN900->vICMS = number_format(abs($nfItem->getIcmsValor()), 2, '.', '');
-                // Soma para o total
-                $total_bcICMS += $nfItem->getIcmsValorBc();
-                $total_vICMS += $nfItem->getIcmsValor();
-            } else { // o nosso por padrão é sempre 103
-                $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
-                $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();
-            }
+            $this->handleImpostos($nfItem, $itemXML);
 
             $itemXML->imposto->PIS->PISNT->CST = '07';
             $itemXML->imposto->COFINS->COFINSNT->CST = '07';
+
+            $total_bcICMS += $nfItem->getIcmsValorBc();
+            $total_vICMS += $nfItem->getIcmsValor();
+
+            $total_vPIS += $nfItem->getPisValor();
+
+            $total_vCOFINS += $nfItem->getCofinsValor();
 
             $i++;
         }
@@ -323,8 +357,8 @@ class SpedNFeBusiness
         $nfe->infNFe->total->ICMSTot->vII = '0.00';
         $nfe->infNFe->total->ICMSTot->vIPI = '0.00';
         $nfe->infNFe->total->ICMSTot->vIPIDevol = '0.00';
-        $nfe->infNFe->total->ICMSTot->vPIS = '0.00';
-        $nfe->infNFe->total->ICMSTot->vCOFINS = '0.00';
+        $nfe->infNFe->total->ICMSTot->vPIS = number_format($total_vPIS, 2, '.', '');;
+        $nfe->infNFe->total->ICMSTot->vCOFINS = number_format($total_vCOFINS, 2, '.', '');;
         $nfe->infNFe->total->ICMSTot->vOutro = '0.00';
         $nfe->infNFe->total->ICMSTot->vNF = number_format($notaFiscal->getValorTotal(), 2, '.', '');
         $nfe->infNFe->total->ICMSTot->vTotTrib = '0.00';
@@ -851,4 +885,76 @@ class SpedNFeBusiness
         }
     }
 
+    /**
+     * @param NotaFiscalItem $nfItem
+     * @param \SimpleXMLElement $itemXML
+     */
+    public function handleImpostos(NotaFiscalItem $nfItem, \SimpleXMLElement $itemXML): void
+    {
+        $csosn = $nfItem->getCsosn();
+
+        switch ($csosn) {
+            // não contribuinte SIMPLES NACIONAL
+            case null:
+            {
+
+                $itemXML->imposto->IPI->cEnq = '999';
+                $itemXML->imposto->IPI->IPINT->CST = '53';
+
+                $cst = $nfItem->getCst();
+                $tagICMS = 'ICMS' . $cst;
+
+                if ($nfItem->getIcmsAliquota() > 0) {
+                    $itemXML->imposto->ICMS->$tagICMS->orig = '0';
+                    $itemXML->imposto->ICMS->$tagICMS->CST = $cst;
+                    $itemXML->imposto->ICMS->$tagICMS->modBC = $nfItem->getIcmsModBC();
+                    $itemXML->imposto->ICMS->$tagICMS->vBC = $nfItem->getIcmsValorBc();
+                    $itemXML->imposto->ICMS->$tagICMS->pICMS = $nfItem->getIcmsAliquota();
+                    $itemXML->imposto->ICMS->$tagICMS->vICMS = $nfItem->getIcmsValor();
+                } else {
+                    $itemXML->imposto->ICMS->$tagICMS->orig = '0';
+                    $itemXML->imposto->ICMS->$tagICMS->CST = $cst;
+                }
+
+                if ($nfItem->getPisAliquota() > 0) {
+                    $itemXML->imposto->PIS->PISAliq->CST = '01';
+                    $itemXML->imposto->PIS->PISAliq->vBC = $nfItem->getPisValorBc();
+                    $itemXML->imposto->PIS->PISAliq->pPIS = $nfItem->getPisAliquota();
+                    $itemXML->imposto->PIS->PISAliq->vPIS = $nfItem->getPisValor();
+                } else {
+                    $itemXML->imposto->PIS->PISNT->CST = '04';
+                }
+
+                if ($nfItem->getCofinsAliquota() > 0) {
+                    $itemXML->imposto->COFINS->COFINSAliq->CST = '01';
+                    $itemXML->imposto->COFINS->COFINSAliq->vBC = $nfItem->getCofinsValorBc();
+                    $itemXML->imposto->COFINS->COFINSAliq->pCOFINS = $nfItem->getCofinsAliquota();
+                    $itemXML->imposto->COFINS->COFINSAliq->vCOFINS = $nfItem->getCofinsValor();
+                } else {
+                    $itemXML->imposto->COFINS->COFINSNT->CST = '04';
+                }
+
+
+                break;
+
+            }
+            case 900:
+            {
+                $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
+                $itemXML->imposto->ICMS->ICMSSN900->CSOSN = $nfItem->getCsosn();
+                $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
+                $itemXML->imposto->ICMS->ICMSSN900->vBC = number_format(abs($nfItem->getIcmsValorBc()), 2, '.', '');
+                $itemXML->imposto->ICMS->ICMSSN900->pICMS = $nfItem->getIcmsAliquota();
+                $itemXML->imposto->ICMS->ICMSSN900->vICMS = number_format(abs($nfItem->getIcmsValor()), 2, '.', '');
+                break;
+            }
+            case 102:default:
+            {
+                $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
+                $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();
+                break;
+            }
+        }
+
+    }
 }
