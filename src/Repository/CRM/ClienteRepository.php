@@ -20,6 +20,9 @@ class ClienteRepository extends FilterRepository
         return Cliente::class;
     }
 
+    /**
+     * @return mixed
+     */
     public function getJsonMetadata()
     {
         /** @var AppConfigRepository $repoAppConfig */
@@ -31,6 +34,5 @@ class ClienteRepository extends FilterRepository
             ]
         )->getValor();
     }
-
 
 }

@@ -47,4 +47,22 @@ class Cliente implements EntityId
      */
     public ?array $jsonData = null;
 
+
+    /**
+     * @param string $tipo
+     * @return array|null
+     */
+    public function getEnderecoByTipo(string $tipo): ?array
+    {
+        $enderecos = $this->jsonData['enderecos'] ?? null;
+        if ($enderecos) {
+            foreach ($enderecos as $endereco) {
+                if (strpos($endereco['tipo'], $tipo) !== FALSE) {
+                    return $endereco;
+                }
+            }
+        }
+        return null;
+    }
+
 }

@@ -320,15 +320,7 @@ class SpedNFeBusiness
             }
             $itemXML->prod->indTot = '1';
 
-            if (!$nfItem->getCsosn()) {
-                $csosn = $nfeConfigs['CSOSN'] ?? 103;
-                $nfItem->setCsosn($csosn);
-            }
-
             $this->handleImpostos($nfItem, $itemXML);
-
-            $itemXML->imposto->PIS->PISNT->CST = '07';
-            $itemXML->imposto->COFINS->COFINSNT->CST = '07';
 
             $total_bcICMS += $nfItem->getIcmsValorBc();
             $total_vICMS += $nfItem->getIcmsValor();
@@ -898,38 +890,38 @@ class SpedNFeBusiness
             case null:
             {
 
-                $itemXML->imposto->IPI->cEnq = '999';
-                $itemXML->imposto->IPI->IPINT->CST = '53';
-
                 $cst = $nfItem->getCst();
                 $tagICMS = 'ICMS' . $cst;
 
                 if ($nfItem->getIcmsAliquota() > 0) {
                     $itemXML->imposto->ICMS->$tagICMS->orig = '0';
                     $itemXML->imposto->ICMS->$tagICMS->CST = $cst;
-                    $itemXML->imposto->ICMS->$tagICMS->modBC = $nfItem->getIcmsModBC();
-                    $itemXML->imposto->ICMS->$tagICMS->vBC = $nfItem->getIcmsValorBc();
-                    $itemXML->imposto->ICMS->$tagICMS->pICMS = $nfItem->getIcmsAliquota();
-                    $itemXML->imposto->ICMS->$tagICMS->vICMS = $nfItem->getIcmsValor();
+                    $itemXML->imposto->ICMS->$tagICMS->modBC = (int)$nfItem->getIcmsModBC();
+                    $itemXML->imposto->ICMS->$tagICMS->vBC = bcmul($nfItem->getIcmsValorBc(), 1, 2);
+                    $itemXML->imposto->ICMS->$tagICMS->pICMS = bcmul($nfItem->getIcmsAliquota(), 1, 2);
+                    $itemXML->imposto->ICMS->$tagICMS->vICMS = bcmul($nfItem->getIcmsValor(), 1, 2);
                 } else {
                     $itemXML->imposto->ICMS->$tagICMS->orig = '0';
                     $itemXML->imposto->ICMS->$tagICMS->CST = $cst;
                 }
 
+                $itemXML->imposto->IPI->cEnq = '999';
+                $itemXML->imposto->IPI->IPINT->CST = '53';
+
                 if ($nfItem->getPisAliquota() > 0) {
                     $itemXML->imposto->PIS->PISAliq->CST = '01';
-                    $itemXML->imposto->PIS->PISAliq->vBC = $nfItem->getPisValorBc();
-                    $itemXML->imposto->PIS->PISAliq->pPIS = $nfItem->getPisAliquota();
-                    $itemXML->imposto->PIS->PISAliq->vPIS = $nfItem->getPisValor();
+                    $itemXML->imposto->PIS->PISAliq->vBC = bcmul($nfItem->getPisValorBc(), 1, 2);
+                    $itemXML->imposto->PIS->PISAliq->pPIS = bcmul($nfItem->getPisAliquota(), 1, 2);
+                    $itemXML->imposto->PIS->PISAliq->vPIS = bcmul($nfItem->getPisValor(), 1, 2);
                 } else {
                     $itemXML->imposto->PIS->PISNT->CST = '04';
                 }
 
                 if ($nfItem->getCofinsAliquota() > 0) {
                     $itemXML->imposto->COFINS->COFINSAliq->CST = '01';
-                    $itemXML->imposto->COFINS->COFINSAliq->vBC = $nfItem->getCofinsValorBc();
-                    $itemXML->imposto->COFINS->COFINSAliq->pCOFINS = $nfItem->getCofinsAliquota();
-                    $itemXML->imposto->COFINS->COFINSAliq->vCOFINS = $nfItem->getCofinsValor();
+                    $itemXML->imposto->COFINS->COFINSAliq->vBC = bcmul($nfItem->getCofinsValorBc(), 1, 2);
+                    $itemXML->imposto->COFINS->COFINSAliq->pCOFINS = bcmul($nfItem->getCofinsAliquota(), 1, 2);
+                    $itemXML->imposto->COFINS->COFINSAliq->vCOFINS = bcmul($nfItem->getCofinsValor(), 1, 2);
                 } else {
                     $itemXML->imposto->COFINS->COFINSNT->CST = '04';
                 }
@@ -944,11 +936,12 @@ class SpedNFeBusiness
                 $itemXML->imposto->ICMS->ICMSSN900->CSOSN = $nfItem->getCsosn();
                 $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
                 $itemXML->imposto->ICMS->ICMSSN900->vBC = number_format(abs($nfItem->getIcmsValorBc()), 2, '.', '');
-                $itemXML->imposto->ICMS->ICMSSN900->pICMS = $nfItem->getIcmsAliquota();
+                $itemXML->imposto->ICMS->ICMSSN900->pICMS = bcmul($nfItem->getIcmsAliquota(), 1, 2);
                 $itemXML->imposto->ICMS->ICMSSN900->vICMS = number_format(abs($nfItem->getIcmsValor()), 2, '.', '');
                 break;
             }
-            case 102:default:
+            case 102:
+            default:
             {
                 $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
                 $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();

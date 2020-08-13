@@ -35,6 +35,7 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHand
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use Doctrine\DBAL\Connection;
@@ -146,6 +147,8 @@ class NotaFiscalBusiness
             $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
             $jaExiste = $conn->fetchAll('SELECT * FROM fis_nf_venda WHERE venda_id = :vendaId', ['vendaId' => $venda->getId()]);
 
+            $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
+
             $rNcmPadrao = $conn->fetchAll('SELECT valor FROM cfg_app_config WHERE chave = \'ncm_padrao\'');
             $ncmPadrao = $rNcmPadrao[0]['valor'] ?? null;
 
@@ -163,15 +166,34 @@ class NotaFiscalBusiness
                 /** @var Connection $conn */
                 $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
                 $conn->delete('fis_nf_item', ['nota_fiscal_id' => $notaFiscal->getId()]);
+                $notaFiscal->deleteAllItens(); // remove as referências no ORM
             }
 
             $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
 
+
             $notaFiscal->setEntradaSaida('S');
 
-            $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
-
-
+            if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
+                if ($venda->cliente) {
+                    $endereco_faturamento = $venda->cliente->getEnderecoByTipo('FATURAMENTO');
+                    if (!$endereco_faturamento) {
+                        throw new ViewException('NFe sem endereço de faturamento');
+                    } else {
+                        if (!($endereco_faturamento['estado'] ?? false)) {
+                            throw new ViewException('NFe sem UF no endereço de faturamento');
+                        }
+                        $notaFiscal->setLogradouroDestinatario($endereco_faturamento['logradouro'] ?? '');
+                        $notaFiscal->setNumeroDestinatario($endereco_faturamento['numero'] ?? '');
+                        $notaFiscal->setBairroDestinatario($endereco_faturamento['bairro'] ?? '');
+                        $notaFiscal->setCepDestinatario($endereco_faturamento['cep'] ?? '');
+                        $notaFiscal->setCidadeDestinatario($endereco_faturamento['cidade'] ?? '');
+                        $notaFiscal->setEstadoDestinatario($endereco_faturamento['estado']);
+                    }
+                } else {
+                    throw new ViewException('NFe sem cliente');
+                }
+            }
 
             $dentro_ou_fora = $notaFiscal->getEstadoDestinatario() !== $nfeConfigs['siglaUF'] ? 'fora' : 'dentro';
 
@@ -204,9 +226,6 @@ class NotaFiscalBusiness
 
             $notaFiscal->setIndicadorFormaPagto(IndicadorFormaPagto::VISTA['codigo']);
 
-            $notaFiscal = $this->notaFiscalEntityHandler->deleteAllItens($notaFiscal);
-            $this->notaFiscalEntityHandler->getDoctrine()->flush();
-
             // Atenção, aqui tem que verificar a questão do arredondamento
             if ($venda->subtotal > 0.0) {
                 $fatorDesconto = 1 - round(bcdiv($venda->valorTotal, $venda->subtotal, 4), 2);
@@ -216,6 +235,10 @@ class NotaFiscalBusiness
 
             $somaDescontosItens = 0.0;
             $ordem = 1;
+
+            /** @var ProdutoRepository $repoProduto */
+            $repoProduto = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Produto::class);
+
             /** @var VendaItem $vendaItem */
             foreach ($venda->itens as $vendaItem) {
 
@@ -242,7 +265,6 @@ class NotaFiscalBusiness
                 $nfItem->setSubTotal($valorTotalItem);
 
 
-
                 $cfop = $vendaItem->produto->jsonData['cfop_' . $dentro_ou_fora] ?? ($dentro_ou_fora === 'dentro' ? $cfop_padrao_dentro_do_estado : $cfop_padrao_fora_do_estado);
 
                 $nfItem->setCfop($cfop);
@@ -257,7 +279,7 @@ class NotaFiscalBusiness
                 }
 
                 if ($vendaItem->produto !== null) {
-                    $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Produto::class)->findOneBy(['id' => $vendaItem->produto->getId()]);
+                    $repoProduto->findOneBy(['id' => $vendaItem->produto->getId()]);
                     $nfItem->setCodigo($vendaItem->produto->getId());
                     $nfItem->setDescricao(trim($vendaItem->produto->nome));
                 } else {
@@ -312,7 +334,6 @@ class NotaFiscalBusiness
 
             /** @var NotaFiscal $notaFiscal */
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
-            $this->notaFiscalEntityHandler->getDoctrine()->flush();
 
             if ($novaNota) {
                 $notaFiscalVenda = new NotaFiscalVenda();
@@ -371,7 +392,6 @@ class NotaFiscalBusiness
                 }
                 $notaFiscal->setSerie($serie);
 
-                /** @var NotaFiscalRepository $repoNotaFiscal */
                 $nnf = $this->findProxNumFiscal($notaFiscal->getDocumentoEmitente(), $ambiente, $notaFiscal->getSerie(), $notaFiscal->getTipoNotaFiscal());
                 $notaFiscal->setNumero($nnf);
                 $mudou = true;
@@ -566,6 +586,8 @@ class NotaFiscalBusiness
             if (!$r || strtoupper(StringUtils::removerAcentos($r->getMunicipioNome())) !== strtoupper(StringUtils::removerAcentos($notaFiscal->getCidadeDestinatario()))) {
                 throw new ViewException('Município inválido: [' . $notaFiscal->getCidadeDestinatario() . '-' . $notaFiscal->getEstadoDestinatario() . ']');
             }
+        } else {
+            throw new ViewException('Município do destinatário n/d');
         }
 
         if ($notaFiscal->getDtEmissao() > $notaFiscal->getDtSaiEnt()) {
@@ -608,6 +630,13 @@ class NotaFiscalBusiness
         if ($notaFiscal && !$notaFiscal->getId()) {
             return false;
         }
+
+        try {
+            $this->checkNotaFiscal($notaFiscal);
+        } catch (\Exception $e) {
+            return false;
+        }
+
         return true;
 
     }
@@ -621,9 +650,14 @@ class NotaFiscalBusiness
      */
     public function permiteSalvar(NotaFiscal $notaFiscal)
     {
-        if (!$notaFiscal->getId() || $this->permiteFaturamento($notaFiscal)) {
+        if (!$notaFiscal->getId()) {
             return true;
         }
+
+        if (substr($notaFiscal->getCStat(), 0, 1) !== '1') {
+            return true;
+        }
+
         return false;
 
     }
