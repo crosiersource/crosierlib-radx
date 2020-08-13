@@ -1946,6 +1946,26 @@ class NotaFiscal implements EntityId
     }
 
     /**
+     * @return string|null
+     */
+    public function getXMLDecodedAsString(): ?string
+    {
+        if ($this->getXmlNota()) {
+            try {
+                $xmlUnzip = gzdecode(base64_decode($this->getXmlNota()));
+                return $xmlUnzip;
+            } catch (\Exception $e) {
+                try {
+                    return $this->xmlNota;
+                } catch (\Exception $e) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * @return null|string
      */
     public function getXmlNota(): ?string

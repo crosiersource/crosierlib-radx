@@ -24,7 +24,6 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\IndicadorFormaPagto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NCM;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalCartaCorrecao;
-use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalHistorico;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalVenda;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\TipoNotaFiscal;
@@ -176,6 +175,10 @@ class NotaFiscalBusiness
 
             if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
                 if ($venda->cliente) {
+
+                    $notaFiscal->setDocumentoDestinatario($venda->cliente->documento);
+                    $notaFiscal->setXNomeDestinatario($venda->cliente->nome);
+
                     $endereco_faturamento = $venda->cliente->getEnderecoByTipo('FATURAMENTO');
                     if (!$endereco_faturamento) {
                         throw new ViewException('NFe sem endereço de faturamento');
@@ -183,19 +186,40 @@ class NotaFiscalBusiness
                         if (!($endereco_faturamento['estado'] ?? false)) {
                             throw new ViewException('NFe sem UF no endereço de faturamento');
                         }
-                        $notaFiscal->setLogradouroDestinatario($endereco_faturamento['logradouro'] ?? '');
-                        $notaFiscal->setNumeroDestinatario($endereco_faturamento['numero'] ?? '');
-                        $notaFiscal->setBairroDestinatario($endereco_faturamento['bairro'] ?? '');
-                        $notaFiscal->setCepDestinatario($endereco_faturamento['cep'] ?? '');
-                        $notaFiscal->setCidadeDestinatario($endereco_faturamento['cidade'] ?? '');
-                        $notaFiscal->setEstadoDestinatario($endereco_faturamento['estado']);
+
+                        if (strlen($notaFiscal->getDocumentoDestinatario()) === 14 && (!($endereco_faturamento['logradouro'] ?? false) ||
+                                !($endereco_faturamento['bairro'] ?? false) ||
+                                !($endereco_faturamento['cep'] ?? false) ||
+                                !($endereco_faturamento['cidade'] ?? false) ||
+                                !($endereco_faturamento['estado'] ?? false))) {
+
+                            $endereco_consultado = $this->consultarCNPJ($notaFiscal->getDocumentoDestinatario(), $endereco_faturamento['estado']);
+
+                            if (!$notaFiscal->getInscricaoEstadualDestinatario()) {
+                                $notaFiscal->setInscricaoEstadualDestinatario($endereco_consultado['dados']['IE'] ?? '');
+                            }
+                            $notaFiscal->setLogradouroDestinatario($endereco_consultado['dados']['logradouro'] ?? '');
+                            $notaFiscal->setNumeroDestinatario($endereco_consultado['dados']['numero'] ?? '');
+                            $notaFiscal->setBairroDestinatario($endereco_consultado['dados']['bairro'] ?? '');
+                            $notaFiscal->setCepDestinatario($endereco_consultado['dados']['CEP'] ?? '');
+                            $notaFiscal->setCidadeDestinatario($endereco_consultado['dados']['cidade'] ?? '');
+                            $notaFiscal->setEstadoDestinatario($endereco_consultado['dados']['UF']);
+                        } else {
+                            $notaFiscal->setLogradouroDestinatario($endereco_faturamento['logradouro'] ?? '');
+                            $notaFiscal->setNumeroDestinatario($endereco_faturamento['numero'] ?? '');
+                            $notaFiscal->setBairroDestinatario($endereco_faturamento['bairro'] ?? '');
+                            $notaFiscal->setCepDestinatario($endereco_faturamento['cep'] ?? '');
+                            $notaFiscal->setCidadeDestinatario($endereco_faturamento['cidade'] ?? '');
+                            $notaFiscal->setEstadoDestinatario($endereco_faturamento['estado']);
+                        }
                     }
                 } else {
                     throw new ViewException('NFe sem cliente');
                 }
             }
 
-            $dentro_ou_fora = $notaFiscal->getEstadoDestinatario() !== $nfeConfigs['siglaUF'] ? 'fora' : 'dentro';
+//            $dentro_ou_fora = $notaFiscal->getEstadoDestinatario() !== $nfeConfigs['siglaUF'] ? 'fora' : 'dentro';
+            $dentro_ou_fora = 'dentro';
 
             $cfop_padrao_dentro_do_estado = $this->conn->fetchAll('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.cfop_padrao_dentro_do_estado']);
             $cfop_padrao_dentro_do_estado = $cfop_padrao_dentro_do_estado[0]['valor'] ?? '5102';
@@ -531,7 +555,7 @@ class NotaFiscalBusiness
         // Verifica algumas regras antes de mandar faturar na receita.
         $this->checkNotaFiscal($notaFiscal);
 
-        $this->addHistorico($notaFiscal, -1, 'INICIANDO FATURAMENTO');
+        $this->spedNFeBusiness->addHistorico($notaFiscal, -1, 'INICIANDO FATURAMENTO');
         if ($this->permiteFaturamento($notaFiscal)) {
 
             try {
@@ -544,18 +568,19 @@ class NotaFiscalBusiness
                 $this->handleIdeFields($notaFiscal);
                 $notaFiscal = $this->spedNFeBusiness->gerarXML($notaFiscal);
                 $notaFiscal = $this->spedNFeBusiness->enviaNFe($notaFiscal);
+                $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, 'XML enviado', $notaFiscal->getXmlNota());
                 if ($notaFiscal) {
-                    $this->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'FATURAMENTO PROCESSADO');
+                    $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'FATURAMENTO PROCESSADO');
                     // $this->imprimir($notaFiscal);
                 } else {
-                    $this->addHistorico($notaFiscal, -2, 'PROBLEMA AO FATURAR');
+                    $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO FATURAR');
                 }
             } catch (ViewException $e) {
-                $this->addHistorico($notaFiscal, -2, $e->getMessage());
+                $this->spedNFeBusiness->addHistorico($notaFiscal, -2, $e->getMessage());
             }
 
         } else {
-            $this->addHistorico($notaFiscal, 0, 'NOTA FISCAL NÃO FATURÁVEL. STATUS = [' . $notaFiscal->getCStat() . ']');
+            $this->spedNFeBusiness->addHistorico($notaFiscal, 0, 'NOTA FISCAL NÃO FATURÁVEL. STATUS = [' . $notaFiscal->getCStat() . ']');
         }
 
         return $notaFiscal;
@@ -594,25 +619,6 @@ class NotaFiscalBusiness
             throw new ViewException('Dt Emissão maior que Dt Saída/Entrada. Não é possível faturar.');
         }
 
-    }
-
-    /**
-     * @param NotaFiscal $notaFiscal
-     * @param $codigoStatus
-     * @param $descricao
-     * @param null $obs
-     * @throws ViewException
-     */
-    public function addHistorico(NotaFiscal $notaFiscal, $codigoStatus, $descricao, $obs = null): void
-    {
-        $historico = new NotaFiscalHistorico();
-        $dtHistorico = new \DateTime();
-        $historico->setDtHistorico($dtHistorico);
-        $historico->setCodigoStatus($codigoStatus);
-        $historico->setDescricao($descricao ? $descricao : ' ');
-        $historico->setObs($obs);
-        $historico->setNotaFiscal($notaFiscal);
-        $this->notaFiscalHistoricoEntityHandler->save($historico);
     }
 
     /**
@@ -757,22 +763,22 @@ class NotaFiscalBusiness
      */
     public function cancelar(NotaFiscal $notaFiscal)
     {
-        $this->addHistorico($notaFiscal, -1, 'INICIANDO CANCELAMENTO');
+        $this->spedNFeBusiness->addHistorico($notaFiscal, -1, 'INICIANDO CANCELAMENTO');
         $notaFiscal = $this->checkChaveAcesso($notaFiscal);
         try {
             $notaFiscalR = $this->spedNFeBusiness->cancelar($notaFiscal);
             if ($notaFiscalR) {
                 $notaFiscal = $notaFiscalR;
-                $this->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'CANCELAMENTO PROCESSADO');
+                $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'CANCELAMENTO PROCESSADO');
                 $notaFiscal = $this->consultarStatus($notaFiscal);
                 $this->spedNFeBusiness->imprimirCancelamento($notaFiscal);
             } else {
-                $this->addHistorico($notaFiscal, -2, 'PROBLEMA AO CANCELAR');
+                $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO CANCELAR');
             }
         } catch (\Exception | ViewException $e) {
-            $this->addHistorico($notaFiscal, -2, 'PROBLEMA AO CANCELAR: [' . $e->getMessage() . ']');
+            $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO CANCELAR: [' . $e->getMessage() . ']');
             if ($e instanceof ViewException) {
-                $this->addHistorico($notaFiscal, -2, $e->getMessage());
+                $this->spedNFeBusiness->addHistorico($notaFiscal, -2, $e->getMessage());
             }
         }
         return $notaFiscal;
@@ -801,16 +807,16 @@ class NotaFiscalBusiness
      */
     public function consultarStatus(NotaFiscal $notaFiscal): NotaFiscal
     {
-        $this->addHistorico($notaFiscal, -1, 'INICIANDO CONSULTA DE STATUS');
+        $this->spedNFeBusiness->addHistorico($notaFiscal, -1, 'INICIANDO CONSULTA DE STATUS');
         try {
             $notaFiscal = $this->spedNFeBusiness->consultarStatus($notaFiscal);
             if ($notaFiscal) {
-                $this->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'CONSULTA DE STATUS PROCESSADA');
+                $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'CONSULTA DE STATUS PROCESSADA');
             } else {
-                $this->addHistorico($notaFiscal, -2, 'PROBLEMA AO CONSULTAR STATUS');
+                $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO CONSULTAR STATUS');
             }
         } catch (\Exception $e) {
-            $this->addHistorico($notaFiscal, -2, 'PROBLEMA AO CONSULTAR STATUS: [' . $e->getMessage() . ']');
+            $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO CONSULTAR STATUS: [' . $e->getMessage() . ']');
         }
         return $notaFiscal;
     }
@@ -822,11 +828,11 @@ class NotaFiscalBusiness
      */
     public function cartaCorrecao(NotaFiscalCartaCorrecao $cartaCorrecao)
     {
-        $this->addHistorico($cartaCorrecao->getNotaFiscal(), -1, 'INICIANDO ENVIO DA CARTA DE CORREÇÃO');
+        $this->spedNFeBusiness->addHistorico($cartaCorrecao->getNotaFiscal(), -1, 'INICIANDO ENVIO DA CARTA DE CORREÇÃO');
         try {
             $cartaCorrecao = $this->spedNFeBusiness->cartaCorrecao($cartaCorrecao);
             if ($cartaCorrecao) {
-                $this->addHistorico(
+                $this->spedNFeBusiness->addHistorico(
                     $cartaCorrecao->getNotaFiscal(),
                     $cartaCorrecao->getNotaFiscal()->getCStat(),
                     $cartaCorrecao->getNotaFiscal()->getXMotivo(),
@@ -834,10 +840,10 @@ class NotaFiscalBusiness
                 $this->consultarStatus($cartaCorrecao->getNotaFiscal());
                 // $this->spedNFeBusiness->imprimirCartaCorrecao($cartaCorrecao);
             } else {
-                $this->addHistorico($cartaCorrecao->getNotaFiscal(), -2, 'PROBLEMA AO ENVIAR CARTA DE CORREÇÃO');
+                $this->spedNFeBusiness->addHistorico($cartaCorrecao->getNotaFiscal(), -2, 'PROBLEMA AO ENVIAR CARTA DE CORREÇÃO');
             }
         } catch (\Exception $e) {
-            $this->addHistorico($cartaCorrecao->getNotaFiscal(), -2, 'PROBLEMA AO ENVIAR CARTA DE CORREÇÃO: [' . $e->getMessage() . ']');
+            $this->spedNFeBusiness->addHistorico($cartaCorrecao->getNotaFiscal(), -2, 'PROBLEMA AO ENVIAR CARTA DE CORREÇÃO: [' . $e->getMessage() . ']');
         }
         return $cartaCorrecao;
     }
@@ -852,7 +858,7 @@ class NotaFiscalBusiness
     {
         $r = [];
         $infCons = $this->spedNFeBusiness->consultarCNPJ($cnpj, $uf);
-        if ($infCons->cStat->__toString() === '259') {
+        if (in_array($infCons->cStat->__toString(), ['258', '259'], true)) {
             $r['xMotivo'] = $infCons->xMotivo->__toString();
         } else {
             $r['dados'] = [
@@ -1072,7 +1078,7 @@ class NotaFiscalBusiness
 
 //            // Verificação se por algum motivo a numeração na fis_nf já não está pra frente...
 //            $ultimoNaBase = null;
-//            $sqlUltimoNumero = 'SELECT max(numero) as numero FROM fis_nf WHERE cstat in (100,135 AND documento_emitente = :documento_emitente AND ambiente = :ambiente AND serie = :serie AND tipo = :tipoNotaFiscal';
+//            $sqlUltimoNumero = 'SELECT max(numero) as numero FROM fis_nf WHERE cstat in (100,101,135) AND documento_emitente = :documento_emitente AND ambiente = :ambiente AND serie = :serie AND tipo = :tipoNotaFiscal';
 //
 //            $rUltimoNumero = $conn->fetchAll($sqlUltimoNumero,
 //                [

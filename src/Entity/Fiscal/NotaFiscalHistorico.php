@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\ORM\Mapping as ORM;
@@ -54,6 +55,7 @@ class NotaFiscalHistorico implements EntityId
      *
      * @ORM\Column(name="obs", type="string", nullable=false, length=255)
      * @var null|string
+     * @NotUppercase()
      */
     private $obs;
 

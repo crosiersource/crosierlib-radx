@@ -20,6 +20,7 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorre
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use NFePHP\Common\Exception\ValidatorException;
 use NFePHP\NFe\Common\Standardize;
@@ -193,9 +194,7 @@ class SpedNFeBusiness
 
             if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
 
-
-                $ufDestinatario = $notaFiscal->getEstadoDestinatario();
-                if ($ufDestinatario && $ufDestinatario === 'PR') {
+                if ($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF'] || $nfeConfigs['idDest_sempre1']) {
                     $idDest = 1;
                 } else {
                     $idDest = 2;
@@ -248,7 +247,12 @@ class SpedNFeBusiness
             } else {
                 if (($notaFiscal->getInscricaoEstadualDestinatario() === 'ISENTO') || !$notaFiscal->getInscricaoEstadualDestinatario()) {
                     unset($nfe->infNFe->dest->IE);
-                    $nfe->infNFe->dest->indIEDest = 2;
+                    // Rejeição 805: A SEFAZ do destinatário não permite Contribuinte Isento de Inscrição Estadual
+                    if (in_array($notaFiscal->getEstadoDestinatario(), ['AM', 'BA', 'CE', 'GO', 'MG', 'MS', 'MT', 'PE', 'RN', 'SE', 'SP'])) {
+                        $nfe->infNFe->dest->indIEDest = 9;
+                    } else {
+                        $nfe->infNFe->dest->indIEDest = 2;
+                    }
                 } else {
                     $nfe->infNFe->dest->indIEDest = 1;
                     if ($notaFiscal->getInscricaoEstadualDestinatario()) {
@@ -419,8 +423,8 @@ class SpedNFeBusiness
         }
 
         $nfe->infNFe->infRespTec->CNPJ = $nfeConfigs['cnpj'];
-        $nfe->infNFe->infRespTec->xContato = 'Carlos Eduardo Pauluk';
-        $nfe->infNFe->infRespTec->email = 'carlospauluk@gmail.com';
+        $nfe->infNFe->infRespTec->xContato = $nfeConfigs['infRespTec_xContato'];
+        $nfe->infNFe->infRespTec->email = $nfeConfigs['infRespTec_email'];
         $nfe->infNFe->infRespTec->fone = preg_replace('/\D/', '', $nfeConfigs['telefone']);
 
 
@@ -509,6 +513,8 @@ class SpedNFeBusiness
 
         $notaFiscal->setCStatLote($std->cStat);
         $notaFiscal->setXMotivoLote($std->xMotivo);
+
+        $this->addHistorico($notaFiscal, $std->cStat ?? -1, 'sefazConsultaChave', $xmlResp);
 
         if ($std->cStat === '104' || $std->cStat === '100') { //lote processado (tudo ok)
             $cStat = $std->protNFe->infProt->cStat;
@@ -845,6 +851,7 @@ class SpedNFeBusiness
             $xmlResp = $tools->sefazConsultaRecibo($notaFiscal->getNRec());
             $std = (new Standardize($xmlResp))->toStd();
             $notaFiscal->setCStatLote($std->cStat);
+            $this->addHistorico($notaFiscal, $std->cStat ?? -1, 'sefazConsultaRecibo', $xmlResp);
             $notaFiscal->setXMotivoLote($std->xMotivo);
             if ((int)$std->cStat === 104 || (int)$std->cStat === 100) { //lote processado (tudo ok)
                 $cStat = $std->protNFe->infProt->cStat;
@@ -947,6 +954,37 @@ class SpedNFeBusiness
                 $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();
                 break;
             }
+        }
+
+    }
+
+
+    /**
+     * @param NotaFiscal $notaFiscal
+     * @param $codigoStatus
+     * @param $descricao
+     * @param null $obs
+     * @throws ViewException
+     */
+    public function addHistorico(NotaFiscal $notaFiscal, $codigoStatus, $descricao, $obs = null): void
+    {
+        try {
+            $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
+            $conn->insert('fis_nf_historico', [
+                'dt_historico' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'codigo_status' => $codigoStatus,
+                'descricao' => $descricao,
+                'obs' => substr($obs, 0, 20000),
+                'fis_nf_id' => $notaFiscal->getId(),
+                'inserted' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'updated' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'version' => 0,
+                'estabelecimento_id' => 1,
+                'user_inserted_id' => 1,
+                'user_updated_id' => 1,
+            ]);
+        } catch (DBALException $e) {
+            throw new ViewException('Erro ao inserir fis_nf_historico');
         }
 
     }
