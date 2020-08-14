@@ -41,9 +41,16 @@ class VendaBusiness
         $venda['desconto'] = $rsTotais[0]['desconto'] ?? 0.0;
         $venda['valor_total'] = $rsTotais[0]['total'] ?? 0.0;
 
-
-
         $conn->update('ven_venda', $venda, ['id' => $vendaId]);
+    }
+
+    public function gerarInfoPagtos(Venda $venda): void
+    {
+        $infoPagtos = '';
+        foreach ($venda->pagtos as $pagto) {
+            $infoPagtos .= $pagto->planoPagto->descricao . ': ' . number_format($pagto->valorPagto, 2, ',', '.') . '<br>';
+        }
+        $venda->jsonData['infoPagtos'] = $infoPagtos;
     }
 
 }

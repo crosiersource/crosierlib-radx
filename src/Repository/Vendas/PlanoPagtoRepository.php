@@ -3,8 +3,8 @@
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Vendas;
 
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto;
 
 /**
  * Repository para a entidade PlanoPagto.
@@ -52,6 +52,20 @@ class PlanoPagtoRepository extends FilterRepository
                 'id' => $r['id'],
                 'text' => $r['codigo'] . ' - ' . $r['descricao'],
             ];
+        }
+        return $results;
+    }
+
+    /**
+     * @param bool|null $somenteAtivos
+     * @return mixed
+     */
+    public function arrayByCodigo(?bool $somenteAtivos = true)
+    {
+        $sql = 'SELECT * FROM ven_plano_pagto WHERE ativo IS TRUE ORDER BY codigo';
+        $rs = $this->getEntityManager()->getConnection()->fetchAll($sql);
+        foreach ($rs as $r) {
+            $results[$r['codigo']] = $r;
         }
         return $results;
     }
