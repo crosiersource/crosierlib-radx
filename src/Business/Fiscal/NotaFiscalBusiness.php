@@ -218,8 +218,12 @@ class NotaFiscalBusiness
                 }
             }
 
-//            $dentro_ou_fora = $notaFiscal->getEstadoDestinatario() !== $nfeConfigs['siglaUF'] ? 'fora' : 'dentro';
-            $dentro_ou_fora = 'dentro';
+            if (($nfeConfigs['idDest_sempre1'] ?? false) || ($notaFiscal->getEstadoDestinatario() !== $nfeConfigs['siglaUF'])) {
+                $dentro_ou_fora = 'dentro';
+            } else {
+                $dentro_ou_fora = 'fora';
+            }
+
 
             $cfop_padrao_dentro_do_estado = $this->conn->fetchAll('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.cfop_padrao_dentro_do_estado']);
             $cfop_padrao_dentro_do_estado = $cfop_padrao_dentro_do_estado[0]['valor'] ?? '5102';
