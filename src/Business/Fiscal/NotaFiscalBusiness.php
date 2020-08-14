@@ -315,6 +315,13 @@ class NotaFiscalBusiness
                     $nfItem->setDescricao(trim($vendaItem->jsonData['produto']['descricao']) ?? 'PRODUTO 00000');
                 }
 
+                $csosn = null;
+                if ($vendaItem->produto->jsonData['csosn'] ?? false) {
+                    $csosn = $vendaItem->produto->jsonData['csosn'];
+                } elseif ($nfeConfigs['CSOSN_padrao'] ?? false) {
+                    $csosn = $nfeConfigs['CSOSN_padrao'];
+                }
+                $nfItem->setCsosn($csosn);
                 $nfItem->setCst($vendaItem->produto->jsonData['cst_icms'] ?? null);
                 $nfItem->setCest($vendaItem->produto->jsonData['cest'] ?? null);
 
@@ -616,7 +623,9 @@ class NotaFiscalBusiness
                 throw new ViewException('Município inválido: [' . $notaFiscal->getCidadeDestinatario() . '-' . $notaFiscal->getEstadoDestinatario() . ']');
             }
         } else {
-            throw new ViewException('Município do destinatário n/d');
+            if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
+                throw new ViewException('Município do destinatário n/d');
+            }
         }
 
         if ($notaFiscal->getDtEmissao() > $notaFiscal->getDtSaiEnt()) {
