@@ -35,4 +35,15 @@ class ClienteRepository extends FilterRepository
         )->getValor();
     }
 
+    public function findProxGDocumento()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $rs = $conn->fetchAll('SELECT max(substr(documento,2,10)) as maxg FROM crm_cliente WHERE documento LIKE \'G%\'');
+        if ($rs[0]['maxg'] ?? false) {
+            return 'G' . str_pad(++$rs[0]['maxg'], 10, '0', STR_PAD_LEFT);
+        } else {
+            return 'G0000000001';
+        }
+    }
+
 }

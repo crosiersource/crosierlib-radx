@@ -22,7 +22,6 @@ class VendaBusiness
         $this->doctrine = $doctrine;
     }
 
-
     /**
      *
      * @param Venda $venda

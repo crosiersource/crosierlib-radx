@@ -21,7 +21,7 @@ class ClienteEntityHandler extends EntityHandler
 
     public function beforeSave(/** @var Cliente $cliente */ $cliente)
     {
-        $cliente->documento = preg_replace("/[^0-9]/", "", $cliente->documento);
+        $cliente->documento = preg_replace("/[^G^0-9]/", "", strtoupper($cliente->documento));
         if (strlen($cliente->documento) === 14) {
             $cliente->jsonData['tipo_pessoa'] = 'PJ';
         } else {
