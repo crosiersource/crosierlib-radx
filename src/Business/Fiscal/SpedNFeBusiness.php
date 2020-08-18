@@ -947,11 +947,13 @@ class SpedNFeBusiness
                 $itemXML->imposto->ICMS->ICMSSN900->vICMS = number_format(abs($nfItem->getIcmsValor()), 2, '.', '');
                 break;
             }
-            case 102:
+            case 103:
             default:
             {
                 $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
                 $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();
+                $itemXML->imposto->PIS->PISNT->CST = '07';
+                $itemXML->imposto->COFINS->COFINSNT->CST = '07';
                 break;
             }
         }
