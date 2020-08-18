@@ -194,7 +194,7 @@ class SpedNFeBusiness
 
             if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
 
-                if ($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF'] || $nfeConfigs['idDest_sempre1']) {
+                if ($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF'] || ($nfeConfigs['idDest_sempre1'] ?? false) {
                     $idDest = 1;
                 } else {
                     $idDest = 2;
