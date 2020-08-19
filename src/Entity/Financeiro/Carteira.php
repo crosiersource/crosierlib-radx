@@ -29,7 +29,7 @@ class Carteira implements EntityId
      *
      * @var int|null
      */
-    private $codigo;
+    public ?int $codigo = null;
 
     /**
      *
@@ -38,7 +38,7 @@ class Carteira implements EntityId
      *
      * @var string|null
      */
-    private $descricao;
+    public ?string $descricao = null;
 
     /**
      * Movimentações desta carteira não poderão ter suas datas alteradas para antes desta.
@@ -48,7 +48,7 @@ class Carteira implements EntityId
      *
      * @var \DateTime|null
      */
-    private $dtConsolidado;
+    public ?\DateTime $dtConsolidado = null;
 
     /**
      * Uma Carteira concreta é aquela em que podem ser efetuados créditos e
@@ -63,7 +63,7 @@ class Carteira implements EntityId
      *
      * @var bool|null
      */
-    private $concreta = false;
+    public ?bool $concreta = false;
 
     /**
      * Informa se esta carteira pode conter movimentações com status ABERTA.
@@ -73,7 +73,7 @@ class Carteira implements EntityId
      *
      * @var bool|null
      */
-    private $abertas = false;
+    public ?bool $abertas = false;
 
     /**
      * Informa se esta carteira é um caixa (ex.: caixa a vista, caixa a prazo).
@@ -83,7 +83,7 @@ class Carteira implements EntityId
      *
      * @var bool|null
      */
-    private $caixa = false;
+    public ?bool $caixa = false;
 
     /**
      * Informa se esta carteira possui talão de cheques.
@@ -93,7 +93,7 @@ class Carteira implements EntityId
      *
      * @var bool|null
      */
-    private $cheque = false;
+    public ?bool $cheque = false;
 
     /**
      * No caso da Carteira ser uma conta de banco, informa qual.
@@ -104,7 +104,7 @@ class Carteira implements EntityId
      *
      * @var Banco|null
      */
-    private $banco;
+    public ?Banco $banco = null;
 
     /**
      * Código da agência (sem o dígito verificador).
@@ -114,7 +114,7 @@ class Carteira implements EntityId
      *
      * @var string|null
      */
-    private $agencia;
+    public ?string $agencia = null;
 
     /**
      * Número da conta no banco (não segue um padrão).
@@ -124,7 +124,7 @@ class Carteira implements EntityId
      *
      * @var string|null
      */
-    private $conta;
+    public ?string $conta = null;
 
     /**
      * Utilizado para informar o limite disponível.
@@ -134,7 +134,7 @@ class Carteira implements EntityId
      *
      * @var float|null
      */
-    private $limite;
+    public ?float $limite = null;
 
     /**
      *
@@ -146,7 +146,7 @@ class Carteira implements EntityId
      *
      * @var OperadoraCartao|null
      */
-    private $operadoraCartao;
+    public ?OperadoraCartao $operadoraCartao = null;
 
     /**
      * Transient.
@@ -155,7 +155,7 @@ class Carteira implements EntityId
      *
      * @var string|null
      */
-    private $descricaoMontada;
+    public ?string $descricaoMontada = null;
 
 
     /**
@@ -166,7 +166,7 @@ class Carteira implements EntityId
      *
      * @var bool|null
      */
-    private $atual = false;
+    public ?bool $atual = false;
 
 
     public function getCodigo(bool $format = false)
