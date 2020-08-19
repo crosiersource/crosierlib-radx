@@ -12,6 +12,7 @@ use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoComposicao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto;
@@ -172,6 +173,8 @@ class NotaFiscalBusiness
 
 
             $notaFiscal->setEntradaSaida('S');
+            $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
+            $notaFiscal->setAmbiente($ambiente);
 
             if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
                 if ($venda->cliente) {
@@ -264,11 +267,31 @@ class NotaFiscalBusiness
             $somaDescontosItens = 0.0;
             $ordem = 1;
 
+
+            $itensNaNota = [];
+            /** @var VendaItem $vendaItem */
+            foreach ($venda->itens as $vendaItem) {
+                if ($vendaItem->produto->composicao === 'S') {
+                    /** @var ProdutoComposicao $produtoComposicao */
+                    foreach ($vendaItem->produto->composicoes as $produtoComposicao) {
+                        $mockItem = new VendaItem();
+                        $mockItem->produto = $produtoComposicao->produtoFilho;
+                        $mockItem->qtde = bcmul($vendaItem->qtde, $produtoComposicao->qtde, 3);
+                        $mockItem->precoVenda = $produtoComposicao->precoComposicao;
+                        $itensNaNota[] = $mockItem;
+                    }
+                } else {
+                    $itensNaNota[] = $vendaItem;
+                }
+            }
+
+
             /** @var ProdutoRepository $repoProduto */
             $repoProduto = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Produto::class);
 
+
             /** @var VendaItem $vendaItem */
-            foreach ($venda->itens as $vendaItem) {
+            foreach ($itensNaNota as $vendaItem) {
 
                 $nfItem = new NotaFiscalItem();
                 $nfItem->setNotaFiscal($notaFiscal);
@@ -294,7 +317,6 @@ class NotaFiscalBusiness
 
 
                 $cfop = $vendaItem->produto->jsonData['cfop_' . $dentro_ou_fora] ?? ($dentro_ou_fora === 'dentro' ? $cfop_padrao_dentro_do_estado : $cfop_padrao_fora_do_estado);
-
                 $nfItem->setCfop($cfop);
 
 
@@ -388,6 +410,7 @@ class NotaFiscalBusiness
             throw new \RuntimeException($erro, null, $e);
         }
     }
+
 
     /**
      * Lida com os campos que são gerados programaticamente.

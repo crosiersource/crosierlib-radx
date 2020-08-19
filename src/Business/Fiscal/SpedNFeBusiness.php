@@ -887,6 +887,7 @@ class SpedNFeBusiness
     /**
      * @param NotaFiscalItem $nfItem
      * @param \SimpleXMLElement $itemXML
+     * @throws ViewException
      */
     public function handleImpostos(NotaFiscalItem $nfItem, \SimpleXMLElement $itemXML): void
     {
@@ -898,6 +899,9 @@ class SpedNFeBusiness
             {
 
                 $cst = $nfItem->getCst();
+                if (!$cst) {
+                    throw new ViewException('CST não informado para o item ' . $nfItem->getOrdem() . ' (' . $nfItem->getDescricao() . ')');
+                }
                 $tagICMS = 'ICMS' . $cst;
 
                 if ($nfItem->getIcmsAliquota() > 0) {
