@@ -30,7 +30,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $UUID;
+    public ?string $UUID = null;
 
     /**
      *
@@ -41,7 +41,7 @@ class Movimentacao implements EntityId
      *
      * @var Fatura|null
      */
-    private $fatura;
+    public ?Fatura $fatura = null;
 
     /**
      *
@@ -51,7 +51,7 @@ class Movimentacao implements EntityId
      *
      * @var Modo|null
      */
-    private $modo;
+    public ?Modo $modo = null;
 
     /**
      *
@@ -61,7 +61,7 @@ class Movimentacao implements EntityId
      *
      * @var Banco|null
      */
-    private $documentoBanco;
+    public ?Banco $documentoBanco = null;
 
     /**
      *
@@ -70,7 +70,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $documentoNum;
+    public ?string $documentoNum = null;
 
 
     /**
@@ -81,7 +81,7 @@ class Movimentacao implements EntityId
      *
      * @var int|null
      */
-    private $sacado;
+    public ?int $sacado = null;
 
     /**
      * Para não precisar ir sempre consultar via API, principalmente em listagens.
@@ -91,7 +91,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $sacadoInfo;
+    public ?string $sacadoInfo = null;
 
     /**
      * Quem recebe esta movimentação.
@@ -101,7 +101,7 @@ class Movimentacao implements EntityId
      *
      * @var int|null
      */
-    private $cedente;
+    public ?int $cedente = null;
 
     /**
      * Para não precisar ir sempre consultar via API, principalmente em listagens.
@@ -111,7 +111,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $cedenteInfo;
+    public ?string $cedenteInfo = null;
 
     /**
      *
@@ -120,7 +120,7 @@ class Movimentacao implements EntityId
      *
      * @var int|null
      */
-    private $notaFiscalId;
+    public ?int $notaFiscalId = null;
 
     /**
      *
@@ -129,7 +129,7 @@ class Movimentacao implements EntityId
      *
      * @var bool|null
      */
-    private $quitado = false;
+    public ?bool $quitado = false;
 
 
     /**
@@ -140,7 +140,7 @@ class Movimentacao implements EntityId
      *
      * @var TipoLancto|null
      */
-    private $tipoLancto;
+    public ?TipoLancto $tipoLancto = null;
 
 
     /**
@@ -152,7 +152,7 @@ class Movimentacao implements EntityId
      *
      * @var Carteira|null
      */
-    private $carteira;
+    public ?Carteira $carteira = null;
 
 
     /**
@@ -165,7 +165,7 @@ class Movimentacao implements EntityId
      *
      * @var Carteira|null
      */
-    private $carteiraDestino;
+    public ?Carteira $carteiraDestino = null;
 
 
     /**
@@ -177,7 +177,7 @@ class Movimentacao implements EntityId
      *
      * @var Categoria|null
      */
-    private $categoria;
+    public ?Categoria $categoria = null;
 
 
     /**
@@ -188,7 +188,7 @@ class Movimentacao implements EntityId
      *
      * @var CentroCusto|null
      */
-    private $centroCusto;
+    public ?CentroCusto $centroCusto = null;
 
 
     /**
@@ -201,7 +201,7 @@ class Movimentacao implements EntityId
      *
      * @var GrupoItem|null
      */
-    private $grupoItem;
+    public ?GrupoItem $grupoItem = null;
 
 
     /**
@@ -211,7 +211,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $status;
+    public ?string $status = null;
 
 
     /**
@@ -221,14 +221,14 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $descricao;
+    public ?string $descricao = null;
 
     /**
      * Transient.
      * @Groups("entity")
      * @var string|null
      */
-    private $descricaoMontada;
+    public ?string $descricaoMontada = null;
 
 
     // ---------------------------------------------------------------------------------------
@@ -242,7 +242,7 @@ class Movimentacao implements EntityId
      *
      * @var \DateTime|null
      */
-    private $dtMoviment;
+    public ?\DateTime $dtMoviment = null;
 
     /**
      * Data prevista para pagamento.
@@ -252,7 +252,7 @@ class Movimentacao implements EntityId
      *
      * @var \DateTime|null
      */
-    private $dtVencto;
+    public ?\DateTime $dtVencto = null;
 
     /**
      * Data prevista (postergando para dia útil) para pagamento.
@@ -262,7 +262,7 @@ class Movimentacao implements EntityId
      *
      * @var \DateTime|null
      */
-    private $dtVenctoEfetiva;
+    public ?\DateTime $dtVenctoEfetiva = null;
 
     /**
      * Data em que a movimentação foi paga.
@@ -272,7 +272,7 @@ class Movimentacao implements EntityId
      *
      * @var \DateTime|null
      */
-    private $dtPagto;
+    public ?\DateTime $dtPagto = null;
 
     /**
      * Se dtPagto != null ? dtPagto : dtVencto.
@@ -282,7 +282,7 @@ class Movimentacao implements EntityId
      *
      * @var \DateTime|null
      */
-    private $dtUtil;
+    public ?\DateTime $dtUtil = null;
 
 
     // ---------------------------------------------------------------------------------------
@@ -296,7 +296,7 @@ class Movimentacao implements EntityId
      *
      * @var Banco|null
      */
-    private $chequeBanco;
+    public ?Banco $chequeBanco = null;
 
     /**
      * Código da agência (sem o dígito verificador).
@@ -306,7 +306,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $chequeAgencia;
+    public ?string $chequeAgencia = null;
 
     /**
      * Número da conta no banco (não segue um padrão).
@@ -316,7 +316,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $chequeConta;
+    public ?string $chequeConta = null;
 
     /**
      *
@@ -325,7 +325,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $chequeNumCheque;
+    public ?string $chequeNumCheque = null;
 
     // ---------------------------------------------------------------------------------------
     // ---------- CAMPOS PARA MOVIMENTAÇÃO DE CARTÃO
@@ -339,7 +339,7 @@ class Movimentacao implements EntityId
      *
      * @var OperadoraCartao|null
      */
-    private $operadoraCartao;
+    public ?OperadoraCartao $operadoraCartao = null;
 
     /**
      *
@@ -349,7 +349,7 @@ class Movimentacao implements EntityId
      *
      * @var BandeiraCartao|null
      */
-    private $bandeiraCartao;
+    public ?BandeiraCartao $bandeiraCartao = null;
 
     /**
      *
@@ -358,7 +358,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $planoPagtoCartao;
+    public ?string $planoPagtoCartao = null;
 
     // ---------------------------------------------------------------------------------------
     // ---------- CAMPOS PARA "RECORRÊNCIA"
@@ -370,7 +370,7 @@ class Movimentacao implements EntityId
      *
      * @var bool|null
      */
-    private $recorrente = false;
+    public ?bool $recorrente = false;
 
     /**
      *
@@ -379,7 +379,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $recorrFrequencia;
+    public ?string $recorrFrequencia = null;
 
     /**
      *
@@ -388,7 +388,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $recorrTipoRepet;
+    public ?string $recorrTipoRepet = null;
 
     /**
      * Utilizar 32 para marcar o último dia do mês.
@@ -398,7 +398,7 @@ class Movimentacao implements EntityId
      *
      * @var int|null
      */
-    private $recorrDia;
+    public ?int $recorrDia = null;
 
     /**
      * Utilizado para marcar a variação em relação ao dia em que seria o vencimento.
@@ -410,7 +410,7 @@ class Movimentacao implements EntityId
      *
      * @var int|null
      */
-    private $recorrVariacao;
+    public ?int $recorrVariacao = null;
 
     // ---------------------------------------------------------------------------------------
     // ---------- CAMPOS PARA VALORES
@@ -423,7 +423,7 @@ class Movimentacao implements EntityId
      *
      * @var float|null
      */
-    private $valor;
+    public ?float $valor = null;
 
     /**
      * Possíveis descontos (sempre negativo).
@@ -433,7 +433,7 @@ class Movimentacao implements EntityId
      *
      * @var float|null
      */
-    private $descontos;
+    public ?float $descontos = null;
 
     /**
      * Possíveis acréscimos (sempre positivo).
@@ -443,7 +443,7 @@ class Movimentacao implements EntityId
      *
      * @var float|null
      */
-    private $acrescimos;
+    public ?float $acrescimos = null;
 
     /**
      * Valor total informado no campo e que é salvo no banco (pode divergir da
@@ -454,7 +454,7 @@ class Movimentacao implements EntityId
      *
      * @var float|null
      */
-    private $valorTotal;
+    public ?float $valorTotal = null;
 
     // ---------------------------------------------------------------------------------------
 
@@ -468,7 +468,7 @@ class Movimentacao implements EntityId
      *
      * @var Cadeia|null
      */
-    private $cadeia;
+    public ?Cadeia $cadeia = null;
 
     /**
      *
@@ -477,7 +477,7 @@ class Movimentacao implements EntityId
      *
      * @var bool|null
      */
-    private $parcelamento = false;
+    public ?bool $parcelamento = false;
 
     /**
      * Caso a movimentação faça parte de uma cadeia, informa em qual posição.
@@ -488,7 +488,7 @@ class Movimentacao implements EntityId
      *
      * @var int|null
      */
-    private $cadeiaOrdem;
+    public ?int $cadeiaOrdem = null;
 
     /**
      * Informa o total de movimentações na cadeia. Campo apenas auxiliar.
@@ -499,7 +499,7 @@ class Movimentacao implements EntityId
      *
      * @var int|null
      */
-    private $cadeiaQtde;
+    public ?int $cadeiaQtde = null;
 
     /**
      *
@@ -508,7 +508,7 @@ class Movimentacao implements EntityId
      *
      * @var string|null
      */
-    private $obs;
+    public ?string $obs = null;
 
     /**
      *

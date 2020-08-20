@@ -205,6 +205,25 @@
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"/>
 
 
+        <!-- FaturaRepository -->
+        <service id="crosier_source.crosier_lib_radx_bundle.repository.financeiro.fatura_repository"
+                 class="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\FaturaRepository"
+                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+            <tag name="doctrine.repository_service"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\FaturaRepository"
+                 alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.fatura_repository"/>
+        <!-- FaturaEntityHandler -->
+        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.fatura_entity_handler"
+                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler"
+                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.cadeia_entity_handler"/>
+            <argument type="service" id="monolog.logger"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler"
+                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.fatura_entity_handler"/>
+
+
         <!-- OperadoraCartaoRepository -->
         <service id="crosier_source.crosier_lib_radx_bundle.repository.financeiro.operadora_cartao_repository"
                  class="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\OperadoraCartaoRepository"

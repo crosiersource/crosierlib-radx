@@ -20,6 +20,11 @@ class PlanoPagtoRepository extends FilterRepository
         return PlanoPagto::class;
     }
 
+    /**
+     * @param $descricao
+     * @return |null
+     * @throws \Exception
+     */
     public function findByDescricao($descricao)
     {
         $ql = "SELECT pp FROM CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto pp WHERE pp.descricao = :descricao";
@@ -37,20 +42,39 @@ class PlanoPagtoRepository extends FilterRepository
         return count($results) == 1 ? $results[0] : null;
     }
 
+    /**
+     * @return array
+     */
     public function findAtuaisSelect2JS(): array
     {
+        $conn = $this->getEntityManager()->getConnection();
         $sql = 'SELECT * FROM ven_plano_pagto WHERE ativo IS TRUE ORDER BY codigo';
-        $rs = $this->getEntityManager()->getConnection()->fetchAll($sql);
+        $rs = $conn->fetchAll($sql);
         $results = [
             [
                 'id' => 0,
                 'text' => '...'
             ]
         ];
+
+        $rCarteirasCaixas = $conn->fetchAll('SELECT * FROM fin_carteira WHERE caixa IS TRUE');
+        $rCarteirasCartao = $conn->fetchAll('SELECT * FROM fin_carteira WHERE operadora_cartao_id IS NOT NULL');
+        $rCarteirasBanco = $conn->fetchAll('SELECT * FROM fin_carteira WHERE banco_id IS NOT NULL');
+
         foreach ($rs as $r) {
+            $jsonData = json_decode($r['json_data'], true);
+            if ($jsonData['tipo_carteiras'] === 'caixa') {
+                $carteiras = $rCarteirasCaixas;
+            } else if ($jsonData['tipo_carteiras'] === 'operadora_cartao') {
+                $carteiras = $rCarteirasCartao;
+            } else if ($jsonData['tipo_carteiras'] === 'banco') {
+                $carteiras = $rCarteirasBanco;
+            }
             $results[] = [
                 'id' => $r['id'],
                 'text' => $r['codigo'] . ' - ' . $r['descricao'],
+                'json_data' => json_decode($r['json_data'], true),
+                'carteiras' => $carteiras ?? []
             ];
         }
         return $results;

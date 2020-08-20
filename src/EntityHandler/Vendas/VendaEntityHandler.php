@@ -35,6 +35,7 @@ class VendaEntityHandler extends EntityHandler
      * @param ParameterBagInterface $parameterBag
      * @param SyslogBusiness $syslog
      * @param VendaBusiness $vendaBusiness
+     * @param ClienteEntityHandler $clienteEntityHandler
      */
     public function __construct(EntityManagerInterface $doctrine,
                                 Security $security,
@@ -73,7 +74,9 @@ class VendaEntityHandler extends EntityHandler
                 if ($cliente) {
                     $venda->cliente = $cliente;
                 }
-            } else {
+            }
+
+            if (!$venda->cliente) {
                 if ($venda->jsonData['cliente_nome'] ?? false) {
                     $cliente = new Cliente();
                     $cliente->nome = $venda->jsonData['cliente_nome'];
@@ -111,7 +114,7 @@ class VendaEntityHandler extends EntityHandler
             }
         }
         if ($alterouCliente) {
-            $this->clienteEntityHandler->save($cliente);
+            $this->clienteEntityHandler->save($venda->cliente);
         }
 
         $venda->jsonData['cliente_documento'] = $venda->cliente->documento;
