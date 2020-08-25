@@ -24,8 +24,6 @@ use Symfony\Component\Security\Core\Security;
 class VendaEntityHandler extends EntityHandler
 {
 
-    private VendaBusiness $vendaBusiness;
-
     private ClienteEntityHandler $clienteEntityHandler;
 
     /**
@@ -41,11 +39,9 @@ class VendaEntityHandler extends EntityHandler
                                 Security $security,
                                 ParameterBagInterface $parameterBag,
                                 SyslogBusiness $syslog,
-                                VendaBusiness $vendaBusiness,
                                 ClienteEntityHandler $clienteEntityHandler)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
-        $this->vendaBusiness = $vendaBusiness;
         $this->clienteEntityHandler = $clienteEntityHandler;
     }
 

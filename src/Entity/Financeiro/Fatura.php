@@ -61,7 +61,7 @@ class Fatura implements EntityId
      *
      * @ORM\OneToMany(
      *      targetEntity="Movimentacao",
-     *      mappedBy="cadeia",
+     *      mappedBy="fatura",
      *      orphanRemoval=true
      * )
      */

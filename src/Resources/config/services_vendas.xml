@@ -18,7 +18,6 @@
         <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"
                  class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler"
                  parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"/>
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler"
@@ -49,6 +48,7 @@
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"/>
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.fatura_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness"
                  alias="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"/>

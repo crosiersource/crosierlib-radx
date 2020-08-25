@@ -12,6 +12,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CarteiraRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CategoriaRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\ModoRepository;
@@ -33,13 +34,17 @@ class VendaBusiness
 
     private FaturaEntityHandler $faturaEntityHandler;
 
+    private VendaEntityHandler $vendaEntityHandler;
+
     public function __construct(EntityManagerInterface $doctrine,
                                 MovimentacaoEntityHandler $movimentacaoEntityHandler,
-                                FaturaEntityHandler $faturaEntityHandler)
+                                FaturaEntityHandler $faturaEntityHandler,
+                                VendaEntityHandler $vendaEntityHandler)
     {
         $this->doctrine = $doctrine;
         $this->movimentacaoEntityHandler = $movimentacaoEntityHandler;
         $this->faturaEntityHandler = $faturaEntityHandler;
+        $this->vendaEntityHandler = $vendaEntityHandler;
     }
 
     /**
@@ -81,23 +86,43 @@ class VendaBusiness
         $venda->jsonData['infoPagtos'] = $infoPagtos;
     }
 
+
     /**
      * @param Venda $venda
      * @throws ViewException
      */
-    public function gerarFaturaPorVenda(Venda $venda)
+    public function finalizarPV(Venda $venda)
     {
-        if ($venda->pagtos->count() < 1) {
-            throw new ViewException('Nenhuma informação de pagto na venda');
+        try {
+            if ($venda->pagtos->count() < 1) {
+                throw new ViewException('Nenhuma informação de pagto na venda');
+            }
+            $this->movimentacaoEntityHandler->getDoctrine()->beginTransaction();
+            $fatura = $this->gerarFaturaPorVenda($venda);
+            $venda->jsonData['fatura_id'] = $fatura->getId();
+            $venda->status = 'PV FINALIZADO';
+            $this->vendaEntityHandler->save($venda);
+            $this->movimentacaoEntityHandler->getDoctrine()->commit();
+        } catch (ViewException $e) {
+            $this->movimentacaoEntityHandler->getDoctrine()->rollback();
+            throw $e;
         }
 
+    }
 
+    /**
+     * @param Venda $venda
+     * @return Fatura
+     * @throws ViewException
+     */
+    private function gerarFaturaPorVenda(Venda $venda)
+    {
         try {
-            $this->movimentacaoEntityHandler->getDoctrine()->beginTransaction();
 
             $fatura = new Fatura();
             $fatura->dtFatura = $venda->dtVenda;
             $fatura->fechada = true;
+            $fatura->jsonData['venda_id'] = $venda->getId();
             $this->faturaEntityHandler->save($fatura);
 
             /** @var TipoLanctoRepository $repoTipoLancto */
@@ -138,12 +163,13 @@ class VendaBusiness
                 $this->movimentacaoEntityHandler->save($movimentacao);
             }
 
-            $this->movimentacaoEntityHandler->getDoctrine()->commit();
+            return $fatura;
 
         } catch (\Throwable $e) {
-            $this->movimentacaoEntityHandler->getDoctrine()->rollback();
             if ($e instanceof ViewException) {
-                throw $e;
+                /** @var ViewException $ve */
+                $ve = $e;
+                throw $ve;
             }
             throw new ViewException('Erro ao gerar fatura para venda (id = "' . $venda->getId() . '")');
         }
