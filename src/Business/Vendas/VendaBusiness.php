@@ -175,4 +175,30 @@ class VendaBusiness
         }
     }
 
+
+    /**
+     * Regras: se for venda do ecommerce, só permite faturar se status estiver "Pedido em Separação" e possuir saldo
+     * em estoque atendível para ecommerce.
+     * @param Venda $venda
+     * @return bool
+     */
+    public function permiteFaturamento(Venda $venda): bool
+    {
+        $permite = true;
+        if ($venda->jsonData['canal'] === 'ECOMMERCE') {
+            $permite = $permite && ($venda->jsonData['ecommerce_status_descricao'] ?? '') === 'Pedido em Separação';
+            foreach ($venda->itens as $item) {
+                foreach ($item->produto->saldos as $saldo) {
+                    if ($saldo->jsonData['venda_ecommerce'] && $saldo->qtde > 0) {
+                        $permite = $permite && true;
+                    }
+                }
+            }
+        }
+
+
+        return $permite;
+
+    }
+
 }

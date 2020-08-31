@@ -145,6 +145,14 @@ class Produto implements EntityId
 
     /**
      *
+     * @ORM\OneToMany(targetEntity="ProdutoSaldo", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @var ProdutoSaldo[]|ArrayCollection|null
+     *
+     */
+    public $saldos;
+
+    /**
+     *
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
@@ -152,11 +160,13 @@ class Produto implements EntityId
      */
     public ?array $jsonData = null;
 
+
     public function __construct()
     {
         $this->imagens = new ArrayCollection();
         $this->composicoes = new ArrayCollection();
         $this->precos = new ArrayCollection();
+        $this->saldos = new ArrayCollection();
     }
 
 
