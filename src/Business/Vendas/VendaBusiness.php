@@ -10,6 +10,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
+use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
@@ -180,25 +181,25 @@ class VendaBusiness
      * Regras: se for venda do ecommerce, só permite faturar se status estiver "Pedido em Separação" e possuir saldo
      * em estoque atendível para ecommerce.
      * @param Venda $venda
-     * @return bool
+     * @throws ViewException
      */
-    public function permiteFaturamento(Venda $venda): bool
+    public function verificarPermiteFaturamento(Venda $venda): void
     {
-        $permite = true;
         if ($venda->jsonData['canal'] === 'ECOMMERCE') {
-            $permite = $permite && ($venda->jsonData['ecommerce_status_descricao'] ?? '') === 'Pedido em Separação';
+
+            if (($venda->jsonData['ecommerce_status_descricao'] ?? '') !== 'Pedido em Separação') {
+                throw new ViewException('Status difere de "Pedido em Separação". Impossível faturar!');
+            }
+
+            /** @var VendaItem $item */
             foreach ($venda->itens as $item) {
                 foreach ($item->produto->saldos as $saldo) {
-                    if ($saldo->jsonData['venda_ecommerce'] && $saldo->qtde > 0) {
-                        $permite = $permite && true;
+                    if ($saldo->jsonData['venda_ecommerce'] && $saldo->qtde <= 0) {
+                        throw new ViewException('Produto ("' . $item->descricao . '") sem estoque suficiente para venda e-commerce (Qtde em estoque: ' . $saldo->qtde . ')');
                     }
                 }
             }
         }
-
-
-        return $permite;
-
     }
 
 }

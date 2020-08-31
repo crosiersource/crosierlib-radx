@@ -144,6 +144,7 @@ class NotaFiscalBusiness
     public function saveNotaFiscalVenda(Venda $venda, NotaFiscal $notaFiscal, bool $alterouTipo): ?NotaFiscal
     {
         try {
+
             $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
             $jaExiste = $conn->fetchAll('SELECT * FROM fis_nf_venda WHERE venda_id = :vendaId', ['vendaId' => $venda->getId()]);
 
