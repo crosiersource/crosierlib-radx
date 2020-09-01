@@ -5,6 +5,7 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas;
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
@@ -120,6 +121,59 @@ class VendaEntityHandler extends EntityHandler
         $venda->desconto = $venda->desconto ?? 0.0;
         $venda->valorTotal = $venda->valorTotal ?? 0.0;
     }
+
+    public function beforeClone($novaVenda)
+    {
+        /** @var Venda $novaVenda */
+        parent::beforeClone($novaVenda);
+        $novaVenda->status = 'PV ABERTO';
+    }
+
+
+    /**
+     * @param $novaVenda
+     * @param $velhaVenda
+     * @throws ViewException
+     */
+    public function afterClone($novaVenda, $velhaVenda)
+    {
+        try {
+            $conn = $this->getDoctrine()->getConnection();
+            /** @var Venda $novaVenda */
+            /** @var Venda $velhaVenda */
+            $agora = (new \DateTime())->format('Y-m-d H:i:s');
+            foreach ($velhaVenda->itens as $item) {
+
+                $novoItem =
+                    [
+                        'venda_id' => $novaVenda->getId(),
+                        'ordem' => $item->ordem,
+                        'qtde' => $item->qtde,
+                        'unidade_id' => $item->unidade->getId(),
+                        'produto_id' => $item->produto->getId(),
+                        'descricao' => $item->descricao,
+                        'preco_venda' => $item->precoVenda,
+                        'subtotal' => $item->subtotal,
+                        'desconto' => $item->desconto,
+                        'total' => $item->total,
+                        'devolucao' => ($item->devolucao ? 1 : 0),
+                        'json_data' => json_encode($item->jsonData),
+                        'inserted' => $agora,
+                        'updated' => $agora,
+                        'version' => 0,
+                        'estabelecimento_id' => 1,
+                        'user_inserted_id' => 1,
+                        'user_updated_id' => 1,
+                    ];
+
+                $conn->insert('ven_venda_item', $novoItem);
+            }
+        } catch (\Throwable $e) {
+            $this->syslog->err('Erro ao clonar itens da venda', 'novaVenda.id = ' . $novaVenda->getId());
+            throw new ViewException('Erro ao clonar itens da venda');
+        }
+    }
+
 
     public function getEntityClass(): string
     {
