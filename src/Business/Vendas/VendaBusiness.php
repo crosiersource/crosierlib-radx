@@ -190,15 +190,6 @@ class VendaBusiness
             if (($venda->jsonData['ecommerce_status_descricao'] ?? '') !== 'Pedido em Separação') {
                 throw new ViewException('Status difere de "Pedido em Separação". Impossível faturar!');
             }
-
-            /** @var VendaItem $item */
-            foreach ($venda->itens as $item) {
-                foreach ($item->produto->saldos as $saldo) {
-                    if ($saldo->jsonData['venda_ecommerce'] && $saldo->qtde <= 0) {
-                        throw new ViewException('Produto ("' . $item->descricao . '") sem estoque suficiente para venda e-commerce (Qtde em estoque: ' . $saldo->qtde . ')');
-                    }
-                }
-            }
         }
     }
 

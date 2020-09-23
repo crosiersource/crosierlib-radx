@@ -183,7 +183,22 @@ class NotaFiscalBusiness
                     $notaFiscal->setDocumentoDestinatario($venda->cliente->documento);
                     $notaFiscal->setXNomeDestinatario($venda->cliente->nome);
 
-                    $endereco_faturamento = $venda->cliente->getEnderecoByTipo('FATURAMENTO');
+                    $notaFiscal->setFoneDestinatario($venda->cliente->jsonData['fone1'] ?? '');
+                    $notaFiscal->setEmailDestinatario($venda->cliente->jsonData['email'] ?? '');
+
+                    // Se a venda é do ecommerce, então utiliza os dados da entrega para o endereço
+                    if ($venda->jsonData['ecommerce_entrega_logradouro'] ?? false) {
+                        $endereco_faturamento['logradouro'] = $venda->jsonData['ecommerce_entrega_logradouro'];
+                        $endereco_faturamento['numero'] = $venda->jsonData['ecommerce_entrega_numero'] ?? '';
+                        $endereco_faturamento['bairro'] = $venda->jsonData['ecommerce_entrega_bairro'] ?? '';
+                        $endereco_faturamento['cidade'] = $venda->jsonData['ecommerce_entrega_cidade'] ?? '';
+                        $endereco_faturamento['estado'] = $venda->jsonData['ecommerce_entrega_uf'] ?? '';
+                        $endereco_faturamento['cep'] = $venda->jsonData['ecommerce_entrega_cep'] ?? '';
+                    } else {
+                        // se não, pega o primeiro endereço que esteja marcado como "FATURAMENTO"
+                        $endereco_faturamento = $venda->cliente->getEnderecoByTipo('FATURAMENTO');
+                    }
+
                     if (!$endereco_faturamento) {
                         throw new ViewException('NFe sem endereço de faturamento');
                     } else {
@@ -227,7 +242,6 @@ class NotaFiscalBusiness
             } else {
                 $dentro_ou_fora = 'fora';
             }
-
 
             $cfop_padrao_dentro_do_estado = $this->conn->fetchAll('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.cfop_padrao_dentro_do_estado']);
             $cfop_padrao_dentro_do_estado = $cfop_padrao_dentro_do_estado[0]['valor'] ?? '5102';

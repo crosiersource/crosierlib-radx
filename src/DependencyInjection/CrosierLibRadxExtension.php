@@ -27,6 +27,7 @@ class CrosierLibRadxExtension extends Extension
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services_crm.xml');
+        $loader->load('services_ecommerce.xml');
         $loader->load('services_estoque.xml');
         $loader->load('services_financeiro.xml');
         $loader->load('services_fiscal.xml');
