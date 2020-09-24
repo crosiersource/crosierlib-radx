@@ -1108,6 +1108,7 @@ class IntegradorWebStorm implements IntegradorECommerce
 
         $this->syslog->info('integraProduto - save', $syslog_obs);
         $this->produtoEntityHandler->save($produto);
+        $this->produtoEntityHandler->getDoctrine()->clear();
 
         // como o comportamento padrão do ProdutoEntityHandler.save() é setar o $produto->jsonData['ecommerce_desatualizado'] = '1',
         // então tenho que salvar diretamente para não passar pelo ProdutoEntityHandler
