@@ -32,7 +32,6 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandle
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\SubgrupoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler;
-use CrosierSource\CrosierLibRadxBundle\Messenger\ECommerce\Message\IntegrarEstoqueEPrecosEcommerceMessage;
 use CrosierSource\CrosierLibRadxBundle\Messenger\ECommerce\Message\IntegrarProdutoEcommerceMessage;
 use CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DeptoRepository;
@@ -43,7 +42,6 @@ use CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\PlanoPagtoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\ConnectionException;
-use Doctrine\DBAL\Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Security;
@@ -1286,7 +1284,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                         'dt' => (new \DateTime())->format('d/m/Y H:i:s'),
                         'id' => $rProduto['id']
                     ]);
-                $this->bus->dispatch(new IntegrarEstoqueEPrecosEcommerceMessage($rProduto['id']));
+                $this->bus->dispatch(new IntegrarProdutoEcommerceMessage($rProduto['id']));
                 $conn->commit();
             } catch (\Throwable $e) {
                 try {
