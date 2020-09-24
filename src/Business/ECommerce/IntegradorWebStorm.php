@@ -1112,6 +1112,7 @@ class IntegradorWebStorm implements IntegradorECommerce
 
         // como o comportamento padrão do ProdutoEntityHandler.save() é setar o $produto->jsonData['ecommerce_desatualizado'] = '1',
         // então tenho que salvar diretamente para não passar pelo ProdutoEntityHandler
+        $this->syslog->debug('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_desatualizado\', \'0\') WHERE id = :id (' . $produto->getId() . ')', $syslog_obs);
         $conn->executeUpdate('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_desatualizado\', \'0\') WHERE id = :id', ['id' => $produto->getId()]);
 sleep(10);
         $tt = (int)(microtime(true) - $start);
