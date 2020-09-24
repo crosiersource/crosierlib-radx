@@ -1101,13 +1101,18 @@ class IntegradorWebStorm implements IntegradorECommerce
 
         $produto->jsonData['ecommerce_dt_integr'] = (new \DateTime())->modify('+1 minutes')->format('Y-m-d H:i:s');
         $produto->jsonData['ecommerce_dt_marcado_integr'] = null;
-        $produto->jsonData['ecommerce_desatualizado'] = '0';
+
         /** @var User $user */
         $user = $this->security->getUser();
         $produto->jsonData['ecommerce_integr_por'] = $user ? $user->getNome() : 'n/d';
 
         $this->syslog->info('integraProduto - save', $syslog_obs);
         $this->produtoEntityHandler->save($produto);
+
+        // como o comportamento padrão do ProdutoEntityHandler.save() é setar o $produto->jsonData['ecommerce_desatualizado'] = '1',
+        // então tenho que salvar diretamente para não passar pelo ProdutoEntityHandler
+        $conn->executeUpdate('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_desatualizado\', \'0\') WHERE id = :id', ['id' => $produto->getId()]);
+
         $tt = (int)(microtime(true) - $start);
         $this->syslog->info('integraProduto - OK (em ' . $tt . ' segundos)', $syslog_obs);
     }
