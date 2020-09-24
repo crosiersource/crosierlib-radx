@@ -1109,11 +1109,11 @@ class IntegradorWebStorm implements IntegradorECommerce
         $this->syslog->info('integraProduto - save', $syslog_obs);
         $this->produtoEntityHandler->save($produto);
 
-        $produto->jsonData['ecommerce_desatualizado'] = '0';
+
 
         // como o comportamento padrão do ProdutoEntityHandler.save() é setar o $produto->jsonData['ecommerce_desatualizado'] = '1',
         // então tenho que salvar diretamente para não passar pelo ProdutoEntityHandler
-        // $conn->executeUpdate('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_desatualizado\', \'0\') WHERE id = :id', ['id' => $produto->getId()]);
+        $conn->executeUpdate('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_desatualizado\', \'0\') WHERE id = :id', ['id' => $produto->getId()]);
 
         $tt = (int)(microtime(true) - $start);
         $this->syslog->info('integraProduto - OK (em ' . $tt . ' segundos)', $syslog_obs);
@@ -1240,14 +1240,12 @@ class IntegradorWebStorm implements IntegradorECommerce
 
             foreach ($rProdutos as $rProduto) {
                 try {
-                    $conn->beginTransaction();
                     $conn->executeStatement('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_dt_marcado_integr\', :dt) where id = :id',
                         [
                             'dt' => (new \DateTime())->format('d/m/Y H:i:s'),
                             'id' => $rProduto['id']
                         ]);
                     $this->bus->dispatch(new IntegrarProdutoEcommerceMessage($rProduto['id']));
-                    $conn->commit();
                     $this->syslog->info('Produto reenviado para integração (id = "' . $rProduto['id'] . '"');
                 } catch (\Throwable $e) {
                     $this->syslog->err('reenviarParaIntegracaoProdutosAlterados() - Erro ao enviar produto (id = "' . $rProduto['id'] . '"', $e->getTraceAsString());
