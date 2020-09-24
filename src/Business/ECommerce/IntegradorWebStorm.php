@@ -1284,14 +1284,12 @@ class IntegradorWebStorm implements IntegradorECommerce
         foreach ($produtosParaIntegrar as $rProduto) {
             $this->syslog->info('Enviar produto para integração', 'id = ' . $rProduto['id']);
             try {
-                $conn->beginTransaction();
                 $conn->executeStatement('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_dt_marcado_integr\', :dt) where id = :id',
                     [
                         'dt' => (new \DateTime())->format('d/m/Y H:i:s'),
                         'id' => $rProduto['id']
                     ]);
                 $this->bus->dispatch(new IntegrarProdutoEcommerceMessage($rProduto['id']));
-                $conn->commit();
             } catch (\Throwable $e) {
                 try {
                     $conn->rollBack();
