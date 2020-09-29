@@ -1139,7 +1139,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                    <modulo>produto</modulo>';
             $stmt = $conn->prepare('SELECT * FROM est_produto WHERE id = :id');
 
-
+            $temAtualizacao = false;
             foreach ($produtosIds as $produtoId) {
                 $stmt->bindValue('id', $produtoId);
                 $stmt->execute();
@@ -1167,7 +1167,11 @@ class IntegradorWebStorm implements IntegradorECommerce
                     <preco>' . ($jsonData['preco_site'] ?? $jsonData['preco_tabela'] ?? 0.0) . '</preco>
                     <estoque>' . ($jsonData['qtde_estoque_total'] ?? 999999) . '</estoque>
                 </itensVenda></produto>';
-
+                $temAtualizacao = true;
+            }
+            if (!$temAtualizacao) {
+                $this->syslog->info('atualizaEstoqueEPrecos - OK (sem atualizações)');
+                return;
             }
             $xml .= '</ws_integracao>]]>';
 
