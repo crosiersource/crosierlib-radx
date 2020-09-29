@@ -1145,15 +1145,14 @@ class IntegradorWebStorm implements IntegradorECommerce
                 $stmt->execute();
                 $produto = $stmt->fetchAssociative();
 
-                $this->syslog->info('atualizando estoque para o produto (id: ' . $produto['id'] . ')');
+                $this->syslog->debug('atualizando estoque para o produto (id: ' . $produto['id'] . ')');
 
                 $jsonData = json_decode($produto['json_data'], true);
                 $produtoEcommerceId = $jsonData['ecommerce_id'] ?? null;
                 $produtoItemVendaId = $jsonData['ecommerce_item_venda_id'] ?? null;
                 if (!$produtoEcommerceId) {
-                    $err = 'Produto sem jsonData[\'ecommerce_id\']';
-                    $this->syslog->err($err);
-                    throw new ViewException($err);
+                    $this->syslog->debug('Produto sem jsonData[\'ecommerce_id\']');
+                    continue;
                 }
                 if (!$produtoItemVendaId) {
                     $err = 'Produto sem jsonData[\'ecommerce_item_venda_id\']';
