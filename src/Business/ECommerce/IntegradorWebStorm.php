@@ -1206,7 +1206,7 @@ class IntegradorWebStorm implements IntegradorECommerce
             $tt = (int)(microtime(true) - $start);
             $this->syslog->info('atualizaEstoqueEPrecos - OK (em ' . $tt . ' segundos)');
         } catch (\Throwable $e) {
-            $errMsg = 'atualizaEstoqueEPrecos - ERRO';
+            $errMsg = 'atualizaEstoqueEPrecos - ERRO (' . $e->getMessage() . ')';
             if ($e instanceof ViewException) {
                 $errMsg .= ' - ' . $e->getMessage();
             }
