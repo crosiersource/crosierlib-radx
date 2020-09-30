@@ -1110,8 +1110,7 @@ class IntegradorWebStorm implements IntegradorECommerce
         $this->produtoEntityHandler->save($produto);
 
 
-        // como o comportamento padrão do ProdutoEntityHandler.save() é setar o $produto->jsonData['ecommerce_desatualizado'] = '1',
-        // então tenho que salvar diretamente para não passar pelo ProdutoEntityHandler
+        // como o comportamento padrão do ProdutoEntityHandler.save() é setar o $produto->jsonData['ecommerce_desatualizado'] = '1// então tenho que salvar diretamente para não passar pelo ProdutoEntityHandler
         $conn->executeUpdate('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_desatualizado\', \'0\') WHERE id = :id', ['id' => $produto->getId()]);
 
         $tt = (int)(microtime(true) - $start);
@@ -1178,7 +1177,7 @@ class IntegradorWebStorm implements IntegradorECommerce
             $this->syslog->debug('atualizaEstoqueEPrecos - enviando o XML', $xml);
 
             $client = $this->getNusoapClientImportacaoInstance();
-            $arResultado = $client->call('precoEstoque', [
+            $arResultado = $client->call('produtoUpdate', [
                 'xml' => utf8_decode($xml)
             ]);
             if ($client->faultcode) {
