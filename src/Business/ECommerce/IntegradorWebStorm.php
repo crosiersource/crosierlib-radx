@@ -88,6 +88,8 @@ class IntegradorWebStorm implements IntegradorECommerce
 
     private ?int $delayEntreIntegracoesDeProduto = null;
 
+    private ?bool $permiteIntegrarProdutosSemImagem = null;
+
     private \nusoap_client $nusoapClientExportacao;
 
     private \nusoap_client $nusoapClientImportacao;
@@ -185,6 +187,28 @@ class IntegradorWebStorm implements IntegradorECommerce
             }
         }
         return $this->delayEntreIntegracoesDeProduto;
+    }
+
+    /**
+     * @return string
+     */
+    public function isPermiteIntegrarProdutosSemImagens(): string
+    {
+        if ($this->permiteIntegrarProdutosSemImagem === null) {
+            try {
+                $conn = $this->produtoEntityHandler->getDoctrine()->getConnection();
+                $rs = $conn->fetchAssociative('SELECT valor FROM cfg_app_config WHERE chave = :chave AND app_uuid = :appUUID',
+                    [
+                        'chave' => 'ecomm_info_permite_integrar_produtos_sem_imagens',
+                        'appUUID' => $_SERVER['CROSIERAPPRADX_UUID']
+                    ]);
+                $this->permiteIntegrarProdutosSemImagem = (bool)$rs['permiteIntegrarProdutosSemImagem'];
+            } catch (\Throwable $e) {
+                $this->syslog->err('Erro isPermiteIntegrarProdutosSemImagens". Default para false');
+                $this->permiteIntegrarProdutosSemImagem = false;
+            }
+        }
+        return $this->permiteIntegrarProdutosSemImagem;
     }
 
 
@@ -891,6 +915,12 @@ class IntegradorWebStorm implements IntegradorECommerce
     public function integraProduto(Produto $produto, ?bool $integrarImagens = true): void
     {
         $syslog_obs = 'produto = ' . $produto->getId() . '; integrarImagens = ' . $integrarImagens;
+
+        if (!$this->isPermiteIntegrarProdutosSemImagens() && $produto->imagens->count() < 1) {
+            $this->syslog->info('integraProduto - Não é permitido integrar produto sem imagens', $syslog_obs);
+            throw new ViewException('Não é permitido integrar produto sem imagens');
+        }
+
         if ($this->getDelayEntreIntegracoesDeProduto()) {
             $this->syslog->info('integraProduto - delay de ' . $this->getDelayEntreIntegracoesDeProduto(), $syslog_obs);
             sleep($this->getDelayEntreIntegracoesDeProduto());
