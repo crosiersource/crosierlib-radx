@@ -43,6 +43,6 @@ class IntegrarProdutoEcommerceHandler implements MessageHandlerInterface
         $this->syslog->info('queue: consumindo IntegrarProdutoEcommerceMessage (produto.id = ' . $message->produtoId . ')');
         $produto = $this->doctrine->getRepository(Produto::class)->find($message->produtoId);
         $integrador = $this->integradorBusinessFactory->getIntegrador();
-        $integrador->integraProduto($produto, true);
+        $integrador->integraProduto($produto, true, true);
     }
 }

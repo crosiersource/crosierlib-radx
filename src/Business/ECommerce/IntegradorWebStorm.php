@@ -909,10 +909,12 @@ class IntegradorWebStorm implements IntegradorECommerce
     /**
      * @param Produto $produto
      * @param bool $integrarImagens
+     * @param bool|null $respeitarDelay
      * @return void
      * @throws ViewException
+     * @throws \Doctrine\DBAL\Exception
      */
-    public function integraProduto(Produto $produto, ?bool $integrarImagens = true): void
+    public function integraProduto(Produto $produto, ?bool $integrarImagens = true, ?bool $respeitarDelay = false): void
     {
         $syslog_obs = 'produto = ' . $produto->getId() . '; integrarImagens = ' . $integrarImagens;
 
@@ -920,13 +922,15 @@ class IntegradorWebStorm implements IntegradorECommerce
             $this->syslog->info('integraProduto - Não é permitido integrar produto sem imagens', $syslog_obs);
             throw new ViewException('Não é permitido integrar produto sem imagens');
         }
-
-        if ($this->getDelayEntreIntegracoesDeProduto()) {
-            $this->syslog->info('integraProduto - delay de ' . $this->getDelayEntreIntegracoesDeProduto(), $syslog_obs);
-            sleep($this->getDelayEntreIntegracoesDeProduto());
-        } else {
-            $this->syslog->info('integraProduto - sem delay entre integrações');
+        if ($respeitarDelay) {
+            if ($this->getDelayEntreIntegracoesDeProduto()) {
+                $this->syslog->info('integraProduto - delay de ' . $this->getDelayEntreIntegracoesDeProduto(), $syslog_obs);
+                sleep($this->getDelayEntreIntegracoesDeProduto());
+            } else {
+                $this->syslog->info('integraProduto - sem delay entre integrações');
+            }
         }
+
         $start = microtime(true);
 
         $this->syslog->info('integraProduto - ini', $syslog_obs);
@@ -1172,7 +1176,7 @@ class IntegradorWebStorm implements IntegradorECommerce
 
 
         // como o comportamento padrão do ProdutoEntityHandler.save() é setar o $produto->jsonData['ecommerce_desatualizado'] = '1// então tenho que salvar diretamente para não passar pelo ProdutoEntityHandler
-        $conn->executeUpdate('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_desatualizado\', \'0\') WHERE id = :id', ['id' => $produto->getId()]);
+        $conn->executeStatement('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_desatualizado\', \'0\') WHERE id = :id', ['id' => $produto->getId()]);
 
         $tt = (int)(microtime(true) - $start);
         $this->syslog->info('integraProduto - OK (em ' . $tt . ' segundos)', $syslog_obs);
