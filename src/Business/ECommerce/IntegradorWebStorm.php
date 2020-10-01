@@ -202,7 +202,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                         'chave' => 'ecomm_info_permite_integrar_produtos_sem_imagens',
                         'appUUID' => $_SERVER['CROSIERAPPRADX_UUID']
                     ]);
-                $this->permiteIntegrarProdutosSemImagem = (bool)$rs['valor'];
+                $this->permiteIntegrarProdutosSemImagem = filter_var($rs['valor'], FILTER_VALIDATE_BOOLEAN);
             } catch (\Throwable $e) {
                 $this->syslog->err('Erro isPermiteIntegrarProdutosSemImagens". Default para false');
                 $this->permiteIntegrarProdutosSemImagem = false;
