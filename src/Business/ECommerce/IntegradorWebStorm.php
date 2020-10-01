@@ -893,6 +893,8 @@ class IntegradorWebStorm implements IntegradorECommerce
         if ($this->getDelayEntreIntegracoesDeProduto()) {
             $this->syslog->info('integraProduto - delay de ' . $this->getDelayEntreIntegracoesDeProduto(), $syslog_obs);
             sleep($this->getDelayEntreIntegracoesDeProduto());
+        } else {
+            $this->syslog->info('integraProduto - sem delay entre integrações');
         }
         $start = microtime(true);
         $syslog_obs = 'produto = ' . $produto->getId() . '; integrarImagens = ' . $integrarImagens;
