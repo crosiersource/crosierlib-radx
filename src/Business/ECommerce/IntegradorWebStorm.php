@@ -1248,6 +1248,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                         ]);
                     $this->bus->dispatch(new IntegrarProdutoEcommerceMessage($rProduto['id']));
                     $this->syslog->info('Produto reenviado para integração (id = "' . $rProduto['id'] . '"');
+                    sleep(15);
                 } catch (\Throwable $e) {
                     $this->syslog->err('reenviarParaIntegracaoProdutosAlterados() - Erro ao enviar produto (id = "' . $rProduto['id'] . '"', $e->getTraceAsString());
                     try {
