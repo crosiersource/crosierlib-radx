@@ -890,6 +890,7 @@ class IntegradorWebStorm implements IntegradorECommerce
      */
     public function integraProduto(Produto $produto, ?bool $integrarImagens = true): void
     {
+        $syslog_obs = 'produto = ' . $produto->getId() . '; integrarImagens = ' . $integrarImagens;
         if ($this->getDelayEntreIntegracoesDeProduto()) {
             $this->syslog->info('integraProduto - delay de ' . $this->getDelayEntreIntegracoesDeProduto(), $syslog_obs);
             sleep($this->getDelayEntreIntegracoesDeProduto());
@@ -897,7 +898,7 @@ class IntegradorWebStorm implements IntegradorECommerce
             $this->syslog->info('integraProduto - sem delay entre integrações');
         }
         $start = microtime(true);
-        $syslog_obs = 'produto = ' . $produto->getId() . '; integrarImagens = ' . $integrarImagens;
+
         $this->syslog->info('integraProduto - ini', $syslog_obs);
 
         $preco = $produto->jsonData['preco_site'] ?? $produto->jsonData['preco_tabela'] ?? 0.0;
