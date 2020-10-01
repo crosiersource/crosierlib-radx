@@ -86,6 +86,8 @@ class IntegradorWebStorm implements IntegradorECommerce
 
     private ?string $chave = null;
 
+    private ?int $delayEntreIntegracoesDeProduto = null;
+
     private \nusoap_client $nusoapClientExportacao;
 
     private \nusoap_client $nusoapClientImportacao;
@@ -161,6 +163,28 @@ class IntegradorWebStorm implements IntegradorECommerce
             }
         }
         return $this->chave;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDelayEntreIntegracoesDeProduto(): string
+    {
+        if ($this->delayEntreIntegracoesDeProduto === null) {
+            try {
+                $conn = $this->produtoEntityHandler->getDoctrine()->getConnection();
+                $rs = $conn->fetchAssociative('SELECT valor FROM cfg_app_config WHERE chave = :chave AND app_uuid = :appUUID',
+                    [
+                        'chave' => 'ecomm_info_delay_entre_integracoes_de_produto',
+                        'appUUID' => $_SERVER['CROSIERAPPRADX_UUID']
+                    ]);
+                $this->delayEntreIntegracoesDeProduto = (int)$rs['valor'];
+            } catch (\Throwable $e) {
+                $this->syslog->err('Erro ao pesquisar valor para "ecomm_info_delay_entre_integracoes_de_produto". Default para 0');
+                $this->delayEntreIntegracoesDeProduto = 0;
+            }
+        }
+        return $this->delayEntreIntegracoesDeProduto;
     }
 
 
@@ -866,6 +890,10 @@ class IntegradorWebStorm implements IntegradorECommerce
      */
     public function integraProduto(Produto $produto, ?bool $integrarImagens = true): void
     {
+        if ($this->getDelayEntreIntegracoesDeProduto()) {
+            $this->syslog->info('integraProduto - delay de ' . $this->getDelayEntreIntegracoesDeProduto(), $syslog_obs);
+            sleep($this->getDelayEntreIntegracoesDeProduto());
+        }
         $start = microtime(true);
         $syslog_obs = 'produto = ' . $produto->getId() . '; integrarImagens = ' . $integrarImagens;
         $this->syslog->info('integraProduto - ini', $syslog_obs);
@@ -1248,7 +1276,6 @@ class IntegradorWebStorm implements IntegradorECommerce
                         ]);
                     $this->bus->dispatch(new IntegrarProdutoEcommerceMessage($rProduto['id']));
                     $this->syslog->info('Produto reenviado para integração (id = "' . $rProduto['id'] . '"');
-                    sleep(15);
                 } catch (\Throwable $e) {
                     $this->syslog->err('reenviarParaIntegracaoProdutosAlterados() - Erro ao enviar produto (id = "' . $rProduto['id'] . '"', $e->getTraceAsString());
                     try {
