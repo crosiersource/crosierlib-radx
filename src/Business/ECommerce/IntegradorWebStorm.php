@@ -1177,7 +1177,7 @@ class IntegradorWebStorm implements IntegradorECommerce
             $this->syslog->debug('atualizaEstoqueEPrecos - enviando o XML', $xml);
 
             $client = $this->getNusoapClientImportacaoInstance();
-            $arResultado = $client->call('produtoUpdate', [
+            $arResultado = $client->call('precoEstoque', [
                 'xml' => utf8_decode($xml)
             ]);
             if ($client->faultcode) {
