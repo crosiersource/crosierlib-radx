@@ -220,7 +220,7 @@ class IntegradorWebStorm implements IntegradorECommerce
     public function selectMarcasNaWebStorm(): array
     {
         if (!$this->marcasNaWebStorm) {
-            $this->syslog->info('selectMarcasNaWebStorm');
+            $this->syslog->debug('selectMarcasNaWebStorm');
             $client = $this->getNusoapClientExportacaoInstance();
 
             $xml = '<![CDATA[<?xml version="1.0" encoding="iso-8859-1"?>
@@ -268,7 +268,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                     'nome' => $marca->nome->__toString(),
                 ];
             }
-            $this->syslog->info('selectMarcasNaWebStorm - OK: ' . count($this->marcasNaWebStorm) . ' marca(s)');
+            $this->syslog->debug('selectMarcasNaWebStorm - OK: ' . count($this->marcasNaWebStorm) . ' marca(s)');
         }
 
         return $this->marcasNaWebStorm;
@@ -282,7 +282,7 @@ class IntegradorWebStorm implements IntegradorECommerce
      */
     private function integraMarca(string $marca): int
     {
-        $this->syslog->info('integraMarca: ini', 'marca = ' . $marca);
+        $this->syslog->debug('integraMarca: ini', 'marca = ' . $marca);
         $marcasNaWebStorm = $this->selectMarcasNaWebStorm();
 
         $idMarcaNaWebStorm = null;
@@ -440,7 +440,7 @@ class IntegradorWebStorm implements IntegradorECommerce
     private function integraTipoCaracteristica(string $campo, string $tipoCaracteristica): int
     {
         $syslog_obs = 'campo = ' . $campo . '; tipoCaracteristica = ' . $tipoCaracteristica;
-        $this->syslog->info('integraTipoCaracteristica: ini', $syslog_obs);
+        $this->syslog->debug('integraTipoCaracteristica: ini', $syslog_obs);
         $tiposCaracteristicasNaWebStorm = $this->selectTiposCaracteristicasNaWebStorm();
 
         $idTipoCaracteristicaNaWebStorm = null;
@@ -525,7 +525,7 @@ class IntegradorWebStorm implements IntegradorECommerce
     private function integraCaracteristica(int $ecommerceId_tipoCaracteristica, string $caracteristica): int
     {
         $syslog_obs = 'ecommerceId_tipoCaracteristica = ' . $ecommerceId_tipoCaracteristica . '; caracteristica = ' . $caracteristica;
-        $this->syslog->info('integraCaracteristica: ini', $syslog_obs);
+        $this->syslog->debug('integraCaracteristica: ini', $syslog_obs);
         $tiposCaracteristicasNaWebStorm = $this->selectTiposCaracteristicasNaWebStorm();
 
         $idCaracteristicaNaWebStorm = null;
@@ -719,7 +719,7 @@ class IntegradorWebStorm implements IntegradorECommerce
     public function integraDepto(Depto $depto): int
     {
         $syslog_obs = 'depto = ' . $depto->nome . ' (' . $depto->getId() . ')';
-        $this->syslog->info('integraDepto - ini', $syslog_obs);
+        $this->syslog->debug('integraDepto - ini', $syslog_obs);
         $deptosNaWebStorm = $this->selectDepartamentosNaWebStorm();
         $idDeptoWebStorm = null;
         foreach ($deptosNaWebStorm as $id => $deptoNaWebStorm) {
@@ -753,7 +753,7 @@ class IntegradorWebStorm implements IntegradorECommerce
     public function integraGrupo(Grupo $grupo): int
     {
         $syslog_obs = 'grupo = ' . $grupo->nome . ' (' . $grupo->getId() . ')';
-        $this->syslog->info('integraGrupo - ini', $syslog_obs);
+        $this->syslog->debug('integraGrupo - ini', $syslog_obs);
 
         /** @var GrupoRepository $repoGrupo */
         $repoGrupo = $this->grupoEntityHandler->getDoctrine()->getRepository(Grupo::class);
@@ -799,7 +799,7 @@ class IntegradorWebStorm implements IntegradorECommerce
     public function integraSubgrupo(Subgrupo $subgrupo): int
     {
         $syslog_obs = 'subgrupo = ' . $subgrupo->nome . ' (' . $subgrupo->getId() . ')';
-        $this->syslog->info('integraSubgrupo - ini', $syslog_obs);
+        $this->syslog->debug('integraSubgrupo - ini', $syslog_obs);
 
         /** @var SubgrupoRepository $repoSubgrupo */
         $repoSubgrupo = $this->subgrupoEntityHandler->getDoctrine()->getRepository(Subgrupo::class);
@@ -856,7 +856,7 @@ class IntegradorWebStorm implements IntegradorECommerce
             'idNivelPai1 = ' . $idNivelPai1 . ', ' .
             'idNivelPai2 = ' . $idNivelPai2 . ', ' .
             'ecommerce_id = ' . $ecommerce_id;
-        $this->syslog->info('integraDeptoGrupoSubgrupo - ini', $syslog_obs);
+        $this->syslog->debug('integraDeptoGrupoSubgrupo - ini', $syslog_obs);
 
         $client = $this->getNusoapClientImportacaoInstance();
 
@@ -901,7 +901,7 @@ class IntegradorWebStorm implements IntegradorECommerce
         $this->deptosNaWebStorm = null; // para forçar rechecagem
 
         $idDepartamento = (int)$xmlResult->idDepartamento->__toString();
-        $this->syslog->info('integraDeptoGrupoSubgrupo - OK (idDepartamento = ' . $idDepartamento . ')', $syslog_obs);
+        $this->syslog->debug('integraDeptoGrupoSubgrupo - OK (idDepartamento = ' . $idDepartamento . ')', $syslog_obs);
         return $idDepartamento;
     }
 
