@@ -132,10 +132,6 @@ class ProdutoEntityHandler extends EntityHandler
 
         if (!isset($produto->jsonData['ecommerce_id'])) {
             $produto->jsonData['ecommerce_id'] = 0;
-        } else {
-            // Por padrão, independente da alteração, se o produto for salvo ele será marcado como desatualizado para ecommerce
-            $produto->jsonData['ecommerce_desatualizado'] = 1;
-            $produto->jsonData['ecommerce_dt_marcado_integr'] = null;
         }
 
 
