@@ -1729,14 +1729,14 @@ class IntegradorWebStorm implements IntegradorECommerce
             $vendaPagto = [
                 'venda_id' => $venda->getId(),
                 'valor_pagto' => $venda->valorTotal,
-                'json_data' => json_encode([
+                'json_data' => [
                     'idFormaPagamento' => $pedido->pagamentos->pagamento->idFormaPagamento->__toString(),
                     'nomeFormaPagamento' => $pedido->pagamentos->pagamento->nomeFormaPagamento->__toString(),
                     'tipoFormaPagamento' => $pedido->pagamentos->pagamento->tipoFormaPagamento->__toString(),
                     'desconto' => $pedido->pagamentos->pagamento->desconto->__toString(),
                     'parcelas' => $pedido->pagamentos->pagamento->parcelas->__toString(),
                     'valorParcela' => $pedido->pagamentos->pagamento->valorParcela->__toString(),
-                ]),
+                ],
                 'inserted' => (new \DateTime())->format('Y-m-d H:i:s'),
                 'updated' => (new \DateTime())->format('Y-m-d H:i:s'),
                 'version' => 0,
@@ -1753,12 +1753,16 @@ class IntegradorWebStorm implements IntegradorECommerce
                 case 'cartao':
                     $vendaPagto['plano_pagto_id'] = $arrayByCodigo['020']['id'];
                     $descricaoPlanoPagto = $arrayByCodigo['020']['descricao'];
+                    $vendaPagto['json_data']['nsu'] = $pedido->pagamentos->pagamento->NSU->__toString();
+                    $vendaPagto['json_data']['tid'] = $pedido->pagamentos->pagamento->TID->__toString();
                     break;
                 default:
                     $vendaPagto['plano_pagto_id'] = $arrayByCodigo['999']['id'];
                     $descricaoPlanoPagto = $arrayByCodigo['999']['descricao'];
                     break;
             }
+
+            $vendaPagto['json_data'] = json_encode($vendaPagto['json_data']);
 
             try {
                 $conn->insert('ven_venda_pagto', $vendaPagto);
