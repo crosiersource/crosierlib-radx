@@ -46,6 +46,11 @@ class VendaEntityHandler extends EntityHandler
         $this->clienteEntityHandler = $clienteEntityHandler;
     }
 
+    /**
+     * @param $venda
+     * @return mixed|void
+     * @throws ViewException
+     */
     public function beforeSave(/** @var Venda $venda */ $venda)
     {
         if ($venda->jsonData['ecommerce_status'] ?? false) {
