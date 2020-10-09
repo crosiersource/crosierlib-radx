@@ -59,7 +59,7 @@ class PlanoPagtoRepository extends FilterRepository
 
         $rCarteirasCaixas = $conn->fetchAll('SELECT * FROM fin_carteira WHERE caixa IS TRUE');
         $rCarteirasCartao = $conn->fetchAll('SELECT * FROM fin_carteira WHERE operadora_cartao_id IS NOT NULL');
-        $rCarteirasBanco = $conn->fetchAll('SELECT * FROM fin_carteira WHERE banco_id IS NOT NULL');
+        $rCarteirasBanco = $conn->fetchAll('SELECT * FROM fin_carteira WHERE banco_id IS NOT NULL OR codigo = \'99\'');
 
         foreach ($rs as $r) {
             $jsonData = json_decode($r['json_data'], true);

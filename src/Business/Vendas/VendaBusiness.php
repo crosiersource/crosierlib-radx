@@ -10,7 +10,6 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
-use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
@@ -119,7 +118,6 @@ class VendaBusiness
     private function gerarFaturaPorVenda(Venda $venda)
     {
         try {
-
             $fatura = new Fatura();
             $fatura->dtFatura = $venda->dtVenda;
             $fatura->fechada = true;
@@ -132,6 +130,7 @@ class VendaBusiness
 
             /** @var ModoRepository $repoModo */
             $repoModo = $this->doctrine->getRepository(Modo::class);
+
             /** @var CarteiraRepository $repoCarteira */
             $repoCarteira = $this->doctrine->getRepository(Carteira::class);
 

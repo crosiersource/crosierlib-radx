@@ -10,7 +10,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  *
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaPagtoRepository")
  * @ORM\Table(name="ven_venda_pagto")
  *
  * @author Carlos Eduardo Pauluk
