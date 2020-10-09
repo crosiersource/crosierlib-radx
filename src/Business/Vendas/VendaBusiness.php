@@ -126,7 +126,9 @@ class VendaBusiness
 
             /** @var TipoLanctoRepository $repoTipoLancto */
             $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
-            $tipoLancto_aPagarReceber = $repoTipoLancto->find(20);
+            $tipoLancto_movimentacaoDeCaixa = $repoTipoLancto->find(10);
+            $tipoLancto_transferenciaDeEntradaDeCaixa = $repoTipoLancto->find(61);
+//            $tipoLancto_aPagarReceber = $repoTipoLancto->find(20);
 
             /** @var ModoRepository $repoModo */
             $repoModo = $this->doctrine->getRepository(Modo::class);
@@ -146,16 +148,29 @@ class VendaBusiness
                 $modo = $repoModo->find($pagto->planoPagto->jsonData['modo_id']);
                 $movimentacao->modo = $modo;
                 $movimentacao->quitado = true;
-                $movimentacao->tipoLancto = $tipoLancto_aPagarReceber;
 
-                /** @var Carteira $carteira */
-                $carteira = $repoCarteira->find($pagto->jsonData['carteira_id']);
-                $movimentacao->carteira = $carteira;
+
+                /** @var Carteira $carteiraCaixa */
+                $carteiraCaixa = $repoCarteira->find($pagto->jsonData['carteira_id']);
+                $movimentacao->carteira = $carteiraCaixa;
+
+                $carteiraDestinoId = $pagto->jsonData['carteira_destino_id'] ?? null;
+
+                // Os ven_venda_pagto que não tem carteira_destino_id são aqueles onde a movimentação é somente no caixa
+                if (!$carteiraDestinoId) {
+                    $movimentacao->tipoLancto = $tipoLancto_movimentacaoDeCaixa;
+                } else {
+                    $movimentacao->tipoLancto = $tipoLancto_transferenciaDeEntradaDeCaixa;
+                    /** @var Carteira $carteiraDestino */
+                    $carteiraDestino = $repoCarteira->find($pagto->jsonData['carteira_destino_id']);
+                    $movimentacao->carteiraDestino = $carteiraDestino;
+                }
+
                 $movimentacao->categoria = $categoria101;
 
-                $movimentacao->status = $carteira->abertas ? 'ABERTA' : 'REALIZADA';
+                $movimentacao->status = $carteiraCaixa->abertas ? 'ABERTA' : 'REALIZADA';
 
-                $movimentacao->descricao = 'RECEB VENDA ' . $venda->getId();
+                $movimentacao->descricao = 'RECEB VENDA ' . str_pad($venda->getId(), '10', '0', STR_PAD_LEFT);
 
                 $movimentacao->dtMoviment = $venda->dtVenda;
                 $movimentacao->valor = $pagto->valorPagto;
@@ -164,7 +179,6 @@ class VendaBusiness
             }
 
             return $fatura;
-
         } catch (\Throwable $e) {
             if ($e instanceof ViewException) {
                 /** @var ViewException $ve */
