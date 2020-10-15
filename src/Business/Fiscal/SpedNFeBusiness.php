@@ -293,6 +293,7 @@ class SpedNFeBusiness
 
         $total_vCOFINS = 0;
 
+        /** @var NotaFiscalItem $nfItem */
         foreach ($notaFiscal->getItens() as $nfItem) {
             $itemXML = $nfe->infNFe->addChild('det');
             $itemXML['nItem'] = $nfItem->getOrdem();
@@ -333,6 +334,8 @@ class SpedNFeBusiness
 
             $total_vCOFINS += $nfItem->getCofinsValor();
 
+            $itemXML->prod->vFrete = number_format($nfItem->jsonData['valor_frete_item'] ?? 0, 2, '.', '');
+
             $i++;
         }
         $nfe->infNFe->addChild('total');
@@ -345,7 +348,7 @@ class SpedNFeBusiness
         $nfe->infNFe->total->ICMSTot->vFCPST = '0.00';
         $nfe->infNFe->total->ICMSTot->vFCPSTRet = '0.00';
         $nfe->infNFe->total->ICMSTot->vProd = number_format($notaFiscal->getSubtotal(), 2, '.', '');
-        $nfe->infNFe->total->ICMSTot->vFrete = '0.00';
+        $nfe->infNFe->total->ICMSTot->vFrete = $notaFiscal->getTranspValorTotalFrete() ?? '0.00';
         $nfe->infNFe->total->ICMSTot->vSeg = '0.00';
         // if (bccomp($notaFiscal->getTotalDescontos(), 0.00, 2)) {
         $nfe->infNFe->total->ICMSTot->vDesc = number_format(abs($notaFiscal->getTotalDescontos()), 2, '.', '');

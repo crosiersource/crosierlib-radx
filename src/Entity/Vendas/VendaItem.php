@@ -131,4 +131,23 @@ class VendaItem implements EntityId
     public ?array $jsonData = null;
 
 
+    public function getDescricaoMontadaResumida() {
+        $desc = '[';
+        if (strlen($this->produto->codigo) > 6) {
+            $desc .= substr($this->produto->codigo, -6);
+        } else {
+            $desc .= str_pad($this->produto->codigo, 6, '0', STR_PAD_LEFT);
+        }
+        $desc .= '] ';
+        if (strlen($this->produto->nome) > 30) {
+            $desc .= substr($this->produto->nome, 0, 20) . '...' . substr($this->produto->nome, -10);
+        } else {
+            $desc .= $this->produto->nome;
+        }
+
+        return mb_strtoupper($desc);
+
+    }
+
+
 }

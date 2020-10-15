@@ -161,6 +161,15 @@ class Venda implements EntityId
         $this->valorTotal = $valorTotal;
     }
 
+    public function getTotalPagtos(): float {
+        $totalPagtos = 0.0;
+        /** @var VendaPagto $pagto */
+        foreach ($this->pagtos as $pagto) {
+            $totalPagtos = bcadd($totalPagtos, $pagto->valorPagto, 2);
+        }
+        return (float)$totalPagtos;
+    }
+
 
 }
     

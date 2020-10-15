@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\ORM\Mapping as ORM;
@@ -23,7 +24,7 @@ class NotaFiscalItem implements EntityId
      *
      * @var $notaFiscal null|NotaFiscal
      */
-    private $notaFiscal;
+    private ?NotaFiscal $notaFiscal;
 
 
     /**
@@ -31,14 +32,14 @@ class NotaFiscalItem implements EntityId
      * @ORM\Column(name="cfop", type="string", nullable=false, length=20)
      * @var null|string
      */
-    private $cfop;
+    private ?string $cfop;
 
     /**
      *
      * @ORM\Column(name="codigo", type="string", nullable=false, length=50)
      * @var null|string
      */
-    private $codigo;
+    private ?string $codigo;
 
 
     /**
@@ -46,119 +47,119 @@ class NotaFiscalItem implements EntityId
      * @ORM\Column(name="ean", type="string", nullable=true, length=50)
      * @var null|string
      */
-    private $ean;
+    private ?string $ean;
 
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=2000)
      * @var null|string
      */
-    private $descricao;
+    private ?string $descricao;
 
     /**
      *
      * @ORM\Column(name="csosn", type="integer", nullable=true)
      * @var null|int
      */
-    private $csosn;
+    private ?int $csosn;
 
     /**
      *
      * @ORM\Column(name="ncm", type="string", nullable=false, length=20)
      * @var null|string
      */
-    private $ncm;
+    private ?string $ncm;
 
     /**
      *
      * @ORM\Column(name="cest", type="string", nullable=true, length=20)
      * @var null|string
      */
-    private $cest;
+    private ?string $cest;
 
     /**
      *
      * @ORM\Column(name="cst", type="string", nullable=true, length=10)
      * @var null|string
      */
-    private $cst;
+    private ?string $cst;
 
     /**
      *
      * @ORM\Column(name="ordem", type="integer", nullable=false)
      * @var null|int
      */
-    private $ordem;
+    private ?int $ordem;
 
     /**
      *
      * @ORM\Column(name="qtde", type="decimal", nullable=false, precision=15, scale=2)
      * @var null|float
      */
-    private $qtde;
+    private ?float $qtde;
 
     /**
      *
      * @ORM\Column(name="unidade", type="string", nullable=false, length=50)
      * @var null|string
      */
-    private $unidade;
+    private ?string $unidade;
 
     /**
      *
      * @ORM\Column(name="valor_total", type="decimal", nullable=false, precision=15, scale=2)
      * @var null|float
      */
-    private $valorTotal;
+    private ?float $valorTotal;
 
     /**
      *
      * @ORM\Column(name="valor_unit", type="decimal", nullable=false, precision=15, scale=2)
      * @var null|float
      */
-    private $valorUnit;
+    private ?float $valorUnit;
 
     /**
      *
      * @ORM\Column(name="valor_desconto", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $valorDesconto;
+    private ?float $valorDesconto;
 
     /**
      *
      * @ORM\Column(name="sub_total", type="decimal", nullable=false, precision=15, scale=2)
      * @var null|float
      */
-    private $subTotal;
+    private ?float $subTotal;
 
     /**
      *
      * @ORM\Column(name="icms_valor", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $icmsValor;
+    private ?float $icmsValor;
 
     /**
      *
      * @ORM\Column(name="icms_mod_bc", type="string")
      * @var null|float
      */
-    private $icmsModBC;
+    private ?float $icmsModBC;
 
     /**
      *
      * @ORM\Column(name="icms_valor_bc", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $icmsValorBc;
+    private ?float $icmsValorBc;
 
     /**
      *
      * @ORM\Column(name="icms", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $icmsAliquota;
+    private ?float $icmsAliquota;
 
 
     /**
@@ -166,21 +167,21 @@ class NotaFiscalItem implements EntityId
      * @ORM\Column(name="pis_valor", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $pisValor;
+    private ?float $pisValor;
 
     /**
      *
      * @ORM\Column(name="pis_valor_bc", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $pisValorBc;
+    private ?float $pisValorBc;
 
     /**
      *
      * @ORM\Column(name="pis", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $pisAliquota;
+    private ?float $pisAliquota;
 
 
     /**
@@ -188,28 +189,36 @@ class NotaFiscalItem implements EntityId
      * @ORM\Column(name="cofins_valor", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $cofinsValor;
+    private ?float $cofinsValor;
 
     /**
      *
      * @ORM\Column(name="cofins_valor_bc", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $cofinsValorBc;
+    private ?float $cofinsValorBc;
 
     /**
      *
      * @ORM\Column(name="cofins", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $cofinsAliquota;
+    private ?float $cofinsAliquota;
 
     /**
      *
      * @ORM\Column(name="ncm_existente", type="boolean", nullable=true)
      * @var null|bool
      */
-    private $ncmExistente;
+    private ?bool $ncmExistente;
+
+    /**
+     *
+     * @ORM\Column(name="json_data", type="json")
+     * @var null|array
+     * @NotUppercase()
+     */
+    public ?array $jsonData = null;
 
     /**
      * @return null|string

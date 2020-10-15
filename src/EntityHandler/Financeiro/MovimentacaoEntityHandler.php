@@ -417,6 +417,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
             // Campos que podem ser editados
             $movimentOposta->setDescricao($movimentacao->getDescricao());
+            $movimentOposta->fatura = $movimentacao->fatura;
             $movimentOposta->setCategoria($categOposta);
             $movimentOposta->setModo($movimentacao->getModo());
             if ($movimentacao->getCarteiraDestino()) {
@@ -458,6 +459,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         /** @var Movimentacao $movimentOposta */
         $movimentOposta = new Movimentacao();
         $movimentOposta->setCadeia($cadeia);
+        $movimentOposta->fatura = $movimentacao->fatura;
         $movimentOposta->setCadeiaOrdem($cadeiaOrdemOposta);
         $movimentOposta->setCadeiaQtde(2);
         $movimentOposta->setDescricao($movimentacao->getDescricao());
@@ -517,6 +519,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             foreach ($movs as $mov) {
                 if ($mov->getId() !== $movimentacao->getId()) {
                     $mov->setDescricao($movimentacao->getDescricao());
+                    $mov->fatura = $movimentacao->fatura;
                     $mov->setCategoria($categ299);
                     $mov->setModo($movimentacao->getModo());
                     $mov->setValor($movimentacao->getValor());
@@ -557,6 +560,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         /** @var Movimentacao $moviment299 */
         $moviment299 = new Movimentacao();
         $moviment299->setTipoLancto($movimentacao->getTipoLancto());
+        $moviment299->fatura = $movimentacao->fatura;
         $moviment299->setCadeia($cadeia);
         $moviment299->setCadeiaOrdem(2);
         $moviment299->setCadeiaQtde(3);
@@ -583,6 +587,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         /** @var Movimentacao $moviment199 */
         $moviment199 = new Movimentacao();
         $moviment199->setTipoLancto($movimentacao->getTipoLancto());
+        $moviment199->fatura = $movimentacao->fatura;
         $moviment199->setCadeia($cadeia);
         $moviment199->setCadeiaOrdem(3);
         $moviment199->setCadeiaQtde(3);

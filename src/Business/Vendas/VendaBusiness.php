@@ -94,10 +94,17 @@ class VendaBusiness
     public function finalizarPV(Venda $venda)
     {
         try {
+            $this->movimentacaoEntityHandler->getDoctrine()->beginTransaction();
+            $venda->recalcularTotais();
+
             if ($venda->pagtos->count() < 1) {
                 throw new ViewException('Nenhuma informação de pagto na venda');
             }
-            $this->movimentacaoEntityHandler->getDoctrine()->beginTransaction();
+
+            if ($venda->getTotalPagtos() !== $venda->valorTotal) {
+                throw new ViewException('Total de pagtos difere do valor da venda');
+            }
+
             $fatura = $this->gerarFaturaPorVenda($venda);
             $venda->jsonData['fatura_id'] = $fatura->getId();
             $venda->status = 'PV FINALIZADO';

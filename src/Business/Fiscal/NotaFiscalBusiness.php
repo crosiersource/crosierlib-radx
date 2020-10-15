@@ -146,11 +146,11 @@ class NotaFiscalBusiness
         try {
 
             $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
-            $jaExiste = $conn->fetchAll('SELECT * FROM fis_nf_venda WHERE venda_id = :vendaId', ['vendaId' => $venda->getId()]);
+            $jaExiste = $conn->fetchAllAssociative('SELECT * FROM fis_nf_venda WHERE venda_id = :vendaId', ['vendaId' => $venda->getId()]);
 
             $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
 
-            $rNcmPadrao = $conn->fetchAll('SELECT valor FROM cfg_app_config WHERE chave = \'ncm_padrao\'');
+            $rNcmPadrao = $conn->fetchAllAssociative('SELECT valor FROM cfg_app_config WHERE chave = \'ncm_padrao\'');
             $ncmPadrao = $rNcmPadrao[0]['valor'] ?? null;
 
             if ($jaExiste) {
@@ -164,7 +164,7 @@ class NotaFiscalBusiness
             }
 
             if ($notaFiscal->getId()) {
-                /** @var Connection $conn */
+
                 $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
                 $conn->delete('fis_nf_item', ['nota_fiscal_id' => $notaFiscal->getId()]);
                 $notaFiscal->deleteAllItens(); // remove as referências no ORM
@@ -243,9 +243,9 @@ class NotaFiscalBusiness
                 $dentro_ou_fora = 'fora';
             }
 
-            $cfop_padrao_dentro_do_estado = $this->conn->fetchAll('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.cfop_padrao_dentro_do_estado']);
+            $cfop_padrao_dentro_do_estado = $this->conn->fetchAllAssociative('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.cfop_padrao_dentro_do_estado']);
             $cfop_padrao_dentro_do_estado = $cfop_padrao_dentro_do_estado[0]['valor'] ?? '5102';
-            $cfop_padrao_fora_do_estado = $this->conn->fetchAll('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.cfop_padrao_fora_do_estado']);
+            $cfop_padrao_fora_do_estado = $this->conn->fetchAllAssociative('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.cfop_padrao_fora_do_estado']);
             $cfop_padrao_fora_do_estado = $cfop_padrao_fora_do_estado[0]['valor'] ?? '6102';
 
             $notaFiscal->setDocumentoEmitente($nfeConfigs['cnpj']);
@@ -269,6 +269,9 @@ class NotaFiscalBusiness
             }
 
             $notaFiscal->setTranspModalidadeFrete('SEM_FRETE');
+
+            $notaFiscal->setTranspValorTotalFrete($venda->jsonData['ecommerce_entrega_frete_calculado'] ?? null);
+            $valoresFreteItens = DecimalUtils::gerarParcelas($notaFiscal->getTranspValorTotalFrete() ?? 0, $venda->itens->count());
 
             $notaFiscal->setIndicadorFormaPagto(IndicadorFormaPagto::VISTA['codigo']);
 
@@ -314,6 +317,8 @@ class NotaFiscalBusiness
                 $ncm = $vendaItem->jsonData['ncm'] ?? $vendaItem->produto->jsonData['ncm'] ?? $ncmPadrao ?? '00000000';
 
                 $nfItem->setNcm($ncm);
+
+                $nfItem->jsonData['valor_frete_item'] = $valoresFreteItens[$ordem-1] ?? 0.00;
 
                 $nfItem->setOrdem($ordem++);
 
@@ -747,6 +752,9 @@ class NotaFiscalBusiness
                 return true;
             }
 
+            if ($notaFiscal->getXMLDecoded() && $notaFiscal->getXMLDecoded()->getName() === 'nfeProc') {
+                return true;
+            }
         }
         return false;
     }
@@ -1011,7 +1019,7 @@ class NotaFiscalBusiness
      */
     public function getEmitentes()
     {
-        $nfeConfigs = $this->conn->fetchAll('SELECT * FROM cfg_app_config WHERE chave LIKE \'nfeConfigs\\_%\'');
+        $nfeConfigs = $this->conn->fetchAllAssociative('SELECT * FROM cfg_app_config WHERE chave LIKE \'nfeConfigs\\_%\'');
         $emitentes = [];
         foreach ($nfeConfigs as $nfeConfig) {
             $dados = json_decode($nfeConfig['valor'], true);
@@ -1076,7 +1084,7 @@ class NotaFiscalBusiness
 
         $sql = 'SELECT nf.id FROM fis_nf_venda nfv, fis_nf nf WHERE nf.id = nfv.nota_fiscal_id AND nfv.venda_id = :venda_id AND nf.ambiente = :ambiente';
 
-        $results = $this->conn->fetchAll($sql,
+        $results = $this->conn->fetchAllAssociative($sql,
             [
                 'venda_id' => $venda->getId(),
                 'ambiente' => $ambiente
@@ -1131,7 +1139,7 @@ class NotaFiscalBusiness
 //            $ultimoNaBase = null;
 //            $sqlUltimoNumero = 'SELECT max(numero) as numero FROM fis_nf WHERE cstat in (100,101,135) AND documento_emitente = :documento_emitente AND ambiente = :ambiente AND serie = :serie AND tipo = :tipoNotaFiscal';
 //
-//            $rUltimoNumero = $conn->fetchAll($sqlUltimoNumero,
+//            $rUltimoNumero = $conn->fetchAllAssociative($sqlUltimoNumero,
 //                [
 //                    'documento_emitente' => $documentoEmitente,
 //                    'ambiente' => $ambiente,
