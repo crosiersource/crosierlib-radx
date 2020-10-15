@@ -131,7 +131,7 @@ class VendaItem implements EntityId
     public ?array $jsonData = null;
 
 
-    public function getDescricaoMontadaResumida() {
+    public function getDescricaoMontadaResumida(int $tam = 36) {
         $desc = '[';
         if (strlen($this->produto->codigo) > 6) {
             $desc .= substr($this->produto->codigo, -6);
@@ -139,8 +139,8 @@ class VendaItem implements EntityId
             $desc .= str_pad($this->produto->codigo, 6, '0', STR_PAD_LEFT);
         }
         $desc .= '] ';
-        if (strlen($this->produto->nome) > 30) {
-            $desc .= substr($this->produto->nome, 0, 20) . '...' . substr($this->produto->nome, -10);
+        if (strlen($this->produto->nome) > $tam) {
+            $desc .= substr($this->produto->nome, 0, $tam - 10) . '..' . substr($this->produto->nome, -10);
         } else {
             $desc .= $this->produto->nome;
         }
