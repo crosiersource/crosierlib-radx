@@ -2,7 +2,6 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Fiscal;
 
-use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
@@ -101,8 +100,6 @@ class NotaFiscalRepository extends FilterRepository
         }
         return $ret;
     }
-
-
 
 
     public function getDefaultOrders()
@@ -209,6 +206,5 @@ class NotaFiscalRepository extends FilterRepository
         return $p;
 
     }
-
 
 }

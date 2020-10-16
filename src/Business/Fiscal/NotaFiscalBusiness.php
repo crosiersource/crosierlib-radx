@@ -38,6 +38,7 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntit
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Psr\Log\LoggerInterface;
@@ -689,9 +690,6 @@ class NotaFiscalBusiness
     public function permiteFaturamento(NotaFiscal $notaFiscal, ?bool $retornaMotivo = false): bool
     {
         if ($notaFiscal && $notaFiscal->getId() && in_array($notaFiscal->getCStat(), [-100, 100, 101, 204, 135], false)) {
-            if ($retornaMotivo) {
-                throw new ViewException('cstat difere de -100,100,101,204,135');
-            }
             return false;
         }
         if ($notaFiscal && !$notaFiscal->getId()) {
@@ -1114,6 +1112,40 @@ class NotaFiscalBusiness
         /** @var NotaFiscal $notaFiscal */
         $notaFiscal = $repoNotaFiscal->find($results[0]['id']);
         return $notaFiscal;
+    }
+
+    /**
+     * @param Venda $venda
+     * @return null|NotaFiscalVenda
+     * @throws ViewException
+     */
+    public function findVendaByNotaFiscal(NotaFiscal $notaFiscal): ?Venda
+    {
+        $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
+
+        $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
+
+        $sql = 'SELECT nfv.venda_id FROM fis_nf_venda nfv, fis_nf nf WHERE nf.id = nfv.nota_fiscal_id AND nfv.nota_fiscal_id = :notaFiscalId AND nf.ambiente = :ambiente';
+
+        $results = $this->conn->fetchAllAssociative($sql,
+            [
+                'notaFiscalId' => $notaFiscal->getId(),
+                'ambiente' => $ambiente
+            ]);
+
+        if (!$results) {
+            return null;
+        }
+
+        if (count($results) > 1) {
+            throw new \LogicException('Mais de uma Venda encontrada para [' . $venda->getId() . ']');
+        }
+
+        /** @var VendaRepository $repoVenda */
+        $repoVenda = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Venda::class);
+        /** @var Venda $venda */
+        $venda = $repoVenda->find($results[0]['venda_id']);
+        return $venda;
     }
 
 
