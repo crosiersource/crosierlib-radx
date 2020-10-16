@@ -334,7 +334,7 @@ class SpedNFeBusiness
 
             $total_vCOFINS += $nfItem->getCofinsValor();
 
-            $itemXML->prod->vFrete = number_format($nfItem->jsonData['valor_frete_item'] ?? 0, 2, '.', '');
+            // $itemXML->prod->vFrete = number_format($nfItem->jsonData['valor_frete_item'] ?? 0, 2, '.', '');
 
             $i++;
         }
@@ -377,6 +377,10 @@ class SpedNFeBusiness
                 }
 
                 $nfe->infNFe->transp->transporta->xEnder = substr($notaFiscal->getTranspEndereco(), 0, 60);
+
+                if (!$notaFiscal->getTranspCidade() || !$notaFiscal->getTranspEstado()) {
+                    throw new ViewException('Cidade/UF da transportadora n/d');
+                }
 
                 /** @var MunicipioRepository $repoMunicipio */
                 $repoMunicipio = $this->doctrine->getRepository(Municipio::class);

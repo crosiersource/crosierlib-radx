@@ -318,7 +318,7 @@ class NotaFiscalBusiness
 
                 $nfItem->setNcm($ncm);
 
-                $nfItem->jsonData['valor_frete_item'] = $valoresFreteItens[$ordem-1] ?? 0.00;
+                $nfItem->jsonData['valor_frete_item'] = $valoresFreteItens[$ordem - 1] ?? 0.00;
 
                 $nfItem->setOrdem($ordem++);
 
@@ -631,6 +631,7 @@ class NotaFiscalBusiness
                 }
             } catch (ViewException $e) {
                 $this->spedNFeBusiness->addHistorico($notaFiscal, -2, $e->getMessage());
+                throw $e;
             }
 
         } else {
@@ -682,20 +683,30 @@ class NotaFiscalBusiness
      * Lembrando que o botão "Faturar" serve tanto para faturar a primeira vez, como para tentar faturar novamente nos casos de erros.
      *
      * @param NotaFiscal $notaFiscal
+     * @param null|bool $retornaMotivo
      * @return bool
      */
-    public function permiteFaturamento(NotaFiscal $notaFiscal): bool
+    public function permiteFaturamento(NotaFiscal $notaFiscal, ?bool $retornaMotivo = false): bool
     {
         if ($notaFiscal && $notaFiscal->getId() && in_array($notaFiscal->getCStat(), [-100, 100, 101, 204, 135], false)) {
+            if ($retornaMotivo) {
+                throw new ViewException('cstat difere de -100,100,101,204,135');
+            }
             return false;
         }
         if ($notaFiscal && !$notaFiscal->getId()) {
+            if ($retornaMotivo) {
+                throw new ViewException('id n/d');
+            }
             return false;
         }
 
         try {
             $this->checkNotaFiscal($notaFiscal);
         } catch (\Exception $e) {
+            if ($e instanceof ViewException && $retornaMotivo) {
+                throw new ViewException($e->getMessage());
+            }
             return false;
         }
 

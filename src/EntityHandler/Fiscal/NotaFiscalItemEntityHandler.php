@@ -4,6 +4,7 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +22,7 @@ class NotaFiscalItemEntityHandler extends EntityHandler
 
     /** @var NotaFiscalEntityHandler */
     private NotaFiscalEntityHandler $notaFiscalEntityHandler;
+
 
     /**
      * @param EntityManagerInterface $doctrine
@@ -56,8 +58,12 @@ class NotaFiscalItemEntityHandler extends EntityHandler
             }
             $nfItem->setOrdem($ultimaOrdem + 1);
         }
+
         if (!$nfItem->getCsosn()) {
-            $nfItem->setCsosn(103);
+            $nfeConfigs = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsByCNPJ($nfItem->getNotaFiscal()->getDocumentoEmitente());
+            if ($nfeConfigs['CSOSN'] ?? false) {
+                $nfItem->setCsosn($nfeConfigs['CSOSN']);
+            }
         }
         $nfItem->calculaTotais();
     }

@@ -9,6 +9,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Fatura;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler;
@@ -210,6 +211,16 @@ class VendaBusiness
             if (($venda->jsonData['ecommerce_status_descricao'] ?? '') !== 'Pedido em Separação') {
                 throw new ViewException('Status difere de "Pedido em Separação". Impossível faturar!');
             }
+        }
+    }
+
+    /**
+     * @param NotaFiscal $notaFiscal
+     */
+    public function handleNotaFiscalFaturada(NotaFiscal $notaFiscal): void
+    {
+        if ($notaFiscal->getCStat() === 100) {
+
         }
     }
 
