@@ -21,6 +21,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoImagemRepositor
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -134,11 +135,13 @@ class ProdutoEntityHandler extends EntityHandler
             $produto->jsonData['ecommerce_id'] = 0;
         }
 
+        $this->corrigirUnidadesPrecos($produto);
 
         $sqlPrecos = 'select lista.descricao as lista, u.label as unidade, preco.preco_prazo from est_produto_preco preco, est_unidade u, est_lista_preco lista where preco.produto_id = :produtoId and preco.lista_id = lista.id and preco.unidade_id = u.id and preco.atual IS TRUE';
-        $rsPrecos = $this->getDoctrine()->getConnection()->fetchAll($sqlPrecos, ['produtoId' => $produto->getId()]);
+        $rsPrecos = $this->getDoctrine()->getConnection()->fetchAllAssociative($sqlPrecos, ['produtoId' => $produto->getId()]);
+        $produto->jsonData['info_precos'] = '';
         foreach ($rsPrecos as $rPreco) {
-            $produto->jsonData['info_precos'] = $rPreco['lista'] . ': R$ ' . number_format($rPreco['preco_prazo'], 2, ',', '.') . ' (' . $rPreco['unidade'] . ')<br>';
+            $produto->jsonData['info_precos'] .= $rPreco['lista'] . ': R$ ' . number_format($rPreco['preco_prazo'], 2, ',', '.') . ' (' . $rPreco['unidade'] . ')<br>';
         }
         $produto->jsonData['info_precos'] = isset($produto->jsonData['info_precos']) ? substr($produto->jsonData['info_precos'], 0, -4) : '';
 
@@ -148,8 +151,6 @@ class ProdutoEntityHandler extends EntityHandler
         $this->corrigirEstoqueProdutoComposicao($produto);
 
         $this->verificaPathDasImagens($produto);
-
-
     }
 
     /**
@@ -347,6 +348,28 @@ class ProdutoEntityHandler extends EntityHandler
             }
         } catch (DBALException $e) {
             throw new ViewException('Erro ao clonar preços');
+        }
+    }
+
+
+    /**
+     * Se os preços cadastrados para o produto forem com apenas uma unidade, então seta todos para a unidade padrão.
+     * @param Produto $produto
+     * @throws ViewException
+     */
+    private function corrigirUnidadesPrecos(Produto $produto): void
+    {
+        try {
+            $conn = $this->getDoctrine()->getConnection();
+            $rsUnidades = $conn->fetchAllAssociative('SELECT distinct(unidade_id) as unidade_id FROM est_produto_preco WHERE produto_id = :produtoId', ['produtoId' => $produto->getId()]);
+            if (count($rsUnidades) === 1) {
+                if ((int)$rsUnidades[0]['unidade_id'] !== $produto->unidadePadrao->getId()) {
+                    $conn->executeStatement('UPDATE est_produto_preco SET unidade_id = :unidadeId WHERE produto_id = :produtoId',
+                        ['produtoId' => $produto->getId(), 'unidadeId' => $produto->unidadePadrao->getId()]);
+                }
+            }
+        } catch (\Throwable $e) {
+            throw new ViewException('Erro ao atualizar unidades dos preços do produto');
         }
     }
 
