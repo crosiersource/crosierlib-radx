@@ -64,7 +64,7 @@ class PlanoPagtoRepository extends FilterRepository
         foreach ($rs as $r) {
             $jsonData = json_decode($r['json_data'], true);
             if ($jsonData['tipo_carteiras'] === 'caixa') {
-                // $carteirasDestino = $rCarteirasCaixas;
+                $carteirasDestino = null;
             } else if ($jsonData['tipo_carteiras'] === 'operadora_cartao') {
                 $carteirasDestino = $rCarteirasCartao;
             } else if ($jsonData['tipo_carteiras'] === 'banco') {
