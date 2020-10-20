@@ -111,8 +111,7 @@ class DeptoRepository extends FilterRepository
         } catch (InvalidArgumentException $e) {
             throw new ViewException('Erro no cachê - buildDeptosGruposSubgruposSelect2');
         }
-
-
     }
+
 
 }

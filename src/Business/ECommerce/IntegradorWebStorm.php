@@ -1559,7 +1559,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                     $cliente->nome = $clienteECommerce->razaoSocial->__toString();
                     $cliente->jsonData['tipo_pessoa'] = 'PJ';
                     $cliente->jsonData['nome_fantasia'] = $clienteECommerce->nomeFantasia->__toString();
-                    $cliente->jsonData['inscricao_estadual'] = $clienteECommerce->inscricaoEstadual->__toString();
+                    $cliente->jsonData['inscricao_estadual'] = preg_replace("/[^0-9]/", "", $clienteECommerce->inscricaoEstadual->__toString());
                 }
 
                 $cliente->jsonData['fone1'] = $clienteECommerce->telefone1->__toString();
@@ -1628,11 +1628,23 @@ class IntegradorWebStorm implements IntegradorECommerce
             $venda->jsonData['ecommerce_status'] = $pedido->status->__toString();
             $venda->jsonData['ecommerce_status_descricao'] = $pedido->desStatus->__toString();
 
+            if ($pedido->entrega->retirarLoja ?? false) {
+                if ((int)$pedido->entrega->retirarLoja->__toString() === 1) {
+                    $obs[] = '* ' . $pedido->entrega->formaEntrega->__toString() . ' *';
+                    $obs[] = 'Agendado para: ' . DateTimeUtils::parseDateStr($pedido->entrega->agendamento->__toString())->format('d/m/Y H:i');
+                    $obs[] = '';
+                }
+            }
+
             $obs[] = 'IP: ' . ($pedido->ip ?? null);
             $obs[] = 'Pagamento: ' . ($pedido->pagamentos->pagamento->tipoFormaPagamento->__toString() ?? null) . ' - ' . ($pedido->pagamentos->pagamento->nomeFormaPagamento->__toString() ?? null);
             $obs[] = 'Desconto: ' . number_format($pedido->pagamentos->pagamento->desconto->__toString(), 2, ',', '.');
             $obs[] = 'Parcelas: ' . ($pedido->pagamentos->pagamento->parcelas->__toString() ?? null);
             $obs[] = 'Valor Parcela: R$ ' . number_format($pedido->pagamentos->pagamento->valorParcela->__toString(), 2, ',', '.');
+
+
+
+
             $venda->jsonData['obs'] = implode(PHP_EOL, $obs);
 
             $venda->subtotal = 0.0;// a ser recalculado posteriormente
