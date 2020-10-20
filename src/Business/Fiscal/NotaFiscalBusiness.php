@@ -271,8 +271,8 @@ class NotaFiscalBusiness
 
             $notaFiscal->setTranspModalidadeFrete('SEM_FRETE');
 
-            $notaFiscal->setTranspValorTotalFrete($venda->jsonData['ecommerce_entrega_frete_calculado'] ?? null);
-            $valoresFreteItens = DecimalUtils::gerarParcelas($notaFiscal->getTranspValorTotalFrete() ?? 0, $venda->itens->count());
+            // $notaFiscal->setTranspValorTotalFrete($venda->jsonData['ecommerce_entrega_frete_calculado'] ?? null);
+            // $valoresFreteItens = DecimalUtils::gerarParcelas($notaFiscal->getTranspValorTotalFrete() ?? 0, $venda->itens->count());
 
             $notaFiscal->setIndicadorFormaPagto(IndicadorFormaPagto::VISTA['codigo']);
 
@@ -319,7 +319,7 @@ class NotaFiscalBusiness
 
                 $nfItem->setNcm($ncm);
 
-                $nfItem->jsonData['valor_frete_item'] = $valoresFreteItens[$ordem - 1] ?? 0.00;
+                // $nfItem->jsonData['valor_frete_item'] = $valoresFreteItens[$ordem - 1] ?? 0.00;
 
                 $nfItem->setOrdem($ordem++);
 
