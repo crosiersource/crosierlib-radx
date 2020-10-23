@@ -254,7 +254,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                 throw new ViewException($err);
             }
 
-            $xmlResult = simplexml_load_string($arResultado);
+            $xmlResult = simplexml_load_string(utf8_encode($arResultado));
 
             if ($xmlResult->erros ?? false) {
                 $err = $xmlResult->erros->erro->__toString();
@@ -324,7 +324,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                 throw new \RuntimeException($client->getError());
             }
 
-            $xmlResult = simplexml_load_string($arResultado);
+            $xmlResult = simplexml_load_string(utf8_encode($arResultado));
 
             $idMarcaNaWebStorm = (int)$xmlResult->idMarca->__toString();
 
