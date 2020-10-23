@@ -96,7 +96,7 @@ class DistDFeBusiness
             // $nsu--; // decrementa, pois o webservice retorna a partir do próximo
             do {
                 $iCount++;
-                if ($iCount === 50) { // máximo de 50 * 50
+                if ($iCount === 5) { // máximo de 5 * 50 (para respeitar as regras na RF e tbm não travar o servidor)
                     break;
                 }
                 $resp = $tools->sefazDistDFe($nsu);
