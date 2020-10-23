@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\ORM\Mapping as ORM;
@@ -25,7 +26,7 @@ class NotaFiscalCartaCorrecao implements EntityId
     private $notaFiscal;
 
     /**
-     *
+     * @NotUppercase()
      * @ORM\Column(name="carta_correcao", type="string", nullable=true)
      * @var null|string
      */
@@ -47,7 +48,7 @@ class NotaFiscalCartaCorrecao implements EntityId
     private $dtCartaCorrecao;
 
     /**
-     *
+     * @NotUppercase()
      * @ORM\Column(name="msg_retorno", type="string", nullable=true)
      * @var null|string
      */

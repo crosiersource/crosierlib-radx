@@ -913,7 +913,7 @@ class NotaFiscalBusiness
         } catch (\Exception $e) {
             $this->spedNFeBusiness->addHistorico($cartaCorrecao->getNotaFiscal(), -2, 'PROBLEMA AO ENVIAR CARTA DE CORREÇÃO: [' . $e->getMessage() . ']');
         }
-        return $cartaCorrecao;
+        return $cartaCorrecao->getNotaFiscal();
     }
 
     /**

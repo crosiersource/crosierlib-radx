@@ -792,35 +792,6 @@ class SpedNFeBusiness
 
     }
 
-    /**
-     * Imprime pelo Unimake.
-     *
-     * @param NotaFiscal $notaFiscal
-     */
-    public function imprimir(NotaFiscal $notaFiscal)
-    {
-        $uuid = $notaFiscal->getUuid();
-        $pastaUnimake = $_SERVER['FISCAL_UNIMAKE_PASTAROOT'];
-        $pastaReimpressao = $pastaUnimake . '/reimpressao/';
-        $arquivoReimpressao = $pastaReimpressao . $uuid . '-' . $notaFiscal->getRandFaturam() . '-procNFe.xml';
-        file_put_contents($arquivoReimpressao, $notaFiscal->getXmlNota());
-    }
-
-    /**
-     * @param NotaFiscal $notaFiscal
-     */
-    public function imprimirCancelamento(NotaFiscal $notaFiscal)
-    {
-
-    }
-
-    /**
-     * @param NotaFiscalCartaCorrecao $cartaCorrecao
-     */
-    public function imprimirCartaCorrecao(NotaFiscalCartaCorrecao $cartaCorrecao)
-    {
-
-    }
 
 
     /**

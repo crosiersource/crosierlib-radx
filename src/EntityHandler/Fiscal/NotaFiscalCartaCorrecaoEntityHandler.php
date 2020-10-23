@@ -2,10 +2,9 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalCartaCorrecao;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
-use Doctrine\Common\Collections\ArrayCollection;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalCartaCorrecao;
 
 /**
  * Class NotaFiscalCartaCorrecaoEntityHandler
@@ -37,23 +36,18 @@ class NotaFiscalCartaCorrecaoEntityHandler extends EntityHandler
             throw new ViewException('É necessário informar a data/hora');
         }
 
-        if (!$cartaCorrecao->getSeq()) {
-            $cartaCorrecao->setSeq(1);
-            /** @var ArrayCollection $cartasCorrecao */
-            $cartasCorrecao = $cartaCorrecao->getNotaFiscal()->getCartasCorrecao();
-            if ($cartasCorrecao && $cartasCorrecao->count() > 0) {
-                $a = $cartasCorrecao->toArray();
-                uasort($a, function (NotaFiscalCartaCorrecao $cartaCorrecao1, NotaFiscalCartaCorrecao $cartaCorrecao2) {
-                    return strcasecmp($cartaCorrecao2->getSeq(), $cartaCorrecao1->getSeq());
-                });
-                $ultSeq = $a[0]->getSeq();
-                $cartaCorrecao->setSeq($ultSeq + 1);
-            }
 
+        try {
+            $conn = $this->getDoctrine()->getConnection();
+            $sql = 'SELECT id, seq FROM fis_nf_cartacorrecao WHERE nota_fiscal_id = :notaFiscalId ORDER BY seq DESC LIMIT 1';
+            $rsUltSeq = $conn->fetchAssociative($sql, ['notaFiscalId' => $cartaCorrecao->getNotaFiscal()->getId()]);
+            if ((int)($rsUltSeq['id'] ?? -1) !== $cartaCorrecao->getId()) {
+                $cartaCorrecao->setSeq($rsUltSeq['seq'] + 1);
+            }
+        } catch (\Throwable $e) {
+            throw new ViewException('Erro ao incrementar seq da carta de correção');
         }
 
-        // incrementar o seq
-        // verificar se foi preenchido a carta_correcao
 
     }
 
