@@ -626,7 +626,6 @@ class NotaFiscalBusiness
                 $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, 'XML enviado', $notaFiscal->getXmlNota());
                 if ($notaFiscal) {
                     $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'FATURAMENTO PROCESSADO');
-                    // $this->imprimir($notaFiscal);
                 } else {
                     $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO FATURAR');
                 }
@@ -769,7 +768,7 @@ class NotaFiscalBusiness
     }
 
     /**
-     * Verifica se é possível reimprimir o cancelamento.
+     * Verifica se é possível imprimir o cancelamento.
      *
      * @param NotaFiscal $notaFiscal
      * @return boolean
@@ -777,7 +776,7 @@ class NotaFiscalBusiness
     public function permiteReimpressaoCancelamento(NotaFiscal $notaFiscal)
     {
         if ($notaFiscal->getId()) {
-            if ($notaFiscal->getCStat() == 101) {
+            if ($notaFiscal->getCStatLote() == 101) {
                 return true;
             }
         }
@@ -802,30 +801,6 @@ class NotaFiscalBusiness
 
     /**
      * @param NotaFiscal $notaFiscal
-     */
-    public function imprimir(NotaFiscal $notaFiscal)
-    {
-        $this->spedNFeBusiness->imprimir($notaFiscal);
-    }
-
-    /**
-     * @param NotaFiscal $notaFiscal
-     */
-    public function imprimirCancelamento(NotaFiscal $notaFiscal)
-    {
-        $this->spedNFeBusiness->imprimirCancelamento($notaFiscal);
-    }
-
-    /**
-     * @param NotaFiscalCartaCorrecao $cartaCorrecao
-     */
-    public function imprimirCartaCorrecao(NotaFiscalCartaCorrecao $cartaCorrecao)
-    {
-        $this->spedNFeBusiness->imprimirCartaCorrecao($cartaCorrecao);
-    }
-
-    /**
-     * @param NotaFiscal $notaFiscal
      * @return NotaFiscal|\CrosierSource\CrosierLibBaseBundle\Entity\EntityId|object
      * @throws ViewException
      */
@@ -839,7 +814,6 @@ class NotaFiscalBusiness
                 $notaFiscal = $notaFiscalR;
                 $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'CANCELAMENTO PROCESSADO');
                 $notaFiscal = $this->consultarStatus($notaFiscal);
-                $this->spedNFeBusiness->imprimirCancelamento($notaFiscal);
             } else {
                 $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO CANCELAR');
             }
@@ -906,7 +880,6 @@ class NotaFiscalBusiness
                     $cartaCorrecao->getNotaFiscal()->getXMotivo(),
                     'ENVIO DA CARTA DE CORREÇÃO PROCESSADO');
                 $this->consultarStatus($cartaCorrecao->getNotaFiscal());
-                // $this->spedNFeBusiness->imprimirCartaCorrecao($cartaCorrecao);
             } else {
                 $this->spedNFeBusiness->addHistorico($cartaCorrecao->getNotaFiscal(), -2, 'PROBLEMA AO ENVIAR CARTA DE CORREÇÃO');
             }
@@ -1040,7 +1013,7 @@ class NotaFiscalBusiness
                 'numero' => $dados['enderEmit_nro'],
                 'bairro' => $dados['enderEmit_xBairro'],
                 'cep' => $dados['enderEmit_cep'],
-                'cidade' => $dados['enderEmit_xCidade'] ?? '',
+                'cidade' => $dados['enderEmit_xMun'] ?? '',
                 'estado' => $dados['siglaUF'],
                 'fone1' => $dados['fone1'] ?? '',
             ];
