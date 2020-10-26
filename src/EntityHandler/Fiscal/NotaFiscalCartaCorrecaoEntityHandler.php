@@ -41,8 +41,8 @@ class NotaFiscalCartaCorrecaoEntityHandler extends EntityHandler
             $conn = $this->getDoctrine()->getConnection();
             $sql = 'SELECT id, seq FROM fis_nf_cartacorrecao WHERE nota_fiscal_id = :notaFiscalId ORDER BY seq DESC LIMIT 1';
             $rsUltSeq = $conn->fetchAssociative($sql, ['notaFiscalId' => $cartaCorrecao->getNotaFiscal()->getId()]);
-            if ((int)($rsUltSeq['id'] ?? -1) !== $cartaCorrecao->getId()) {
-                $cartaCorrecao->setSeq($rsUltSeq['seq'] + 1);
+            if ((int)($rsUltSeq['id'] ?? 0) !== $cartaCorrecao->getId()) {
+                $cartaCorrecao->setSeq(($rsUltSeq['seq'] ?? 0) + 1);
             }
         } catch (\Throwable $e) {
             throw new ViewException('Erro ao incrementar seq da carta de correção');
