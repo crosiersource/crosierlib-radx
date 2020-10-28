@@ -289,7 +289,7 @@ class ProdutoEntityHandler extends EntityHandler
 
             foreach ($produto->composicoes as $itemComposicao) {
 
-                $itemComposicao->qtdeEmEstoque = $itemComposicao->produtoFilho->jsonData['qtde_estoque_total'] ?? 0.0;
+                $itemComposicao->qtdeEmEstoque = $itemComposicao->produtoFilho->jsonData['qtde_estoque_total'] ?? 0.0; // save
                 $valorTotal = bcadd($valorTotal, $itemComposicao->getTotalComposicao(), 2);
 
                 $qtdeDisponivel = $itemComposicao->qtdeEmEstoque >= $itemComposicao->qtde ? bcdiv($itemComposicao->qtdeEmEstoque, $itemComposicao->qtde, 0) : 0;
