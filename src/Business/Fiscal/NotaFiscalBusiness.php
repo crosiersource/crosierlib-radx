@@ -290,7 +290,7 @@ class NotaFiscalBusiness
             $itensNaNota = [];
             /** @var VendaItem $vendaItem */
             foreach ($venda->itens as $vendaItem) {
-                if ($vendaItem->produto->composicao === 'S') {
+                if ($vendaItem->produto && $vendaItem->produto->composicao === 'S') {
                     /** @var ProdutoComposicao $produtoComposicao */
                     foreach ($vendaItem->produto->composicoes as $produtoComposicao) {
                         $mockItem = new VendaItem();
