@@ -1107,8 +1107,8 @@ class IntegradorWebStorm implements IntegradorECommerce
         }
 
         $referenciasExtras = '';
-        if ($produto->jsonData['referenciasExtras'] ?? false) {
-            $referenciasExtras = htmlspecialchars($produto->jsonData['referenciasExtras']);
+        if ($produto->jsonData['referencias_extras'] ?? false) {
+            $referenciasExtras = htmlspecialchars($produto->jsonData['referencias_extras']);
         }
         $xml .= '<referenciasExtras>' . $referenciasExtras . '</referenciasExtras>';
 
