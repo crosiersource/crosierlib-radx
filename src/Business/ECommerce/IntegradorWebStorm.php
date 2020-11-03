@@ -1106,6 +1106,12 @@ class IntegradorWebStorm implements IntegradorECommerce
             }
         }
 
+        $referenciasExtras = '';
+        if ($produto->jsonData['referenciasExtras'] ?? false) {
+            $referenciasExtras = htmlspecialchars($produto->jsonData['referenciasExtras']);
+        }
+        $xml .= '<referenciasExtras>' . $referenciasExtras . '</referenciasExtras>';
+
 
         $xml .=
             '<itensVenda>
