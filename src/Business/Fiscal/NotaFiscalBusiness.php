@@ -239,7 +239,7 @@ class NotaFiscalBusiness
                         }
 
                         if (strlen($notaFiscal->getDocumentoDestinatario()) === 14 &&
-                                (!($endereco_faturamento['logradouro'] ?? false) ||
+                            (!($endereco_faturamento['logradouro'] ?? false) ||
                                 !($endereco_faturamento['bairro'] ?? false) ||
                                 !($endereco_faturamento['cep'] ?? false) ||
                                 !($endereco_faturamento['cidade'] ?? false) ||
@@ -1094,65 +1094,62 @@ class NotaFiscalBusiness
      */
     public function findNotaFiscalByVenda(Venda $venda): ?NotaFiscal
     {
-        $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
 
-        $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
-
-        $sql = 'SELECT nf.id FROM fis_nf_venda nfv, fis_nf nf WHERE nf.id = nfv.nota_fiscal_id AND nfv.venda_id = :venda_id AND nf.ambiente = :ambiente';
-
-        $results = $this->conn->fetchAllAssociative($sql,
-            [
-                'venda_id' => $venda->getId(),
-                'ambiente' => $ambiente
-            ]);
-
-        if (!$results) {
-            return null;
+        try {
+            $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
+            $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
+            $sql = 'SELECT nf.id FROM fis_nf_venda nfv, fis_nf nf WHERE nf.id = nfv.nota_fiscal_id AND nfv.venda_id = :venda_id AND nf.ambiente = :ambiente';
+            $results = $this->conn->fetchAllAssociative($sql,
+                [
+                    'venda_id' => $venda->getId(),
+                    'ambiente' => $ambiente
+                ]);
+            if (!$results) {
+                return null;
+            }
+            if (count($results) > 1) {
+                throw new \LogicException('Mais de uma Nota Fiscal encontrada para [' . $venda->getId() . ']');
+            }
+            /** @var NotaFiscalRepository $repoNotaFiscal */
+            $repoNotaFiscal = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NotaFiscal::class);
+            /** @var NotaFiscal $notaFiscal */
+            $notaFiscal = $repoNotaFiscal->find($results[0]['id']);
+            return $notaFiscal;
+        } catch (\Throwable $e) {
+            throw new ViewException('Ocorreu um erro ao pesquisar a nota fiscal da venda');
         }
-
-        if (count($results) > 1) {
-            throw new \LogicException('Mais de uma Nota Fiscal encontrada para [' . $venda->getId() . ']');
-        }
-
-        /** @var NotaFiscalRepository $repoNotaFiscal */
-        $repoNotaFiscal = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NotaFiscal::class);
-        /** @var NotaFiscal $notaFiscal */
-        $notaFiscal = $repoNotaFiscal->find($results[0]['id']);
-        return $notaFiscal;
     }
 
     /**
-     * @param Venda $venda
+     * @param NotaFiscal $notaFiscal
      * @return null|NotaFiscalVenda
      * @throws ViewException
      */
     public function findVendaByNotaFiscal(NotaFiscal $notaFiscal): ?Venda
     {
-        $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
-
-        $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
-
-        $sql = 'SELECT nfv.venda_id FROM fis_nf_venda nfv, fis_nf nf WHERE nf.id = nfv.nota_fiscal_id AND nfv.nota_fiscal_id = :notaFiscalId AND nf.ambiente = :ambiente';
-
-        $results = $this->conn->fetchAllAssociative($sql,
-            [
-                'notaFiscalId' => $notaFiscal->getId(),
-                'ambiente' => $ambiente
-            ]);
-
-        if (!$results) {
-            return null;
+        try {
+            $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
+            $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
+            $sql = 'SELECT nfv.venda_id FROM fis_nf_venda nfv, fis_nf nf WHERE nf.id = nfv.nota_fiscal_id AND nfv.nota_fiscal_id = :notaFiscalId AND nf.ambiente = :ambiente';
+            $results = $this->conn->fetchAllAssociative($sql,
+                [
+                    'notaFiscalId' => $notaFiscal->getId(),
+                    'ambiente' => $ambiente
+                ]);
+            if (!$results) {
+                return null;
+            }
+            if (count($results) > 1) {
+                throw new \LogicException('Mais de uma Venda encontrada para [' . $notaFiscal->getId() . ']');
+            }
+            /** @var VendaRepository $repoVenda */
+            $repoVenda = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Venda::class);
+            /** @var Venda $venda */
+            $venda = $repoVenda->find($results[0]['venda_id']);
+            return $venda;
+        } catch (\Throwable $e) {
+            throw new ViewException('Ocorreu um erro ao pesquisar a venda da nota fiscal');
         }
-
-        if (count($results) > 1) {
-            throw new \LogicException('Mais de uma Venda encontrada para [' . $notaFiscal->getId() . ']');
-        }
-
-        /** @var VendaRepository $repoVenda */
-        $repoVenda = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Venda::class);
-        /** @var Venda $venda */
-        $venda = $repoVenda->find($results[0]['venda_id']);
-        return $venda;
     }
 
 
