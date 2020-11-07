@@ -5,12 +5,14 @@ namespace CrosierSource\CrosierLibRadxBundle\Business\Fiscal;
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\Municipio;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
+use CrosierSource\CrosierLibBaseBundle\Entity\Security\User;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\MunicipioRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
+use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoComposicao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
@@ -30,11 +32,13 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalVenda;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\TipoNotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
@@ -73,6 +77,10 @@ class NotaFiscalBusiness
 
     private SyslogBusiness $syslog;
 
+    private ClienteEntityHandler $clienteEntityHandler;
+
+    private VendaEntityHandler $vendaEntityHandler;
+
     /**
      * Não podemos usar o doctrine->getRepository porque ele não injeta as depêndencias que estão com @ required lá
      * @var NotaFiscalRepository
@@ -93,6 +101,8 @@ class NotaFiscalBusiness
      * @param NFeUtils $nfeUtils
      * @param SyslogBusiness $syslog
      * @param NotaFiscalRepository $repoNotaFiscal
+     * @param ClienteEntityHandler $clienteEntityHandler
+     * @param VendaEntityHandler $vendaEntityHandler
      */
     public function __construct(Connection $conn,
                                 LoggerInterface $logger,
@@ -105,7 +115,9 @@ class NotaFiscalBusiness
                                 MovimentacaoEntityHandler $movimentacaoEntityHandler,
                                 NFeUtils $nfeUtils,
                                 SyslogBusiness $syslog,
-                                NotaFiscalRepository $repoNotaFiscal)
+                                NotaFiscalRepository $repoNotaFiscal,
+                                ClienteEntityHandler $clienteEntityHandler,
+                                VendaEntityHandler $vendaEntityHandler)
     {
         $this->conn = $conn;
         $this->logger = $logger;
@@ -119,6 +131,8 @@ class NotaFiscalBusiness
         $this->nfeUtils = $nfeUtils;
         $this->syslog = $syslog;
         $this->repoNotaFiscal = $repoNotaFiscal;
+        $this->clienteEntityHandler = $clienteEntityHandler;
+        $this->vendaEntityHandler = $vendaEntityHandler;
     }
 
 
@@ -154,6 +168,8 @@ class NotaFiscalBusiness
             $rNcmPadrao = $conn->fetchAllAssociative('SELECT valor FROM cfg_app_config WHERE chave = \'ncm_padrao\'');
             $ncmPadrao = $rNcmPadrao[0]['valor'] ?? null;
 
+            $this->handleClienteNotaFiscalVenda($notaFiscal, $venda);
+
             if ($jaExiste) {
                 /** @var NotaFiscalRepository $repoNotaFiscal */
                 $repoNotaFiscal = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NotaFiscal::class);
@@ -165,7 +181,6 @@ class NotaFiscalBusiness
             }
 
             if ($notaFiscal->getId()) {
-
                 $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
                 $conn->delete('fis_nf_item', ['nota_fiscal_id' => $notaFiscal->getId()]);
                 $notaFiscal->deleteAllItens(); // remove as referências no ORM
@@ -181,23 +196,39 @@ class NotaFiscalBusiness
             if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
                 if ($venda->cliente) {
 
-                    $notaFiscal->setDocumentoDestinatario($venda->cliente->documento);
-                    $notaFiscal->setXNomeDestinatario($venda->cliente->nome);
+                    if (!$notaFiscal->getDocumentoDestinatario()) {
+                        $notaFiscal->setDocumentoDestinatario($venda->cliente->documento);
+                    }
+                    if (!$notaFiscal->getXNomeDestinatario()) {
+                        $notaFiscal->setXNomeDestinatario($venda->cliente->nome);
+                    }
+                    if (!$notaFiscal->getFoneDestinatario()) {
+                        $notaFiscal->setFoneDestinatario($venda->cliente->jsonData['fone1'] ?? '');
+                    }
+                    if (!$notaFiscal->getEmailDestinatario()) {
+                        $notaFiscal->setEmailDestinatario($venda->cliente->jsonData['email'] ?? '');
+                    }
 
-                    $notaFiscal->setFoneDestinatario($venda->cliente->jsonData['fone1'] ?? '');
-                    $notaFiscal->setEmailDestinatario($venda->cliente->jsonData['email'] ?? '');
-
-                    // Se a venda é do ecommerce, então utiliza os dados da entrega para o endereço
-                    if ($venda->jsonData['ecommerce_entrega_logradouro'] ?? false) {
-                        $endereco_faturamento['logradouro'] = $venda->jsonData['ecommerce_entrega_logradouro'];
-                        $endereco_faturamento['numero'] = $venda->jsonData['ecommerce_entrega_numero'] ?? '';
-                        $endereco_faturamento['bairro'] = $venda->jsonData['ecommerce_entrega_bairro'] ?? '';
-                        $endereco_faturamento['cidade'] = $venda->jsonData['ecommerce_entrega_cidade'] ?? '';
-                        $endereco_faturamento['estado'] = $venda->jsonData['ecommerce_entrega_uf'] ?? '';
-                        $endereco_faturamento['cep'] = $venda->jsonData['ecommerce_entrega_cep'] ?? '';
+                    if (!$notaFiscal->getLogradouroDestinatario()) {
+                        // Se a venda é do ecommerce, então utiliza os dados da entrega para o endereço
+                        if ($venda->jsonData['ecommerce_entrega_logradouro'] ?? false) {
+                            $endereco_faturamento['logradouro'] = $venda->jsonData['ecommerce_entrega_logradouro'];
+                            $endereco_faturamento['numero'] = $venda->jsonData['ecommerce_entrega_numero'] ?? '';
+                            $endereco_faturamento['bairro'] = $venda->jsonData['ecommerce_entrega_bairro'] ?? '';
+                            $endereco_faturamento['cidade'] = $venda->jsonData['ecommerce_entrega_cidade'] ?? '';
+                            $endereco_faturamento['estado'] = $venda->jsonData['ecommerce_entrega_uf'] ?? '';
+                            $endereco_faturamento['cep'] = $venda->jsonData['ecommerce_entrega_cep'] ?? '';
+                        } else {
+                            // se não, pega o primeiro endereço que esteja marcado como "FATURAMENTO"
+                            $endereco_faturamento = $venda->cliente->getEnderecoByTipo('FATURAMENTO');
+                        }
                     } else {
-                        // se não, pega o primeiro endereço que esteja marcado como "FATURAMENTO"
-                        $endereco_faturamento = $venda->cliente->getEnderecoByTipo('FATURAMENTO');
+                        $endereco_faturamento['logradouro'] = $notaFiscal->getLogradouroDestinatario();
+                        $endereco_faturamento['numero'] = $notaFiscal->getNumeroDestinatario();
+                        $endereco_faturamento['bairro'] = $notaFiscal->getBairroDestinatario();
+                        $endereco_faturamento['cidade'] = $notaFiscal->getCidadeDestinatario();
+                        $endereco_faturamento['estado'] = $notaFiscal->getEstadoDestinatario();
+                        $endereco_faturamento['cep'] = $notaFiscal->getCepDestinatario();
                     }
 
                     if (!$endereco_faturamento) {
@@ -207,7 +238,8 @@ class NotaFiscalBusiness
                             throw new ViewException('NFe sem UF no endereço de faturamento');
                         }
 
-                        if (strlen($notaFiscal->getDocumentoDestinatario()) === 14 && (!($endereco_faturamento['logradouro'] ?? false) ||
+                        if (strlen($notaFiscal->getDocumentoDestinatario()) === 14 &&
+                                (!($endereco_faturamento['logradouro'] ?? false) ||
                                 !($endereco_faturamento['bairro'] ?? false) ||
                                 !($endereco_faturamento['cep'] ?? false) ||
                                 !($endereco_faturamento['cidade'] ?? false) ||
@@ -238,7 +270,7 @@ class NotaFiscalBusiness
                 }
             }
 
-            if (($nfeConfigs['idDest_sempre1'] ?? false) || ($notaFiscal->getEstadoDestinatario() !== $nfeConfigs['siglaUF'])) {
+            if (($nfeConfigs['idDest_sempre1'] ?? false) || ($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF'])) {
                 $dentro_ou_fora = 'dentro';
             } else {
                 $dentro_ou_fora = 'fora';
@@ -592,7 +624,9 @@ class NotaFiscalBusiness
                 $repoNCM = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NCM::class);
                 $existe = $repoNCM->findByNCM($item->getNcm());
                 if (!$existe) {
-                    $item->setNcm('62179000');
+                    $rNcmPadrao = $this->notaFiscalEntityHandler->getDoctrine()->getConnection()->fetchAllAssociative('SELECT valor FROM cfg_app_config WHERE chave = \'ncm_padrao\'');
+                    $ncmPadrao = $rNcmPadrao[0]['valor'] ?? null;
+                    $item->setNcm($ncmPadrao);
                 }
             }
         }
@@ -1111,7 +1145,7 @@ class NotaFiscalBusiness
         }
 
         if (count($results) > 1) {
-            throw new \LogicException('Mais de uma Venda encontrada para [' . $venda->getId() . ']');
+            throw new \LogicException('Mais de uma Venda encontrada para [' . $notaFiscal->getId() . ']');
         }
 
         /** @var VendaRepository $repoVenda */
@@ -1169,7 +1203,7 @@ class NotaFiscalBusiness
             $prox++;
 
             $updateSql = 'UPDATE cfg_app_config SET valor = :valor WHERE id = :id';
-            $conn->executeUpdate($updateSql, ['valor' => $prox, 'id' => $configId]);
+            $conn->executeStatement($updateSql, ['valor' => $prox, 'id' => $configId]);
             $conn->commit();
 
             return $prox;
@@ -1224,8 +1258,10 @@ class NotaFiscalBusiness
                 $fatura['fechada'] = true;
                 $fatura['inserted'] = (new \DateTime())->format('Y-m-d H:i:s');
                 $fatura['updated'] = (new \DateTime())->format('Y-m-d H:i:s');
-                $fatura['user_inserted_id'] = $this->nfeUtils->security->getUser() ? $this->nfeUtils->security->getUser()->getId() : 1;
-                $fatura['user_updated_id'] = $this->nfeUtils->security->getUser() ? $this->nfeUtils->security->getUser()->getId() : 1;
+                /** @var User $user */
+                $user = $this->nfeUtils->security->getUser();
+                $fatura['user_inserted_id'] = $this->nfeUtils->security->getUser() ? $user->getId() : 1;
+                $fatura['user_updated_id'] = $this->nfeUtils->security->getUser() ? $user->getId() : 1;
                 $fatura['estabelecimento_id'] = 1;
 
                 $conn->insert('fin_fatura', $fatura);
@@ -1298,6 +1334,51 @@ class NotaFiscalBusiness
                     throw $e;
                 }
                 $this->syslog->err('Erro ao gerar fatura', $e->getTraceAsString());
+            }
+        }
+    }
+
+
+    /**
+     * A venda pode ser para cliente não identificado e posteriormente ser faturada para cliente identificado.
+     * Corrige isto (e salva o cliente caso não exista).
+     *
+     * @param NotaFiscal $notaFiscal
+     * @param Venda $venda
+     * @throws ViewException
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function handleClienteNotaFiscalVenda(NotaFiscal $notaFiscal, Venda $venda)
+    {
+        if (trim($venda->jsonData['cliente_nome'] ?? '') === '') {
+            if ($notaFiscal->getDocumentoDestinatario()) {
+                $rsClienteId = $this->conn->fetchAssociative('SELECT id FROM crm_cliente WHERE documento = :documento', ['documento' => $notaFiscal->getDocumentoDestinatario()]);
+                if ($rsClienteId) {
+                    $repoCliente = $this->clienteEntityHandler->getDoctrine()->getRepository(Cliente::class);
+                    $cliente = $repoCliente->find($rsClienteId['id']);
+                } else {
+                    $cliente = new Cliente();
+                    $cliente->documento = $notaFiscal->getDocumentoDestinatario();
+                    $cliente->nome = $notaFiscal->getXNomeDestinatario();
+                    $this->clienteEntityHandler->save($cliente);
+                }
+                if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
+                    $endereco = [
+                        'tipo' => 'FATURAMENTO',
+                        'cep' => $notaFiscal->getCepDestinatario(),
+                        'logradouro' => $notaFiscal->getLogradouroDestinatario(),
+                        'numero' => $notaFiscal->getNumeroDestinatario(),
+                        'bairro' => $notaFiscal->getBairroDestinatario(),
+                        'cidade' => $notaFiscal->getCidadeDestinatario(),
+                        'estado' => $notaFiscal->getEstadoDestinatario(),
+                    ];
+                    $cliente->inserirNovoEndereco($endereco);
+                    $this->clienteEntityHandler->save($cliente);
+                }
+
+                $venda->jsonData['cliente_nome'] = $cliente->nome;
+                $venda->jsonData['cliente_documento'] = $cliente->documento;
+                $this->vendaEntityHandler->save($venda);
             }
         }
     }

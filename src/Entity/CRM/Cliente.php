@@ -65,4 +65,45 @@ class Cliente implements EntityId
         return null;
     }
 
+    /**
+     * Insere somente se já não existir.
+     *
+     * @param Cliente $cliente
+     * @param array $novoEndereco
+     */
+    public function inserirNovoEndereco(array $novoEndereco)
+    {
+        // Verifica os endereços do cliente
+        $enderecoJaSalvo = false;
+        if (($this->jsonData['enderecos'] ?? false) && count($this->jsonData['enderecos']) > 0) {
+            foreach ($this->jsonData['enderecos'] as $endereco) {
+                if (
+                    (($endereco['logradouro'] ?? '') === ($novoEndereco['logradouro'] ?? '')) &&
+                    (($endereco['numero'] ?? '') === ($novoEndereco['numero'] ?? '')) &&
+                    (($endereco['complemento'] ?? '') === ($novoEndereco['complemento'] ?? '')) &&
+                    (($endereco['bairro'] ?? '') === ($novoEndereco['bairro'] ?? '')) &&
+                    (($endereco['cep'] ?? '') === ($novoEndereco['cep'] ?? '')) &&
+                    (($endereco['cidade'] ?? '') === ($novoEndereco['cidade'] ?? '')) &&
+                    (($endereco['estado'] ?? '') === ($novoEndereco['estado'] ?? ''))) {
+                    $enderecoJaSalvo = true;
+                }
+            }
+        }
+        if (!$enderecoJaSalvo) {
+            if (!isset($this->jsonData['enderecos'])) {
+                $this->jsonData['enderecos'] = [];
+            }
+            $this->jsonData['enderecos'][] = [
+                'tipo' => $novoEndereco['tipo'] ?? '',
+                'logradouro' => $novoEndereco['logradouro'] ?? '',
+                'numero' => $novoEndereco['numero'] ?? '',
+                'complemento' => $novoEndereco['complemento'] ?? '',
+                'bairro' => $novoEndereco['bairro'] ?? '',
+                'cep' => $novoEndereco['cep'] ?? '',
+                'cidade' => $novoEndereco['cidade'] ?? '',
+                'estado' => $novoEndereco['estado'] ?? '',
+            ];
+        }
+    }
+
 }

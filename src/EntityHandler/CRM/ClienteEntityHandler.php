@@ -27,6 +27,9 @@ class ClienteEntityHandler extends EntityHandler
         } else {
             $cliente->jsonData['tipo_pessoa'] = 'PF';
         }
+        
     }
+
+
 
 }
