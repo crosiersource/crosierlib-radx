@@ -92,7 +92,6 @@ class MovimentacaoBusiness
      * @param \DateTime $dtPrimeiroVencto
      * @param bool $isValorTotal
      * @param array|null $parcelas
-     * @throws ViewException
      */
     public function gerarParcelas(Movimentacao $movimentacao, int $qtdeParcelas, float $valor, \DateTime $dtPrimeiroVencto, bool $isValorTotal = true, array $parcelas = null): void
     {
