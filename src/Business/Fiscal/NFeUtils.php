@@ -94,7 +94,7 @@ class NFeUtils
         $configs['atualizacao'] = $configs['atualizacao']->format('Y-m-d H:i:s.u');
 
         $appConfig->setChave('nfeConfigs_' . $configs['cnpj']);
-        $appConfig->setAppUUID('9121ea11-dc5d-4a22-9596-187f5452f95a');
+        $appConfig->setAppUUID($_SERVER['CROSIERAPPRADX_UUID']);
         $appConfig->setValor(json_encode($configs));
         $this->appConfigEntityHandler->save($appConfig);
     }
@@ -113,14 +113,17 @@ class NFeUtils
 
         $username = $this->security->getUser() ? $this->security->getUser()->getUsername() : 'INDEFINIDO';
         /** @var AppConfig $appConfig_nfeConfigsIdEmUso */
-        $appConfig_nfeConfigsIdEmUso = $repoAppConfig->findOneBy(['appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a', 'chave' => 'nfeConfigsIdEmUso_' . $username]);
+        $appConfig_nfeConfigsIdEmUso = $repoAppConfig->findOneBy(['appUUID' => $_SERVER['CROSIERAPPRADX_UUID'], 'chave' => 'nfeConfigsIdEmUso_' . $username]);
         if ($appConfig_nfeConfigsIdEmUso) {
             return (int)$appConfig_nfeConfigsIdEmUso->getValor();
         } else {
-            $appConfig_nfeConfigsIdEmUso_padrao = $repoAppConfig->findOneBy(['appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a', 'chave' => 'nfeConfigsIdEmUso_padrao']);
+            $appConfig_nfeConfigsIdEmUso_padrao = $repoAppConfig->findOneBy(['appUUID' => $_SERVER['CROSIERAPPRADX_UUID'], 'chave' => 'nfeConfigsIdEmUso_padrao']);
+            if (!$appConfig_nfeConfigsIdEmUso_padrao) {
+                throw new ViewException('nfeConfigsIdEmUso_padrao N/D');
+            }
             $appConfig_nfeConfigsIdEmUso = new AppConfig();
             $appConfig_nfeConfigsIdEmUso->setChave('nfeConfigsIdEmUso_' . $username);
-            $appConfig_nfeConfigsIdEmUso->setAppUUID('9121ea11-dc5d-4a22-9596-187f5452f95a');
+            $appConfig_nfeConfigsIdEmUso->setAppUUID($_SERVER['CROSIERAPPRADX_UUID']);
             $appConfig_nfeConfigsIdEmUso->setValor($appConfig_nfeConfigsIdEmUso_padrao->getValor());
             $this->appConfigEntityHandler->save($appConfig_nfeConfigsIdEmUso);
         }
@@ -138,7 +141,7 @@ class NFeUtils
         $repoAppConfig = $this->appConfigEntityHandler->getDoctrine()->getRepository(AppConfig::class);
         $username = $this->security->getUser() ? $this->security->getUser()->getUsername() : 'INDEFINIDO';
         /** @var AppConfig $appConfig_nfeConfigsIdEmUso */
-        $appConfig_nfeConfigsIdEmUso = $repoAppConfig->findOneBy(['appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a', 'chave' => 'nfeConfigsIdEmUso_' . $username]);
+        $appConfig_nfeConfigsIdEmUso = $repoAppConfig->findOneBy(['appUUID' => $_SERVER['CROSIERAPPRADX_UUID'], 'chave' => 'nfeConfigsIdEmUso_' . $username]);
         $appConfig_nfeConfigsIdEmUso->setValor($id);
         $this->appConfigEntityHandler->save($appConfig_nfeConfigsIdEmUso);
     }

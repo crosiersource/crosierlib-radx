@@ -147,6 +147,7 @@ class VendaEntityHandler extends EntityHandler
             /** @var Venda $novaVenda */
             /** @var Venda $velhaVenda */
             $agora = (new \DateTime())->format('Y-m-d H:i:s');
+
             foreach ($velhaVenda->itens as $item) {
 
                 $novoItem =
