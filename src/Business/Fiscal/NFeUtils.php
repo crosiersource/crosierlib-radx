@@ -108,6 +108,9 @@ class NFeUtils
      */
     public function getNfeConfigsIdEmUso(): int
     {
+        if (!isset($_SERVER['CROSIERAPPRADX_UUID'])) {
+            throw new ViewException('CROSIERAPPRADX_UUID n/d');
+        }
         /** @var AppConfigRepository $repoAppConfig */
         $repoAppConfig = $this->appConfigEntityHandler->getDoctrine()->getRepository(AppConfig::class);
 
@@ -264,7 +267,7 @@ class NFeUtils
     public function getNFeConfigsEmUso(): array
     {
         try {
-            $nfeConfigsJSON = $this->conn->fetchAssoc('SELECT id, valor FROM cfg_app_config WHERE id = :id',
+            $nfeConfigsJSON = $this->conn->fetchAssociative('SELECT id, valor FROM cfg_app_config WHERE id = :id',
                 ['id' => $this->getNfeConfigsIdEmUso()]);
             $a = json_decode($nfeConfigsJSON['valor'], true);
             $a['atualizacao'] = isset($a['atualizacao']) ? DateTimeUtils::parseDateStr($a['atualizacao']) : '';
@@ -277,7 +280,12 @@ class NFeUtils
         } catch (\Throwable $e) {
             $this->logger->error('Erro ao obter nfeConfigs do cachê');
             $this->logger->error($e->getMessage());
-            throw new ViewException('Erro ao obter nfeConfigs do cachê');
+            if ($e instanceof ViewException) {
+                $msg = $e->getMessage();
+            } else {
+                $msg = 'Erro ao obter nfeConfigs do cachê';
+            }
+            throw new ViewException($msg);
         }
     }
 

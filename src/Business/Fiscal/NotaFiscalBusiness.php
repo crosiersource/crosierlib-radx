@@ -270,7 +270,8 @@ class NotaFiscalBusiness
                 }
             }
 
-            if (($nfeConfigs['idDest_sempre1'] ?? false) || ($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF'])) {
+            if ($notaFiscal->getTipoNotaFiscal() === 'NFCE' ||
+                ($nfeConfigs['idDest_sempre1'] ?? false) || ($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF'])) {
                 $dentro_ou_fora = 'dentro';
             } else {
                 $dentro_ou_fora = 'fora';
@@ -1094,7 +1095,6 @@ class NotaFiscalBusiness
      */
     public function findNotaFiscalByVenda(Venda $venda): ?NotaFiscal
     {
-
         try {
             $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
             $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
@@ -1116,7 +1116,12 @@ class NotaFiscalBusiness
             $notaFiscal = $repoNotaFiscal->find($results[0]['id']);
             return $notaFiscal;
         } catch (\Throwable $e) {
-            throw new ViewException('Ocorreu um erro ao pesquisar a nota fiscal da venda');
+            if ($e instanceof ViewException) {
+                $msg = $e->getMessage();
+            } else {
+                $msg = 'Ocorreu um erro ao pesquisar a nota fiscal da venda';
+            }
+            throw new ViewException($msg);
         }
     }
 
