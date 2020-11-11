@@ -798,8 +798,12 @@ class IntegradorWebStorm implements IntegradorECommerce
      */
     public function integraSubgrupo(Subgrupo $subgrupo): int
     {
-        $syslog_obs = 'subgrupo = ' . $subgrupo->nome . ' (' . $subgrupo->getId() . ')';
+        $syslog_obs = 'subgrupo [codigo="' . $subgrupo->codigo . '", nome="' . $subgrupo->nome . '", id ="' . $subgrupo->getId() . '"]';
         $this->syslog->debug('integraSubgrupo - ini', $syslog_obs);
+        if (!$subgrupo->codigo || !$subgrupo->nome) {
+            $this->syslog->info('subgrupo sem código ou nome não pode ser integrado', $syslog_obs);
+            return 0;
+        }
 
         /** @var SubgrupoRepository $repoSubgrupo */
         $repoSubgrupo = $this->subgrupoEntityHandler->getDoctrine()->getRepository(Subgrupo::class);
@@ -850,6 +854,7 @@ class IntegradorWebStorm implements IntegradorECommerce
      */
     public function integraDeptoGrupoSubgrupo(string $descricao, int $nivel, ?int $idNivelPai1 = null, ?int $idNivelPai2 = null, ?int $ecommerce_id = null)
     {
+        $descricao = trim($descricao);
         $syslog_obs =
             'descricao = ' . $descricao . ', ' .
             'nivel = ' . $nivel . ', ' .
@@ -1647,8 +1652,6 @@ class IntegradorWebStorm implements IntegradorECommerce
             $obs[] = 'Desconto: ' . number_format($pedido->pagamentos->pagamento->desconto->__toString(), 2, ',', '.');
             $obs[] = 'Parcelas: ' . ($pedido->pagamentos->pagamento->parcelas->__toString() ?? null);
             $obs[] = 'Valor Parcela: R$ ' . number_format($pedido->pagamentos->pagamento->valorParcela->__toString(), 2, ',', '.');
-
-
 
 
             $venda->jsonData['obs'] = implode(PHP_EOL, $obs);
