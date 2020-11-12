@@ -163,13 +163,6 @@ class NotaFiscalBusiness
             $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
             $jaExiste = $conn->fetchAllAssociative('SELECT * FROM fis_nf_venda WHERE venda_id = :vendaId', ['vendaId' => $venda->getId()]);
 
-            $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
-
-            $rNcmPadrao = $conn->fetchAllAssociative('SELECT valor FROM cfg_app_config WHERE chave = \'ncm_padrao\'');
-            $ncmPadrao = $rNcmPadrao[0]['valor'] ?? null;
-
-            $this->handleClienteNotaFiscalVenda($notaFiscal, $venda);
-
             if ($jaExiste) {
                 /** @var NotaFiscalRepository $repoNotaFiscal */
                 $repoNotaFiscal = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NotaFiscal::class);
@@ -179,6 +172,11 @@ class NotaFiscalBusiness
             } else {
                 $novaNota = true;
             }
+
+            $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
+
+            $rNcmPadrao = $conn->fetchAllAssociative('SELECT valor FROM cfg_app_config WHERE chave = \'ncm_padrao\'');
+            $ncmPadrao = $rNcmPadrao[0]['valor'] ?? null;
 
             if ($notaFiscal->getId()) {
                 $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
@@ -445,6 +443,8 @@ class NotaFiscalBusiness
 
             /** @var NotaFiscal $notaFiscal */
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
+
+            $this->handleClienteNotaFiscalVenda($notaFiscal, $venda);
 
             if ($novaNota) {
                 $notaFiscalVenda = new NotaFiscalVenda();
