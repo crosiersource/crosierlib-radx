@@ -125,6 +125,25 @@ class VendaEntityHandler extends EntityHandler
         $venda->subtotal = $venda->subtotal ?? 0.0;
         $venda->desconto = $venda->desconto ?? 0.0;
         $venda->valorTotal = $venda->valorTotal ?? 0.0;
+
+        $this->corrigirOrdens($venda);
+
+    }
+
+    /**
+     * @param Venda $venda
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function corrigirOrdens(Venda $venda)
+    {
+        $conn = $this->getDoctrine()->getConnection();
+        $rsItens = $conn->fetchAllAssociative('SELECT id, ordem FROM ven_venda_item WHERE venda_id = :vendaId ORDER BY ordem, id', ['vendaId' => $venda->getId()]);
+        $i = 1;
+        foreach ($rsItens as $item) {
+            $item['ordem'] = $i++;
+            $conn->update('ven_venda_item', $item, ['id' => $item['id']]);
+        }
     }
 
     public function beforeClone($novaVenda)

@@ -4,8 +4,10 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
+use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaItemRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -67,5 +69,28 @@ class VendaItemEntityHandler extends EntityHandler
 
         $this->vendaBusiness->recalcularTotais($vendaItem->venda->getId());
     }
+
+    /**
+     * @param array $ids
+     * @return array
+     * @throws ViewException
+     */
+    public function salvarOrdens(array $ids): array
+    {
+        /** @var VendaItemRepository $repo */
+        $repo = $this->getDoctrine()->getRepository(VendaItem::class);
+        $i = 1;
+        $ordens = [];
+        foreach ($ids as $id) {
+            if (!$id) continue;
+            /** @var VendaItem $vendaItem */
+            $item = $repo->find($id);
+            $ordens[$id] = $i;
+            $item->ordem = $i++;
+            $this->save($item);
+        }
+        return $ordens;
+    }
+
 
 }
