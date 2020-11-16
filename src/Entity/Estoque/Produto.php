@@ -145,6 +145,13 @@ class Produto implements EntityId
 
     /**
      *
+     * @var array
+     *
+     */
+    private array $precosPorLista = [];
+
+    /**
+     *
      * @ORM\OneToMany(targetEntity="ProdutoSaldo", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
      * @var ProdutoSaldo[]|ArrayCollection|null
      *
@@ -205,6 +212,23 @@ class Produto implements EntityId
     {
         $this->composicoes = $composicoes;
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPrecosPorLista(): array
+    {
+        if (!$this->precosPorLista) {
+            $precosPorLista = [];
+            foreach ($this->precos as $preco) {
+                $precosPorLista[strtoupper($preco->lista->descricao)] = $preco->precoPrazo;
+            }
+            $precosPorLista['VAREJO'] = $precosPorLista['VAREJO'] ?? 0.0;
+            $precosPorLista['ATACADO'] = $precosPorLista['ATACADO   '] ?? 0.0;
+            $this->precosPorLista = $precosPorLista;
+        }
+        return $this->precosPorLista;
     }
 
 

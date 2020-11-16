@@ -45,8 +45,6 @@ class ProdutoPrecoEntityHandler extends EntityHandler
     public function beforeSave(/** @var ProdutoPreco $produtoPreco * */ $produtoPreco)
     {
         $produtoPreco->prazo = $produtoPreco->prazo ?? 0;
-        $produtoPreco->prazo = $produtoPreco->prazo ?? 0;
-
 
         $precoArr = [
             'prazo' => $produtoPreco->prazo,
@@ -57,16 +55,16 @@ class ProdutoPrecoEntityHandler extends EntityHandler
             'precoPrazo' => $produtoPreco->precoPrazo
         ];
 
+        $this->calculoPreco->calcularPreco($precoArr);
 
-
-        if (!$produtoPreco->precoPrazo || ($produtoPreco->precoPrazo && $produtoPreco->margem)) {
-            $this->calculoPreco->calcularPreco($precoArr);
+        if (!$produtoPreco->precoPrazo) {
             $produtoPreco->precoPrazo = $precoArr['precoPrazo'];
-            $produtoPreco->precoVista = $precoArr['precoVista'];
-        } else {
-            $this->calculoPreco->calcularMargem($precoArr);
+        }
+        if (!$produtoPreco->margem) {
             $produtoPreco->margem = $precoArr['margem'];
         }
+
+        $produtoPreco->precoVista = $precoArr['precoVista'];
 
     }
 
