@@ -42,6 +42,9 @@ class CalculoPreco
         if (!($preco['margem'] ?? false)) {
             $this->calcularMargem($preco);
         }
+        if (!($preco['precoCusto'] ?? false)) {
+            throw new \LogicException('Preço de custo nulo.');
+        }
 
         $this->calcularCoeficiente($preco);
 
@@ -51,12 +54,10 @@ class CalculoPreco
 
         $coeficiente = $preco['coeficiente'];
         $custoFinanceiro = $preco['custoFinanceiro'];
-        $custoFinanceiroCompl = 1.0 - $custoFinanceiro;
+        $custoFinanceiroCompl = 1.0 - (float)$custoFinanceiro;
         $custoFinanceiroInv = bcdiv(1, $custoFinanceiroCompl, 25);
         $precoCusto = $preco['precoCusto'];
-        if (!$precoCusto) {
-            throw new \LogicException('Preço de custo nulo.');
-        }
+
         $custoFinanceiroInv = round($custoFinanceiroInv, 13);
         $pc_cfinv = bcmul($precoCusto, $custoFinanceiroInv, 13);
         $pc_cfinv_coef = (float)bcmul($pc_cfinv, $coeficiente, 13);
@@ -77,26 +78,33 @@ class CalculoPreco
      */
     public function calcularCoeficiente(array &$preco): void
     {
-        $preco['margem'] = (float) $preco['margem'];
-        if ($preco['margem'] > 99.99) {
+        $prazo = (int)$preco['prazo'];
+        // obtém o depreciacaoPrazo da base de dados
+        if ($prazo === null || $prazo === '' || $prazo < 0) {
+            throw new \LogicException('Prazo deve ser um número inteiro igual ou maior que 0.');
+        }
+
+        $margem = (float)$preco['margem'];
+        if ($margem > 99.99) {
             throw new \LogicException('Margem superior a 99,99%');
         }
 
-        // obtém o depreciacaoPrazo da base de dados
-        if ($preco['prazo'] === null || $preco['prazo'] === '' || $preco['prazo'] < 0) {
-            throw new \LogicException('Prazo deve ser um número inteiro igual ou maior que 0.');
+        $custoOperacional = (float)$preco['custoOperacional']; // (float)bcdiv($preco['custoOperacional'], '100.0', 3);
+        if ($custoOperacional < 0 || $custoOperacional > 0.99) {
+            throw new \LogicException('Custo Operacional deve estar entre 0 e 0.99');
         }
-        $depreciacaoPrazo = $this->doctrine->getRepository(DepreciacaoPreco::class)->findDepreciacaoByPrazo($preco['prazo']);
 
-        $margemPorcent = (float)bcdiv($preco['margem'], '100.00', 4);
-        $custoOperacPorcent = (float)bcdiv($preco['custoOperacional'], '100.0', 3);
+        $depreciacaoPrazo = $this->doctrine->getRepository(DepreciacaoPreco::class)->findDepreciacaoByPrazo($prazo);
 
-        $margemMaximaPorcent = 1.0 - $custoOperacPorcent - 0.0001;
+        $margemPorcent = (float)bcdiv($margem, '100.00', 4);
+
+
+        $margemMaximaPorcent = 1.0 - $custoOperacional - 0.0001;
         if ($margemPorcent > $margemMaximaPorcent) {
-            throw new \LogicException('Margem não pode ser superior a ' . $margemMaximaPorcent . ' (C.O.: ' . $custoOperacPorcent . ')');
+            throw new \LogicException('Margem não pode ser superior a ' . $margemMaximaPorcent . ' (C.O.: ' . $custoOperacional . ')');
         }
 
-        $coefNaoDeflacionado = (float)bcsub('1.0', ($custoOperacPorcent + $margemPorcent), 3);
+        $coefNaoDeflacionado = (float)bcsub('1.0', ($custoOperacional + $margemPorcent), 3);
         $coefNaoDeflacionadoInv = $coefNaoDeflacionado > 0 ? bcdiv('1.0', $coefNaoDeflacionado, 25) : 0;
 
         $coeficiente = round((float)bcmul($coefNaoDeflacionadoInv, $depreciacaoPrazo, 25), 3);
@@ -112,7 +120,7 @@ class CalculoPreco
      */
     public function calcularMargem(array &$preco): void
     {
-        $preco['custoOperacional'] = (float) $preco['custoOperacional'];
+        $preco['custoOperacional'] = (float)$preco['custoOperacional'];
         if ($preco['custoOperacional'] < 0 || $preco['custoOperacional'] > 0.99) {
             throw new \LogicException('Custo Operacional deve estar entre 0 e 0.99');
         }
@@ -120,11 +128,11 @@ class CalculoPreco
         $repoDepreciacaoPreco = $this->doctrine->getRepository(DepreciacaoPreco::class);
         $depreciacaoPrazo = $repoDepreciacaoPreco->findDepreciacaoByPrazo($preco['prazo']);
 
-        $precoCusto = $preco['precoCusto'];
+        $precoCusto = (float)$preco['precoCusto'];
         if (!($preco['precoPrazo'] ?? false)) {
             throw new \LogicException('Impossível calcular margem sem preço prazo');
         }
-        $precoPrazo = $preco['precoPrazo'];
+        $precoPrazo = (float)$preco['precoPrazo'];
         $custoOperacionalCompl = (float)bcsub(1.0, $preco['custoOperacional'], 2);
         $custoFinanceiroCompl = (float)bcsub(1.0, $preco['custoFinanceiro'], 2);
 
