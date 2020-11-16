@@ -225,7 +225,7 @@ class Produto implements EntityId
                 $precosPorLista[strtoupper($preco->lista->descricao)] = $preco->precoPrazo;
             }
             $precosPorLista['VAREJO'] = $precosPorLista['VAREJO'] ?? 0.0;
-            $precosPorLista['ATACADO'] = $precosPorLista['ATACADO   '] ?? 0.0;
+            $precosPorLista['ATACADO'] = $precosPorLista['ATACADO'] ?? 0.0;
             $this->precosPorLista = $precosPorLista;
         }
         return $this->precosPorLista;
