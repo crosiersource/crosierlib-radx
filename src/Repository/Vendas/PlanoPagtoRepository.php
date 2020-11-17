@@ -63,17 +63,35 @@ class PlanoPagtoRepository extends FilterRepository
 
         foreach ($rs as $r) {
             $jsonData = json_decode($r['json_data'], true);
-            if ($jsonData['tipo_carteiras'] === 'caixa') {
-                $carteirasDestino = null;
-            } else if ($jsonData['tipo_carteiras'] === 'operadora_cartao') {
-                $carteirasDestino = $rCarteirasCartao;
-            } else if ($jsonData['tipo_carteiras'] === 'banco') {
-                $carteirasDestino = $rCarteirasBanco;
+
+            switch ($jsonData['tipo_carteiras']) {
+                case 'operadora_cartao':
+                    $carteiras = $rCarteirasCartao;
+                    break;
+                case 'banco':
+                    $carteiras = $rCarteirasBanco;
+                    break;
+                case 'caixa':
+                default:
+                    $carteiras = $rCarteirasCaixas;
             }
+
+            switch ($jsonData['tipo_carteiras_destino'] ?? null) {
+                case 'operadora_cartao':
+                    $carteirasDestino = $rCarteirasCartao;
+                    break;
+                case 'banco':
+                    $carteirasDestino = $rCarteirasBanco;
+                    break;
+                default:
+                    $carteirasDestino = null;
+            }
+
             $results[] = [
                 'id' => $r['id'],
                 'text' => $r['codigo'] . ' - ' . $r['descricao'],
                 'json_data' => json_decode($r['json_data'], true),
+                'carteiras' => $carteiras ?? null,
                 'carteirasDestino' => $carteirasDestino ?? null
             ];
         }

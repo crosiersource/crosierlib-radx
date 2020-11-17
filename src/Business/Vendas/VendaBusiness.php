@@ -3,6 +3,7 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Vendas;
 
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Fatura;
@@ -136,7 +137,8 @@ class VendaBusiness
             $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
             $tipoLancto_movimentacaoDeCaixa = $repoTipoLancto->find(10);
             $tipoLancto_transferenciaDeEntradaDeCaixa = $repoTipoLancto->find(61);
-//            $tipoLancto_aPagarReceber = $repoTipoLancto->find(20);
+            $tipoLancto_aPagarReceber = $repoTipoLancto->find(20);
+            $tipoLancto_aPagarReceber_parcel = $repoTipoLancto->find(21);
 
             /** @var ModoRepository $repoModo */
             $repoModo = $this->doctrine->getRepository(Modo::class);
@@ -155,32 +157,42 @@ class VendaBusiness
 
                 $modo = $repoModo->find($pagto->planoPagto->jsonData['modo_id']);
                 $movimentacao->modo = $modo;
-                $movimentacao->quitado = true;
 
-
-                /** @var Carteira $carteiraCaixa */
-                $carteiraCaixa = $repoCarteira->find($pagto->jsonData['carteira_id']);
-                $movimentacao->carteira = $carteiraCaixa;
+                /** @var Carteira $carteiraOrigem */
+                $carteiraOrigem = $repoCarteira->find($pagto->jsonData['carteira_id']);
+                $movimentacao->carteira = $carteiraOrigem;
 
                 $carteiraDestinoId = $pagto->jsonData['carteira_destino_id'] ?? null;
 
-                // Os ven_venda_pagto que não tem carteira_destino_id são aqueles onde a movimentação é somente no caixa
-                if (!$carteiraDestinoId) {
-                    $movimentacao->tipoLancto = $tipoLancto_movimentacaoDeCaixa;
+                if ($pagto->planoPagto->jsonData['tipo_carteiras'] === 'caixa') {
+                    // Os ven_venda_pagto que não tem carteira_destino_id são aqueles onde a movimentação é somente no caixa
+                    if (!$carteiraDestinoId) {
+                        $movimentacao->tipoLancto = $tipoLancto_movimentacaoDeCaixa;
+                    } else {
+                        $movimentacao->tipoLancto = $tipoLancto_transferenciaDeEntradaDeCaixa;
+                        /** @var Carteira $carteiraDestino */
+                        $carteiraDestino = $repoCarteira->find($pagto->jsonData['carteira_destino_id']);
+                        $movimentacao->carteiraDestino = $carteiraDestino;
+                    }
                 } else {
-                    $movimentacao->tipoLancto = $tipoLancto_transferenciaDeEntradaDeCaixa;
-                    /** @var Carteira $carteiraDestino */
-                    $carteiraDestino = $repoCarteira->find($pagto->jsonData['carteira_destino_id']);
-                    $movimentacao->carteiraDestino = $carteiraDestino;
+                    if ((int)($pagto->jsonData['num_parcelas'] ?? 1) === 1) {
+                        $movimentacao->tipoLancto = $tipoLancto_aPagarReceber;
+                    } else {
+                        $movimentacao->tipoLancto = $tipoLancto_aPagarReceber_parcel;
+                    }
                 }
 
                 $movimentacao->categoria = $categoria101;
 
-                $movimentacao->status = $carteiraCaixa->abertas ? 'ABERTA' : 'REALIZADA';
+                $movimentacao->status = $carteiraOrigem->abertas ? 'ABERTA' : 'REALIZADA';
+                $movimentacao->quitado = $movimentacao->status === 'REALIZADA';
 
                 $movimentacao->descricao = 'RECEB VENDA ' . str_pad($venda->getId(), '10', '0', STR_PAD_LEFT);
+                $movimentacao->descricao .= ' (CLIENTE: ' . StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' .
+                    $venda->cliente->nome . ')';
 
                 $movimentacao->dtMoviment = $venda->dtVenda;
+                $movimentacao->dtVencto = $venda->dtVenda;
                 $movimentacao->valor = $pagto->valorPagto;
 
                 $this->movimentacaoEntityHandler->save($movimentacao);
