@@ -12,11 +12,13 @@ use CrosierSource\CrosierLibBaseBundle\Utils\ImageUtils\ImageUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoImagem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoImagemRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use Doctrine\DBAL\Connection;
@@ -71,18 +73,32 @@ class ProdutoEntityHandler extends EntityHandler
 
     public function beforeSave(/** @var Produto $produto */ $produto)
     {
+        if (!$produto->status) {
+            $produto->status = 'INATIVO';
+        }
         if (!$produto->UUID) {
             $produto->UUID = StringUtils::guidv4();
         }
 
+        if (!$produto->unidadePadrao) {
+            // est_unidade.id = 1 deve ser 'UN'
+            $produto->unidadePadrao = $this->doctrine->getRepository(Unidade::class)->find(1);
+        }
         if (!$produto->depto) {
+            // est_depto.id = 1 deve ser o 'INDEFINIDO'
             $produto->depto = $this->doctrine->getRepository(Depto::class)->find(1);
         }
         if (!$produto->grupo) {
+            // est_grupo.id = 1 deve ser o 'INDEFINIDO'
             $produto->grupo = $this->doctrine->getRepository(Grupo::class)->find(1);
         }
         if (!$produto->subgrupo) {
+            // est_subgrupo.id = 1 deve ser o 'INDEFINIDO'
             $produto->subgrupo = $this->doctrine->getRepository(Subgrupo::class)->find(1);
+        }
+        if (!$produto->fornecedor) {
+            // est_fornecedor.id = 1 deve ser o 'INDEFINIDO'
+            $produto->fornecedor = $this->doctrine->getRepository(Fornecedor::class)->find(1);
         }
 
         if (!$produto->codigo) {

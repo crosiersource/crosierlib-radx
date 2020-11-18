@@ -203,8 +203,39 @@ class MovimentacaoRepository extends FilterRepository
                 'totalTransfParaConta' => $totalTransfParaConta['total'] ?? 0.0,
                 'totalGeral' => $totalCreditos['total'] + $totalDebitos['total'] ?? 0.0,
             ];
-        } catch (DBALException | \Throwable $e) {
+        } catch (\Throwable $e) {
             throw new ViewException('Erro ao calcular totais para extrato de cartão');
+        }
+
+
+    }
+
+
+    /**
+     * @param Carteira $carteira
+     * @param DateTime $dtIni
+     * @param DateTime $dtFim
+     * @return array
+     * @throws ViewException
+     */
+    public function findTotaisExtrato(Carteira $carteira, DateTime $dtIni, DateTime $dtFim)
+    {
+
+        try {
+            /** @var Connection $conn */
+            $conn = $this->getEntityManager()->getConnection();
+            $dtIni = $dtIni->format('Y-m-d');
+            $dtFim = $dtFim->format('Y-m-d');
+            $totalEntradas = $conn->fetchAssoc('SELECT sum(m.valor_total) as total FROM fin_movimentacao m, fin_categoria categ WHERE m.categoria_id = categ.id AND categ.codigo_super = 1 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
+            $totalSaidas = $conn->fetchAssoc('SELECT sum(m.valor_total) as total FROM fin_movimentacao m, fin_categoria categ WHERE m.categoria_id = categ.id AND categ.codigo_super = 2 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
+
+            return [
+                'totalEntradas' => $totalEntradas['total'] ?? 0.0,
+                'totalSaidas' => $totalSaidas['total'] ?? 0.0,
+                'totalGeral' => bcsub($totalEntradas['total'], abs($totalSaidas['total']), 2),
+            ];
+        } catch (\Throwable $e) {
+            throw new ViewException('Erro ao calcular totais para extrato');
         }
 
 

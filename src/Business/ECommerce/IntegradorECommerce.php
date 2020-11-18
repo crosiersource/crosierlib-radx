@@ -87,10 +87,9 @@ interface IntegradorECommerce
     public function obterVendasPorData(\DateTime $dtVenda);
 
     /**
-     * @param int $idClienteECommerce
-     * @return \SimpleXMLElement|null
+     * @param $idClienteECommerce
      */
-    public function obterCliente(int $idClienteECommerce);
+    public function obterCliente($idClienteECommerce);
 
     /**
      * @param Venda $venda

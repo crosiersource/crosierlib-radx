@@ -83,7 +83,6 @@ class IntegradorWebStorm implements IntegradorECommerce
 
     private SyslogBusiness $syslog;
 
-
     private ?string $chave = null;
 
     private ?int $delayEntreIntegracoesDeProduto = null;
@@ -1442,7 +1441,7 @@ class IntegradorWebStorm implements IntegradorECommerce
      * @param int $idClienteECommerce
      * @return \SimpleXMLElement|null
      */
-    public function obterCliente(int $idClienteECommerce)
+    public function obterCliente($idClienteECommerce)
     {
         $xml = '<![CDATA[<?xml version="1.0" encoding="ISO-8859-1"?>    
                     <ws_integracao xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
