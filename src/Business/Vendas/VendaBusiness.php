@@ -149,6 +149,7 @@ class VendaBusiness
             /** @var CategoriaRepository $repoCategoria */
             $repoCategoria = $this->doctrine->getRepository(Categoria::class);
             $categoria101 = $repoCategoria->findOneBy(['codigo' => 101]);
+            $categoria251 = $repoCategoria->findOneBy(['codigo' => 251]); //SAÍDA - AJUSTE DE CAIXA
 
             foreach ($venda->pagtos as $pagto) {
 
@@ -182,7 +183,11 @@ class VendaBusiness
                     }
                 }
 
-                $movimentacao->categoria = $categoria101;
+                if ((int)$pagto->planoPagto->codigo === 999) {
+                    $movimentacao->categoria = $categoria251;
+                } else {
+                    $movimentacao->categoria = $categoria101;
+                }
 
                 $movimentacao->status = $carteiraOrigem->abertas ? 'ABERTA' : 'REALIZADA';
                 $movimentacao->quitado = $movimentacao->status === 'REALIZADA';
@@ -190,6 +195,9 @@ class VendaBusiness
                 $movimentacao->descricao = 'RECEB VENDA ' . str_pad($venda->getId(), '10', '0', STR_PAD_LEFT);
                 $movimentacao->descricao .= ' (CLIENTE: ' . StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' .
                     $venda->cliente->nome . ')';
+                if ((int)$pagto->planoPagto->codigo === 999) {
+                    $movimentacao->descricao .= ' *** DESCONTO';
+                }
 
                 $movimentacao->dtMoviment = $venda->dtVenda;
                 $movimentacao->dtVencto = $venda->dtVenda;
@@ -235,5 +243,6 @@ class VendaBusiness
 
         }
     }
+
 
 }
