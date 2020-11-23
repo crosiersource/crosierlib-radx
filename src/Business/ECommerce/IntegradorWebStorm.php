@@ -1384,12 +1384,14 @@ class IntegradorWebStorm implements IntegradorECommerce
     public function obterVendas(\DateTime $dtVenda, ?bool $resalvar = false): int
     {
         $pedidos = $this->obterVendasPorData($dtVenda);
+        $i = 0;
         if ($pedidos->pedido ?? false) {
             foreach ($pedidos->pedido as $pedido) {
                 $this->integrarVendaParaCrosier($pedido, (int)$pedido->status === 2 || $resalvar);
+                $i++;
             }
         }
-        return count($pedidos);
+        return $i;
     }
 
     /**
@@ -1641,7 +1643,13 @@ class IntegradorWebStorm implements IntegradorECommerce
             if ($pedido->entrega->retirarLoja ?? false) {
                 if ((int)$pedido->entrega->retirarLoja->__toString() === 1) {
                     $obs[] = '* ' . $pedido->entrega->formaEntrega->__toString() . ' *';
-                    $obs[] = 'Agendado para: ' . DateTimeUtils::parseDateStr($pedido->entrega->agendamento->__toString())->format('d/m/Y H:i');
+                    if ($pedido->entrega->agendamento ?? false) {
+                        try {
+                            $obs[] = 'Agendado para: ' . DateTimeUtils::parseDateStr($pedido->entrega->agendamento->__toString())->format('d/m/Y H:i');
+                        } catch (\Throwable $e) {
+                            $this->syslog->err('integrarVendaParaCrosier - ' . $e->getMessage() . ' ...continuando');
+                        }
+                    }
                     $obs[] = '';
                 }
             }
