@@ -194,12 +194,16 @@ class SpedNFeBusiness
 
             if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
 
-                if (($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF']) || ($nfeConfigs['idDest_sempre1'] ?? false)) {
-                    $idDest = 1;
+                if ($notaFiscal->jsonData['idDest'] ?? false) {
+                    $idDest = $notaFiscal->jsonData['idDest'];
                 } else {
-                    $idDest = 2;
+                    if (($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF']) || ($nfeConfigs['idDest_sempre1'] ?? false)) {
+                        $idDest = 1;
+                    } else {
+                        $idDest = 2;
+                    }
                 }
-                $nfe->infNFe->ide->idDest = $idDest;
+                $nfe->infNFe->ide->idDest = $idDest; // $nfe->infNFe->ide->idDest = 2;
 
                 $nfe->infNFe->dest->enderDest->xLgr = trim($notaFiscal->getLogradouroDestinatario());
                 $nfe->infNFe->dest->enderDest->nro = trim($notaFiscal->getNumeroDestinatario());
@@ -967,7 +971,7 @@ class SpedNFeBusiness
                 'user_inserted_id' => 1,
                 'user_updated_id' => 1,
             ]);
-        } catch (DBALException $e) {
+        } catch (\Throwable $e) {
             throw new ViewException('Erro ao inserir fis_nf_historico');
         }
 
