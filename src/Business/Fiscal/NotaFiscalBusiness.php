@@ -246,7 +246,8 @@ class NotaFiscalBusiness
                             $endereco_consultado = $this->consultarCNPJ($notaFiscal->getDocumentoDestinatario(), $endereco_faturamento['estado']);
 
                             if (!$notaFiscal->getInscricaoEstadualDestinatario()) {
-                                $notaFiscal->setInscricaoEstadualDestinatario($endereco_consultado['dados']['IE'] ?? '');
+                                $ie = preg_replace("/[^0-9]/", "", $endereco_consultado['dados']['IE'] ?? '');
+                                $notaFiscal->setInscricaoEstadualDestinatario($ie);
                             }
                             $notaFiscal->setLogradouroDestinatario($endereco_consultado['dados']['logradouro'] ?? '');
                             $notaFiscal->setNumeroDestinatario($endereco_consultado['dados']['numero'] ?? '');
