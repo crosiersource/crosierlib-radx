@@ -5,6 +5,7 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\CRM;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -21,31 +22,39 @@ class Cliente implements EntityId
     use EntityIdTrait;
 
     /**
-     *
      * @ORM\Column(name="documento", type="string")
-     * @var null|string
-     *
      * @Groups("entity")
      */
-    public $documento;
+    public ?string $documento;
 
     /**
-     *
      * @ORM\Column(name="nome", type="string")
-     * @var null|string
-     *
      * @Groups("entity")
      */
-    public $nome;
+    public ?string $nome;
 
     /**
-     *
      * @ORM\Column(name="json_data", type="json")
-     * @var null|array
      * @NotUppercase()
      * @Groups("entity")
      */
     public ?array $jsonData = null;
+
+
+    /**
+     * @return string
+     * @Groups("entity")
+     */
+    public function getNomeMontadoComDocumento(): string
+    {
+        $r = StringUtils::mascararCnpjCpf($this->documento) . ' - ';
+        if ($this->jsonData['nomeFantasia'] ?? false) {
+            $r .= $this->nome . ' (' . $this->jsonData['nomeFantasia'] . ')';
+        } else {
+            $r .= $this->nome;
+        }
+        return $r;
+    }
 
 
     /**
@@ -68,7 +77,6 @@ class Cliente implements EntityId
     /**
      * Insere somente se já não existir.
      *
-     * @param Cliente $cliente
      * @param array $novoEndereco
      */
     public function inserirNovoEndereco(array $novoEndereco)

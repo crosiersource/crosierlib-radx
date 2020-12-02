@@ -11,13 +11,9 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\OperadoraCartao;
-use DateInterval;
-use DateTime;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Driver\Connection;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\QueryBuilder;
-use Exception;
 
 /**
  * Repository para a entidade Movimentacao.
@@ -47,12 +43,12 @@ class MovimentacaoRepository extends FilterRepository
     }
 
     /**
-     * @param DateTime $dtVenctoEfetiva
+     * @param \DateTime $dtVenctoEfetiva
      * @param Carteira $carteira
      * @return mixed
      * @throws ViewException
      */
-    public function findAbertasAnteriores(DateTime $dtVenctoEfetiva, Carteira $carteira)
+    public function findAbertasAnteriores(\DateTime $dtVenctoEfetiva, Carteira $carteira)
     {
         $dtVenctoEfetivaS = $dtVenctoEfetiva->setTime(0, 0, 0, 0)->format('Y-m-d');
         $filterDatas = [
@@ -69,13 +65,13 @@ class MovimentacaoRepository extends FilterRepository
     }
 
     /**
-     * @param DateTime $dtSaldo
+     * @param \DateTime $dtSaldo
      * @param $carteirasIds
      * @param $tipoSaldo
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
-    public function findSaldo(DateTime $dtSaldo, $carteirasIds, $tipoSaldo)
+    public function findSaldo(\DateTime $dtSaldo, $carteirasIds, $tipoSaldo)
     {
         $ql = 'SELECT SUM( IF (categ.codigo_super=1,m.valor_total,m.valor_total*-1) ) as valor_total ' .
             'FROM fin_movimentacao m, fin_modo modo, fin_categoria categ ' .
@@ -88,7 +84,7 @@ class MovimentacaoRepository extends FilterRepository
 
 
         if (in_array($tipoSaldo, ['SALDO_ANTERIOR_REALIZADAS', 'SALDO_ANTERIOR_COM_CHEQUES'])) {
-            $dtSaldo->sub(new DateInterval('P1D'));
+            $dtSaldo->sub(new \DateInterval('P1D'));
         }
 
         if (in_array($tipoSaldo, ['SALDO_POSTERIOR_COM_CHEQUES', 'SALDO_ANTERIOR_COM_CHEQUES'])) {
@@ -122,15 +118,15 @@ class MovimentacaoRepository extends FilterRepository
     }
 
     /**
-     * @param DateTime $dtIni
-     * @param DateTime $dtFim
+     * @param \DateTime $dtIni
+     * @param \DateTime $dtFim
      * @param Carteira|null $carteira
      * @param Categoria|null $categoria
      * @param Modo|null $modo
      * @param OperadoraCartao|null $operadoraCartao
      * @return float|null
      */
-    public function findTotal(DateTime $dtIni, DateTime $dtFim, ?Carteira $carteira = null, ?Categoria $categoria = null, ?Modo $modo = null, ?OperadoraCartao $operadoraCartao = null)
+    public function findTotal(\DateTime $dtIni, \DateTime $dtFim, ?Carteira $carteira = null, ?Categoria $categoria = null, ?Modo $modo = null, ?OperadoraCartao $operadoraCartao = null)
     {
         $dtIni->setTime(0, 0, 0, 0);
         $dtFim->setTime(23, 59, 59, 999999);
@@ -174,24 +170,22 @@ class MovimentacaoRepository extends FilterRepository
 
     /**
      * @param Carteira $carteira
-     * @param DateTime $dtIni
-     * @param DateTime $dtFim
+     * @param \DateTime $dtIni
+     * @param \DateTime $dtFim
      * @return array
      * @throws ViewException
      */
-    public function findTotaisExtratoCartoes(Carteira $carteira, DateTime $dtIni, DateTime $dtFim)
+    public function findTotaisExtratoCartoes(Carteira $carteira, \DateTime $dtIni, \DateTime $dtFim)
     {
-
         try {
-            /** @var Connection $conn */
             $conn = $this->getEntityManager()->getConnection();
             $dtIni = $dtIni->format('Y-m-d');
             $dtFim = $dtFim->format('Y-m-d');
-            $totalCreditos = $conn->fetchAssoc('SELECT sum(valor_total) as total FROM fin_movimentacao WHERE modo_id = 9 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
-            $totalCustoCreditos = $conn->fetchAssoc('SELECT sum(valor_total) as total FROM fin_movimentacao WHERE dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId AND categoria_id = 58', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
-            $totalDebitos = $conn->fetchAssoc('SELECT sum(valor_total) as total FROM fin_movimentacao WHERE modo_id = 10 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
-            $totalCustoDebitos = $conn->fetchAssoc('SELECT sum(valor_total) as total FROM fin_movimentacao WHERE dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId AND categoria_id = 59', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
-            $totalTransfParaConta = $conn->fetchAssoc('SELECT sum(valor_total) as total FROM fin_movimentacao WHERE categoria_id = 7 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
+            $totalCreditos = $conn->fetchAssociative('SELECT sum(valor_total) as total FROM fin_movimentacao WHERE modo_id = 9 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
+            $totalCustoCreditos = $conn->fetchAssociative('SELECT sum(valor_total) as total FROM fin_movimentacao WHERE dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId AND categoria_id = 58', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
+            $totalDebitos = $conn->fetchAssociative('SELECT sum(valor_total) as total FROM fin_movimentacao WHERE modo_id = 10 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
+            $totalCustoDebitos = $conn->fetchAssociative('SELECT sum(valor_total) as total FROM fin_movimentacao WHERE dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId AND categoria_id = 59', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
+            $totalTransfParaConta = $conn->fetchAssociative('SELECT sum(valor_total) as total FROM fin_movimentacao WHERE categoria_id = 7 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
 
             return [
                 'totalCreditos' => $totalCreditos['total'] ?? 0.0,
@@ -206,19 +200,17 @@ class MovimentacaoRepository extends FilterRepository
         } catch (\Throwable $e) {
             throw new ViewException('Erro ao calcular totais para extrato de cartão');
         }
-
-
     }
 
 
     /**
      * @param Carteira $carteira
-     * @param DateTime $dtIni
-     * @param DateTime $dtFim
+     * @param \DateTime $dtIni
+     * @param \DateTime $dtFim
      * @return array
      * @throws ViewException
      */
-    public function findTotaisExtrato(Carteira $carteira, DateTime $dtIni, DateTime $dtFim)
+    public function findTotaisExtrato(Carteira $carteira, \DateTime $dtIni, \DateTime $dtFim)
     {
 
         try {
@@ -238,7 +230,30 @@ class MovimentacaoRepository extends FilterRepository
             throw new ViewException('Erro ao calcular totais para extrato');
         }
 
+    }
 
+
+    /**
+     * @param string $str
+     * @return array
+     * @throws ViewException
+     */
+    public function findSacadoOuCedente(string $str)
+    {
+        try {
+            $sql =
+                'SELECT documento, nome, nome_fantasia FROM ' .
+                '(SELECT c.documento, c.nome, c.json_data->>"$.nomeFantasia" as nome_fantasia FROM crm_cliente c' .
+                ' UNION ' .
+                'SELECT f.documento, f.nome, f.nome_fantasia FROM est_fornecedor f) u ' .
+                'WHERE (documento LIKE :str OR nome LIKE :str OR nome_fantasia LIKE :str) ' .
+                'GROUP BY documento, nome, nome_fantasia ORDER BY nome, nome_fantasia';
+            $conn = $this->getEntityManager()->getConnection();
+
+            return $conn->fetchAllAssociative($sql, ['str' => '%' . $str . '%']);
+        } catch (\Throwable $e) {
+            throw new ViewException('Erro ao pesquisar (sacado/cedente)', 0, $e);
+        }
     }
 
 

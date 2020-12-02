@@ -26,8 +26,6 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="codigo", type="integer", nullable=false)
      * @Groups("entity")
-     *
-     * @var int|null
      */
     public ?int $codigo = null;
 
@@ -35,8 +33,6 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=40)
      * @Groups("entity")
-     *
-     * @var string|null
      */
     public ?string $descricao = null;
 
@@ -45,14 +41,13 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="dt_consolidado", type="datetime", nullable=false)
      * @Groups("entity")
-     *
-     * @var \DateTime|null
      */
     public ?\DateTime $dtConsolidado = null;
 
     /**
      * Uma Carteira concreta é aquela em que podem ser efetuados créditos e
-     * débitos, como uma conta corrente ou um caixa.
+     * débitos (status 'REALIZADA'), como uma conta corrente ou um caixa.
+     *
      * Um Grupo de Movimentação só pode estar vinculado à uma Carteira concreta.
      * Uma movimentação que contenha um grupo de movimentação, precisa ter sua
      * carteira igual a carteira do grupo de movimentação.
@@ -60,8 +55,6 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="concreta", type="boolean", nullable=false)
      * @Groups("entity")
-     *
-     * @var bool|null
      */
     public ?bool $concreta = false;
 
@@ -70,8 +63,6 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="abertas", type="boolean", nullable=false)
      * @Groups("entity")
-     *
-     * @var bool|null
      */
     public ?bool $abertas = false;
 
@@ -80,8 +71,6 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="caixa", type="boolean", nullable=false)
      * @Groups("entity")
-     *
-     * @var bool|null
      */
     public ?bool $caixa = false;
 
@@ -90,8 +79,6 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="cheque", type="boolean", nullable=false)
      * @Groups("entity")
-     *
-     * @var bool|null
      */
     public ?bool $cheque = false;
 
@@ -101,8 +88,6 @@ class Carteira implements EntityId
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Banco")
      * @ORM\JoinColumn(nullable=true)
      * @Groups("entity")
-     *
-     * @var Banco|null
      */
     public ?Banco $banco = null;
 
@@ -111,8 +96,6 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="agencia", type="string", nullable=true, length=30)
      * @Groups("entity")
-     *
-     * @var string|null
      */
     public ?string $agencia = null;
 
@@ -121,8 +104,6 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="conta", type="string", nullable=true, length=30)
      * @Groups("entity")
-     *
-     * @var string|null
      */
     public ?string $conta = null;
 
@@ -131,8 +112,6 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="limite", type="decimal", nullable=true, precision=15, scale=2)
      * @Groups("entity")
-     *
-     * @var float|null
      */
     public ?float $limite = null;
 
@@ -143,19 +122,8 @@ class Carteira implements EntityId
      *
      * @Groups("entity")
      * @MaxDepth(1)
-     *
-     * @var OperadoraCartao|null
      */
     public ?OperadoraCartao $operadoraCartao = null;
-
-    /**
-     * Transient.
-     *
-     * @Groups("entity")
-     *
-     * @var string|null
-     */
-    public ?string $descricaoMontada = null;
 
 
     /**
@@ -163,8 +131,6 @@ class Carteira implements EntityId
      *
      * @ORM\Column(name="atual", type="boolean", nullable=false)
      * @Groups("entity")
-     *
-     * @var bool|null
      */
     public ?bool $atual = false;
 
@@ -178,240 +144,13 @@ class Carteira implements EntityId
         return $this->codigo;
     }
 
-
-    /**
-     * @param int|null $codigo
-     * @return Carteira
-     */
-    public function setCodigo(?int $codigo): Carteira
-    {
-        $this->codigo = $codigo;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getDescricao(): ?string
-    {
-        return $this->descricao;
-    }
-
     /**
      * @return string
+     * @Groups("entity")
      */
     public function getDescricaoMontada(): string
     {
-        $this->descricaoMontada = $this->getCodigo(true) . ' - ' . $this->getDescricao();
-        return $this->descricaoMontada;
-    }
-
-    /**
-     * @param null|string $descricao
-     * @return Carteira
-     */
-    public function setDescricao(?string $descricao): Carteira
-    {
-        $this->descricao = $descricao;
-        return $this;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function getDtConsolidado(): ?\DateTime
-    {
-        return $this->dtConsolidado;
-    }
-
-    /**
-     * @param \DateTime|null $dtConsolidado
-     * @return Carteira
-     */
-    public function setDtConsolidado(?\DateTime $dtConsolidado): Carteira
-    {
-        $this->dtConsolidado = $dtConsolidado;
-        return $this;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getConcreta(): ?bool
-    {
-        return $this->concreta;
-    }
-
-    /**
-     * @param bool|null $concreta
-     * @return Carteira
-     */
-    public function setConcreta(?bool $concreta): Carteira
-    {
-        $this->concreta = $concreta;
-        return $this;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getAbertas(): ?bool
-    {
-        return $this->abertas;
-    }
-
-    /**
-     * @param bool|null $abertas
-     * @return Carteira
-     */
-    public function setAbertas(?bool $abertas): Carteira
-    {
-        $this->abertas = $abertas;
-        return $this;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getCaixa(): ?bool
-    {
-        return $this->caixa;
-    }
-
-    /**
-     * @param bool|null $caixa
-     * @return Carteira
-     */
-    public function setCaixa(?bool $caixa): Carteira
-    {
-        $this->caixa = $caixa;
-        return $this;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getCheque(): ?bool
-    {
-        return $this->cheque;
-    }
-
-    /**
-     * @param bool|null $cheque
-     * @return Carteira
-     */
-    public function setCheque(?bool $cheque): Carteira
-    {
-        $this->cheque = $cheque;
-        return $this;
-    }
-
-    /**
-     * @return Banco|null
-     */
-    public function getBanco(): ?Banco
-    {
-        return $this->banco;
-    }
-
-    /**
-     * @param Banco|null $banco
-     * @return Carteira
-     */
-    public function setBanco(?Banco $banco): Carteira
-    {
-        $this->banco = $banco;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getAgencia(): ?string
-    {
-        return $this->agencia;
-    }
-
-    /**
-     * @param null|string $agencia
-     * @return Carteira
-     */
-    public function setAgencia(?string $agencia): Carteira
-    {
-        $this->agencia = $agencia;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getConta(): ?string
-    {
-        return $this->conta;
-    }
-
-    /**
-     * @param null|string $conta
-     * @return Carteira
-     */
-    public function setConta(?string $conta): Carteira
-    {
-        $this->conta = $conta;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getLimite(): ?float
-    {
-        return $this->limite;
-    }
-
-    /**
-     * @param float|null $limite
-     * @return Carteira
-     */
-    public function setLimite(?float $limite): Carteira
-    {
-        $this->limite = $limite;
-        return $this;
-    }
-
-    /**
-     * @return OperadoraCartao|null
-     */
-    public function getOperadoraCartao(): ?OperadoraCartao
-    {
-        return $this->operadoraCartao;
-    }
-
-    /**
-     * @param OperadoraCartao|null $operadoraCartao
-     * @return Carteira
-     */
-    public function setOperadoraCartao(?OperadoraCartao $operadoraCartao): Carteira
-    {
-        $this->operadoraCartao = $operadoraCartao;
-        return $this;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getAtual(): ?bool
-    {
-        return $this->atual;
-    }
-
-    /**
-     * @param bool|null $atual
-     * @return Carteira
-     */
-    public function setAtual(?bool $atual): Carteira
-    {
-        $this->atual = $atual;
-        return $this;
+        return $this->getCodigo(true) . ' - ' . $this->descricao;
     }
 
 

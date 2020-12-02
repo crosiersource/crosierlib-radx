@@ -21,60 +21,22 @@ class CentroCusto implements EntityId
     use EntityIdTrait;
 
     /**
-     *
      * @ORM\Column(name="codigo", type="integer", nullable=false)
      * @Groups("entity")
-     *
-     * @var int|null
      */
-    private $codigo;
+    public ?int $codigo = null;
 
     /**
-     *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=40)
      * @Groups("entity")
-     *
-     * @var string|null
      */
-    private $descricao;
+    public ?string $descricao;
+
 
     /**
-     * @return int|null
+     * @Groups("entity")
+     * @return string
      */
-    public function getCodigo(): ?int
-    {
-        return $this->codigo;
-    }
-
-    /**
-     * @param int|null $codigo
-     * @return CentroCusto
-     */
-    public function setCodigo(?int $codigo): CentroCusto
-    {
-        $this->codigo = $codigo;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getDescricao(): ?string
-    {
-        return $this->descricao;
-    }
-
-    /**
-     * @param null|string $descricao
-     * @return CentroCusto
-     */
-    public function setDescricao(?string $descricao): CentroCusto
-    {
-        $this->descricao = $descricao;
-        return $this;
-    }
-
-
     public function getDescricaoMontada(): string
     {
         return str_pad($this->codigo, 2, '0', STR_PAD_LEFT) . ' - ' . $this->descricao;

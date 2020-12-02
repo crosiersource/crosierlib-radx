@@ -624,6 +624,8 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
     /**
      * @param \DateTime $dtVenda
+     * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function obterVendasPorData(\DateTime $dtVenda)
     {

@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\RegraImportacaoLinha;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\RegraImportacaoLinha;
 
 /**
  * Class RegraImportacaoLinhaEntityHandler
@@ -14,9 +14,9 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 class RegraImportacaoLinhaEntityHandler extends EntityHandler
 {
 
-
     public function getEntityClass()
     {
         return RegraImportacaoLinha::class;
     }
+
 }

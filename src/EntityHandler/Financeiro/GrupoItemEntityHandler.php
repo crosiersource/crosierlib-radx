@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem;
 
 /**
  * Class GrupoItemEntityHandler
@@ -18,4 +18,5 @@ class GrupoItemEntityHandler extends EntityHandler
     {
         return GrupoItem::class;
     }
+
 }

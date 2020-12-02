@@ -72,6 +72,7 @@ class TipoLancto implements EntityId
      */
     public ?string $url = null;
 
+
     /**
      * @param bool|null $format
      * @return int|string|null
@@ -85,13 +86,13 @@ class TipoLancto implements EntityId
     }
 
     /**
+     * @Groups("entity")
      * @return null|string
      */
     public function getDescricaoMontada(): ?string
     {
         return $this->getCodigo(true) . ' - ' . $this->descricao;
     }
-
 
 
 }

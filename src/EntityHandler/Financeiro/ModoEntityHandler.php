@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 
 /**
  * Class ModoEntityHandler
@@ -14,9 +14,9 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 class ModoEntityHandler extends EntityHandler
 {
 
-
     public function getEntityClass()
     {
         return Modo::class;
     }
+
 }

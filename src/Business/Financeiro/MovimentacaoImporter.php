@@ -4,7 +4,6 @@ namespace CrosierSource\CrosierLibRadxBundle\Business\Financeiro;
 
 
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
-use CrosierSource\CrosierLibBaseBundle\Repository\Financeiro\ModoRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao;
@@ -21,6 +20,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\BandeiraCartaoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CategoriaRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CentroCustoRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\ModoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\MovimentacaoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\RegraImportacaoLinhaRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\TipoLanctoRepository;
@@ -45,24 +45,18 @@ class MovimentacaoImporter
 
     /**
      * Armazena linhas de descrição complementar para verificações durante o processo.
-     *
-     * @var array
      */
-    private $linhasComplementares = array();
+    private array $linhasComplementares = array();
 
     /**
      * Armazena as movimentações de categoria 1.01 que já foram importadas.
-     *
-     * @var array
      */
-    private $movs101JaImportadas = array();
+    private array $movs101JaImportadas = array();
 
     /**
      * Para armazenar as movimentações já importadas afim de que não sejam importadas 2x por duplicidade.
-     *
-     * @var array
      */
-    private $movsJaImportadas = array();
+    private array $movsJaImportadas = array();
 
     private $linhasExtrato;
 

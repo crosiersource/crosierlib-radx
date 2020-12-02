@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
 
 /**
  * Class CategoriaEntityHandler
@@ -14,9 +14,9 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 class CategoriaEntityHandler extends EntityHandler
 {
 
-
     public function getEntityClass()
     {
         return Categoria::class;
     }
+
 }

@@ -30,7 +30,6 @@
     "symfony/security-bundle": "5.1.*",
     "symfony/serializer-pack": "1.*",
     "symfony/validator": "5.1.*",
-    "twig/extensions": "^1.5",
     "vich/uploader-bundle": "^1.13",
     "nfephp-org/sped-common": "^5.0",
     "nfephp-org/sped-da": "^0",

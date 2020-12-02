@@ -80,6 +80,7 @@ class Depto implements EntityId
 
     /**
      * @return string|null
+     * @Groups("entity")
      */
     public function getDescricaoMontada(): ?string
     {

@@ -27,10 +27,8 @@ class OperadoraCartao implements EntityId
      * @ORM\Column(name="descricao", type="string", nullable=false, length=40)
      * @Assert\NotBlank()
      * @Groups("entity")
-     *
-     * @var string|null
      */
-    private $descricao;
+    public ?string $descricao = null;
 
     /**
      * Em qual Carteira as movimentações desta Operadora acontecem.
@@ -38,45 +36,7 @@ class OperadoraCartao implements EntityId
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_id", nullable=true)
      * @Groups("entity")
-     *
-     * @var Carteira|null
      */
-    private $carteira;
-
-    /**
-     * @return null|string
-     */
-    public function getDescricao(): ?string
-    {
-        return $this->descricao;
-    }
-
-    /**
-     * @param null|string $descricao
-     * @return OperadoraCartao
-     */
-    public function setDescricao(?string $descricao): OperadoraCartao
-    {
-        $this->descricao = $descricao;
-        return $this;
-    }
-
-    /**
-     * @return Carteira|null
-     */
-    public function getCarteira(): ?Carteira
-    {
-        return $this->carteira;
-    }
-
-    /**
-     * @param Carteira|null $carteira
-     * @return OperadoraCartao
-     */
-    public function setCarteira(?Carteira $carteira): OperadoraCartao
-    {
-        $this->carteira = $carteira;
-        return $this;
-    }
+    public ?Carteira $carteira = null;
 
 }

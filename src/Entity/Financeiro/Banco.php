@@ -22,36 +22,27 @@ class Banco implements EntityId
     use EntityIdTrait;
 
     /**
-     *
      * @ORM\Column(name="codigo_banco", type="integer", nullable=false)
      * @Assert\NotBlank()
      * @Assert\Range(min = 1)
      * @Groups("entity")
-     *
-     * @var int|null
      */
-    private $codigoBanco;
+    public ?int $codigoBanco = null;
 
     /**
-     *
      * @ORM\Column(name="nome", type="string", nullable=false, length=200)
      * @Assert\NotBlank()
      * @Groups("entity")
-     *
-     * @var string|null
      */
-    private $nome;
+    public ?string $nome = null;
 
     /**
-     * Para poder filtrar exibição na view.
-     *
      * @ORM\Column(name="utilizado", type="boolean", nullable=false)
      * @Assert\NotNull()
      * @Groups("entity")
-     *
-     * @var bool|null
      */
-    private $utilizado = false;
+    public ?bool $utilizado = false;
+
 
     /**
      * @param bool $format
@@ -67,57 +58,12 @@ class Banco implements EntityId
     }
 
     /**
-     * @param int|null $codigoBanco
-     * @return Banco
-     */
-    public function setCodigoBanco(?int $codigoBanco): Banco
-    {
-        $this->codigoBanco = $codigoBanco;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getNome(): ?string
-    {
-        return $this->nome;
-    }
-
-    /**
-     * @param null|string $nome
-     * @return Banco
-     */
-    public function setNome(?string $nome): Banco
-    {
-        $this->nome = $nome;
-        return $this;
-    }
-
-    /**
      * @return string
+     * @Groups("entity")
      */
     public function getDescricaoMontada(): string
     {
-        return $this->getCodigoBanco(true) . ' - ' . $this->getNome();
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getUtilizado(): ?bool
-    {
-        return $this->utilizado;
-    }
-
-    /**
-     * @param bool|null $utilizado
-     * @return Banco
-     */
-    public function setUtilizado(?bool $utilizado): Banco
-    {
-        $this->utilizado = $utilizado;
-        return $this;
+        return $this->getCodigoBanco(true) . ' - ' . $this->nome;
     }
 
 }

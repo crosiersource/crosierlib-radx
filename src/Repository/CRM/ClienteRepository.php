@@ -6,6 +6,7 @@ use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 
 /**
@@ -73,6 +74,33 @@ class ClienteRepository extends FilterRepository
             throw new \RuntimeException();
         } catch (\Throwable $e) {
             throw new ViewException('Não foi possível encontrar o próximo código de cliente');
+        }
+    }
+
+    /**
+     * Encontra os "clientes" cadastrados como FILIAL_PROP.
+     * Esses clientes são as empresas que são gerenciadas pelo sistema.
+     * Um dos locais onde isto é usado, é para setar como sacado ou cedente nas fin_movimentacao.
+     *
+     * @return null|array
+     * @throws ViewException
+     */
+    public function findFiliaisProp(): ?array
+    {
+        try {
+            $sql = 'SELECT id FROM crm_cliente WHERE json_data->>"$.filial_prop" = \'S\'';
+            $rs = $this->getEntityManager()->getConnection()->fetchAllAssociative($sql);
+            if (!$rs || count($rs) < 1) {
+                return null;
+            }
+            $filiaisProp = [];
+            foreach ($rs as $r) {
+                $filiaisProp[] = $this->find($r['id']);
+            }
+            return $filiaisProp;
+        } catch (\Throwable $e) {
+            $msg = ExceptionUtils::treatException($e);
+            throw new ViewException('Erro ao pesquisar clientes FILIAL_PROP (' . $msg . ')', 0, $e);
         }
     }
 

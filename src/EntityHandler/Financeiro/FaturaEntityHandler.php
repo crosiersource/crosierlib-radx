@@ -18,4 +18,5 @@ class FaturaEntityHandler extends EntityHandler
     {
         return Fatura::class;
     }
+
 }

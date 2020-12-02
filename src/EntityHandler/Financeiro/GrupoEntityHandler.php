@@ -19,5 +19,4 @@ class GrupoEntityHandler extends EntityHandler
         return Grupo::class;
     }
 
-
 }

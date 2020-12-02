@@ -4,14 +4,11 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\DiaUtil;
-use CrosierSource\CrosierLibBaseBundle\Entity\Base\Pessoa;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\DiaUtilRepository;
-use CrosierSource\CrosierLibBaseBundle\Repository\Base\PessoaRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
-use CrosierSource\CrosierLibRadxBundle\Business\Financeiro\MovimentacaoBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Banco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia;
@@ -50,6 +47,7 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @param EntityManagerInterface $doctrine
      * @param Security $security
      * @param ParameterBagInterface $parameterBag
+     * @param SyslogBusiness $syslog
      * @param CadeiaEntityHandler $cadeiaEntityHandler
      * @param LoggerInterface $logger
      */
@@ -77,30 +75,30 @@ class MovimentacaoEntityHandler extends EntityHandler
     public function beforeSave($movimentacao)
     {
         /** @var Movimentacao $movimentacao */
-        if (!$movimentacao->getTipoLancto()) {
+        if (!$movimentacao->tipoLancto) {
             throw new ViewException('Campo "Tipo de Lançamento" precisa ser informado');
         }
-        if (!$movimentacao->getCarteira()) {
+        if (!$movimentacao->carteira) {
             throw new ViewException('Campo "Carteira" precisa ser informado');
         }
-        if (!$movimentacao->getModo()) {
+        if (!$movimentacao->modo) {
             throw new ViewException('Campo "Modo" precisa ser informado');
         }
-        if (!$movimentacao->getCategoria()) {
+        if (!$movimentacao->categoria) {
             throw new ViewException('Campo "Categoria" precisa ser informado');
         }
-        if ('' === trim($movimentacao->getDescricao())) {
+        if ('' === trim($movimentacao->descricao)) {
             throw new ViewException('Campo "Descrição" precisa ser informado');
         }
 
-        if (!$movimentacao->getUUID()) {
-            $movimentacao->setUUID(StringUtils::guidv4());
+        if (!$movimentacao->UUID) {
+            $movimentacao->UUID = StringUtils::guidv4();
         }
 
-        if (!$movimentacao->getCentroCusto()) {
+        if (!$movimentacao->centroCusto) {
             /** @var CentroCusto $centroCusto */
             $centroCusto = $this->doctrine->getRepository(CentroCusto::class)->find(1); // 1,'GLOBAL'
-            $movimentacao->setCentroCusto($centroCusto);
+            $movimentacao->centroCusto = $centroCusto;
         }
 
 
@@ -108,187 +106,171 @@ class MovimentacaoEntityHandler extends EntityHandler
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
 
         // Regras Gerais
-        $movimentacao->setDescricao(trim($movimentacao->getDescricao()));
+        $movimentacao->descricao = trim(preg_replace('/\t+/', '', $movimentacao->descricao));
 
-        if ($movimentacao->getModo()->getCodigo() === 50) { // 50,'MOVIMENTAÇÃO AGRUPADA'
-            if (!$movimentacao->getGrupoItem()) {
+        if ($movimentacao->modo->getCodigo() === 50) { // 50,'MOVIMENTAÇÃO AGRUPADA'
+            if (!$movimentacao->grupoItem) {
                 throw new ViewException('Campo "Grupo Item" precisa ser informado');
             }
 
-            $movimentacao->setDtVencto($movimentacao->getGrupoItem()->getDtVencto());
-            $movimentacao->setDtVenctoEfetiva($movimentacao->getGrupoItem()->getDtVencto());
-            $movimentacao->setDtPagto($movimentacao->getGrupoItem()->getDtVencto());
+            $movimentacao->dtVencto = clone($movimentacao->grupoItem->dtVencto);
+            $movimentacao->dtVenctoEfetiva = clone($movimentacao->grupoItem->dtVencto);
+            $movimentacao->dtPagto = clone($movimentacao->grupoItem->dtVencto);
 
             /** @var Carteira $carteiraMovsAgrupadas */
             $carteiraMovsAgrupadas = $this->doctrine->getRepository(Carteira::class)->findOneBy(['codigo' => 7]); // 7 ('MOVIMENTAÇÕES AGRUPADAS')
-            $movimentacao->setCarteira($carteiraMovsAgrupadas);
+            $movimentacao->carteira = $carteiraMovsAgrupadas;
         }
 
 
-        if ($movimentacao->getCarteira()->getCaixa()) {
-            $movimentacao->setDtPagto($movimentacao->getDtMoviment());
-            $movimentacao->setDtVencto($movimentacao->getDtMoviment());
-            $movimentacao->setDtVenctoEfetiva($movimentacao->getDtMoviment());
+        if ($movimentacao->carteira->caixa) {
+            $movimentacao->dtPagto = clone($movimentacao->dtMoviment);
+            $movimentacao->dtVencto = clone($movimentacao->dtMoviment);
+            $movimentacao->dtVenctoEfetiva = clone($movimentacao->dtMoviment);
         }
 
-        if ($movimentacao->getTipoLancto()->getCodigo() === 10 && !$movimentacao->getCarteira()->getCaixa()) {
+        if ($movimentacao->tipoLancto->getCodigo() === 10 && !$movimentacao->carteira->caixa) {
             throw new ViewException('Movimentações de caixa só podem ser lançadas em carteiras de caixas.');
         }
 
         // Para 10 - MOVIMENTAÇÃO DE CAIXA e 60 - TRANSFERÊNCIA ENTRE CARTEIRAS
-        if (in_array($movimentacao->getTipoLancto()->getCodigo(), [10, 60], true)) {
-            if (!$movimentacao->getDtVencto()) {
-                $movimentacao->setDtVencto($movimentacao->getDtMoviment());
+        if (in_array($movimentacao->tipoLancto->getCodigo(), [10, 60], true)) {
+            if (!$movimentacao->dtVencto) {
+                $movimentacao->dtVencto = clone($movimentacao->dtMoviment);
             }
-            $movimentacao->setDtPagto($movimentacao->getDtMoviment());
+            $movimentacao->dtPagto = clone($movimentacao->dtMoviment);
         }
-
 
         // Regras para Datas
-        if (!$movimentacao->getDtPagto()) {
-            $movimentacao->setStatus('ABERTA');
+        if (!$movimentacao->dtPagto) {
+            $movimentacao->status = 'ABERTA';
         } else {
-            $movimentacao->setStatus('REALIZADA');
-            if (!$movimentacao->getDtVencto()) {
-                $movimentacao->setDtVencto($movimentacao->getDtPagto());
+            $movimentacao->status = 'REALIZADA';
+            if (!$movimentacao->dtVencto) {
+                $movimentacao->dtVencto = clone($movimentacao->dtPagto);
             }
-            if (!$movimentacao->getDtMoviment()) {
-                $movimentacao->setDtMoviment($movimentacao->getDtPagto());
+            if (!$movimentacao->dtMoviment) {
+                $movimentacao->dtMoviment = clone($movimentacao->dtPagto);
             }
         }
 
-        if (!$movimentacao->getDtVencto()) {
+        if (!$movimentacao->dtVencto) {
             throw new ViewException('Campo "Dt Vencto" precisa ser informado');
         }
-        if (!$movimentacao->getDtMoviment()) {
+        if (!$movimentacao->dtMoviment) {
             throw new ViewException('Campo "Dt Moviment" precisa ser informado');
         }
-        if (!$movimentacao->getDtVenctoEfetiva()) {
+        if (!$movimentacao->dtVenctoEfetiva) {
             /** @var DiaUtilRepository $repoDiaUtil */
             $repoDiaUtil = $this->doctrine->getRepository(DiaUtil::class);
-            $proxDiaUtilFinanceiro = $repoDiaUtil->findDiaUtil($movimentacao->getDtVencto(), null, true);
-            $movimentacao->setDtVenctoEfetiva($proxDiaUtilFinanceiro);
+            $proxDiaUtilFinanceiro = $repoDiaUtil->findDiaUtil($movimentacao->dtVencto, null, true);
+            $movimentacao->dtVenctoEfetiva = clone($proxDiaUtilFinanceiro);
         }
-        $movimentacao->setDtUtil($movimentacao->getDtPagto() ?? $movimentacao->getDtVenctoEfetiva());
+        $movimentacao->dtUtil = clone($movimentacao->dtPagto ?? $movimentacao->dtVenctoEfetiva);
 
 
         // Por enquanto...
-        if (!$movimentacao->getQuitado()) {
-            $movimentacao->setQuitado($movimentacao->getStatus() === 'REALIZADA');
+        if (!$movimentacao->quitado) {
+            $movimentacao->quitado = ($movimentacao->status === 'REALIZADA');
         }
 
 
         // Regras para valores
-        $movimentacao->setValor($movimentacao->getValor() ? abs($movimentacao->getValor()) : 0);
-        $movimentacao->setDescontos($movimentacao->getDescontos() ? (-1 * abs($movimentacao->getDescontos())) : 0);
-        $movimentacao->setAcrescimos($movimentacao->getAcrescimos() ? abs($movimentacao->getAcrescimos()) : 0);
+        $movimentacao->valor = abs($movimentacao->valor ?? 0.0);
+        $movimentacao->descontos = (-1 * abs($movimentacao->descontos ?? 0.0));
+        $movimentacao->acrescimos = abs($movimentacao->acrescimos ?? 0.0);
         $movimentacao->calcValorTotal();
 
 
         // Regras para Status
-        if ($movimentacao->getStatus() === 'REALIZADA') {
-            if (!$movimentacao->getCarteira()->getConcreta()) {
+        if ($movimentacao->status === 'REALIZADA') {
+            if (!$movimentacao->carteira->concreta) {
                 throw new ViewException('Somente carteiras concretas podem conter movimentações com status "REALIZADA"');
             }
-            if ($movimentacao->getModo()->getCodigo() === 99 && !in_array($movimentacao->getCategoria()->getCodigo(), [195, 295], true)) {
+            if ($movimentacao->modo->getCodigo() === 99 && !in_array($movimentacao->categoria->codigo, [195, 295], true)) {
                 throw new ViewException('Não é possível salvar uma movimentação com status "REALIZADA" em modo 99 (INDEFINIDO)');
             }
         } else { // if ($movimentacao->getStatus() === 'ABERTA') {
-            if (!$movimentacao->getCarteira()->getAbertas()) {
+            if (!$movimentacao->carteira->abertas) {
                 throw new ViewException('Esta carteira não pode conter movimentações com status "ABERTA".');
             }
         }
 
         // Regras para Movimentações de Grupos
-        if (in_array($movimentacao->getTipoLancto()->getCodigo(), [70, 71], true)) { // 70,'MOVIMENTAÇÃO DE GRUPO'
+        if (in_array($movimentacao->tipoLancto->getCodigo(), [70, 71], true)) { // 70,'MOVIMENTAÇÃO DE GRUPO'
             /** @var Modo $modo50 */
             $modo50 = $this->doctrine->getRepository(Modo::class)->findOneBy(['codigo' => 50]);
-            $movimentacao->setModo($modo50);
-        } else if ($movimentacao->getModo()->getCodigo() === 50) { // 50,'MOVIMENTAÇÃO AGRUPADA'
+            $movimentacao->modo = $modo50;
+        } else if ($movimentacao->modo->getCodigo() === 50) { // 50,'MOVIMENTAÇÃO AGRUPADA'
             /** @var TipoLancto $tipoLancto70 */
             $tipoLancto70 = $repoTipoLancto->findOneBy(['codigo' => 70]);
-            $movimentacao->setTipoLancto($tipoLancto70);
+            $movimentacao->tipoLancto = $tipoLancto70;
         }
 
         // Regras para movimentações de cartões
-        if (FALSE === $movimentacao->getModo()->getModoDeCartao()) {
-            $movimentacao->setPlanoPagtoCartao(null);
-            $movimentacao->setBandeiraCartao(null);
-            $movimentacao->setOperadoraCartao(null);
+        if (FALSE === $movimentacao->modo->modoDeCartao) {
+            $movimentacao->planoPagtoCartao = null;
+            $movimentacao->bandeiraCartao = null;
+            $movimentacao->operadoraCartao = null;
         } else {
-            if ($movimentacao->getCarteira()->getOperadoraCartao()) {
-                // $this->doctrine->refresh($movimentacao->getCarteira()->getOperadoraCartao());
-                $movimentacao->setOperadoraCartao($movimentacao->getCarteira()->getOperadoraCartao());
+            if ($movimentacao->carteira->operadoraCartao) {
+                // $this->doctrine->refresh($movimentacao->carteira->operadoraCartao));
+                $movimentacao->operadoraCartao = $movimentacao->carteira->operadoraCartao;
             }
-            if ($movimentacao->getBandeiraCartao()) {
+            if ($movimentacao->bandeiraCartao) {
 
-                if (!trim($movimentacao->getDescricao())) {
-                    $movimentacao->setDescricao($movimentacao->getBandeiraCartao()->getDescricao());
+                if (!trim($movimentacao->descricao)) {
+                    $movimentacao->descricao = $movimentacao->bandeiraCartao->descricao;
                 }
 
-                if ($movimentacao->getBandeiraCartao()->getModo()->getId() !== $movimentacao->getModo()->getId()) {
+                if ($movimentacao->bandeiraCartao->modo->getId() !== $movimentacao->modo->getId()) {
                     throw new ViewException(
                         vsprintf(
                             'Bandeira de cartão selecionada para o modo %s (%s), porém a movimentação foi informada como sendo %s',
-                            [$movimentacao->getBandeiraCartao()->getModo()->getDescricao(),
-                                $movimentacao->getBandeiraCartao()->getDescricao(),
-                                $movimentacao->getModo()->getDescricao()]));
+                            [$movimentacao->bandeiraCartao->modo->descricao,
+                                $movimentacao->bandeiraCartao->descricao,
+                                $movimentacao->modo->descricao]));
                 }
             }
         }
 
-        $movimentacao->setParcelamento($movimentacao->getCadeia() &&
-            !$movimentacao->getRecorrente() &&
-            $movimentacao->getTipoLancto()->getCodigo() !== 60 &&
-            $movimentacao->getTipoLancto()->getCodigo() !== 61);
+        $movimentacao->parcelamento = ($movimentacao->cadeia &&
+            !$movimentacao->recorrente &&
+            $movimentacao->tipoLancto->getCodigo() !== 60 &&
+            $movimentacao->tipoLancto->getCodigo() !== 61);
 
 
         // Regras para movimentações com cheque
-        if (FALSE === $movimentacao->getModo()->getModoDeCheque()) {
-            $movimentacao->setChequeNumCheque(null);
-            $movimentacao->setChequeAgencia(null);
-            $movimentacao->setChequeBanco(null);
-            $movimentacao->setChequeConta(null);
+        if (FALSE === $movimentacao->modo->modoDeCheque) {
+            $movimentacao->chequeNumCheque = null;
+            $movimentacao->chequeAgencia = null;
+            $movimentacao->chequeBanco = null;
+            $movimentacao->chequeConta = null;
         }
 
-        if (in_array($movimentacao->getTipoLancto()->getCodigo(), [40, 41], true)) {
-            $movimentacao->setChequeAgencia($movimentacao->getCarteira()->getAgencia());
-            $movimentacao->setChequeBanco($movimentacao->getCarteira()->getBanco());
-            $movimentacao->setChequeConta($movimentacao->getCarteira()->getConta());
+        if (in_array($movimentacao->tipoLancto->getCodigo(), [40, 41], true)) {
+            $movimentacao->chequeAgencia = $movimentacao->carteira->agencia;
+            $movimentacao->chequeBanco = $movimentacao->carteira->banco;
+            $movimentacao->chequeConta = $movimentacao->carteira->conta;
         }
 
         // Regras para movimentações recorrentes
-        if (!$movimentacao->getRecorrente()) {
-            $movimentacao->setRecorrente(false);
-        }
-
-        /** @var PessoaRepository $repoPessoa */
-        $repoPessoa = $this->doctrine->getRepository(Pessoa::class);
-
-        if ($movimentacao->getSacado()) {
-            /** @var Pessoa $pessoa */
-            $pessoa = $repoPessoa->find($movimentacao->getSacado());
-            $movimentacao->setSacadoInfo($pessoa->getNome());
-        }
-
-        if ($movimentacao->getCedente()) {
-            /** @var Pessoa $pessoa */
-            $pessoa = $repoPessoa->find($movimentacao->getCedente());
-            $movimentacao->setCedenteInfo($pessoa->getNome());
+        if (!$movimentacao->recorrente) {
+            $movimentacao->recorrente = false;
         }
 
 
         // Trava para Dt Consolidado
-        if ($movimentacao->getDtPagto()) {
-            $dtPagto = (clone $movimentacao->getDtPagto())->setTime(0, 0);
-            $dtConsolidado_carteira = (clone $movimentacao->getCarteira()->getDtConsolidado())->setTime(0, 0);
+        if ($movimentacao->dtPagto) {
+            $dtPagto = (clone($movimentacao->dtPagto))->setTime(0, 0);
+            $dtConsolidado_carteira = (clone($movimentacao->carteira->dtConsolidado))->setTime(0, 0);
             if ($dtPagto <= $dtConsolidado_carteira) {
-                throw new ViewException('Carteira ' . $movimentacao->getCarteira()->getDescricao() . ' está consolidada em ' . $movimentacao->getCarteira()->getDtConsolidado()->format('d/m/Y'));
+                throw new ViewException('Carteira ' . $movimentacao->carteira->descricao . ' está consolidada em ' . $movimentacao->carteira->dtConsolidado->format('d/m/Y'));
             }
-            if ($movimentacao->getCarteiraDestino()) {
-                $dtConsolidado_carteiraDestino = (clone $movimentacao->getCarteira()->getDtConsolidado())->setTime(0, 0);
+            if ($movimentacao->carteiraDestino) {
+                $dtConsolidado_carteiraDestino = (clone($movimentacao->carteira->dtConsolidado))->setTime(0, 0);
                 if ($dtPagto <= $dtConsolidado_carteiraDestino) {
-                    throw new ViewException('Carteira ' . $movimentacao->getCarteiraDestino()->getDescricao() . ' está consolidada em ' . $movimentacao->getCarteiraDestino()->getDtConsolidado()->format('d/m/Y'));
+                    throw new ViewException('Carteira ' . $movimentacao->carteiraDestino->descricao . ' está consolidada em ' . $movimentacao->carteiraDestino->dtConsolidado->format('d/m/Y'));
                 }
             }
         }
@@ -315,16 +297,16 @@ class MovimentacaoEntityHandler extends EntityHandler
                 }
 
                 $cadeia = null;
-                if ($primeira->getCadeia() && !$primeira->getCadeia()->getId()) {
-                    $cadeia = $primeira->getCadeia();
-                    $cadeia->setMovimentacoes(null);
+                if ($primeira->cadeia && !$primeira->cadeia->getId()) {
+                    $cadeia = $primeira->cadeia;
+                    $cadeia->movimentacoes = null;
                     $this->cadeiaEntityHandler->save($cadeia);
                 }
             }
             /** @var Movimentacao $mov */
             foreach ($movs as $mov) {
                 if ($cadeia) {
-                    $mov->setCadeia($cadeia);
+                    $mov->cadeia = $cadeia;
                 }
                 $this->refindAll($mov);
                 $this->save($mov);
@@ -341,7 +323,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $err = $e->getMessage();
             }
             if (isset($mov)) {
-                $err .= ' (' . $mov->getDescricao() . ')';
+                $err .= ' (' . $mov->descricao . ')';
             }
             throw new ViewException($err);
         }
@@ -352,23 +334,23 @@ class MovimentacaoEntityHandler extends EntityHandler
      *
      * @param EntityId $movimentacao
      * @param bool $flush
-     * @return EntityId|Movimentacao|EntityId|null|object
+     * @return EntityId|Movimentacao|null|object
      * @throws ViewException
      */
     public function save(EntityId $movimentacao, $flush = true)
     {
         /** @var Movimentacao $movimentacao */
-        if (!$movimentacao->getTipoLancto()) {
+        if (!$movimentacao->tipoLancto) {
             throw new ViewException('Tipo Lancto não informado para ' . $movimentacao->getDescricaoMontada());
         }
 
         // 60 - TRANSFERÊNCIA ENTRE CARTEIRAS
-        if ($movimentacao->getTipoLancto()->getCodigo() === 60) {
+        if ($movimentacao->tipoLancto->getCodigo() === 60) {
             return $this->saveTransfPropria($movimentacao);
         }
 
         // 61 - TRANSFERÊNCIA DE ENTRADA DE CAIXA
-        if ($movimentacao->getTipoLancto()->getCodigo() === 61) {
+        if ($movimentacao->tipoLancto->getCodigo() === 61) {
             return $this->saveTransfEntradaCaixa($movimentacao);
         }
         // else
@@ -394,92 +376,90 @@ class MovimentacaoEntityHandler extends EntityHandler
         /** @var Categoria $categ199 */
         $categ199 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 199]);
 
-        if (!in_array($movimentacao->getCategoria()->getCodigo(), [199, 299], true)) {
+        if (!in_array($movimentacao->categoria->codigo, [199, 299], true)) {
             throw new ViewException('Apenas movimentações 1.99 ou 2.99 podem ser salvas.');
         }
 
-        $categOposta = $movimentacao->getCategoria()->getCodigo() === 199 ? $categ299 : $categ199;
+        $categOposta = $movimentacao->categoria->codigo === 199 ? $categ299 : $categ199;
 
         // Está editando
         if ($movimentacao->getId()) {
 
-            if ($movimentacao->getCadeia() && $movimentacao->getCadeia()->getMovimentacoes() &&
-                $movimentacao->getCadeia()->getMovimentacoes()->count() !== 2) {
+            if ($movimentacao->cadeia && $movimentacao->cadeia->movimentacoes &&
+                $movimentacao->cadeia->movimentacoes->count() !== 2) {
                 throw new ViewException('Apenas cadeias com 2 odem ser editadas ("TRANSFERÊNCIA ENTRE CARTEIRAS")');
             }
 
             $movimentOposta = $this->getDoctrine()->getRepository(Movimentacao::class)
                 ->findOneBy(
                     [
-                        'cadeia' => $movimentacao->getCadeia(),
+                        'cadeia' => $movimentacao->cadeia,
                         'categoria' => $categOposta
                     ]);
 
             // Campos que podem ser editados
-            $movimentOposta->setDescricao($movimentacao->getDescricao());
+            $movimentOposta->descricao = $movimentacao->descricao;
             $movimentOposta->fatura = $movimentacao->fatura;
             $movimentOposta->setCategoria($categOposta);
-            $movimentOposta->setModo($movimentacao->getModo());
-            if ($movimentacao->getCarteiraDestino()) {
-                $movimentOposta->setCarteira($movimentacao->getCarteiraDestino());
+            $movimentOposta->setModo($movimentacao->modo);
+            if ($movimentacao->carteiraDestino) {
+                $movimentOposta->setCarteira($movimentacao->carteiraDestino);
             }
-            $movimentOposta->setCarteiraDestino($movimentacao->getCarteira());
-            $movimentOposta->setValor($movimentacao->getValor());
-            $movimentOposta->setValorTotal($movimentacao->getValorTotal());
-            $movimentOposta->setCentroCusto($movimentacao->getCentroCusto());
-            $movimentOposta->setDtMoviment($movimentacao->getDtMoviment());
-            $movimentOposta->setDtVencto($movimentacao->getDtVencto());
-            $movimentOposta->setDtVenctoEfetiva($movimentacao->getDtVenctoEfetiva());
-            $movimentOposta->setDtPagto($movimentacao->getDtPagto());
+            $movimentOposta->setCarteiraDestino($movimentacao->carteira);
+            $movimentOposta->setValor($movimentacao->valor);
+            $movimentOposta->setValorTotal($movimentacao->valorTotal);
+            $movimentOposta->setCentroCusto($movimentacao->centroCusto);
+            $movimentOposta->setDtMoviment($movimentacao->dtMoviment);
+            $movimentOposta->setDtVencto($movimentacao->dtVencto);
+            $movimentOposta->setDtVenctoEfetiva($movimentacao->dtVenctoEfetiva);
+            $movimentOposta->setDtPagto($movimentacao->dtPagto);
 
             /** @var Movimentacao $movimentOposta */
             $movimentOposta = parent::save($movimentOposta);
 
-            /** @var Movimentacao $movimentacao */
-            $movimentacao->setCarteiraDestino($movimentOposta->getCarteira());
+            $movimentacao->carteiraDestino = $movimentOposta->carteira;
             $movimentacao = parent::save($movimentacao);
             $this->getDoctrine()->commit();
+            /** @var Movimentacao $movimentacao */
             return $movimentacao;
         }
         // else
 
         $cadeia = new Cadeia();
-        $cadeia->setVinculante(true);
-        $cadeia->setFechada(true);
+        $cadeia->fechada = true;
         /** @var Cadeia $cadeia */
         $cadeia = $this->cadeiaEntityHandler->save($cadeia);
 
-        $cadeiaOrdem = $movimentacao->getCategoria()->getCodigo() === 299 ? 1 : 2;
-        $movimentacao->setCadeia($cadeia);
-        $movimentacao->setCadeiaOrdem($cadeiaOrdem);
-        $movimentacao->setCadeiaQtde(2);
+        $cadeiaOrdem = $movimentacao->categoria->codigo === 299 ? 1 : 2;
+        $movimentacao->cadeia = $cadeia;
+        $movimentacao->cadeiaOrdem = $cadeiaOrdem;
+        $movimentacao->cadeiaQtde = 2;
 
-        $cadeiaOrdemOposta = $movimentacao->getCategoria()->getCodigo() === 299 ? 2 : 1;
+        $cadeiaOrdemOposta = $movimentacao->categoria->codigo === 299 ? 2 : 1;
 
-        /** @var Movimentacao $movimentOposta */
         $movimentOposta = new Movimentacao();
-        $movimentOposta->setCadeia($cadeia);
+        $movimentOposta->cadeia = $cadeia;
         $movimentOposta->fatura = $movimentacao->fatura;
-        $movimentOposta->setCadeiaOrdem($cadeiaOrdemOposta);
-        $movimentOposta->setCadeiaQtde(2);
-        $movimentOposta->setDescricao($movimentacao->getDescricao());
-        $movimentOposta->setCategoria($categOposta);
-        $movimentOposta->setCentroCusto($movimentacao->getCentroCusto());
-        $movimentOposta->setModo($movimentacao->getModo());
-        $movimentOposta->setCarteira($movimentacao->getCarteiraDestino());
-        $movimentOposta->setCarteiraDestino($movimentacao->getCarteira());
-        $movimentOposta->setStatus('REALIZADA');
-        $movimentOposta->setValor($movimentacao->getValor());
-        $movimentOposta->setDescontos($movimentacao->getDescontos());
-        $movimentOposta->setAcrescimos($movimentacao->getAcrescimos());
-        $movimentOposta->setValorTotal($movimentacao->getValorTotal());
+        $movimentOposta->cadeiaOrdem = $cadeiaOrdemOposta;
+        $movimentOposta->cadeiaQtde = 2;
+        $movimentOposta->descricao = $movimentacao->descricao;
+        $movimentOposta->categoria = $categOposta;
+        $movimentOposta->centroCusto = $movimentacao->centroCusto;
+        $movimentOposta->modo = $movimentacao->modo;
+        $movimentOposta->carteira = $movimentacao->carteiraDestino;
+        $movimentOposta->carteiraDestino = $movimentacao->carteira;
+        $movimentOposta->status = 'REALIZADA';
+        $movimentOposta->valor = $movimentacao->valor;
+        $movimentOposta->descontos = $movimentacao->descontos;
+        $movimentOposta->acrescimos = $movimentacao->acrescimos;
+        $movimentOposta->valorTotal = $movimentacao->valorTotal;
 
-        $movimentOposta->setDtMoviment($movimentacao->getDtMoviment());
-        $movimentOposta->setDtVencto($movimentacao->getDtVencto());
-        $movimentOposta->setDtVenctoEfetiva($movimentacao->getDtVenctoEfetiva());
-        $movimentOposta->setDtPagto($movimentacao->getDtPagto());
+        $movimentOposta->dtMoviment = clone($movimentacao->dtMoviment);
+        $movimentOposta->dtVencto = clone($movimentacao->dtVencto);
+        $movimentOposta->dtVenctoEfetiva = clone($movimentacao->dtVenctoEfetiva);
+        $movimentOposta->dtPagto = clone($movimentacao->dtPagto);
 
-        $movimentOposta->setTipoLancto($movimentacao->getTipoLancto());
+        $movimentOposta->tipoLancto = $movimentacao->tipoLancto;
 
         parent::save($movimentOposta);
         parent::save($movimentacao);
@@ -510,27 +490,27 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         // Está editando
         if ($movimentacao->getId()) {
-            if ($movimentacao->getCadeia()->getMovimentacoes()->count() !== 3) {
+            if ($movimentacao->cadeia->movimentacoes->count() !== 3) {
                 throw new ViewException('Apenas cadeias com 3 movimentações podem ser editadas (TRANSFERÊNCIA DE ENTRADA DE CAIXA).');
             }
 
-            $movs = $movimentacao->getCadeia()->getMovimentacoes();
+            $movs = $movimentacao->cadeia->movimentacoes;
             $outraMov = null;
+            /** @var Movimentacao $mov */
             foreach ($movs as $mov) {
                 if ($mov->getId() !== $movimentacao->getId()) {
-                    $mov->setDescricao($movimentacao->getDescricao());
+                    $mov->descricao = $movimentacao->descricao;
                     $mov->fatura = $movimentacao->fatura;
-                    $mov->setCategoria($categ299);
-                    $mov->setModo($movimentacao->getModo());
-                    $mov->setValor($movimentacao->getValor());
-                    $mov->setValorTotal($movimentacao->getValorTotal());
-                    $mov->setCentroCusto($movimentacao->getCentroCusto());
-                    $mov->setDtMoviment($movimentacao->getDtMoviment());
-                    $mov->setDtVencto($movimentacao->getDtVencto());
-                    $mov->setDtVenctoEfetiva($movimentacao->getDtVenctoEfetiva());
-                    $mov->setDtPagto($movimentacao->getDtPagto());
-                    $mov->setCadeiaQtde(3);
-                    /** @var Movimentacao $mov */
+                    $mov->categoria = $categ299;
+                    $mov->modo = $movimentacao->modo;
+                    $mov->valor = $movimentacao->valor;
+                    $mov->valorTotal = $movimentacao->valorTotal;
+                    $mov->centroCusto = $movimentacao->centroCusto;
+                    $mov->dtMoviment = clone($movimentacao->dtMoviment);
+                    $mov->dtVencto = clone($movimentacao->dtVencto);
+                    $mov->dtVenctoEfetiva = clone($movimentacao->dtVenctoEfetiva);
+                    $mov->dtPagto = clone($movimentacao->dtPagto);
+                    $mov->cadeiaQtde = 3;
                     parent::save($mov);
                 }
             }
@@ -543,72 +523,69 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
         // else
 
-        if (!in_array($movimentacao->getCategoria()->getCodigo(), [101, 102], true)) {
+        if (!in_array($movimentacao->categoria->codigo, [101, 102], true)) {
             throw new ViewException('TRANSFERÊNCIA DE ENTRADA DE CAIXA precisa ser lançada a partir de uma movimentação de categoria 1.01 ou 1.02');
 
         }
 
         $cadeia = new Cadeia();
-        $cadeia->setVinculante(true);
-        $cadeia->setFechada(true);
+        $cadeia->fechada = true;
         /** @var Cadeia $cadeia */
         $cadeia = $this->cadeiaEntityHandler->save($cadeia);
 
-        $movimentacao->setCadeia($cadeia);
-        $movimentacao->setCadeiaOrdem(1);
+        $movimentacao->cadeia = $cadeia;
+        $movimentacao->cadeiaOrdem = 1;
 
-        /** @var Movimentacao $moviment299 */
         $moviment299 = new Movimentacao();
-        $moviment299->setTipoLancto($movimentacao->getTipoLancto());
+        $moviment299->tipoLancto = $movimentacao->tipoLancto;
         $moviment299->fatura = $movimentacao->fatura;
-        $moviment299->setCadeia($cadeia);
-        $moviment299->setCadeiaOrdem(2);
-        $moviment299->setCadeiaQtde(3);
-        $moviment299->setDescricao($movimentacao->getDescricao());
-        $moviment299->setCategoria($categ299);
-        $moviment299->setCentroCusto($movimentacao->getCentroCusto());
-        $moviment299->setModo($movimentacao->getModo());
-        $moviment299->setCarteira($movimentacao->getCarteira());
-        $moviment299->setCarteiraDestino($movimentacao->getCarteiraDestino());
-        $moviment299->setStatus('REALIZADA');
-        $moviment299->setValor($movimentacao->getValor());
-        $moviment299->setDescontos($movimentacao->getDescontos());
-        $moviment299->setAcrescimos($movimentacao->getAcrescimos());
-        $moviment299->setValorTotal($movimentacao->getValorTotal());
+        $moviment299->cadeia = $cadeia;
+        $moviment299->cadeiaOrdem = 2;
+        $moviment299->cadeiaQtde = 3;
+        $moviment299->descricao = $movimentacao->descricao;
+        $moviment299->categoria = $categ299;
+        $moviment299->centroCusto = $movimentacao->centroCusto;
+        $moviment299->modo = $movimentacao->modo;
+        $moviment299->carteira = $movimentacao->carteira;
+        $moviment299->carteiraDestino = $movimentacao->carteiraDestino;
+        $moviment299->status = 'REALIZADA';
+        $moviment299->valor = $movimentacao->valor;
+        $moviment299->descontos = $movimentacao->descontos;
+        $moviment299->acrescimos = $movimentacao->acrescimos;
+        $moviment299->valorTotal = $movimentacao->valorTotal;
 
-        $moviment299->setDtMoviment($movimentacao->getDtMoviment());
-        $moviment299->setDtVencto($movimentacao->getDtMoviment());
-        $moviment299->setDtVenctoEfetiva($movimentacao->getDtMoviment());
-        $moviment299->setDtPagto($movimentacao->getDtMoviment());
+        $moviment299->dtMoviment = clone($movimentacao->dtMoviment);
+        $moviment299->dtVencto = clone($movimentacao->dtMoviment);
+        $moviment299->dtVenctoEfetiva = clone($movimentacao->dtMoviment);
+        $moviment299->dtPagto = clone($movimentacao->dtMoviment);
 
-        $moviment299->setTipoLancto($movimentacao->getTipoLancto());
+        $moviment299->tipoLancto = $movimentacao->tipoLancto;
         parent::save($moviment299);
 
-        /** @var Movimentacao $moviment199 */
         $moviment199 = new Movimentacao();
-        $moviment199->setTipoLancto($movimentacao->getTipoLancto());
+        $moviment199->tipoLancto = $movimentacao->tipoLancto;
         $moviment199->fatura = $movimentacao->fatura;
-        $moviment199->setCadeia($cadeia);
-        $moviment199->setCadeiaOrdem(3);
-        $moviment199->setCadeiaQtde(3);
-        $moviment199->setDescricao($movimentacao->getDescricao());
-        $moviment199->setCategoria($categ199);
-        $moviment199->setCentroCusto($movimentacao->getCentroCusto());
-        $moviment199->setModo($movimentacao->getModo());
-        $moviment199->setCarteira($movimentacao->getCarteiraDestino());
-        $moviment199->setCarteiraDestino($movimentacao->getCarteira());
-        $moviment199->setStatus('REALIZADA');
-        $moviment199->setValor($movimentacao->getValor());
-        $moviment199->setDescontos($movimentacao->getDescontos());
-        $moviment199->setAcrescimos($movimentacao->getAcrescimos());
-        $moviment199->setValorTotal($movimentacao->getValorTotal());
+        $moviment199->cadeia = $cadeia;
+        $moviment199->cadeiaOrdem = 3;
+        $moviment199->cadeiaQtde = 3;
+        $moviment199->descricao = $movimentacao->descricao;
+        $moviment199->categoria = $categ199;
+        $moviment199->centroCusto = $movimentacao->centroCusto;
+        $moviment199->modo = $movimentacao->modo;
+        $moviment199->carteira = $movimentacao->carteiraDestino;
+        $moviment199->carteiraDestino = $movimentacao->carteira;
+        $moviment199->status = 'REALIZADA';
+        $moviment199->valor = $movimentacao->valor;
+        $moviment199->descontos = $movimentacao->descontos;
+        $moviment199->acrescimos = $movimentacao->acrescimos;
+        $moviment199->valorTotal = $movimentacao->valorTotal;
 
-        $moviment199->setDtMoviment($movimentacao->getDtMoviment());
-        $moviment199->setDtVencto($movimentacao->getDtMoviment());
-        $moviment199->setDtVenctoEfetiva($movimentacao->getDtMoviment());
-        $moviment199->setDtPagto($movimentacao->getDtMoviment());
+        $moviment199->dtMoviment = clone($movimentacao->dtMoviment);
+        $moviment199->dtVencto = clone($movimentacao->dtMoviment);
+        $moviment199->dtVenctoEfetiva = clone($movimentacao->dtMoviment);
+        $moviment199->dtPagto = clone($movimentacao->dtMoviment);
 
-        $moviment199->setTipoLancto($movimentacao->getTipoLancto());
+        $moviment199->tipoLancto = $movimentacao->tipoLancto;
         parent::save($moviment199);
 
         parent::save($movimentacao);
@@ -626,13 +603,13 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
         /** @var Movimentacao $movimentacao */
 
-        if ($movimentacao->getCadeia() && $movimentacao->getCadeia()->getMovimentacoes()) {
-            if ($movimentacao->getCadeia()->getMovimentacoes()->count() === 2 || $movimentacao->getCadeia()->getMovimentacoes()->count() === 3) {
+        if ($movimentacao->cadeia && $movimentacao->cadeia->movimentacoes) {
+            if ($movimentacao->cadeia->movimentacoes->count() === 2 || $movimentacao->cadeia->movimentacoes->count() === 3) {
                 /** @var Movimentacao $movimentacao0 */
-                $movimentacao0 = $movimentacao->getCadeia()->getMovimentacoes()->current();
-                if (in_array($movimentacao0->getTipoLancto()->getCodigo(), [60, 61], true)) {
-                    $cadeia = $movimentacao->getCadeia();
-                    foreach ($cadeia->getMovimentacoes() as $m) {
+                $movimentacao0 = $movimentacao->cadeia->movimentacoes->current();
+                if (in_array($movimentacao0->tipoLancto->getCodigo(), [60, 61], true)) {
+                    $cadeia = $movimentacao->cadeia;
+                    foreach ($cadeia->movimentacoes as $m) {
                         parent::delete($m);
                     }
                     return;
@@ -644,14 +621,6 @@ class MovimentacaoEntityHandler extends EntityHandler
 
     }
 
-    /**
-     * @required
-     * @param mixed $movimentacaoBusiness
-     */
-    public function setMovimentacaoBusiness(MovimentacaoBusiness $movimentacaoBusiness): void
-    {
-        $this->movimentacaoBusiness = $movimentacaoBusiness;
-    }
 
     /**
      * @required
@@ -687,65 +656,65 @@ class MovimentacaoEntityHandler extends EntityHandler
         try {
             $em = $this->doctrine;
 
-            if ($movimentacao->getCategoria() && $movimentacao->getCategoria()->getId()) {
+            if ($movimentacao->categoria && $movimentacao->categoria->getId()) {
                 /** @var Categoria $categoria */
-                $categoria = $em->find(Categoria::class, $movimentacao->getCategoria()->getId());
-                $movimentacao->setCategoria($categoria);
+                $categoria = $em->find(Categoria::class, $movimentacao->categoria->getId());
+                $movimentacao->categoria = $categoria;
             }
-            if ($movimentacao->getTipoLancto() && $movimentacao->getTipoLancto()->getId()) {
+            if ($movimentacao->tipoLancto && $movimentacao->tipoLancto->getId()) {
                 /** @var TipoLancto $tipoLancto */
-                $tipoLancto = $em->find(TipoLancto::class, $movimentacao->getTipoLancto()->getId());
-                $movimentacao->setTipoLancto($tipoLancto);
+                $tipoLancto = $em->find(TipoLancto::class, $movimentacao->tipoLancto->getId());
+                $movimentacao->tipoLancto = $tipoLancto;
             }
-            if ($movimentacao->getCarteira() && $movimentacao->getCarteira()->getId()) {
+            if ($movimentacao->carteira && $movimentacao->carteira->getId()) {
                 /** @var Carteira $carteira */
-                $carteira = $em->find(Carteira::class, $movimentacao->getCarteira()->getId());
-                $movimentacao->setCarteira($carteira);
+                $carteira = $em->find(Carteira::class, $movimentacao->carteira->getId());
+                $movimentacao->carteira = $carteira;
             }
-            if ($movimentacao->getCarteiraDestino() && $movimentacao->getCarteiraDestino()->getId()) {
+            if ($movimentacao->carteiraDestino && $movimentacao->carteiraDestino->getId()) {
                 /** @var Carteira $carteiraDestino */
-                $carteiraDestino = $em->find(Carteira::class, $movimentacao->getCarteiraDestino()->getId());
-                $movimentacao->setCarteiraDestino($carteiraDestino);
+                $carteiraDestino = $em->find(Carteira::class, $movimentacao->carteiraDestino->getId());
+                $movimentacao->carteiraDestino = $carteiraDestino;
             }
-            if ($movimentacao->getCentroCusto() && $movimentacao->getCentroCusto()->getId()) {
+            if ($movimentacao->centroCusto && $movimentacao->centroCusto->getId()) {
                 /** @var CentroCusto $centroCusto */
-                $centroCusto = $em->find(CentroCusto::class, $movimentacao->getCentroCusto()->getId());
-                $movimentacao->setCentroCusto($centroCusto);
+                $centroCusto = $em->find(CentroCusto::class, $movimentacao->centroCusto->getId());
+                $movimentacao->centroCusto = $centroCusto;
             }
-            if ($movimentacao->getModo() && $movimentacao->getModo()->getId()) {
+            if ($movimentacao->modo && $movimentacao->modo->getId()) {
                 /** @var Modo $modo */
-                $modo = $em->find(Modo::class, $movimentacao->getModo()->getId());
-                $movimentacao->setModo($modo);
+                $modo = $em->find(Modo::class, $movimentacao->modo->getId());
+                $movimentacao->modo = $modo;
             }
-            if ($movimentacao->getGrupoItem() && $movimentacao->getGrupoItem()->getId()) {
+            if ($movimentacao->grupoItem && $movimentacao->grupoItem->getId()) {
                 /** @var GrupoItem $grupoItem */
-                $grupoItem = $em->find(GrupoItem::class, $movimentacao->getGrupoItem()->getId());
-                $movimentacao->setGrupoItem($grupoItem);
+                $grupoItem = $em->find(GrupoItem::class, $movimentacao->grupoItem->getId());
+                $movimentacao->grupoItem = $grupoItem;
             }
-            if ($movimentacao->getOperadoraCartao() && $movimentacao->getOperadoraCartao()->getId()) {
+            if ($movimentacao->operadoraCartao && $movimentacao->operadoraCartao->getId()) {
                 /** @var OperadoraCartao $operadoraCartao */
-                $operadoraCartao = $em->find(OperadoraCartao::class, $movimentacao->getOperadoraCartao()->getId());
-                $movimentacao->setOperadoraCartao($operadoraCartao);
+                $operadoraCartao = $em->find(OperadoraCartao::class, $movimentacao->operadoraCartao->getId());
+                $movimentacao->operadoraCartao = $operadoraCartao;
             }
-            if ($movimentacao->getBandeiraCartao() && $movimentacao->getBandeiraCartao()->getId()) {
+            if ($movimentacao->bandeiraCartao && $movimentacao->bandeiraCartao->getId()) {
                 /** @var BandeiraCartao $bandeiraCartao */
-                $bandeiraCartao = $em->find(BandeiraCartao::class, $movimentacao->getBandeiraCartao()->getId());
-                $movimentacao->setBandeiraCartao($bandeiraCartao);
+                $bandeiraCartao = $em->find(BandeiraCartao::class, $movimentacao->bandeiraCartao->getId());
+                $movimentacao->bandeiraCartao = $bandeiraCartao;
             }
-            if ($movimentacao->getCadeia() && $movimentacao->getCadeia()->getId()) {
+            if ($movimentacao->cadeia && $movimentacao->cadeia->getId()) {
                 /** @var Cadeia $cadeia */
-                $cadeia = $em->find(Cadeia::class, $movimentacao->getCadeia()->getId());
-                $movimentacao->setCadeia($cadeia);
+                $cadeia = $em->find(Cadeia::class, $movimentacao->cadeia->getId());
+                $movimentacao->cadeia = $cadeia;
             }
-            if ($movimentacao->getDocumentoBanco() && $movimentacao->getDocumentoBanco()->getId()) {
+            if ($movimentacao->documentoBanco && $movimentacao->documentoBanco->getId()) {
                 /** @var Banco $documentoBanco */
-                $documentoBanco = $em->find(Banco::class, $movimentacao->getDocumentoBanco()->getId());
-                $movimentacao->setDocumentoBanco($documentoBanco);
+                $documentoBanco = $em->find(Banco::class, $movimentacao->documentoBanco->getId());
+                $movimentacao->documentoBanco = $documentoBanco;
             }
-            if ($movimentacao->getChequeBanco() && $movimentacao->getChequeBanco()->getId()) {
+            if ($movimentacao->chequeBanco && $movimentacao->chequeBanco->getId()) {
                 /** @var Banco $chequeBanco */
-                $chequeBanco = $em->find(Banco::class, $movimentacao->getChequeBanco()->getId());
-                $movimentacao->setChequeBanco($chequeBanco);
+                $chequeBanco = $em->find(Banco::class, $movimentacao->chequeBanco->getId());
+                $movimentacao->chequeBanco = $chequeBanco;
             }
         } catch (\Exception $e) {
             throw new ViewException('Erro ao realizar o refindAll');

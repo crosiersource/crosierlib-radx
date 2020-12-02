@@ -3,17 +3,17 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Financeiro;
 
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\DiaUtil;
+use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\DiaUtilRepository;
+use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Banco;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
@@ -80,7 +80,7 @@ class MovimentacaoBusiness
         $total = 0.0;
         /** @var Movimentacao $m */
         foreach ($movs as $m) {
-            $total = $m->getCategoria()->getCodigoSuper() === 1 ? $total + $m->getValorTotal() : $total - $m->getValorTotal();
+            $total = $m->categoria->codigoSuper === 1 ? $total + $m->valorTotal : $total - $m->valorTotal;
         }
         return $total;
     }
@@ -99,7 +99,7 @@ class MovimentacaoBusiness
         $resto = $isValorTotal ? bcsub($valor, bcmul($valorParcela, $qtdeParcelas, 2), 2) : 0.0;
 
         $cadeia = new Cadeia();
-        $movimentacao->setCadeia($cadeia);
+        $movimentacao->cadeia = $cadeia;
 
         /** @var DiaUtilRepository $repoDiaUtil */
         $repoDiaUtil = $this->doctrine->getRepository(DiaUtil::class);
@@ -110,30 +110,30 @@ class MovimentacaoBusiness
             $valor = DecimalUtils::parseStr($parcelas[0]['valor']);
             $documentoNum = $parcelas[0]['documentoNum'] ?? null;
             $chequeNumCheque = $parcelas[0]['chequeNumCheque'] ?? null;
-            $movimentacao->setDtVencto($dtVencto);
-            $movimentacao->setDtVenctoEfetiva($dtVenctoEfetiva);
-            $movimentacao->setValor($valor);
-            $movimentacao->setDocumentoNum($documentoNum);
-            $movimentacao->setChequeNumCheque($chequeNumCheque);
+            $movimentacao->dtVencto = $dtVencto;
+            $movimentacao->dtVenctoEfetiva = $dtVenctoEfetiva;
+            $movimentacao->valor = $valor;
+            $movimentacao->documentoNum = $documentoNum;
+            $movimentacao->chequeNumCheque = $chequeNumCheque;
         } else {
-            $movimentacao->setDtVencto(clone $dtPrimeiroVencto);
-            $proxDiaUtilFinanceiro = $repoDiaUtil->findDiaUtil($movimentacao->getDtVencto(), null, true);
-            $movimentacao->setDtVenctoEfetiva($proxDiaUtilFinanceiro);
-            $movimentacao->setValor($valorParcela);
+            $movimentacao->dtVencto = clone $dtPrimeiroVencto;
+            $proxDiaUtilFinanceiro = $repoDiaUtil->findDiaUtil($movimentacao->dtVencto, null, true);
+            $movimentacao->dtVenctoEfetiva = $proxDiaUtilFinanceiro;
+            $movimentacao->valor = $valorParcela;
         }
 
 
-        $movimentacao->setCadeiaQtde($qtdeParcelas);
-        $movimentacao->setCadeiaOrdem(1);
-        $movimentacao->setDescricao(strtoupper($movimentacao->getDescricao()));
+        $movimentacao->cadeiaQtde = $qtdeParcelas;
+        $movimentacao->cadeiaOrdem = 1;
+        $movimentacao->descricao = (strtoupper($movimentacao->descricao));
 
         $movimentacao->calcValorTotal();
-        $cadeia->getMovimentacoes()->add($movimentacao);
+        $cadeia->movimentacoes->add($movimentacao);
 
         $proxDtVencto = clone $dtPrimeiroVencto;
         for ($i = 2; $i <= $qtdeParcelas; $i++) {
             $parcela = clone $movimentacao;
-            $parcela->setCadeiaOrdem($i);
+            $parcela->cadeiaOrdem = $i;
 
             // Se foi passado o array com alterações nas parcelas
             if (isset($parcelas[$i - 1])) {
@@ -142,24 +142,23 @@ class MovimentacaoBusiness
                 $valor = DecimalUtils::parseStr($parcelas[$i - 1]['valor']);
                 $documentoNum = $parcelas[$i - 1]['documentoNum'] ?? null;
                 $chequeNumCheque = $parcelas[$i - 1]['chequeNumCheque'] ?? null;
-                $parcela->setDtVencto($dtVencto);
-                $parcela->setDtVenctoEfetiva($dtVenctoEfetiva);
-                $parcela->setValor($valor);
-                $parcela->setDocumentoNum($documentoNum);
-                $parcela->setChequeNumCheque($chequeNumCheque);
+                $parcela->dtVencto = $dtVencto;
+                $parcela->dtVenctoEfetiva = $dtVenctoEfetiva;
+                $parcela->valor = $valor;
+                $parcela->documentoNum = $documentoNum;
+                $parcela->chequeNumCheque = $chequeNumCheque;
             } else {
                 $proxDtVencto = DateTimeUtils::incMes(clone $proxDtVencto);
-                $parcela->setDtVencto($proxDtVencto);
-                $proxDiaUtilFinanceiro = $repoDiaUtil->findDiaUtil($parcela->getDtVencto(), null, true);
-                $parcela->setDtVenctoEfetiva($proxDiaUtilFinanceiro);
+                $parcela->dtVencto = $proxDtVencto;
+                $proxDiaUtilFinanceiro = $repoDiaUtil->findDiaUtil($parcela->dtVencto, null, true);
+                $parcela->dtVenctoEfetiva = $proxDiaUtilFinanceiro;
                 if ($i === $qtdeParcelas) {
-                    $parcela->setValor(bcadd($valorParcela, $resto, 2));
+                    $parcela->valor = (bcadd($valorParcela, $resto, 2));
                 }
             }
             $parcela->calcValorTotal();
-            $cadeia->getMovimentacoes()->add($parcela);
+            $cadeia->movimentacoes->add($parcela);
         }
-
     }
 
     /**
@@ -174,8 +173,8 @@ class MovimentacaoBusiness
     {
         $this->doctrine->beginTransaction();
 
-        $parcelamento = new Cadeia();
-        $this->doctrine->persist($parcelamento);
+        $cadeiaParcelamento = new Cadeia();
+        $this->doctrine->persist($cadeiaParcelamento);
 
 
         $i = 1;
@@ -183,33 +182,33 @@ class MovimentacaoBusiness
         foreach ($parcelas as $parcela) {
             $movimentacao = clone $primeiraParcela;
 
-            $movimentacao->setCadeia($parcelamento);
-            $movimentacao->setCadeiaOrdem($i++);
+            $movimentacao->cadeia = $cadeiaParcelamento;
+            $movimentacao->cadeiaOrdem = $i++;
 
             $valor = (new NumberFormatter('pt_BR', NumberFormatter::DECIMAL))->parse($parcela['valor']);
-            $movimentacao->setValor($valor);
+            $movimentacao->valor = $valor;
             $valorTotal = bcadd($valor, $valorTotal);
 
             $dtVencto = \DateTime::createFromFormat('d/m/Y', $parcela['dtVencto']);
-            $movimentacao->setDtVencto($dtVencto);
+            $movimentacao->dtVencto = $dtVencto;
 
             $dtVenctoEfetiva = \DateTime::createFromFormat('d/m/Y', $parcela['dtVenctoEfetiva']);
-            $movimentacao->setDtVenctoEfetiva($dtVenctoEfetiva);
+            $movimentacao->dtVenctoEfetiva = $dtVenctoEfetiva;
 
             $documentoNum = $parcela['documentoNum'];
-            $movimentacao->setDocumentoNum($documentoNum);
+            $movimentacao->documentoNum = $documentoNum;
 
             // Em casos de grupos de itens...
             /** @var GrupoItem $giAtual */
-            $giAtual = $movimentacao->getGrupoItem();
+            $giAtual = $movimentacao->grupoItem;
             if ($giAtual) {
-                if ($giAtual->getProximo() !== null) {
-                    $proximoId = $giAtual->getProximo()->getId();
+                if ($giAtual->proximo !== null) {
+                    $proximoId = $giAtual->proximo->getId();
                     $giAtual = $this->doctrine->getRepository(Grupo::class)->find($proximoId);
                 } else {
-                    $giAtual = $this->grupoBusiness->gerarNovo($giAtual->getPai());
+                    $giAtual = $this->grupoBusiness->gerarNovo($giAtual->pai);
                 }
-                $movimentacao->setGrupoItem($giAtual);
+                $movimentacao->grupoItem = $giAtual;
             }
 
             try {
@@ -225,7 +224,7 @@ class MovimentacaoBusiness
 
         $this->doctrine->commit();
 
-        return $parcelamento;
+        return $cadeiaParcelamento;
 
 
     }
@@ -264,7 +263,7 @@ class MovimentacaoBusiness
         /** @var Movimentacao $mov */
         foreach ($movs as $mov) {
 
-            $cadeia = $mov->getCadeia();
+            $cadeia = $mov->cadeia;
 
             if (!$cadeia) {
                 throw new \Exception('Movimentação sem $cadeia.');
@@ -285,33 +284,33 @@ class MovimentacaoBusiness
 
                 $operadoraCartao = null;
 
-                if ($m199->getOperadoraCartao() === null) {
+                if ($m199->operadoraCartao === null) {
                     /** @var OperadoraCartao $operadoraCartao */
-                    $operadoraCartao = $this->doctrine->getRepository(OperadoraCartao::class)->findOneBy(['carteira' => $m199->getCarteira()]);
-                    $m199->setOperadoraCartao($operadoraCartao);
+                    $operadoraCartao = $this->doctrine->getRepository(OperadoraCartao::class)->findOneBy(['carteira' => $m199->carteira]);
+                    $m199->operadoraCartao = $operadoraCartao;
 
                     $m199 = $this->movimentacaoEntityHandler->save($m199);
-                    $results[] = 'Operadora corrigida para "' . $m199->getDescricao() . '" - R$ ' . $m199->getValor() . ' (1.99): ' . $operadoraCartao->getDescricao();
+                    $results[] = 'Operadora corrigida para "' . $m199->getDescricao() . '" - R$ ' . $m199->getValor() . ' (1.99): ' . $operadoraCartao->descricao;
                 } else {
-                    $operadoraCartao = $m199->getOperadoraCartao();
+                    $operadoraCartao = $m199->operadoraCartao;
                 }
 
-                if ($m299->getOperadoraCartao() === null) {
+                if ($m299->operadoraCartao === null) {
                     // provavelmente TAMBÉM isso não deveria ser necessário, visto que na importação isto já deve ter sido acertado.
-                    $m299->setOperadoraCartao($operadoraCartao);
+                    $m299->operadoraCartao = $operadoraCartao;
                     $m299 = $this->movimentacaoEntityHandler->save($m299);
-                    $results[] = 'Operadora corrigida para "' . $m299->getDescricao() . '" - R$ ' . $m299->getValor() . ' (2.99): ' . $operadoraCartao->getDescricao();
+                    $results[] = 'Operadora corrigida para "' . $m299->descricao . '" - R$ ' . $m299->valor . ' (2.99): ' . $operadoraCartao->descricao;
                 }
 
-                if ($mov->getOperadoraCartao() === null) {
+                if ($mov->operadoraCartao === null) {
                     // provavelmente isso não deveria ser necessário, visto que na importação isto já deve ter sido acertado.
-                    $mov->setOperadoraCartao($operadoraCartao);
+                    $mov->operadoraCartao = $operadoraCartao;
                     $mov = $this->movimentacaoEntityHandler->save($mov);
-                    $results[] = 'Operadora corrigida para "' . $mov->getDescricao() . '" - R$ ' . $mov->getValor() . ' (1.01): ' . $operadoraCartao->getDescricao();
+                    $results[] = 'Operadora corrigida para "' . $mov->descricao . '" - R$ ' . $mov->valor . ' (1.01): ' . $operadoraCartao->descricao;
                 }
 
             } catch (\Exception $e) {
-                $results[] = 'ERRO: Não foi possível consolidar ' . $mov->getDescricao() . ' - R$ ' . $mov->getValor() . ' (' . $e->getMessage() . ')';
+                $results[] = 'ERRO: Não foi possível consolidar ' . $mov->descricao . ' - R$ ' . $mov->valor . ' (' . $e->getMessage() . ')';
             }
         }
 
@@ -350,11 +349,11 @@ class MovimentacaoBusiness
         $this->movimentacaoEntityHandler->getDoctrine()->beginTransaction();
         foreach ($movs as $mov) {
             try {
-                if ($mov->getCadeia() === null) {
+                if ($mov->cadeia === null) {
                     $results[] = $this->consolidarMovimentacaoDebito($mov, $dtPagto, $carteira);
                 }
             } catch (\Exception $e) {
-                $results[] = 'ERRO: não foi possível consolidar ' . $mov->getDescricao() . ' - R$ ' . $mov->getValor() . ' (' . $e->getMessage() . ')';
+                $results[] = 'ERRO: não foi possível consolidar ' . $mov->descricao . ' - R$ ' . $mov->valor . ' (' . $e->getMessage() . ')';
             }
         }
         $this->movimentacaoEntityHandler->getDoctrine()->commit();
@@ -382,9 +381,9 @@ class MovimentacaoBusiness
 
         $m299s = $this->doctrine->getRepository(Movimentacao::class)->findBy([
             'dtMoviment' => $dtMoviment,
-            'valorTotal' => $m101->getValor(),
+            'valorTotal' => $m101->valor,
             'carteira' => $carteira,
-            'bandeiraCartao' => $m101->getBandeiraCartao(),
+            'bandeiraCartao' => $m101->bandeiraCartao,
             'categoria' => $c299
         ]);
 
@@ -392,26 +391,26 @@ class MovimentacaoBusiness
         $m299 = null;
         /** @var Movimentacao $_m299 */
         foreach ($m299s as $_m299) {
-            if ($_m299->getCadeia()->getMovimentacoes()->count() === 2) {
+            if ($_m299->cadeia->movimentacoes->count() === 2) {
                 $m299 = $_m299;
                 break;
             }
         }
 
         if ($m299 === null) {
-            $result = 'ERRO: Nenhuma movimentação 2.99 encontrada para "' . $m101->getDescricao() . '" - R$ ' . number_format($m101->getValor(), 2, ',', '.');
+            $result = 'ERRO: Nenhuma movimentação 2.99 encontrada para "' . $m101->descricao . '" - R$ ' . number_format($m101->valor, 2, ',', '.');
             return $result;
         }
 
         // Incluir na $cadeia
-        $m101->setCadeia($m299->getCadeia());
-        $m101->setCadeiaOrdem(3);
-        $m299->getCadeia()->getMovimentacoes()->add($m101);
+        $m101->cadeia = $m299->cadeia;
+        $m101->cadeiaOrdem = 3;
+        $m299->cadeia->movimentacoes->add($m101);
 
         $this->movimentacaoEntityHandler->save($m101);
         // ...para poder atualizar a m299 no entityManager, e dessa forma saber que ela já está em uma $cadeia com 3 movimentações, pulando o if no for acima.
 
-        $result = 'SUCESSO: Movimentação consolidada >> "' . $m101->getDescricao() . '" - R$ ' . number_format($m101->getValor(), 2, ',', '.');
+        $result = 'SUCESSO: Movimentação consolidada >> "' . $m101->descricao . '" - R$ ' . number_format($m101->valor, 2, ',', '.');
 
         return $result;
     }
@@ -454,12 +453,12 @@ class MovimentacaoBusiness
      */
     public function exibirRecorrente(?Movimentacao $movimentacao): bool
     {
-        if (!$movimentacao || !$movimentacao->getId() || $movimentacao->getRecorrente() === false) {
+        if (!$movimentacao || !$movimentacao->getId() || $movimentacao->recorrente === false) {
             return true;
         }
 
-        $cadeia = $movimentacao->getCadeia();
-        return !$cadeia || $cadeia->getMovimentacoes()->last()->getId() === $movimentacao->getId();
+        $cadeia = $movimentacao->cadeia;
+        return !$cadeia || $cadeia->movimentacoes->last()->getId() === $movimentacao->getId();
     }
 
     /**
@@ -494,29 +493,29 @@ class MovimentacaoBusiness
     {
         $result = '';
 
-        if (!$originante->getRecorrente()) {
+        if (!$originante->recorrente) {
             // Tem que ter sido passada uma List com movimentações que sejam recorrentes
-            throw new ViewException('Movimentação não recorrente não pode ser processada (' . $originante->getDescricao() . ')');
+            throw new ViewException('Movimentação não recorrente não pode ser processada (' . $originante->descricao . ')');
         }
 
-        if (!$originante->getRecorrFrequencia() || $originante->getRecorrFrequencia() === 'NENHUMA') {
-            throw new ViewException('Recorrência com frequência = "NENHUMA" (' . $originante->getDescricao() . ')');
+        if (!$originante->recorrFrequencia || $originante->recorrFrequencia === 'NENHUMA') {
+            throw new ViewException('Recorrência com frequência = "NENHUMA" (' . $originante->descricao . ')');
         }
-        if (!$originante->getRecorrTipoRepet() || $originante->getRecorrTipoRepet() === 'NENHUMA') {
-            throw new ViewException('Recorrência com tipo de repetição = "NENHUMA" (' . $originante->getDescricao() . ')');
+        if (!$originante->recorrTipoRepet || $originante->recorrTipoRepet === 'NENHUMA') {
+            throw new ViewException('Recorrência com tipo de repetição = "NENHUMA" (' . $originante->descricao . ')');
         }
 
         // verifico se já existe a movimentação $posterior
-        if ($originante->getCadeia() !== null) {
+        if ($originante->cadeia !== null) {
 
-            $proxMes = (clone $originante->getDtVencto())->add(new \DateInterval('P1M'));
+            $proxMes = (clone $originante->dtVencto)->add(new \DateInterval('P1M'));
             $dtIni = DateTimeUtils::getPrimeiroDiaMes($proxMes);
             $dtFim = DateTimeUtils::getUltimoDiaMes($proxMes);
 
             /** @var Movimentacao $posterior */
             $aPosterior = $this->doctrine->getRepository(Movimentacao::class)
                 ->findByFiltersSimpl(
-                    [['cadeia', 'EQ', $originante->getCadeia()],
+                    [['cadeia', 'EQ', $originante->cadeia],
                         ['dtVencto', 'BETWEEN', [$dtIni, $dtFim]]]);
             $posterior = $aPosterior[0] ?? null;
 
@@ -524,41 +523,40 @@ class MovimentacaoBusiness
             // Só altera uma posterior caso não tenha dtPagto
             if ($posterior) {
 
-                $posterior->setRecorrente(true);
-                $posterior->setRecorrDia($originante->getRecorrDia());
-                $posterior->setRecorrVariacao($originante->getRecorrVariacao());
-                $posterior->setRecorrFrequencia($originante->getRecorrFrequencia());
-                $posterior->setRecorrTipoRepet($originante->getRecorrTipoRepet());
+                $posterior->recorrente = true;
+                $posterior->recorrDia = $originante->recorrDia;
+                $posterior->recorrVariacao = $originante->recorrVariacao;
+                $posterior->recorrFrequencia = $originante->recorrFrequencia;
+                $posterior->recorrTipoRepet = $originante->recorrTipoRepet;
 
-                if ($posterior->getDtPagto()) {
-                    $result = 'Posterior já realizada. Não será possível alterar: ' . $originante->getDescricao() . '"';
+                if ($posterior->dtPagto) {
+                    $result = 'Posterior já realizada. Não será possível alterar: ' . $originante->descricao . '"';
                 } // verifico se teve alterações na originante
                 else if ($originante->getUpdated()->getTimestamp() > $posterior->getUpdated()->getTimestamp()) {
 
-                    $posterior->setDescricao($originante->getDescricao());
+                    $posterior->descricao = $originante->descricao;
 
-                    $posterior->setValor($originante->getValor());
-                    $posterior->setAcrescimos($originante->getAcrescimos());
-                    $posterior->setDescontos($originante->getDescontos());
-                    $posterior->setValorTotal(null); // null para recalcular no beforeSave
+                    $posterior->valor = $originante->valor;
+                    $posterior->acrescimos = $originante->acrescimos;
+                    $posterior->descontos = $originante->descontos;
+                    $posterior->valorTotal = null; // null para recalcular no beforeSave
 
-                    $posterior->setSacado($originante->getSacado());
-                    $posterior->setCedente($originante->getCedente());
+                    $posterior->sacado = $originante->sacado;
+                    $posterior->cedente = $originante->cedente;
 
-                    $posterior->setCarteira($originante->getCarteira());
-                    $posterior->setCategoria($originante->getCategoria());
-                    $posterior->setCentroCusto($originante->getCentroCusto());
+                    $posterior->carteira = $originante->carteira;
+                    $posterior->categoria = $originante->categoria;
+                    $posterior->centroCusto = $originante->centroCusto;
 
-                    $posterior->setModo($originante->getModo());
+                    $posterior->modo = $originante->modo;
 
                     $this->calcularNovaDtVencto($originante, $posterior);
-
                 }
                 try {
                     $this->movimentacaoEntityHandler->save($posterior);
-                    $result = 'SUCESSO ao atualizar movimentação: ' . $originante->getDescricao();
+                    $result = 'SUCESSO ao atualizar movimentação: ' . $originante->descricao;
                 } catch (\Exception $e) {
-                    $result = 'ERRO ao atualizar movimentação: ' . $originante->getDescricao() . '. (' . $e->getMessage() . ')';
+                    $result = 'ERRO ao atualizar movimentação: ' . $originante->descricao . '. (' . $e->getMessage() . ')';
                 }
 
                 return $result;
@@ -568,44 +566,43 @@ class MovimentacaoBusiness
         $salvarOriginal = false;
 
         $nova = clone $originante;
-        $nova->setUUID(null);
+        $nova->UUID = null;
 
         $nova->setId(null);
-        $nova->setDtPagto(null);
+        $nova->dtPagto = null;
 
-        $cadeia = $originante->getCadeia();
+        $cadeia = $originante->cadeia;
 
         // Se ainda não possui uma $cadeia...
         if ($cadeia !== null) {
-            $nova->setCadeiaOrdem($cadeia->getMovimentacoes()->count() + 1);
+            $nova->cadeiaOrdem = $cadeia->movimentacoes->count() + 1;
         } else {
             $cadeia = new Cadeia();
 
             // Como está sendo gerada uma $cadeia nova, tenho que atualizar a movimentação ||iginal e mandar salva-la também.
-            $originante->setCadeiaOrdem(1);
-            $originante->setCadeia($cadeia);
+            $originante->cadeiaOrdem = 1;
+            $originante->cadeia = $cadeia;
             $salvarOriginal = true; // tem que salvar a ||iginante porque ela foi incluída na $cadeia
 
-            $nova->setCadeiaOrdem(2);
+            $nova->cadeiaOrdem = 2;
         }
 
-        $cadeia->setVinculante(false);
-        $cadeia->setFechada(false);
+        $cadeia->fechada = false;
 
-        $nova->setCadeia($cadeia);
+        $nova->cadeia = $cadeia;
 
         $this->calcularNovaDtVencto($originante, $nova);
 
-        $nova->setStatus('ABERTA'); // posso setar como ABERTA pois no beforeSave(), se for CHEQUE, ele altera para A_COMPENSAR.
+        $nova->status = 'ABERTA'; // posso setar como ABERTA pois no beforeSave(), se for CHEQUE, ele altera para A_COMPENSAR.
 
         /** @var TipoLancto $aPagarReceber */
         $aPagarReceber = $this->doctrine->getRepository(TipoLancto::class)->findOneBy(['codigo' => 20]);
 
-        $nova->setTipoLancto($aPagarReceber);
+        $nova->tipoLancto = $aPagarReceber;
 
         // seto o número do cheque para ????, para que seja informado $posteriormente.
-        if ($nova->getChequeNumCheque() !== null) {
-            $nova->setChequeNumCheque('????');
+        if ($nova->chequeNumCheque !== null) {
+            $nova->chequeNumCheque = '????';
         }
 
         // Tem que salvar a $cadeia, pois foi removido os Cascades devido a outros problemas...
@@ -615,18 +612,18 @@ class MovimentacaoBusiness
         if ($salvarOriginal) {
             try {
                 $this->movimentacaoEntityHandler->save($originante);
-                $result .= 'SUCESSO ao salvar movimentação originante: ' . $originante->getDescricao();
+                $result .= 'SUCESSO ao salvar movimentação originante: ' . $originante->descricao;
             } catch (\Exception $e) {
-                $result .= 'ERRO ao salvar movimentação originante: ' . $originante->getDescricao() . '. (' . $e->getMessage() . ')';
+                $result .= 'ERRO ao salvar movimentação originante: ' . $originante->descricao . '. (' . $e->getMessage() . ')';
             }
-            $nova->setCadeia($originante->getCadeia());
+            $nova->cadeia = $originante->cadeia;
         }
 
         try {
             $this->movimentacaoEntityHandler->save($nova);
-            $result .= 'SUCESSO ao gerar movimentação: ' . $nova->getDescricao();
+            $result .= 'SUCESSO ao gerar movimentação: ' . $nova->descricao;
         } catch (\Exception $e) {
-            $result .= 'ERRO ao atualizar movimentação: ' . $originante->getDescricao() . '. (' . $e->getMessage() . ')';
+            $result .= 'ERRO ao atualizar movimentação: ' . $originante->descricao . '. (' . $e->getMessage() . ')';
         }
 
         return $result;
@@ -642,8 +639,8 @@ class MovimentacaoBusiness
         /** @var DiaUtilRepository $repoDiaUtil */
         $repoDiaUtil = $this->doctrine->getRepository(DiaUtil::class);
 
-        $novaDtVencto = clone $originante->getDtVencto();
-        if ($nova->getRecorrFrequencia() === 'ANUAL') {
+        $novaDtVencto = clone $originante->dtVencto;
+        if ($nova->recorrFrequencia === 'ANUAL') {
             $novaDtVencto = $novaDtVencto->setDate((int)$novaDtVencto->format('Y') + 1, $novaDtVencto->format('m'), $novaDtVencto->format('d'));
         } else {
             // uso o dia 1 aqui, pois ali embaixo ele vai acertar o dia conforme as outras regras
@@ -651,29 +648,26 @@ class MovimentacaoBusiness
         }
 
 
-        if ($nova->getRecorrTipoRepet() === 'DIA_FIXO') {
+        if ($nova->recorrTipoRepet === 'DIA_FIXO') {
             // se foi marcado com dia da recorrência maior ou igual a 31
             // ou se estiver processando fevereiro e a data de vencimento for maior ou igual a 29...
             // então sempre setará para o último dia do mês
-            if (($nova->getRecorrDia() >= 31) || ($nova->getRecorrDia() >= 29 && $novaDtVencto->format('m') === 2)) {
+            if (($nova->recorrDia >= 31) || ($nova->recorrDia >= 29 && $novaDtVencto->format('m') === 2)) {
                 // como já tinha adicionado +1 mês ali em cima, só pega o último dia do mês
                 $novaDtVencto = \DateTime::createFromFormat('Y-m-d', $novaDtVencto->format('Y-m-t'));
             } else {
-                $novaDtVencto->setDate($novaDtVencto->format('Y'), $novaDtVencto->format('m'), $nova->getRecorrDia());
+                $novaDtVencto->setDate($novaDtVencto->format('Y'), $novaDtVencto->format('m'), $nova->recorrDia);
             }
-            $nova->setDtVencto($novaDtVencto);
-        } else if ($nova->getRecorrTipoRepet() === 'DIA_UTIL') {
+            $nova->dtVencto = clone $novaDtVencto;
+        } else if ($nova->recorrTipoRepet === 'DIA_UTIL') {
             // Procuro o dia útil ordinalmente...
             $novaDtVencto = $novaDtVencto->setDate($novaDtVencto->format('Y'), (int)$novaDtVencto->format('m'), 01);
 
-            /** @var DiaUtilRepository $repoDiaUtil */
-            $repoDiaUtil = $this->doctrine->getRepository(DiaUtil::class);
-
-            $diaUtil = $repoDiaUtil->findEnesimoDiaUtil($novaDtVencto, $nova->getRecorrDia(), true);
-            $nova->setDtVencto($diaUtil);
+            $diaUtil = $repoDiaUtil->findEnesimoDiaUtil($novaDtVencto, $nova->recorrDia, true);
+            $nova->dtVencto = $diaUtil;
         }
 
-        $nova->setDtVenctoEfetiva(null);
+        $nova->dtVenctoEfetiva = null;
     }
 
     /**
@@ -684,10 +678,10 @@ class MovimentacaoBusiness
      */
     public function checkEditTransfPropria(Movimentacao $movimentacao)
     {
-        if ($movimentacao->getCategoria() && $movimentacao->getCategoria()->getCodigo() === 199) {
+        if ($movimentacao->categoria && $movimentacao->categoria->codigo === 199) {
 
             $categ299 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
-            $cadeia = $movimentacao->getCadeia();
+            $cadeia = $movimentacao->cadeia;
             if ($cadeia === null) {
                 throw new ViewException('Movimentação de transferência própria sem cadeia');
             }
@@ -735,148 +729,148 @@ class MovimentacaoBusiness
 
             $this->movimentacaoEntityHandler->refindAll($movComAlteracoes);
 
-            if ($movComAlteracoes->getModo()) {
-                $mov->setModo($movComAlteracoes->getModo());
+            if ($movComAlteracoes->modo) {
+                $mov->modo = $movComAlteracoes->modo;
             }
 
-            if ($movComAlteracoes->getDocumentoBanco()) {
-                $mov->setDocumentoBanco($movComAlteracoes->getDocumentoBanco());
+            if ($movComAlteracoes->documentoBanco) {
+                $mov->documentoBanco = $movComAlteracoes->documentoBanco;
             }
 
-            if ($movComAlteracoes->getDocumentoNum()) {
-                $mov->setDocumentoNum($movComAlteracoes->getDocumentoNum());
+            if ($movComAlteracoes->documentoNum) {
+                $mov->documentoNum = $movComAlteracoes->documentoNum;
             }
 
-            if ($movComAlteracoes->getSacado()) {
-                $mov->setSacado($movComAlteracoes->getSacado());
+            if ($movComAlteracoes->sacado) {
+                $mov->sacado = $movComAlteracoes->sacado;
             }
 
-            if ($movComAlteracoes->getCedente()) {
-                $mov->setCedente($movComAlteracoes->getCedente());
+            if ($movComAlteracoes->cedente) {
+                $mov->cedente = $movComAlteracoes->cedente;
             }
 
-            if ($movComAlteracoes->getQuitado()) {
-                $mov->setQuitado($movComAlteracoes->getQuitado());
+            if ($movComAlteracoes->quitado) {
+                $mov->quitado = $movComAlteracoes->quitado;
             }
 
-            if ($movComAlteracoes->getTipoLancto()) {
-                $mov->setTipoLancto($movComAlteracoes->getTipoLancto());
+            if ($movComAlteracoes->tipoLancto) {
+                $mov->tipoLancto = $movComAlteracoes->tipoLancto;
             }
 
-            if ($movComAlteracoes->getCarteira()) {
-                $mov->setCarteira($movComAlteracoes->getCarteira());
+            if ($movComAlteracoes->carteira) {
+                $mov->carteira = $movComAlteracoes->carteira;
             }
 
-            if ($movComAlteracoes->getCarteiraDestino()) {
-                $mov->setCarteiraDestino($movComAlteracoes->getCarteiraDestino());
+            if ($movComAlteracoes->carteiraDestino) {
+                $mov->carteiraDestino = $movComAlteracoes->carteiraDestino;
             }
 
-            if ($movComAlteracoes->getCategoria()) {
-                $mov->setCategoria($movComAlteracoes->getCategoria());
+            if ($movComAlteracoes->categoria) {
+                $mov->categoria = $movComAlteracoes->categoria;
             }
 
-            if ($movComAlteracoes->getCentroCusto()) {
-                $mov->setCentroCusto($movComAlteracoes->getCentroCusto());
+            if ($movComAlteracoes->centroCusto) {
+                $mov->centroCusto = $movComAlteracoes->centroCusto;
             }
 
-            if ($movComAlteracoes->getGrupoItem()) {
-                $mov->setGrupoItem($movComAlteracoes->getGrupoItem());
+            if ($movComAlteracoes->grupoItem) {
+                $mov->grupoItem = $movComAlteracoes->grupoItem;
             }
 
-            if ($movComAlteracoes->getGrupoItem()) {
-                $mov->setGrupoItem($movComAlteracoes->getGrupoItem());
+            if ($movComAlteracoes->grupoItem) {
+                $mov->grupoItem = $movComAlteracoes->grupoItem;
             }
 
-            if ($movComAlteracoes->getStatus()) {
-                $mov->setStatus($movComAlteracoes->getStatus());
+            if ($movComAlteracoes->status) {
+                $mov->status = $movComAlteracoes->status;
             }
 
-            if ($movComAlteracoes->getDescricao()) {
-                $mov->setDescricao($movComAlteracoes->getDescricao());
+            if ($movComAlteracoes->descricao) {
+                $mov->descricao = $movComAlteracoes->descricao;
             }
 
-            if ($movComAlteracoes->getDtMoviment()) {
-                $mov->setDtMoviment($movComAlteracoes->getDtMoviment());
+            if ($movComAlteracoes->dtMoviment) {
+                $mov->dtMoviment = $movComAlteracoes->dtMoviment;
             }
 
-            if ($movComAlteracoes->getDtVencto()) {
-                $mov->setDtVencto($movComAlteracoes->getDtVencto());
+            if ($movComAlteracoes->dtVencto) {
+                $mov->dtVencto = $movComAlteracoes->dtVencto;
             }
 
-            if ($movComAlteracoes->getDtVenctoEfetiva()) {
-                $mov->setDtVenctoEfetiva($movComAlteracoes->getDtVenctoEfetiva());
+            if ($movComAlteracoes->dtVenctoEfetiva) {
+                $mov->dtVenctoEfetiva = $movComAlteracoes->dtVenctoEfetiva;
             }
 
-            if ($movComAlteracoes->getDtPagto()) {
-                $mov->setDtPagto($movComAlteracoes->getDtPagto());
+            if ($movComAlteracoes->dtPagto) {
+                $mov->dtPagto = $movComAlteracoes->dtPagto;
             }
 
-            if ($movComAlteracoes->getChequeBanco()) {
-                $mov->setChequeBanco($movComAlteracoes->getChequeBanco());
+            if ($movComAlteracoes->chequeBanco) {
+                $mov->chequeBanco = $movComAlteracoes->chequeBanco;
             }
 
-            if ($movComAlteracoes->getChequeAgencia()) {
-                $mov->setChequeAgencia($movComAlteracoes->getChequeAgencia());
+            if ($movComAlteracoes->chequeAgencia) {
+                $mov->chequeAgencia = $movComAlteracoes->chequeAgencia;
             }
 
-            if ($movComAlteracoes->getChequeConta()) {
-                $mov->setChequeConta($movComAlteracoes->getChequeConta());
+            if ($movComAlteracoes->chequeConta) {
+                $mov->chequeConta = $movComAlteracoes->chequeConta;
             }
 
-            if ($movComAlteracoes->getChequeNumCheque()) {
-                $mov->setChequeNumCheque($movComAlteracoes->getChequeNumCheque());
+            if ($movComAlteracoes->chequeNumCheque) {
+                $mov->chequeNumCheque = $movComAlteracoes->chequeNumCheque;
             }
 
-            if ($movComAlteracoes->getOperadoraCartao()) {
-                $mov->setOperadoraCartao($movComAlteracoes->getOperadoraCartao());
+            if ($movComAlteracoes->operadoraCartao) {
+                $mov->operadoraCartao = $movComAlteracoes->operadoraCartao;
             }
 
-            if ($movComAlteracoes->getBandeiraCartao()) {
-                $mov->setBandeiraCartao($movComAlteracoes->getBandeiraCartao());
+            if ($movComAlteracoes->bandeiraCartao) {
+                $mov->bandeiraCartao = $movComAlteracoes->bandeiraCartao;
             }
 
-            if ($movComAlteracoes->getPlanoPagtoCartao()) {
-                $mov->setPlanoPagtoCartao($movComAlteracoes->getPlanoPagtoCartao());
+            if ($movComAlteracoes->planoPagtoCartao) {
+                $mov->planoPagtoCartao = $movComAlteracoes->planoPagtoCartao;
             }
 
-            if ($movComAlteracoes->getRecorrente()) {
-                $mov->setRecorrente($movComAlteracoes->getRecorrente());
+            if ($movComAlteracoes->recorrente) {
+                $mov->recorrente = $movComAlteracoes->recorrente;
             }
 
-            if ($movComAlteracoes->getRecorrDia()) {
-                $mov->setRecorrDia($movComAlteracoes->getRecorrDia());
+            if ($movComAlteracoes->recorrDia) {
+                $mov->recorrDia = $movComAlteracoes->recorrDia;
             }
 
-            if ($movComAlteracoes->getRecorrFrequencia()) {
-                $mov->setRecorrFrequencia($movComAlteracoes->getRecorrFrequencia());
+            if ($movComAlteracoes->recorrFrequencia) {
+                $mov->recorrFrequencia = $movComAlteracoes->recorrFrequencia;
             }
 
-            if ($movComAlteracoes->getRecorrTipoRepet()) {
-                $mov->setRecorrTipoRepet($movComAlteracoes->getRecorrTipoRepet());
+            if ($movComAlteracoes->recorrTipoRepet) {
+                $mov->recorrTipoRepet = $movComAlteracoes->recorrTipoRepet;
             }
 
-            if ($movComAlteracoes->getRecorrVariacao()) {
-                $mov->setRecorrVariacao($movComAlteracoes->getRecorrVariacao());
+            if ($movComAlteracoes->recorrVariacao) {
+                $mov->recorrVariacao = $movComAlteracoes->recorrVariacao;
             }
 
-            if ($movComAlteracoes->getValor()) {
-                $mov->setValor($movComAlteracoes->getValor());
+            if ($movComAlteracoes->valor) {
+                $mov->valor = $movComAlteracoes->valor;
             }
 
-            if ($movComAlteracoes->getDescontos()) {
-                $mov->setDescontos($movComAlteracoes->getDescontos());
+            if ($movComAlteracoes->descontos) {
+                $mov->descontos = $movComAlteracoes->descontos;
             }
 
-            if ($movComAlteracoes->getAcrescimos()) {
-                $mov->setAcrescimos($movComAlteracoes->getAcrescimos());
+            if ($movComAlteracoes->acrescimos) {
+                $mov->acrescimos = $movComAlteracoes->acrescimos;
             }
 
-            if ($movComAlteracoes->getValorTotal()) {
-                $mov->setValorTotal($movComAlteracoes->getValorTotal());
+            if ($movComAlteracoes->valorTotal) {
+                $mov->valorTotal = $movComAlteracoes->valorTotal;
             }
 
-            if ($movComAlteracoes->getObs()) {
-                $mov->setObs($movComAlteracoes->getObs());
+            if ($movComAlteracoes->obs) {
+                $mov->obs = $movComAlteracoes->obs;
             }
         }
     }
@@ -918,7 +912,7 @@ class MovimentacaoBusiness
                     $selected = '';
                 }
             }
-            $str .= '<option value="' . $carteira->getId() . '" ' . $selected . '>' . $carteira->getCodigo(true) . ' - ' . $carteira->getDescricao() . '</option>';
+            $str .= '<option value="' . $carteira->getId() . '" ' . $selected . '>' . $carteira->getCodigo(true) . ' - ' . $carteira->descricao . '</option>';
         }
         return $str;
     }
@@ -933,15 +927,15 @@ class MovimentacaoBusiness
     {
         try {
             $this->movimentacaoEntityHandler->getDoctrine()->beginTransaction();
-            $aberta->setDtPagto($realizada->getDtPagto());
-            $aberta->setCarteira($realizada->getCarteira());
-            $aberta->setCedente($aberta->getCedente() ?? $realizada->getCedente());
-            $aberta->setSacado($aberta->getSacado() ?? $realizada->getSacado());
+            $aberta->dtPagto = clone $realizada->dtPagto;
+            $aberta->carteira = $realizada->carteira;
+            $aberta->cedente = $aberta->cedente ?? $realizada->cedente;
+            $aberta->sacado = $aberta->sacado ?? $realizada->sacado;
 
-            $aberta->setValor($realizada->getValor());
-            $aberta->setDescontos($realizada->getDescontos());
-            $aberta->setAcrescimos($realizada->getAcrescimos());
-            $aberta->setValorTotal($realizada->getValorTotal());
+            $aberta->valor = $realizada->valor;
+            $aberta->descontos = $realizada->descontos;
+            $aberta->acrescimos = $realizada->acrescimos;
+            $aberta->valorTotal = $realizada->valorTotal;
 
             $this->movimentacaoEntityHandler->save($aberta);
             $this->movimentacaoEntityHandler->delete($realizada);
@@ -970,12 +964,70 @@ class MovimentacaoBusiness
 
         /** @var Movimentacao $mov */
         foreach ($rs as $mov) {
-            $dtVenctoEfetivaCerta = $repoDiaUtil->findDiaUtil($mov->getDtVencto(), null, true);
+            $dtVenctoEfetivaCerta = $repoDiaUtil->findDiaUtil($mov->dtVencto, null, true);
             $dtVenctoEfetivaCerta->setTime(0, 0, 0, 0);
-            $mov->setDtVenctoEfetiva($dtVenctoEfetivaCerta);
-            $mov->setDtUtil($dtVenctoEfetivaCerta);
+            $mov->dtVenctoEfetiva = clone $dtVenctoEfetivaCerta;
+            $mov->dtUtil = $dtVenctoEfetivaCerta;
         }
         $this->movimentacaoEntityHandler->getDoctrine()->flush();
+    }
+
+    /**
+     * @param Movimentacao $movimentacao
+     * @return string
+     */
+    public function getEditingURL(Movimentacao $movimentacao): string
+    {
+        if ($movimentacao->carteira->caixa) {
+            return '/fin/movimentacao/form/caixa/';
+        }
+        if (!$movimentacao->dtPagto) {
+            if ($movimentacao->categoria->codigoSuper === 2) {
+                return '/fin/movimentacao/form/aPagar/';
+            }
+            if ($movimentacao->categoria->codigoSuper === 1) {
+                return '/fin/movimentacao/form/aReceber/';
+            }
+        }
+        if (in_array($movimentacao->categoria->codigo, [199, 299])) {
+            if ($movimentacao->cadeia->movimentacoes->count() === 2) {
+                return '/fin/movimentacao/form/transferenciaEntreCarteiras/';
+            }
+            if ($movimentacao->cadeia->movimentacoes->count() === 3) {
+                return '/fin/movimentacao/form/transferenciaEntradaCaixa/';
+            }
+        }
+        if ($movimentacao->grupoItem) {
+            return '/fin/movimentacao/form/grupo/';
+        }
+        return '/fin/movimentacao/form/pagto/';
+    }
+
+    /**
+     * @return array
+     * @throws ViewException
+     */
+    public function getSelect2jsFiliais(): array
+    {
+        try {
+            /** @var AppConfigRepository $repoAppConfig */
+            $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
+            $filiaisR = json_decode($repoAppConfig->findConfigByChaveAndAppNome('financeiro.filiais_prop.json', 'crosierapp-radx')->getValor(), true);
+            if (!$filiaisR) {
+                throw new \RuntimeException();
+            }
+            $filiais = [];
+            foreach ($filiaisR as $documento => $nome) {
+                $str = StringUtils::mascararCnpjCpf($documento) . ' - ' . $nome;
+                $filiais[] = [
+                    'id' => $str,
+                    'text' => $str
+                ];
+            }
+            return $filiais;
+        } catch (\Exception $e) {
+            throw new ViewException('financeiro.filiais_prop.json n/c');
+        }
     }
 
 

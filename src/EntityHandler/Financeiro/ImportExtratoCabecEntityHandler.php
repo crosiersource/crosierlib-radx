@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\ImportExtratoCabec;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\ImportExtratoCabec;
 
 /**
  * Class ImportExtratoCabec
@@ -14,9 +14,9 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 class ImportExtratoCabecEntityHandler extends EntityHandler
 {
 
-
     public function getEntityClass()
     {
         return ImportExtratoCabec::class;
     }
+
 }

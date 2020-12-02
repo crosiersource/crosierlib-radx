@@ -234,15 +234,5 @@ class VendaBusiness
         }
     }
 
-    /**
-     * @param NotaFiscal $notaFiscal
-     */
-    public function handleNotaFiscalFaturada(NotaFiscal $notaFiscal): void
-    {
-        if ($notaFiscal->getCStat() === 100) {
-
-        }
-    }
-
 
 }

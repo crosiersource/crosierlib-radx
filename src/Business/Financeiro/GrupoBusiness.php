@@ -37,58 +37,58 @@ class GrupoBusiness
 
 
             $novo = new GrupoItem();
-            $novo->setPai($pai);
-            $novo->setFechado(false);
-            $novo->setValorInformado(0.0);
+            $novo->pai = $pai;
+            $novo->fechado = false;
+            $novo->valorInformado = 0.0;
 
             if ($prox) {
                 /** @var GrupoItem $ultimo */
-                $ultimo = $this->grupoItemEntityHandler->getDoctrine()->getRepository(GrupoItem::class)->findOneBy(['pai' => $pai], ['dtVencto' => 'DESC']);
+                $ultimo = $this->grupoItemEntityHandler->getDoctrine()->getRepository(GrupoItem::class)->findOneBy(['pai' => $pai]);
 
                 if (!$ultimo) {
                     $proxDtVencto = new \DateTime();
-                    $proxDtVencto->setDate($proxDtVencto->format('Y'), $proxDtVencto->format('m'), $pai->getDiaVencto());
-                    $novo->setCarteiraPagante($pai->getCarteiraPagantePadrao());
+                    $proxDtVencto->setDate($proxDtVencto->format('Y'), $proxDtVencto->format('m'), $pai->diaVencto);
+                    $novo->carteiraPagante = $pai->carteiraPagantePadrao;
                 } else {
-                    $novo->setAnterior($ultimo);
-                    $proxDtVencto = clone $ultimo->getDtVencto();
+                    $novo->anterior = $ultimo;
+                    $proxDtVencto = clone $ultimo->dtVencto;
                     $proxDtVencto = $proxDtVencto->setDate($proxDtVencto->format('Y'), (int)$proxDtVencto->format('m') + 1, $proxDtVencto->format('d'));
-                    $novo->setCarteiraPagante($ultimo->getCarteiraPagante());
+                    $novo->carteiraPagante = $ultimo->carteiraPagante;
                 }
-                $novo->setDtVencto($proxDtVencto);
-                $novo->getDtVencto()->setTime(0, 0, 0, 0);
+                $novo->dtVencto = clone $proxDtVencto;
+                $novo->dtVencto->setTime(0, 0, 0, 0);
 
-                $novo->setDescricao($pai->getDescricao() . ' - ' . $proxDtVencto->format('d/m/Y'));
+                $novo->descricao = ($pai->descricao . ' - ' . $proxDtVencto->format('d/m/Y'));
 
                 $this->grupoItemEntityHandler->save($novo);
 
                 if ($ultimo) {
-                    $ultimo->setProximo($novo);
+                    $ultimo->proximo = $novo;
                     $this->grupoItemEntityHandler->save($ultimo);
                 }
             } else {
                 /** @var GrupoItem $primeiro */
-                $primeiro = $this->grupoItemEntityHandler->getDoctrine()->getRepository(GrupoItem::class)->findOneBy(['pai' => $pai], ['dtVencto' => 'ASC']);
+                $primeiro = $this->grupoItemEntityHandler->getDoctrine()->getRepository(GrupoItem::class)->findOneBy(['pai' => $pai]);
 
                 if (!$primeiro) {
                     $proxDtVencto = new \DateTime();
-                    $proxDtVencto->setDate($proxDtVencto->format('Y'), $proxDtVencto->format('m'), $pai->getDiaVencto());
-                    $novo->setCarteiraPagante($pai->getCarteiraPagantePadrao());
+                    $proxDtVencto->setDate($proxDtVencto->format('Y'), $proxDtVencto->format('m'), $pai->diaVencto);
+                    $novo->carteiraPagante = $pai->carteiraPagantePadrao;
                 } else {
-                    $novo->setProximo($primeiro);
-                    $proxDtVencto = clone $primeiro->getDtVencto();
+                    $novo->proximo = $primeiro;
+                    $proxDtVencto = clone $primeiro->dtVencto;
                     $proxDtVencto = $proxDtVencto->setDate($proxDtVencto->format('Y'), (int)$proxDtVencto->format('m') - 1, $proxDtVencto->format('d'));
-                    $novo->setCarteiraPagante($primeiro->getCarteiraPagante());
+                    $novo->carteiraPagante = $primeiro->carteiraPagante;
                 }
-                $novo->setDtVencto($proxDtVencto);
-                $novo->getDtVencto()->setTime(0, 0, 0, 0);
+                $novo->dtVencto = clone $proxDtVencto;
+                $novo->dtVencto->setTime(0, 0, 0, 0);
 
-                $novo->setDescricao($pai->getDescricao() . ' - ' . $proxDtVencto->format('d/m/Y'));
+                $novo->descricao = $pai->descricao . ' - ' . $proxDtVencto->format('d/m/Y');
 
                 $this->grupoItemEntityHandler->save($novo);
 
                 if ($primeiro) {
-                    $primeiro->setAnterior($novo);
+                    $primeiro->anterior = $novo;
                     $this->grupoItemEntityHandler->save($primeiro);
                 }
 

@@ -121,10 +121,10 @@ class ConferenciaFinanceiroBusiness
         $icone = null;
 
         if ($valor and $rc) {
-            if ($valor == $rc->getValor()) {
+            if ($valor == $rc->valor) {
                 $icone = 'fas fa-thumbs-up';
             } else {
-                if ($rc->getObs() != null) {
+                if ($rc->obs != null) {
                     $icone = 'fas fa-exclamation-triangle';
                 } else {
                     $icone = 'fas fa-thumbs-down';

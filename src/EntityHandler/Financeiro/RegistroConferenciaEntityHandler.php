@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\RegistroConferencia;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\RegistroConferencia;
 
 /**
  * Class RegistroConferenciaEntityHandler
@@ -14,9 +14,9 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 class RegistroConferenciaEntityHandler extends EntityHandler
 {
 
-
     public function getEntityClass()
     {
         return RegistroConferencia::class;
     }
+
 }

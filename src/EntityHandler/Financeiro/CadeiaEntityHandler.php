@@ -2,10 +2,10 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use Doctrine\ORM\Query\ResultSetMapping;
 
 /**
@@ -17,8 +17,7 @@ use Doctrine\ORM\Query\ResultSetMapping;
 class CadeiaEntityHandler extends EntityHandler
 {
 
-    /** @var MovimentacaoEntityHandler */
-    private $movimentacaoEntityHandler;
+    private MovimentacaoEntityHandler $movimentacaoEntityHandler;
 
     /**
      * @required
@@ -44,7 +43,7 @@ class CadeiaEntityHandler extends EntityHandler
     {
         try {
             $this->doctrine->beginTransaction();
-            $movs = $cadeia->getMovimentacoes();
+            $movs = $cadeia->movimentacoes;
             foreach ($movs as $mov) {
                 $this->movimentacaoEntityHandler->delete($mov);
             }

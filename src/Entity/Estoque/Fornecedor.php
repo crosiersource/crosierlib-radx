@@ -5,6 +5,7 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Estoque;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -66,6 +67,20 @@ class Fornecedor implements EntityId
      * @Groups("entity")
      */
     public ?array $jsonData = null;
+
+
+    /**
+     * @return string
+     * @Groups("entity")
+     */
+    public function getNomeMontadoComDocumento(): string
+    {
+        $r = StringUtils::mascararCnpjCpf($this->documento) . ' - ' . $this->nome;
+        if ($this->nomeFantasia ?? false) {
+            $r .= ' (' . $this->jsonData['nomeFantasia'] . ')';
+        }
+        return $r;
+    }
 
 
 }

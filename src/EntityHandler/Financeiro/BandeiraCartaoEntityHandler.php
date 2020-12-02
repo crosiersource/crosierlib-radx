@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao;
 
 /**
  * Class BandeiraCartaoEntityHandler
@@ -14,9 +14,9 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 class BandeiraCartaoEntityHandler extends EntityHandler
 {
 
-
     public function getEntityClass()
     {
         return BandeiraCartao::class;
     }
+
 }
