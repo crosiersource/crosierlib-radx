@@ -721,5 +721,10 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
     }
 
+    public function beforeClone(/** @var Movimentacao $movimentacao */ $movimentacao)
+    {
+        $movimentacao->UUID = null;
+    }
+
 
 }

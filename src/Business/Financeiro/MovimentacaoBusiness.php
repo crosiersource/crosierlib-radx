@@ -982,12 +982,7 @@ class MovimentacaoBusiness
             return '/fin/movimentacao/form/caixa/';
         }
         if (!$movimentacao->dtPagto) {
-            if ($movimentacao->categoria->codigoSuper === 2) {
-                return '/fin/movimentacao/form/aPagar/';
-            }
-            if ($movimentacao->categoria->codigoSuper === 1) {
-                return '/fin/movimentacao/form/aReceber/';
-            }
+            return '/fin/movimentacao/form/aPagarReceber/';
         }
         if (in_array($movimentacao->categoria->codigo, [199, 299])) {
             if ($movimentacao->cadeia->movimentacoes->count() === 2) {
