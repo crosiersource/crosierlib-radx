@@ -244,7 +244,7 @@ class Movimentacao implements EntityId
 
     /**
      * Geralmente o NSU.
-     * 
+     *
      * @ORM\Column(name="id_transacao_cartao", type="string")
      * @Groups("entity")
      */

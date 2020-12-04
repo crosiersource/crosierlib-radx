@@ -79,11 +79,7 @@ class Fatura implements EntityId
      *
      * @var Movimentacao[]|ArrayCollection|null
      *
-     * @ORM\OneToMany(
-     *      targetEntity="Movimentacao",
-     *      mappedBy="fatura",
-     *      orphanRemoval=true
-     * )
+     * @ORM\OneToMany(targetEntity="Movimentacao", mappedBy="fatura")
      */
     private $movimentacoes;
 

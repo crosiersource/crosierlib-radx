@@ -130,12 +130,8 @@ class MovimentacaoEntityHandler extends EntityHandler
             throw new ViewException('Movimentações de caixa só podem ser lançadas em carteiras de caixas.');
         }
 
-        // Para 10 - MOVIMENTAÇÃO DE CAIXA e 60 - TRANSFERÊNCIA ENTRE CARTEIRAS
-        if (in_array($movimentacao->tipoLancto->getCodigo(), [10, 60], true)) {
-            if (!$movimentacao->dtVencto) {
-                $movimentacao->dtVencto = clone($movimentacao->dtMoviment);
-            }
-            $movimentacao->dtPagto = clone($movimentacao->dtMoviment);
+        if (!$movimentacao->dtVencto) {
+            $movimentacao->dtVencto = clone($movimentacao->dtMoviment);
         }
 
         // Regras para Datas
@@ -673,13 +669,13 @@ class MovimentacaoEntityHandler extends EntityHandler
         $movimentacao->fatura = $fatura;
 
         /** @var Movimentacao $moviment291 */
-        $moviment291 = $this->doClone($movimentacao);
+        $moviment291 = $this->cloneEntityId($movimentacao);
         $moviment291->categoria = $categ291;
         $moviment291->status = 'REALIZADA';
         parent::save($moviment291);
 
         /** @var Movimentacao $moviment191 */
-        $moviment191 = $this->doClone($movimentacao);
+        $moviment191 = $this->cloneEntityId($movimentacao);
         $moviment191->categoria = $categ191;
         $moviment191->carteira = $movimentacao->operadoraCartao->carteira;
         parent::save($moviment191);
