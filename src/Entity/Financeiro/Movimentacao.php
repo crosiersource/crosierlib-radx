@@ -237,10 +237,25 @@ class Movimentacao implements EntityId
 
     /**
      *
-     * @ORM\Column(name="plano_pagto_cartao", type="string", length=50)
+     * @ORM\Column(name="qtde_parcelas_cartao", type="integer")
      * @Groups("entity")
      */
-    public ?string $planoPagtoCartao = null;
+    public ?int $qtdeParcelasCartao = null;
+
+    /**
+     * Geralmente o NSU.
+     * 
+     * @ORM\Column(name="id_transacao_cartao", type="string")
+     * @Groups("entity")
+     */
+    public ?string $idTransacaoCartao = null;
+
+    /**
+     * Número do cartão, geralmente identificado como: **** **** **** 1234
+     * @ORM\Column(name="num_cartao", type="string")
+     * @Groups("entity")
+     */
+    public ?string $numCartao = null;
 
 
     /**

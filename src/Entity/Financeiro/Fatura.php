@@ -37,7 +37,7 @@ class Fatura implements EntityId
 
     /**
      *
-     * Se for fechada, não é possível incluir outras movimentações na cadeia.
+     * Se for fechada, não é possível incluir outras movimentações na fatura.
      *
      * @ORM\Column(name="fechada", type="boolean")
      * @Groups("entity")
@@ -45,6 +45,26 @@ class Fatura implements EntityId
      * @var bool|null
      */
     public ?bool $fechada = false;
+
+    /**
+     *
+     * A quitação de uma FATURA TRANSACIONAL se dá pela regra: somatório das movimentações 292 = valor da movimentação 291.
+     *
+     * @ORM\Column(name="transacional", type="boolean")
+     * @Groups("entity")
+     *
+     * @var bool|null
+     */
+    public ?bool $transacional = false;
+
+    /**
+     *
+     * @ORM\Column(name="quitada", type="boolean")
+     * @Groups("entity")
+     *
+     * @var bool|null
+     */
+    public ?bool $quitada = false;
 
     /**
      *

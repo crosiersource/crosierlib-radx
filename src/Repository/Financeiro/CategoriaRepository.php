@@ -22,13 +22,17 @@ class CategoriaRepository extends FilterRepository
      * @return mixed[]
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function buildTreeList()
+    public function buildTreeList(?int $codigoSuper = null)
     {
-        $sql = "SELECT id, codigo, concat(rpad('', 2*(length(codigo)-1),'.'), codigo, ' - ',  descricao) as descricaoMontada FROM fin_categoria ORDER BY codigo_ord";
-        $em = $this->getEntityManager();
-        $stmt = $em->getConnection()->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll();
+        $where = '';
+        $params = null;
+        if  ($codigoSuper) {
+            $where = ' WHERE codigo_super = :codigoSuper';
+            $params['codigoSuper'] = $codigoSuper;
+        }
+        $sql = "SELECT id, codigo, concat(rpad('', 2*(length(codigo)-1),'.'), codigo, ' - ',  descricao) as descricaoMontada FROM fin_categoria $where ORDER BY codigo_ord";
+        $conn = $this->getEntityManager()->getConnection();
+        return $conn->fetchAllAssociative($sql, $params);
     }
 
     /**

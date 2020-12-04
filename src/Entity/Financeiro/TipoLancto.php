@@ -39,38 +39,11 @@ class TipoLancto implements EntityId
     public ?string $descricao = null;
 
     /**
-     *
-     * @ORM\Column(name="icon", type="string", nullable=false, length=40)
-     * @Groups("entity")
-     *
-     * @var string|null
-     */
-    public ?string $icon = null;
-
-    /**
      * Transient.
      *
      * @var string|null
      */
     public ?string $descricaoMontada = null;
-
-    /**
-     *
-     * @ORM\Column(name="obs", type="string", nullable=true, length=3000)
-     * @Groups("entity")
-     *
-     * @var string|null
-     */
-    public ?string $obs = null;
-
-    /**
-     *
-     * @ORM\Column(name="url", type="string", nullable=true, length=2000)
-     * @Groups("entity")
-     *
-     * @var string|null
-     */
-    public ?string $url = null;
 
 
     /**

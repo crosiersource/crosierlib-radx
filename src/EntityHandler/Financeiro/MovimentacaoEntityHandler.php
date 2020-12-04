@@ -15,11 +15,13 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Fatura;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\OperadoraCartao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
+use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CategoriaRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\TipoLanctoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,18 +30,13 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
 /**
- * Class MovimentacaoEntityHandler
- *
- * @package CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro
  * @author Carlos Eduardo Pauluk
  */
 class MovimentacaoEntityHandler extends EntityHandler
 {
 
-    /** @var CadeiaEntityHandler */
     private CadeiaEntityHandler $cadeiaEntityHandler;
 
-    /** @var LoggerInterface */
     private LoggerInterface $logger;
 
     /**
@@ -209,7 +206,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         // Regras para movimentações de cartões
         if (FALSE === $movimentacao->modo->modoDeCartao) {
-            $movimentacao->planoPagtoCartao = null;
+            $movimentacao->qtdeParcelasCartao = null;
             $movimentacao->bandeiraCartao = null;
             $movimentacao->operadoraCartao = null;
         } else {
@@ -353,6 +350,12 @@ class MovimentacaoEntityHandler extends EntityHandler
         if ($movimentacao->tipoLancto->getCodigo() === 61) {
             return $this->saveTransfEntradaCaixa($movimentacao);
         }
+
+        // 62 - FATURA TRANSACIONAL
+        if ($movimentacao->tipoLancto->getCodigo() === 62) {
+            return $this->saveFaturaTransacional($movimentacao);
+        }
+
         // else
         return parent::save($movimentacao);
 
@@ -587,6 +590,99 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $moviment199->tipoLancto = $movimentacao->tipoLancto;
         parent::save($moviment199);
+
+        parent::save($movimentacao);
+        $this->getDoctrine()->commit();
+
+        return $movimentacao;
+    }
+
+
+    /**
+     * Salva uma transferência de entrada de caixa. Uma cadeia com 3 movimentações:
+     * 101 - na carteira do caixa
+     * 291 - na carteira da operadora
+     * 191 - na carteira da operadora
+     *
+     * @param Movimentacao $movimentacao
+     * @return Movimentacao
+     * @throws ViewException
+     */
+    public function saveFaturaTransacional(Movimentacao $movimentacao): Movimentacao
+    {
+        $this->getDoctrine()->beginTransaction();
+
+        /** @var CategoriaRepository $repoCategoria */
+        $repoCategoria = $this->getDoctrine()->getRepository(Categoria::class);
+
+        $categ291 = $repoCategoria->findOneBy(['codigo' => 291]);
+        $categ191 = $repoCategoria->findOneBy(['codigo' => 191]);
+
+        if ($movimentacao->modo->codigo === 10) {
+            $movimentacao->qtdeParcelasCartao = 1;
+        }
+
+        // Está editando
+        if ($movimentacao->getId()) {
+            if ($movimentacao->cadeia->movimentacoes->count() !== 3) {
+                throw new ViewException('Apenas cadeias com 3 movimentações podem ser editadas (FATURA TRANSACIONAL).');
+            }
+
+            $movs = $movimentacao->cadeia->movimentacoes;
+            $outraMov = null;
+            /** @var Movimentacao $mov */
+            foreach ($movs as $mov) {
+                if ($mov->getId() !== $movimentacao->getId()) {
+                    $mov->descricao = $movimentacao->descricao;
+                    $mov->fatura = $movimentacao->fatura;
+                    $mov->categoria = $categ291;
+                    $mov->modo = $movimentacao->modo;
+                    $mov->valor = $movimentacao->valor;
+                    $mov->valorTotal = $movimentacao->valorTotal;
+                    $mov->centroCusto = $movimentacao->centroCusto;
+                    $mov->dtMoviment = clone($movimentacao->dtMoviment);
+                    $mov->dtVencto = clone($movimentacao->dtVencto);
+                    $mov->dtVenctoEfetiva = clone($movimentacao->dtVenctoEfetiva);
+                    $mov->dtPagto = clone($movimentacao->dtPagto);
+                    $mov->numCartao = $movimentacao->numCartao;
+                    $mov->qtdeParcelasCartao = $movimentacao->qtdeParcelasCartao;
+                    $mov->bandeiraCartao = $movimentacao->bandeiraCartao;
+                    $mov->cadeiaQtde = 3;
+                    parent::save($mov);
+                }
+            }
+
+            /** @var Movimentacao $movimentacao */
+            $movimentacao = parent::save($movimentacao);
+
+            $this->getDoctrine()->commit();
+            return $movimentacao;
+        }
+        // else
+
+        if ($movimentacao->categoria->codigoSuper !== 1) {
+            throw new ViewException('Uma FATURA TRANSACIONAL precisa ser lançada a partir de uma movimentação de categoria de entrada');
+        }
+
+        $fatura = new Fatura();
+        $fatura->dtFatura = $movimentacao->dtMoviment;
+        $fatura->transacional = true;
+        /** @var Fatura $fatura */
+        $fatura = $this->cadeiaEntityHandler->save($fatura);
+
+        $movimentacao->fatura = $fatura;
+
+        /** @var Movimentacao $moviment291 */
+        $moviment291 = $this->doClone($movimentacao);
+        $moviment291->categoria = $categ291;
+        $moviment291->status = 'REALIZADA';
+        parent::save($moviment291);
+
+        /** @var Movimentacao $moviment191 */
+        $moviment191 = $this->doClone($movimentacao);
+        $moviment191->categoria = $categ191;
+        $moviment191->carteira = $movimentacao->operadoraCartao->carteira;
+        parent::save($moviment191);
 
         parent::save($movimentacao);
         $this->getDoctrine()->commit();
