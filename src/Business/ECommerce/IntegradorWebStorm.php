@@ -1670,23 +1670,16 @@ class IntegradorWebStorm implements IntegradorECommerce
             $conn->beginTransaction();
 
 
-            $descontoTotal = (float)$pedido->pagamentos->pagamento->desconto->__toString();
-            $totalProdutos = 0.0;
-            foreach ($pedido->produtos->produto as $produtoWebStorm) {
-                $totalProdutos = bcadd($totalProdutos, bcmul($produtoWebStorm->quantidade, $produtoWebStorm->valorUnitario, 2), 2);
-            }
-            $pDesconto = bcdiv($descontoTotal, $totalProdutos, 8);
-
-            // Salvo aqui para poder pegar o id
-            $this->vendaEntityHandler->save($venda);
-
             /** @var ProdutoRepository $repoProduto */
             $repoProduto = $this->produtoEntityHandler->getDoctrine()->getRepository(Produto::class);
-            $ordem = 1;
-            $i = 0;
-            $descontoAcum = 0.0;
-            $vendaItem = null;
+
+            $descontoTotal = (float)$pedido->pagamentos->pagamento->desconto->__toString();
+            $totalProdutos = 0.0;
+
+            $produtosNoCrosier = [];
+
             foreach ($pedido->produtos->produto as $produtoWebStorm) {
+
                 /** @var Produto $produto */
                 $produto = null;
                 try {
@@ -1699,6 +1692,24 @@ class IntegradorWebStorm implements IntegradorECommerce
                 } catch (\Throwable $e) {
                     throw new ViewException('Erro ao integrar venda. Erro ao pesquisar produto (idProduto = ' . $produtoWebStorm->idProduto->__toString() . ')');
                 }
+                $produtosNoCrosier[$produtoWebStorm->idProduto->__toString()] = $produto; // RTA: dinâmico, para ser acessado no próximo foreach
+                $valorProduto = $produto->jsonData['preco_site']; // $produtoWebStorm->valorUnitario;
+
+                $totalProdutos = bcadd($totalProdutos, bcmul($produtoWebStorm->quantidade, $valorProduto, 2), 2);
+            }
+            $pDesconto = bcdiv($descontoTotal, $totalProdutos, 8);
+
+            // Salvo aqui para poder pegar o id
+            $this->vendaEntityHandler->save($venda);
+
+
+            $ordem = 1;
+            $i = 0;
+            $descontoAcum = 0.0;
+            $vendaItem = null;
+            foreach ($pedido->produtos->produto as $produtoWebStorm) {
+
+                $produto = $produtosNoCrosier[$produtoWebStorm->idProduto->__toString()];
 
                 $vendaItem = new VendaItem();
                 $venda->addItem($vendaItem);
@@ -1708,7 +1719,7 @@ class IntegradorWebStorm implements IntegradorECommerce
 
                 $vendaItem->unidade = $produto->unidadePadrao;
 
-                $vendaItem->precoVenda = $produtoWebStorm->valorUnitario->__toString();
+                $vendaItem->precoVenda = $produto->jsonData['preco_site']; // $produtoWebStorm->valorUnitario->__toString();
                 $vendaItem->qtde = $produtoWebStorm->quantidade->__toString();
                 $vendaItem->subtotal = bcmul($vendaItem->precoVenda, $vendaItem->qtde, 2);
                 // Para arredondar para cima
