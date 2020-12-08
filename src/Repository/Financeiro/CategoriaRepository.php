@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
+use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
 
@@ -19,20 +20,25 @@ class CategoriaRepository extends FilterRepository
     }
 
     /**
+     * @param int|null $codigoSuper
      * @return mixed[]
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws ViewException
      */
-    public function buildTreeList(?int $codigoSuper = null)
+    public function buildTreeList(?int $codigoSuper = null): array
     {
-        $where = '';
-        $params = null;
-        if  ($codigoSuper) {
-            $where = ' WHERE codigo_super = :codigoSuper';
-            $params['codigoSuper'] = $codigoSuper;
+        try {
+            $where = '';
+            $params = [];
+            if ($codigoSuper) {
+                $where = ' WHERE codigo_super = :codigoSuper';
+                $params['codigoSuper'] = $codigoSuper;
+            }
+            $sql = "SELECT id, codigo, concat(rpad('', 2*(length(codigo)-1),'.'), codigo, ' - ',  descricao) as descricaoMontada FROM fin_categoria $where ORDER BY codigo_ord";
+            $conn = $this->getEntityManager()->getConnection();
+            return $conn->fetchAllAssociative($sql, $params);
+        } catch (\Throwable $e) {
+            throw new ViewException('Erro ao gerar treeList', 0, $e);
         }
-        $sql = "SELECT id, codigo, concat(rpad('', 2*(length(codigo)-1),'.'), codigo, ' - ',  descricao) as descricaoMontada FROM fin_categoria $where ORDER BY codigo_ord";
-        $conn = $this->getEntityManager()->getConnection();
-        return $conn->fetchAllAssociative($sql, $params);
     }
 
     /**
