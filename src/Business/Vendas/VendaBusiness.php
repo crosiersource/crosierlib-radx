@@ -2,7 +2,9 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Business\Vendas;
 
+use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
@@ -10,7 +12,6 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Fatura;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
-use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler;
@@ -116,7 +117,71 @@ class VendaBusiness
             $this->movimentacaoEntityHandler->getDoctrine()->rollback();
             throw $e;
         }
+    }
 
+    /**
+     * @param Venda $venda
+     * @throws ViewException
+     */
+    public function finalizarPVECommerce(Venda $venda)
+    {
+        try {
+            $this->doctrine->beginTransaction();
+            $repoCategoria = $this->doctrine->getRepository(Categoria::class);
+            $categoria101 = $repoCategoria->findOneBy(['codigo' => 101]);
+
+            $repoModo = $this->doctrine->getRepository(Modo::class);
+            $modo7 = $repoModo->findOneBy(['codigo' => 7]);
+
+
+            $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
+            $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'ecomm_info_mercadopago_site_carteira_id'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
+            $ecomm_info_mercadopago_site_carteira_id = $rs->getValor();
+
+            $repoCarteira = $this->doctrine->getRepository(Carteira::class);
+            $carteiraMercadoPago = $repoCarteira->find($ecomm_info_mercadopago_site_carteira_id);
+
+            foreach ($venda->pagtos as $pagto) {
+                if (($pagto->jsonData['integrador'] ?? false) === 'Mercado Pago') {
+                    $movimentacao = new Movimentacao();
+                    $movimentacao->carteira = $repoCarteira->find($pagto->jsonData['carteira_id']);
+                    $movimentacao->dtPagto = $venda->dtVenda;
+                    $movimentacao->valor = $pagto->valorPagto;
+                    $movimentacao->categoria = $categoria101;
+                    $movimentacao->modo = $modo7;
+                    $movimentacao->carteiraDestino = $carteiraMercadoPago;
+                    $movimentacao->descricao = 'RECEB VENDA ECOMMERCE ' . str_pad($venda->getId(), 9, 0, STR_PAD_LEFT);
+                    $sacado = '';
+                    if (($venda->cliente->documento ?? false) && ($venda->cliente->nome ?? false)) {
+                        $sacado .= StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' . mb_strtoupper($venda->cliente->nome);
+                    }
+                    $movimentacao->sacado = $sacado;
+
+                    $this->movimentacaoEntityHandler->saveFaturaTransacional($movimentacao);
+
+                    if (($pagto->jsonData['mercadopago_retorno']['status'] ?? '') === 'approved') {
+                        foreach ($pagto->jsonData['mercadopago_retorno']['fee_details'] as $fee_detail) {
+                            if (($fee_detail['fee_payer'] ?? '') === 'collector') {
+                                $taxa = [
+                                    'valor' => $fee_detail['amount'],
+                                    'descricao' => 'TAXA MERCADOPAGO',
+                                    'categoria_codigo' => 202005001,
+                                ];
+                                $this->movimentacaoEntityHandler->lancarQuitamentoEmFaturaTransacional($movimentacao->fatura, $movimentacao->valorTotal, [$taxa]);
+                            }
+                        }
+                    }
+                } else {
+                    throw new \LogicException('integrador não implementado');
+                }
+            }
+            $this->doctrine->commit();
+        } catch (\Throwable $e) {
+            $errMsg = 'Erro ao finalizar PV e-commerce';
+            $msg = ExceptionUtils::treatException($e);
+            $this->doctrine->rollback();
+            throw new ViewException($errMsg . ($msg ? '(' . $msg . ')' : ''), 0, $e);
+        }
     }
 
     /**
@@ -135,10 +200,10 @@ class VendaBusiness
 
             /** @var TipoLanctoRepository $repoTipoLancto */
             $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
-            $tipoLancto_movimentacaoDeCaixa = $repoTipoLancto->find(10);
-            $tipoLancto_transferenciaDeEntradaDeCaixa = $repoTipoLancto->find(61);
+
             $tipoLancto_aPagarReceber = $repoTipoLancto->find(20);
-            $tipoLancto_aPagarReceber_parcel = $repoTipoLancto->find(21);
+            $tipoLancto_transferenciaDeEntradaDeCaixa = $repoTipoLancto->find(61);
+
 
             /** @var ModoRepository $repoModo */
             $repoModo = $this->doctrine->getRepository(Modo::class);
@@ -168,7 +233,7 @@ class VendaBusiness
                 if ($pagto->planoPagto->jsonData['tipo_carteiras'] === 'caixa') {
                     // Os ven_venda_pagto que não tem carteira_destino_id são aqueles onde a movimentação é somente no caixa
                     if (!$carteiraDestinoId) {
-                        $movimentacao->tipoLancto = $tipoLancto_movimentacaoDeCaixa;
+                        $movimentacao->tipoLancto = $tipoLancto_aPagarReceber;
                     } else {
                         $movimentacao->tipoLancto = $tipoLancto_transferenciaDeEntradaDeCaixa;
                         /** @var Carteira $carteiraDestino */
@@ -176,11 +241,7 @@ class VendaBusiness
                         $movimentacao->carteiraDestino = $carteiraDestino;
                     }
                 } else {
-                    if ((int)($pagto->jsonData['num_parcelas'] ?? 1) === 1) {
-                        $movimentacao->tipoLancto = $tipoLancto_aPagarReceber;
-                    } else {
-                        $movimentacao->tipoLancto = $tipoLancto_aPagarReceber_parcel;
-                    }
+                    $movimentacao->tipoLancto = $tipoLancto_aPagarReceber;
                 }
 
                 if ((int)$pagto->planoPagto->codigo === 999) {
@@ -231,6 +292,37 @@ class VendaBusiness
             if (($venda->jsonData['ecommerce_status_descricao'] ?? '') !== 'Pedido em Separação') {
                 throw new ViewException('Status difere de "Pedido em Separação". Impossível faturar!');
             }
+        }
+    }
+
+    /**
+     * Regras para permitir a finalização da venda.
+     * @param Venda $venda
+     * @return bool
+     * @throws ViewException
+     */
+    public function permiteFinalizarVenda(Venda $venda): bool
+    {
+        try {
+            $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
+            /** @var AppConfig $rs */
+            $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'vendas.config.json'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
+            $vendasConfig = $rs->getValorJsonDecoded();
+            if (!($vendasConfig['integra_venda_ao_financeiro'] ?? false)) {
+                return false;
+            }
+            if ($venda->jsonData['canal'] === 'ECOMMERCE') {
+
+                $statusQuePermitemFinaliz = explode(',', $vendasConfig['ecommerce_status_que_permite_finalizar_venda']);
+                return ($vendasConfig &&
+                    (in_array($venda->jsonData['ecommerce_status'], $statusQuePermitemFinaliz, true))
+                );
+            } else {
+                return ($venda->status === 'PV ABERTO');
+            }
+        } catch (\Throwable $e) {
+            $msg = ExceptionUtils::treatException($e);
+            throw new ViewException('Erro em permiteFinalizarVenda' . ($msg ? ' (' . $msg . ')' : ''), 0, $e);
         }
     }
 

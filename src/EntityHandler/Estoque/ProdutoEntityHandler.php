@@ -324,6 +324,13 @@ class ProdutoEntityHandler extends EntityHandler
         $clone->nome .= ' (CLONADO)';
         $clone->UUID = null;
         $clone->codigo = null;
+// FIXME: isto deve ser configurado no json_metadata
+        if ($clone->jsonData['ecommerce_id'] ?? false) {
+            $clone->jsonData['ecommerce_id'] = null;
+        }
+        if ($clone->jsonData['ecommerce_item_venda_id'] ?? false) {
+            $clone->jsonData['ecommerce_item_venda_id'] = null;
+        }
     }
 
     /**

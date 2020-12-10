@@ -20,7 +20,7 @@
         <!-- IntegrarProdutoEcommerceHandler -->
         <service id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrar_produto_ecommerce_handler"
                  class="CrosierSource\CrosierLibRadxBundle\Messenger\ECommerce\MessageHandler\IntegrarProdutoEcommerceHandler">
-            <tag name="messenger.message_handler" />
+            <tag name="messenger.message_handler"/>
             <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <argument type="service"
@@ -29,8 +29,6 @@
         <service
                 id="CrosierSource\CrosierLibRadxBundle\Messenger\ECommerce\MessageHandler\IntegrarProdutoEcommerceHandler"
                 alias="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrar_produto_ecommerce_handler"/>
-
-
 
 
         <!-- IntegradorWebStorm -->
@@ -63,8 +61,6 @@
                  alias="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_web_storm"/>
 
 
-
-
         <!-- IntegradorSimplo7 -->
         <service id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_simplo7"
                  class="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorSimplo7">
@@ -93,6 +89,15 @@
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorSimplo7"
                  alias="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_simplo7"/>
-        
+
+
+        <!-- IntegradorMercadoPago -->
+        <service id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_mercado_pago"
+                 class="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorMercadoPago">
+            <argument type="service" id="doctrine.dbal.default_connection"/>
+        </service>
+        <service id="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorMercadoPago"
+                 alias="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_mercado_pago"/>
+
     </services>
 </container>

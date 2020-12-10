@@ -107,6 +107,20 @@ class Fatura implements EntityId
         return $this;
     }
 
+    /**
+     * @param int $codigo
+     * @return Movimentacao|null
+     */
+    public function getPrimeiraMovimentacaoByCategoriaCodigo(int $codigo): ?Movimentacao
+    {
+        foreach ($this->getMovimentacoes() as $m) {
+            if ($m->categoria->codigo === $codigo) {
+                return $m;
+            }
+        }
+        return null;
+    }
+
 
 }
 

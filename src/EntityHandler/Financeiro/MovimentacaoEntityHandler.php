@@ -8,6 +8,7 @@ use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\DiaUtilRepository;
+use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Banco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao;
@@ -98,7 +99,6 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->centroCusto = $centroCusto;
         }
 
-
         /** @var TipoLanctoRepository $repoTipoLancto */
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
 
@@ -126,9 +126,11 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->dtVenctoEfetiva = clone($movimentacao->dtMoviment);
         }
 
-        if ($movimentacao->tipoLancto->getCodigo() === 10 && !$movimentacao->carteira->caixa) {
-            throw new ViewException('Movimentações de caixa só podem ser lançadas em carteiras de caixas.');
+
+        if ($movimentacao->dtPagto && !$movimentacao->dtMoviment) {
+            $movimentacao->dtMoviment = $movimentacao->dtPagto;
         }
+
 
         if (!$movimentacao->dtVencto) {
             $movimentacao->dtVencto = clone($movimentacao->dtMoviment);
@@ -370,6 +372,12 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
 
         $this->getDoctrine()->beginTransaction();
+
+        /** @var TipoLanctoRepository $repoTipoLancto */
+        $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
+        $tipoLancto_transferenciaEntreCarteiras = $repoTipoLancto->findOneBy(['codigo' => 60]);
+        $movimentacao->tipoLancto = $tipoLancto_transferenciaEntreCarteiras;
+
         /** @var Categoria $categ299 */
         $categ299 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
         /** @var Categoria $categ199 */
@@ -481,6 +489,12 @@ class MovimentacaoEntityHandler extends EntityHandler
     public function saveTransfEntradaCaixa(Movimentacao $movimentacao): Movimentacao
     {
         $this->getDoctrine()->beginTransaction();
+
+        /** @var TipoLanctoRepository $repoTipoLancto */
+        $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
+        $tipoLancto_transferenciaEntradaDeCaixa = $repoTipoLancto->findOneBy(['codigo' => 61]);
+        $movimentacao->tipoLancto = $tipoLancto_transferenciaEntradaDeCaixa;
+
 
         /** @var Categoria $categ299 */
         $categ299 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
@@ -608,6 +622,11 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
         $this->getDoctrine()->beginTransaction();
 
+        /** @var TipoLanctoRepository $repoTipoLancto */
+        $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
+        $tipoLancto_faturaTransacional = $repoTipoLancto->findOneBy(['codigo' => 62]);
+        $movimentacao->tipoLancto = $tipoLancto_faturaTransacional;
+
         /** @var CategoriaRepository $repoCategoria */
         $repoCategoria = $this->getDoctrine()->getRepository(Categoria::class);
 
@@ -661,7 +680,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
 
         $fatura = new Fatura();
-        $fatura->dtFatura = $movimentacao->dtMoviment;
+        $fatura->dtFatura = $movimentacao->dtMoviment ?? $movimentacao->dtPagto;
         $fatura->transacional = true;
         /** @var Fatura $fatura */
         $fatura = $this->cadeiaEntityHandler->save($fatura);
@@ -670,6 +689,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         /** @var Movimentacao $moviment291 */
         $moviment291 = $this->cloneEntityId($movimentacao);
+
         $moviment291->categoria = $categ291;
         $moviment291->status = 'REALIZADA';
         parent::save($moviment291);
@@ -677,13 +697,67 @@ class MovimentacaoEntityHandler extends EntityHandler
         /** @var Movimentacao $moviment191 */
         $moviment191 = $this->cloneEntityId($movimentacao);
         $moviment191->categoria = $categ191;
-        $moviment191->carteira = $movimentacao->operadoraCartao->carteira;
+        $moviment191->carteira = $movimentacao->carteiraDestino ?? $movimentacao->operadoraCartao->carteira;
         parent::save($moviment191);
 
         parent::save($movimentacao);
         $this->getDoctrine()->commit();
 
         return $movimentacao;
+    }
+
+
+    /**
+     * Lança um quitamento em uma fatura transacional:
+     *
+     * - Lança uma movimentação na categoria 1.92 (CRÉDITO EM FATURA)
+     * - Lança uma movimentação na categoria 2.92 (QUITAMENTO DE FATURA)
+     * - Lança as taxas passadas pelo array (chaves: 'categoria_codigo', 'valor', 'descricao')
+     *
+     * @param Fatura $fatura
+     * @param float $valorQuitamento
+     * @param array $taxas
+     */
+    public function lancarQuitamentoEmFaturaTransacional(Fatura $fatura, float $valorQuitamento, array $taxas)
+    {
+        try {
+            $this->getDoctrine()->beginTransaction();
+            $mov_entradaEmFatura = $fatura->getPrimeiraMovimentacaoByCategoriaCodigo(191);
+            /** @var CategoriaRepository $repoCategoria */
+            $repoCategoria = $this->getDoctrine()->getRepository(Categoria::class);
+            $categ192 = $repoCategoria->findOneBy(['codigo' => 192]);// CRÉDITO EM FATURA
+            $categ292 = $repoCategoria->findOneBy(['codigo' => 292]);//
+            /** @var Movimentacao $mov_creditoEmFatura */
+            $mov_creditoEmFatura = $this->cloneEntityId($mov_saidaEmFatura);
+            $mov_creditoEmFatura->categoria = $categ192;
+            $mov_creditoEmFatura->valor = $valorQuitamento;
+            $mov_creditoEmFatura->descontos = null;
+            $mov_creditoEmFatura->acrescimos = null;
+            $mov_creditoEmFatura->valorTotal = null;
+            $this->save($mov_creditoEmFatura);
+            /** @var Movimentacao $mov_quitamentoDeFatura */
+            $mov_quitamentoDeFatura = $this->cloneEntityId($mov_creditoEmFatura);
+            $mov_quitamentoDeFatura->categoria = $categ292;
+            $this->save($mov_quitamentoDeFatura);
+            foreach ($taxas as $taxa) {
+                /** @var Movimentacao $mov_taxa */
+                $mov_taxa = $this->cloneEntityId($mov_taxa);
+                $categ_taxa = $repoCategoria->findOneBy(['codigo' => $taxa['categoria_codigo']]);
+                $mov_taxa->valor = $taxa['valor'];
+                $mov_taxa->descontos = null;
+                $mov_taxa->acrescimos = null;
+                $mov_taxa->valorTotal = null;
+                $mov_taxa->descricao = $taxa['descricao'];
+                $this->save($mov_taxa);
+            }
+            $this->getDoctrine()->commit();
+        } catch (\Throwable $e) {
+            $errMsg = 'Erro ao lançar quitamento em fatura transacional';
+            $msg = ExceptionUtils::treatException($e);
+            $this->getDoctrine()->rollback();
+            throw new ViewException($errMsg . ($msg ? '(' . $msg . ')' : ''), 0, $e);
+        }
+
     }
 
     /**
