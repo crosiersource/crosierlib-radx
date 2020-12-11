@@ -36,7 +36,7 @@ use Symfony\Component\Security\Core\Security;
 class MovimentacaoEntityHandler extends EntityHandler
 {
 
-    private CadeiaEntityHandler $cadeiaEntityHandler;
+    public FaturaEntityHandler $faturaEntityHandler;
 
     private LoggerInterface $logger;
 
@@ -46,18 +46,18 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @param Security $security
      * @param ParameterBagInterface $parameterBag
      * @param SyslogBusiness $syslog
-     * @param CadeiaEntityHandler $cadeiaEntityHandler
+     * @param FaturaEntityHandler $faturaEntityHandler
      * @param LoggerInterface $logger
      */
     public function __construct(EntityManagerInterface $doctrine,
                                 Security $security,
                                 ParameterBagInterface $parameterBag,
                                 SyslogBusiness $syslog,
-                                CadeiaEntityHandler $cadeiaEntityHandler,
+                                FaturaEntityHandler $faturaEntityHandler,
                                 LoggerInterface $logger)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
-        $this->cadeiaEntityHandler = $cadeiaEntityHandler;
+        $this->faturaEntityHandler = $faturaEntityHandler;
         $this->logger = $logger;
     }
 
@@ -295,7 +295,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                 if ($primeira->cadeia && !$primeira->cadeia->getId()) {
                     $cadeia = $primeira->cadeia;
                     $cadeia->movimentacoes = null;
-                    $this->cadeiaEntityHandler->save($cadeia);
+                    $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
                 }
             }
             /** @var Movimentacao $mov */
@@ -435,7 +435,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $cadeia = new Cadeia();
         $cadeia->fechada = true;
         /** @var Cadeia $cadeia */
-        $cadeia = $this->cadeiaEntityHandler->save($cadeia);
+        $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
 
         $cadeiaOrdem = $movimentacao->categoria->codigo === 299 ? 1 : 2;
         $movimentacao->cadeia = $cadeia;
@@ -444,29 +444,12 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $cadeiaOrdemOposta = $movimentacao->categoria->codigo === 299 ? 2 : 1;
 
-        $movimentOposta = new Movimentacao();
-        $movimentOposta->cadeia = $cadeia;
-        $movimentOposta->fatura = $movimentacao->fatura;
+        /** @var Movimentacao $movimentOposta */
+        $movimentOposta = $this->cloneEntityId($movimentacao);
         $movimentOposta->cadeiaOrdem = $cadeiaOrdemOposta;
         $movimentOposta->cadeiaQtde = 2;
-        $movimentOposta->descricao = $movimentacao->descricao;
         $movimentOposta->categoria = $categOposta;
-        $movimentOposta->centroCusto = $movimentacao->centroCusto;
-        $movimentOposta->modo = $movimentacao->modo;
-        $movimentOposta->carteira = $movimentacao->carteiraDestino;
-        $movimentOposta->carteiraDestino = $movimentacao->carteira;
         $movimentOposta->status = 'REALIZADA';
-        $movimentOposta->valor = $movimentacao->valor;
-        $movimentOposta->descontos = $movimentacao->descontos;
-        $movimentOposta->acrescimos = $movimentacao->acrescimos;
-        $movimentOposta->valorTotal = $movimentacao->valorTotal;
-
-        $movimentOposta->dtMoviment = clone($movimentacao->dtMoviment);
-        $movimentOposta->dtVencto = clone($movimentacao->dtVencto);
-        $movimentOposta->dtVenctoEfetiva = clone($movimentacao->dtVenctoEfetiva);
-        $movimentOposta->dtPagto = clone($movimentacao->dtPagto);
-
-        $movimentOposta->tipoLancto = $movimentacao->tipoLancto;
 
         parent::save($movimentOposta);
         parent::save($movimentacao);
@@ -544,7 +527,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $cadeia = new Cadeia();
         $cadeia->fechada = true;
         /** @var Cadeia $cadeia */
-        $cadeia = $this->cadeiaEntityHandler->save($cadeia);
+        $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
 
         $movimentacao->cadeia = $cadeia;
         $movimentacao->cadeiaOrdem = 1;
@@ -639,11 +622,11 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         // Está editando
         if ($movimentacao->getId()) {
-            if ($movimentacao->cadeia->movimentacoes->count() !== 3) {
-                throw new ViewException('Apenas cadeias com 3 movimentações podem ser editadas (FATURA TRANSACIONAL).');
+            if ($movimentacao->fatura->movimentacoes->count() !== 3) {
+                throw new ViewException('Apenas faturas com 3 movimentações podem ser editadas (FATURA TRANSACIONAL).');
             }
 
-            $movs = $movimentacao->cadeia->movimentacoes;
+            $movs = $movimentacao->fatura->movimentacoes;
             $outraMov = null;
             /** @var Movimentacao $mov */
             foreach ($movs as $mov) {
@@ -662,7 +645,6 @@ class MovimentacaoEntityHandler extends EntityHandler
                     $mov->numCartao = $movimentacao->numCartao;
                     $mov->qtdeParcelasCartao = $movimentacao->qtdeParcelasCartao;
                     $mov->bandeiraCartao = $movimentacao->bandeiraCartao;
-                    $mov->cadeiaQtde = 3;
                     parent::save($mov);
                 }
             }
@@ -680,12 +662,18 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
 
         $fatura = new Fatura();
+        if ($movimentacao->jsonData['venda_id'] ?? false) {
+            $fatura->jsonData['venda_id'] = $movimentacao->jsonData['venda_id'];
+        }
         $fatura->dtFatura = $movimentacao->dtMoviment ?? $movimentacao->dtPagto;
         $fatura->transacional = true;
         /** @var Fatura $fatura */
-        $fatura = $this->cadeiaEntityHandler->save($fatura);
+        $fatura = $this->faturaEntityHandler->save($fatura);
 
         $movimentacao->fatura = $fatura;
+        parent::save($movimentacao);
+
+        $fatura->movimentacoes->add($movimentacao);
 
         /** @var Movimentacao $moviment291 */
         $moviment291 = $this->cloneEntityId($movimentacao);
@@ -693,14 +681,16 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment291->categoria = $categ291;
         $moviment291->status = 'REALIZADA';
         parent::save($moviment291);
+        $fatura->movimentacoes->add($moviment291);
 
         /** @var Movimentacao $moviment191 */
         $moviment191 = $this->cloneEntityId($movimentacao);
         $moviment191->categoria = $categ191;
         $moviment191->carteira = $movimentacao->carteiraDestino ?? $movimentacao->operadoraCartao->carteira;
         parent::save($moviment191);
+        $fatura->movimentacoes->add($moviment191);
 
-        parent::save($movimentacao);
+
         $this->getDoctrine()->commit();
 
         return $movimentacao;
@@ -717,40 +707,52 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @param Fatura $fatura
      * @param float $valorQuitamento
      * @param array $taxas
+     * @throws ViewException
      */
     public function lancarQuitamentoEmFaturaTransacional(Fatura $fatura, float $valorQuitamento, array $taxas)
     {
         try {
             $this->getDoctrine()->beginTransaction();
-            $mov_entradaEmFatura = $fatura->getPrimeiraMovimentacaoByCategoriaCodigo(191);
+
+            $mov191_entradaEmFatura = $fatura->getPrimeiraMovimentacaoByCategoriaCodigo(191);
+
             /** @var CategoriaRepository $repoCategoria */
             $repoCategoria = $this->getDoctrine()->getRepository(Categoria::class);
             $categ192 = $repoCategoria->findOneBy(['codigo' => 192]);// CRÉDITO EM FATURA
             $categ292 = $repoCategoria->findOneBy(['codigo' => 292]);//
-            /** @var Movimentacao $mov_creditoEmFatura */
-            $mov_creditoEmFatura = $this->cloneEntityId($mov_saidaEmFatura);
-            $mov_creditoEmFatura->categoria = $categ192;
-            $mov_creditoEmFatura->valor = $valorQuitamento;
-            $mov_creditoEmFatura->descontos = null;
-            $mov_creditoEmFatura->acrescimos = null;
-            $mov_creditoEmFatura->valorTotal = null;
-            $this->save($mov_creditoEmFatura);
-            /** @var Movimentacao $mov_quitamentoDeFatura */
-            $mov_quitamentoDeFatura = $this->cloneEntityId($mov_creditoEmFatura);
-            $mov_quitamentoDeFatura->categoria = $categ292;
-            $this->save($mov_quitamentoDeFatura);
+
+            /** @var Movimentacao $mov192_creditoEmFatura */
+            $mov192_creditoEmFatura = $this->cloneEntityId($mov191_entradaEmFatura);
+            $mov192_creditoEmFatura->categoria = $categ192;
+            $mov192_creditoEmFatura->valor = $valorQuitamento;
+            $mov192_creditoEmFatura->descontos = null;
+            $mov192_creditoEmFatura->acrescimos = null;
+            $mov192_creditoEmFatura->valorTotal = null;
+            parent::save($mov192_creditoEmFatura);
+            $fatura->movimentacoes->add($mov192_creditoEmFatura);
+
+            /** @var Movimentacao $mov_292quitamentoDeFatura */
+            $mov_292quitamentoDeFatura = $this->cloneEntityId($mov192_creditoEmFatura);
+            $mov_292quitamentoDeFatura->categoria = $categ292;
+            parent::save($mov_292quitamentoDeFatura);
+            $fatura->movimentacoes->add($mov_292quitamentoDeFatura);
+
             foreach ($taxas as $taxa) {
                 /** @var Movimentacao $mov_taxa */
-                $mov_taxa = $this->cloneEntityId($mov_taxa);
+                $mov_taxa = $this->cloneEntityId($mov191_entradaEmFatura);
                 $categ_taxa = $repoCategoria->findOneBy(['codigo' => $taxa['categoria_codigo']]);
+                $mov_taxa->categoria = $categ_taxa;
                 $mov_taxa->valor = $taxa['valor'];
                 $mov_taxa->descontos = null;
                 $mov_taxa->acrescimos = null;
                 $mov_taxa->valorTotal = null;
                 $mov_taxa->descricao = $taxa['descricao'];
-                $this->save($mov_taxa);
+                parent::save($mov_taxa);
+                $fatura->movimentacoes->add($mov_taxa);
             }
+
             $this->getDoctrine()->commit();
+
         } catch (\Throwable $e) {
             $errMsg = 'Erro ao lançar quitamento em fatura transacional';
             $msg = ExceptionUtils::treatException($e);
@@ -787,15 +789,6 @@ class MovimentacaoEntityHandler extends EntityHandler
 
     }
 
-
-    /**
-     * @required
-     * @param mixed $cadeiaEntityHandler
-     */
-    public function setCadeiaEntityHandler(CadeiaEntityHandler $cadeiaEntityHandler): void
-    {
-        $this->cadeiaEntityHandler = $cadeiaEntityHandler;
-    }
 
     /**
      * @required

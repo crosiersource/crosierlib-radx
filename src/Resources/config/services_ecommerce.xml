@@ -86,6 +86,7 @@
             <argument type="service" id="parameter_bag"/>
             <argument type="service" id="messenger.bus.default"/>
             <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_mercado_pago"/>
         </service>
         <service id="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorSimplo7"
                  alias="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_simplo7"/>

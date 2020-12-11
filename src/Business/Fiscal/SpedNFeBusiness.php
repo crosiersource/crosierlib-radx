@@ -168,6 +168,7 @@ class SpedNFeBusiness
         $nfe->infNFe->emit->enderEmit->xLgr = $nfeConfigs['enderEmit_xLgr'];
         $nfe->infNFe->emit->enderEmit->nro = $nfeConfigs['enderEmit_nro'];
         $nfe->infNFe->emit->enderEmit->xBairro = $nfeConfigs['enderEmit_xBairro'];
+        $nfe->infNFe->emit->enderEmit->xCpl = $nfeConfigs['enderEmit_xCpl'] ?? '';
         $nfe->infNFe->emit->enderEmit->CEP = preg_replace('/\D/', '', $nfeConfigs['enderEmit_cep']);
         $nfe->infNFe->emit->enderEmit->fone = preg_replace('/\D/', '', $nfeConfigs['telefone']);
 
@@ -208,6 +209,7 @@ class SpedNFeBusiness
                 $nfe->infNFe->dest->enderDest->xLgr = trim($notaFiscal->getLogradouroDestinatario());
                 $nfe->infNFe->dest->enderDest->nro = trim($notaFiscal->getNumeroDestinatario());
                 $nfe->infNFe->dest->enderDest->xBairro = trim($notaFiscal->getBairroDestinatario());
+                $nfe->infNFe->dest->enderDest->xCpl = trim($notaFiscal->complementoDestinatario);
 
                 /** @var MunicipioRepository $repoMunicipio */
                 $repoMunicipio = $this->doctrine->getRepository(Municipio::class);

@@ -21,6 +21,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
+use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaPagto;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DeptoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\GrupoEntityHandler;
@@ -75,6 +76,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
     private SyslogBusiness $syslog;
 
+    private IntegradorMercadoPago $integradorMercadoPago;
 
     private ?int $delayEntreIntegracoesDeProduto = null;
 
@@ -97,6 +99,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
      * @param ParameterBagInterface $params
      * @param MessageBusInterface $bus
      * @param SyslogBusiness $syslog
+     * @param IntegradorMercadoPago $integradorMercadoPago
      */
     public function __construct(AppConfigEntityHandler $appConfigEntityHandler,
                                 Security $security,
@@ -110,13 +113,11 @@ class IntegradorSimplo7 implements IntegradorECommerce
                                 UploaderHelper $uploaderHelper,
                                 ParameterBagInterface $params,
                                 MessageBusInterface $bus,
-                                SyslogBusiness $syslog)
+                                SyslogBusiness $syslog,
+                                IntegradorMercadoPago $integradorMercadoPago)
     {
         $this->appConfigEntityHandler = $appConfigEntityHandler;
         $this->security = $security;
-        $this->deptoEntityHandler = $deptoEntityHandler;
-        $this->grupoEntityHandler = $grupoEntityHandler;
-        $this->subgrupoEntityHandler = $subgrupoEntityHandler;
         $this->produtoEntityHandler = $produtoEntityHandler;
         $this->vendaEntityHandler = $vendaEntityHandler;
         $this->vendaItemEntityHandler = $vendaItemEntityHandler;
@@ -125,6 +126,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
         $this->params = $params;
         $this->bus = $bus;
         $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
+        $this->integradorMercadoPago = $integradorMercadoPago;
     }
 
 
@@ -946,12 +948,15 @@ class IntegradorSimplo7 implements IntegradorECommerce
             $totalPagto = bcadd($venda->valorTotal, $venda->jsonData['ecommerce_entrega_frete_calculado'] ?? 0.0, 2);
 
             $tipoFormaPagamento = $pedido['pagamento_forma'];
+
+            $integrador = $pagamento['integrador'] ?? 'n/d';
+
             $vendaPagto = [
                 'venda_id' => $venda->getId(),
                 'valor_pagto' => $totalPagto,
                 'json_data' => [
                     'nomeFormaPagamento' => $tipoFormaPagamento ?? 'n/d',
-                    'integrador' => $pagamento['integrador'] ?? 'n/d',
+                    'integrador' => $integrador,
                     'codigo_transacao' => $pagamento['codigo_transacao'] ?? 'n/d',
                     'carteira_id' => $this->getCaixaSiteCarteiraId(),
                 ],
@@ -983,9 +988,15 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
             try {
                 $conn->insert('ven_venda_pagto', $vendaPagto);
+                $vendaPagtoId = $conn->lastInsertId();
+                if ($integrador === 'Mercado Pago') {
+                    $eVendaPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(VendaPagto::class)->find($vendaPagtoId);
+                    $this->integradorMercadoPago->handleTransacaoParaVendaPagto($eVendaPagto);
+                }
             } catch (\Throwable $e) {
                 throw new ViewException('Erro ao salvar dados do pagamento');
             }
+
 
             $venda->jsonData['infoPagtos'] = $descricaoPlanoPagto .
                 ': R$ ' . number_format($venda->valorTotal, 2, ',', '.');

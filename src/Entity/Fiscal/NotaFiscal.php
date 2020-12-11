@@ -28,7 +28,7 @@ class NotaFiscal implements EntityId
      * @NotUppercase()
      * @Groups("entity")
      */
-    private $uuid;
+    public $uuid;
 
     /**
      *
@@ -37,7 +37,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $ambiente;
+    public $ambiente;
 
     /**
      *
@@ -46,7 +46,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="rand_faturam", type="string", nullable=true)
      * @var null|string
      */
-    private $randFaturam;
+    public $randFaturam;
 
     /**
      * $cNF = rand(10000000, 99999999);
@@ -54,7 +54,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="cnf", type="string", nullable=true, length=8)
      * @var null|string
      */
-    private $cnf;
+    public $cnf;
 
     /**
      *
@@ -63,7 +63,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $naturezaOperacao;
+    public $naturezaOperacao;
 
     /**
      *
@@ -72,28 +72,28 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $finalidadeNf;
+    public $finalidadeNf;
 
     /**
      *
      * @ORM\Column(name="chave_acesso", type="string", nullable=true, length=44)
      * @var null|string
      */
-    private $chaveAcesso;
+    public $chaveAcesso;
 
     /**
      *
      * @ORM\Column(name="protocolo_autoriz", type="string", nullable=true, length=255)
      * @var null|string
      */
-    private $protocoloAutorizacao;
+    public $protocoloAutorizacao;
 
     /**
      *
      * @ORM\Column(name="dt_protocolo_autoriz", type="datetime", nullable=true)
      * @var null|\DateTime
      */
-    private $dtProtocoloAutorizacao;
+    public $dtProtocoloAutorizacao;
 
     /**
      *
@@ -102,7 +102,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $dtEmissao;
+    public $dtEmissao;
 
     /**
      *
@@ -111,7 +111,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $dtSaiEnt;
+    public $dtSaiEnt;
 
     /**
      *
@@ -120,7 +120,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $numero;
+    public $numero;
 
     /**
      *
@@ -129,7 +129,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $serie;
+    public $serie;
 
     /**
      *
@@ -138,7 +138,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $tipoNotaFiscal;
+    public $tipoNotaFiscal;
 
     /**
      *
@@ -147,7 +147,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $entradaSaida;
+    public $entradaSaida;
 
 
     /**
@@ -155,21 +155,21 @@ class NotaFiscal implements EntityId
      * @var null|string
      * @Groups("entity")
      */
-    private $documentoEmitente;
+    public $documentoEmitente;
 
     /**
      * @ORM\Column(name="xnome_emitente", type="string", nullable=false)
      * @var null|string
      * @Groups("entity")
      */
-    private $xNomeEmitente;
+    public $xNomeEmitente;
 
     /**
      * @ORM\Column(name="inscr_est_emitente", type="string", nullable=true)
      * @var null|string
      * @Groups("entity")
      */
-    private $inscricaoEstadualEmitente;
+    public $inscricaoEstadualEmitente;
 
     /**
      *
@@ -178,7 +178,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $cepEmitente;
+    public $cepEmitente;
 
     /**
      *
@@ -187,7 +187,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $logradouroEmitente;
+    public $logradouroEmitente;
 
     /**
      *
@@ -196,7 +196,16 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $numeroEmitente;
+    public $numeroEmitente;
+
+    /**
+     *
+     * @ORM\Column(name="complemento_emitente", type="string", nullable=true, length=60)
+     * @var string|null
+     *
+     * @Groups("entity")
+     */
+    public $complementoEmitente;
 
     /**
      *
@@ -205,7 +214,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $foneEmitente;
+    public $foneEmitente;
 
     /**
      *
@@ -214,7 +223,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $bairroEmitente;
+    public $bairroEmitente;
 
     /**
      *
@@ -223,7 +232,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $cidadeEmitente;
+    public $cidadeEmitente;
 
     /**
      *
@@ -232,7 +241,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $estadoEmitente;
+    public $estadoEmitente;
 
 
     /**
@@ -240,21 +249,21 @@ class NotaFiscal implements EntityId
      * @var null|string
      * @Groups("entity")
      */
-    private $documentoDestinatario;
+    public $documentoDestinatario;
 
     /**
      * @ORM\Column(name="xnome_destinatario", type="string", nullable=false)
      * @var null|string
      * @Groups("entity")
      */
-    private $xNomeDestinatario;
+    public $xNomeDestinatario;
 
     /**
      * @ORM\Column(name="inscr_est", type="string", nullable=false)
      * @var null|string
      * @Groups("entity")
      */
-    private $inscricaoEstadualDestinatario;
+    public $inscricaoEstadualDestinatario;
 
     /**
      *
@@ -263,7 +272,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $logradouroDestinatario;
+    public $logradouroDestinatario;
 
     /**
      *
@@ -272,7 +281,16 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $numeroDestinatario;
+    public $numeroDestinatario;
+
+    /**
+     *
+     * @ORM\Column(name="complemento_destinatario", type="string", nullable=true, length=60)
+     * @var string|null
+     *
+     * @Groups("entity")
+     */
+    public $complementoDestinatario;
 
     /**
      *
@@ -281,7 +299,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $bairroDestinatario;
+    public $bairroDestinatario;
 
     /**
      *
@@ -290,7 +308,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $cidadeDestinatario;
+    public $cidadeDestinatario;
 
     /**
      *
@@ -299,7 +317,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $estadoDestinatario;
+    public $estadoDestinatario;
 
     /**
      *
@@ -308,7 +326,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $cepDestinatario;
+    public $cepDestinatario;
 
     /**
      *
@@ -317,7 +335,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $foneDestinatario;
+    public $foneDestinatario;
 
     /**
      *
@@ -326,7 +344,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $emailDestinatario;
+    public $emailDestinatario;
 
     /**
      *
@@ -334,28 +352,28 @@ class NotaFiscal implements EntityId
      * @var null|string
      *
      */
-    private $motivoCancelamento;
+    public $motivoCancelamento;
 
     /**
      *
      * @ORM\Column(name="info_compl", type="string", nullable=true, length=3000)
      * @var null|string
      */
-    private $infoCompl;
+    public $infoCompl;
 
     /**
      *
      * @ORM\Column(name="total_descontos", type="decimal", nullable=false, precision=15, scale=2)
      * @var null|float
      */
-    private $totalDescontos;
+    public $totalDescontos;
 
     /**
      *
      * @ORM\Column(name="subtotal", type="decimal", nullable=false, precision=15, scale=2)
      * @var null|float
      */
-    private $subtotal;
+    public $subtotal;
 
     /**
      *
@@ -364,32 +382,32 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $valorTotal;
+    public $valorTotal;
 
 
     /**
      * @ORM\Column(name="transp_documento", type="string", nullable=false)
      * @var null|string
      */
-    private $transpDocumento;
+    public $transpDocumento;
 
     /**
      * @ORM\Column(name="transp_nome", type="string", nullable=false)
      * @var null|string
      */
-    private $transpNome;
+    public $transpNome;
 
     /**
      * @ORM\Column(name="transp_inscr_est", type="string", nullable=true)
      * @var null|string
      */
-    private $transpInscricaoEstadual;
+    public $transpInscricaoEstadual;
 
     /**
      * @ORM\Column(name="transp_endereco", type="string", nullable=true)
      * @var null|string
      */
-    private $transpEndereco;
+    public $transpEndereco;
 
     /**
      *
@@ -398,7 +416,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $transpCidade;
+    public $transpCidade;
 
     /**
      *
@@ -407,70 +425,70 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $transpEstado;
+    public $transpEstado;
 
     /**
      *
      * @ORM\Column(name="transp_especie_volumes", type="string", nullable=true, length=200)
      * @var null|string
      */
-    private $transpEspecieVolumes;
+    public $transpEspecieVolumes;
 
     /**
      *
      * @ORM\Column(name="transp_marca_volumes", type="string", nullable=true, length=200)
      * @var null|string
      */
-    private $transpMarcaVolumes;
+    public $transpMarcaVolumes;
 
     /**
      *
      * @ORM\Column(name="transp_modalidade_frete", type="string", nullable=false, length=30)
      * @var null|string
      */
-    private $transpModalidadeFrete;
+    public $transpModalidadeFrete;
 
     /**
      *
      * @ORM\Column(name="transp_numeracao_volumes", type="string", nullable=true, length=200)
      * @var null|string
      */
-    private $transpNumeracaoVolumes;
+    public $transpNumeracaoVolumes;
 
     /**
      *
      * @ORM\Column(name="transp_peso_bruto", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $transpPesoBruto;
+    public $transpPesoBruto;
 
     /**
      *
      * @ORM\Column(name="transp_peso_liquido", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $transpPesoLiquido;
+    public $transpPesoLiquido;
 
     /**
      *
      * @ORM\Column(name="transp_qtde_volumes", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $transpQtdeVolumes;
+    public $transpQtdeVolumes;
 
     /**
      *
      * @ORM\Column(name="transp_valor_total_frete", type="decimal", nullable=true, precision=15, scale=2)
      * @var null|float
      */
-    private $transpValorTotalFrete;
+    public $transpValorTotalFrete;
 
     /**
      *
      * @ORM\Column(name="indicador_forma_pagto", type="string", nullable=false, length=30)
      * @var null|string
      */
-    private $indicadorFormaPagto;
+    public $indicadorFormaPagto;
 
 
     /**
@@ -478,7 +496,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="a03id_nf_referenciada", type="string", nullable=true, length=100)
      * @var null|string
      */
-    private $a03idNfReferenciada;
+    public $a03idNfReferenciada;
 
     /**
      *
@@ -487,7 +505,7 @@ class NotaFiscal implements EntityId
      *
      * @NotUppercase()
      */
-    private $xmlNota;
+    public $xmlNota;
 
     /**
      * Informa se o XML é de um resumo <resNFe> (ainda não foi baixada o XML da nota completa).
@@ -497,14 +515,14 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $resumo;
+    public $resumo;
 
     /**
      *
      * @ORM\Column(name="nrec", type="string", length=30, nullable=true)
      * @var null|string
      */
-    private $nRec;
+    public $nRec;
 
     /**
      *
@@ -513,7 +531,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $cStatLote;
+    public $cStatLote;
 
     /**
      *
@@ -522,7 +540,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $xMotivoLote;
+    public $xMotivoLote;
 
     /**
      *
@@ -531,7 +549,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $cStat;
+    public $cStat;
 
     /**
      *
@@ -540,7 +558,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $xMotivo;
+    public $xMotivo;
 
     /**
      *
@@ -549,7 +567,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $manifestDest;
+    public $manifestDest;
 
     /**
      * Informa quando foi alterado o status do último $manifestDest.
@@ -559,7 +577,7 @@ class NotaFiscal implements EntityId
      *
      * @Groups("entity")
      */
-    private $dtManifestDest;
+    public $dtManifestDest;
 
     /**
      *
@@ -591,7 +609,7 @@ class NotaFiscal implements EntityId
      * )
      * @ORM\OrderBy({"ordem" = "ASC"})
      */
-    private $itens;
+    public $itens;
 
     /**
      *
@@ -604,7 +622,7 @@ class NotaFiscal implements EntityId
      *      orphanRemoval=true
      * )
      */
-    private $eventos;
+    public $eventos;
 
     /**
      *
@@ -617,7 +635,7 @@ class NotaFiscal implements EntityId
      *      orphanRemoval=true
      * )
      */
-    private $cartasCorrecao;
+    public $cartasCorrecao;
 
     /**
      *
@@ -630,7 +648,7 @@ class NotaFiscal implements EntityId
      *      orphanRemoval=true
      * )
      */
-    private $historicos;
+    public $historicos;
 
 
     public function __construct()
