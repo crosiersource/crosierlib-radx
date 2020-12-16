@@ -341,6 +341,7 @@ class VendaBusiness
             $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
             /** @var AppConfig $rs */
             $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'vendas.config.json'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
+            if (!$rs) return false;
             $vendasConfig = $rs->getValorJsonDecoded();
             if (!($vendasConfig['integra_venda_ao_financeiro'] ?? false)) {
                 return false;

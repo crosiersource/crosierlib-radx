@@ -517,7 +517,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
 				<idItemVenda>' . $produtoItemVendaId . '</idItemVenda>
 				<codigo>' . $produto->getId() . '</codigo>
 				<preco>' . $preco . '</preco>
-				<estoque>' . ($produto->jsonData['qtde_estoque_total'] ?? 999999) . '</estoque>
+				<estoque>' . ($produto->jsonData['qtde_estoque_total'] ?? 0) . '</estoque>
 				<estoqueMin>0</estoqueMin>
 				<situacao>1</situacao>
 				<peso>' . ($produto->jsonData['peso'] ?? '') . '</peso>

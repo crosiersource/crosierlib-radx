@@ -1122,7 +1122,7 @@ class IntegradorWebStorm implements IntegradorECommerce
 				<idItemVenda>' . $produtoItemVendaId . '</idItemVenda>
 				<codigo>' . $produto->getId() . '</codigo>
 				<preco>' . $preco . '</preco>
-				<estoque>' . ($produto->jsonData['qtde_estoque_total'] ?? 999999) . '</estoque>
+				<estoque>' . ($produto->jsonData['qtde_estoque_total'] ?? 0) . '</estoque>
 				<estoqueMin>0</estoqueMin>
 				<situacao>1</situacao>
 				<peso>' . ($produto->jsonData['peso'] ?? '') . '</peso>
@@ -1237,7 +1237,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                     <itensVenda> 
                     <idItemVenda>' . $produtoItemVendaId . '</idItemVenda>
                     <preco>' . ($jsonData['preco_site'] ?? $jsonData['preco_tabela'] ?? 0.0) . '</preco>
-                    <estoque>' . ($jsonData['qtde_estoque_total'] ?? 999999) . '</estoque>
+                    <estoque>' . ($jsonData['qtde_estoque_total'] ?? 0) . '</estoque>
                 </itensVenda></produto>';
                 $temAtualizacao = true;
             }
@@ -1693,7 +1693,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                     throw new ViewException('Erro ao integrar venda. Erro ao pesquisar produto (idProduto = ' . $produtoWebStorm->idProduto->__toString() . ')');
                 }
                 $produtosNoCrosier[$produtoWebStorm->idProduto->__toString()] = $produto; // RTA: dinâmico, para ser acessado no próximo foreach
-                $valorProduto = $produto->jsonData['preco_site']; // $produtoWebStorm->valorUnitario;
+                $valorProduto = $produtoWebStorm->valorUnitario; // $produto->jsonData['preco_site'];
 
                 $totalProdutos = bcadd($totalProdutos, bcmul($produtoWebStorm->quantidade, $valorProduto, 2), 2);
             }
