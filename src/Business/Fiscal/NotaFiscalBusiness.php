@@ -212,6 +212,7 @@ class NotaFiscalBusiness
                         if ($venda->jsonData['ecommerce_entrega_logradouro'] ?? false) {
                             $endereco_faturamento['logradouro'] = $venda->jsonData['ecommerce_entrega_logradouro'];
                             $endereco_faturamento['numero'] = $venda->jsonData['ecommerce_entrega_numero'] ?? '';
+                            $endereco_faturamento['complemento'] = $venda->jsonData['ecommerce_entrega_complemento'] ?? '';
                             $endereco_faturamento['bairro'] = $venda->jsonData['ecommerce_entrega_bairro'] ?? '';
                             $endereco_faturamento['cidade'] = $venda->jsonData['ecommerce_entrega_cidade'] ?? '';
                             $endereco_faturamento['estado'] = $venda->jsonData['ecommerce_entrega_uf'] ?? '';
@@ -223,6 +224,7 @@ class NotaFiscalBusiness
                     } else {
                         $endereco_faturamento['logradouro'] = $notaFiscal->getLogradouroDestinatario();
                         $endereco_faturamento['numero'] = $notaFiscal->getNumeroDestinatario();
+                        $endereco_faturamento['complemento'] = $notaFiscal->complementoDestinatario;
                         $endereco_faturamento['bairro'] = $notaFiscal->getBairroDestinatario();
                         $endereco_faturamento['cidade'] = $notaFiscal->getCidadeDestinatario();
                         $endereco_faturamento['estado'] = $notaFiscal->getEstadoDestinatario();
@@ -238,6 +240,7 @@ class NotaFiscalBusiness
 
                         if (strlen($notaFiscal->getDocumentoDestinatario()) === 14 &&
                             (!($endereco_faturamento['logradouro'] ?? false) ||
+                                !($endereco_faturamento['complemento'] ?? false) ||
                                 !($endereco_faturamento['bairro'] ?? false) ||
                                 !($endereco_faturamento['cep'] ?? false) ||
                                 !($endereco_faturamento['cidade'] ?? false) ||
@@ -251,6 +254,7 @@ class NotaFiscalBusiness
                             }
                             $notaFiscal->setLogradouroDestinatario($endereco_consultado['dados']['logradouro'] ?? '');
                             $notaFiscal->setNumeroDestinatario($endereco_consultado['dados']['numero'] ?? '');
+                            $notaFiscal->complementoDestinatario = ($endereco_consultado['dados']['complemento'] ?? '');
                             $notaFiscal->setBairroDestinatario($endereco_consultado['dados']['bairro'] ?? '');
                             $notaFiscal->setCepDestinatario($endereco_consultado['dados']['CEP'] ?? '');
                             $notaFiscal->setCidadeDestinatario($endereco_consultado['dados']['cidade'] ?? '');
@@ -258,6 +262,7 @@ class NotaFiscalBusiness
                         } else {
                             $notaFiscal->setLogradouroDestinatario($endereco_faturamento['logradouro'] ?? '');
                             $notaFiscal->setNumeroDestinatario($endereco_faturamento['numero'] ?? '');
+                            $notaFiscal->complementoDestinatario = ($endereco_faturamento['complemento'] ?? '');
                             $notaFiscal->setBairroDestinatario($endereco_faturamento['bairro'] ?? '');
                             $notaFiscal->setCepDestinatario($endereco_faturamento['cep'] ?? '');
                             $notaFiscal->setCidadeDestinatario($endereco_faturamento['cidade'] ?? '');
