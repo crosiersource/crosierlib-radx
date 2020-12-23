@@ -1719,11 +1719,11 @@ class IntegradorWebStorm implements IntegradorECommerce
 
                 $vendaItem->unidade = $produto->unidadePadrao;
 
-                $vendaItem->precoVenda = $produto->jsonData['preco_site']; // $produtoWebStorm->valorUnitario->__toString();
+                $vendaItem->precoVenda = $produtoWebStorm->valorUnitario->__toString(); // $produto->jsonData['preco_site'];
                 $vendaItem->qtde = $produtoWebStorm->quantidade->__toString();
                 $vendaItem->subtotal = bcmul($vendaItem->precoVenda, $vendaItem->qtde, 2);
                 // Para arredondar para cima
-                $vendaItem->desconto = DecimalUtils::round(bcmul($pDesconto, $vendaItem->subtotal, 3));
+                $vendaItem->desconto = (float)$produtoWebStorm->desconto->__toString() ?? 0.0; //DecimalUtils::round(bcmul($pDesconto, $vendaItem->subtotal, 3));
                 $descontoAcum = (float)bcadd($descontoAcum, $vendaItem->desconto, 2);
                 $vendaItem->produto = $produto;
 
