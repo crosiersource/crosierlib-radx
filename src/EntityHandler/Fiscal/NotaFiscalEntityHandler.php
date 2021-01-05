@@ -94,12 +94,11 @@ class NotaFiscalEntityHandler extends EntityHandler
     }
 
     /**
-     * @param $notaFiscal
+     * @param NotaFiscal $notaFiscal
      * @throws \Exception
      */
     public function beforeClone($notaFiscal)
     {
-        /** @var NotaFiscal $notaFiscal */
         $notaFiscal->setUuid(null);
         $notaFiscal->setNumero(null);
         $notaFiscal->setSerie(null);
