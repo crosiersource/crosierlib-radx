@@ -85,7 +85,7 @@ class CalculoPreco
         }
 
         $margem = (float)$preco['margem'];
-        if ($margem > 99.99) {
+        if ($margem > 0.9999) {
             throw new \LogicException('Margem superior a 99,99%');
         }
 
@@ -96,7 +96,8 @@ class CalculoPreco
 
         $depreciacaoPrazo = $this->doctrine->getRepository(DepreciacaoPreco::class)->findDepreciacaoByPrazo($prazo);
 
-        $margemPorcent = (float)bcdiv($margem, '100.00', 4);
+        // Antes a margem não era passada em número decimal
+        $margemPorcent = $margem; // (float)bcdiv($margem, '100.00', 4);
 
 
         $margemMaximaPorcent = 1.0 - $custoOperacional - 0.0001;
