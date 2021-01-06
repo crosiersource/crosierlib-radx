@@ -14,7 +14,6 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandl
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ImageUtils\ImageUtils;
-use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\WebUtils\WebUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
@@ -1379,7 +1378,6 @@ class IntegradorWebStorm implements IntegradorECommerce
      * @param \DateTime $dtVenda
      * @param bool|null $resalvar
      * @return int
-     * @throws ViewException
      */
     public function obterVendas(\DateTime $dtVenda, ?bool $resalvar = false): int
     {
@@ -1387,7 +1385,12 @@ class IntegradorWebStorm implements IntegradorECommerce
         $i = 0;
         if ($pedidos->pedido ?? false) {
             foreach ($pedidos->pedido as $pedido) {
-                $this->integrarVendaParaCrosier($pedido, (int)$pedido->status === 2 || $resalvar);
+                try {
+                    $this->integrarVendaParaCrosier($pedido, (int)$pedido->status === 2 || $resalvar);
+                } catch (ViewException $e) {
+                    $this->syslog->err('Erro ao integrarVendaParaCrosier - pedido: ' . $pedido->idPedido->__toString(), $e->getTraceAsString());
+                    continue;
+                }
                 $i++;
             }
         }
