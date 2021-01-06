@@ -136,7 +136,7 @@ class MovimentacaoImporter
         }
 
         if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
-            if (!$carteiraExtrato || !$carteiraExtrato) {
+            if (!$carteiraDestino || !$carteiraExtrato) {
                 throw new ViewException('Para extratos de cartões de débito, é necessário informar a carteira de ||igem e de destino.');
             }
         } elseif (strpos($tipoExtrato, 'GRUPO') !== FALSE) {
@@ -524,7 +524,6 @@ class MovimentacaoImporter
         $movimentacao->dtVenctoEfetiva = ($dtVenctoEfetiva);
         $movimentacao->dtPagto = ($dtVenctoEfetiva);
         $movimentacao->bandeiraCartao = ($bandeiraCartao);
-        $movimentacao->planoPagtoCartao = ($planoPagtoCartao);
 
         /** @var Categoria $categoria */
         $categoria = null;
@@ -778,8 +777,6 @@ class MovimentacaoImporter
             if ($regra->status === 'REALIZADA') {
                 $movimentacao->dtPagto = ($dtVenctoEfetiva);
             }
-
-            $movimentacao->planoPagtoCartao = ($planoPagtoCartao);
 
             return $movimentacao;
         }

@@ -144,7 +144,7 @@ class NotaFiscalBusiness
     {
         $dir = $_SERVER['PASTAARQUIVOSEKTFISCAL'];
         $files = scandir($dir, SCANDIR_SORT_NONE);
-        return in_array('controle.txt', $files, true) ? true : false;
+        return in_array('controle.txt', $files, true);
     }
 
     /**
@@ -1308,26 +1308,26 @@ class NotaFiscalBusiness
 
                     $movimentacao = new Movimentacao();
 
-                    $movimentacao->setFatura($fatura);
-                    $movimentacao->setTipoLancto($tipoLancto_parcelamento);
-                    $movimentacao->setModo($modo_boleto);
-                    $movimentacao->setCarteira($carteira_indefinida);
-                    $movimentacao->setCategoria($categoria_CustosMercadoria);
-                    $movimentacao->setCentroCusto($centroCusto);
-                    $movimentacao->setStatus('ABERTA');
+                    $movimentacao->fatura = ($fatura);
+                    $movimentacao->tipoLancto = ($tipoLancto_parcelamento);
+                    $movimentacao->modo = ($modo_boleto);
+                    $movimentacao->carteira = ($carteira_indefinida);
+                    $movimentacao->categoria = ($categoria_CustosMercadoria);
+                    $movimentacao->centroCusto = ($centroCusto);
+                    $movimentacao->status = ('ABERTA');
 
-                    $movimentacao->setDtMoviment($notaFiscal->getDtEmissao());
-                    $movimentacao->setDtVencto(DateTimeUtils::parseDateStr($duplicada['dVenc']));
-                    $movimentacao->setValor($duplicada['vDup']);
-                    $movimentacao->setParcelamento(true);
-                    $movimentacao->setCadeiaOrdem($i);
-                    $movimentacao->setCadeiaQtde($qtdeTotal);
+                    $movimentacao->dtMoviment = ($notaFiscal->getDtEmissao());
+                    $movimentacao->dtVencto = (DateTimeUtils::parseDateStr($duplicada['dVenc']));
+                    $movimentacao->valor = ($duplicada['vDup']);
+                    $movimentacao->parcelamento = (true);
+                    $movimentacao->cadeiaOrdem = ($i);
+                    $movimentacao->cadeiaQtde = ($qtdeTotal);
 
                     $movimentacao->jsonData['notafiscal_id'] = $notaFiscal->getId();
 
-                    $movimentacao->setDescricao('DUPLICATA ' . $duplicada['nDup'] . ' DE ' . $notaFiscal->getXNomeEmitente() . ' ' . StringUtils::strpad($i, 2) . '/' . StringUtils::strpad($qtdeTotal, 2));
+                    $movimentacao->descricao = ('DUPLICATA ' . $duplicada['nDup'] . ' DE ' . $notaFiscal->getXNomeEmitente() . ' ' . StringUtils::strpad($i, 2) . '/' . StringUtils::strpad($qtdeTotal, 2));
 
-                    $movimentacao->setQuitado(false);
+                    $movimentacao->quitado = (false);
                     $this->movimentacaoEntityHandler->save($movimentacao);
                     $i++;
                 }

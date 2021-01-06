@@ -21,6 +21,7 @@
     "ext-simplexml": "*",
     "ext-soap": "*",
     "ext-zip": "*",
+    "ext-zlib": "*",
     "php-http/guzzle6-adapter": "^1.1",
     "symfony/cache": "5.1.*",
     "symfony/console": "5.1.*",

@@ -3,9 +3,7 @@
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
-use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
-use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
 
 /**
  * Repository para a entidade Carteira.

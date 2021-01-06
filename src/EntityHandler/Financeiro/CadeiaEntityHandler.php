@@ -44,6 +44,7 @@ class CadeiaEntityHandler extends EntityHandler
         try {
             $this->doctrine->beginTransaction();
             $movs = $cadeia->movimentacoes;
+            /** @var Movimentacao $mov */
             foreach ($movs as $mov) {
                 $this->movimentacaoEntityHandler->delete($mov);
             }
@@ -53,12 +54,15 @@ class CadeiaEntityHandler extends EntityHandler
             $this->doctrine->rollback();
             $err = $e->getMessage();
             if (isset($mov)) {
-                $err .= ' (' . $mov->getDescricao() . ')';
+                $err .= ' (' . $mov->descricao . ')';
             }
             throw new ViewException($err);
         }
     }
 
+    /**
+     *
+     */
     public function removerCadeiasComApenasUmaMovimentacao(): void
     {
         $rsm = new ResultSetMapping();
@@ -69,10 +73,11 @@ class CadeiaEntityHandler extends EntityHandler
         $rs = $qry->getResult();
         if ($rs) {
             foreach ($rs as $r) {
+                /** @var Movimentacao $movimentacao */
                 $movimentacao = $this->getDoctrine()->find(Movimentacao::class, $r['id']);
-                if ($movimentacao->getCadeia()) {
-                    $cadeia = $this->getDoctrine()->find(Cadeia::class, $movimentacao->getCadeia());
-                    $movimentacao->setCadeia(null);
+                if ($movimentacao->cadeia) {
+                    $cadeia = $this->getDoctrine()->find(Cadeia::class, $movimentacao->cadeia);
+                    $movimentacao->cadeia = null;
                     $this->getDoctrine()->remove($cadeia);
                 }
             }

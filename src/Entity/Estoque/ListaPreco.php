@@ -4,8 +4,6 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Estoque;
 
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -49,5 +47,5 @@ class ListaPreco implements EntityId
      */
     public ?\DateTime $dtVigenciaFim;
 
-    
+
 }

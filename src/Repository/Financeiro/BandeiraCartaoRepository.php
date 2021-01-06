@@ -48,9 +48,9 @@ class BandeiraCartaoRepository extends FilterRepository
 
                 /** @var BandeiraCartao $bc */
                 foreach ($todas as $bc) {
-                    if ($bc->getModo() === $modo) {
+                    if ($bc->modo === $modo) {
 
-                        $labels = explode("\n", $bc->getLabels());
+                        $labels = explode("\n", $bc->labels);
 
                         foreach ($labels as $label) {
                             if (stripos($label, $str)) {

@@ -214,12 +214,11 @@ class MovimentacaoRepository extends FilterRepository
     {
 
         try {
-            /** @var Connection $conn */
             $conn = $this->getEntityManager()->getConnection();
             $dtIni = $dtIni->format('Y-m-d');
             $dtFim = $dtFim->format('Y-m-d');
-            $totalEntradas = $conn->fetchAssoc('SELECT sum(m.valor_total) as total FROM fin_movimentacao m, fin_categoria categ WHERE m.categoria_id = categ.id AND categ.codigo_super = 1 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
-            $totalSaidas = $conn->fetchAssoc('SELECT sum(m.valor_total) as total FROM fin_movimentacao m, fin_categoria categ WHERE m.categoria_id = categ.id AND categ.codigo_super = 2 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
+            $totalEntradas = $conn->fetchAssociative('SELECT sum(m.valor_total) as total FROM fin_movimentacao m, fin_categoria categ WHERE m.categoria_id = categ.id AND categ.codigo_super = 1 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
+            $totalSaidas = $conn->fetchAssociative('SELECT sum(m.valor_total) as total FROM fin_movimentacao m, fin_categoria categ WHERE m.categoria_id = categ.id AND categ.codigo_super = 2 AND dt_pagto BETWEEN :dtIni AND :dtFim AND carteira_id = :carteiraId', ['dtIni' => $dtIni, 'dtFim' => $dtFim, 'carteiraId' => $carteira->getId()]);
 
             return [
                 'totalEntradas' => $totalEntradas['total'] ?? 0.0,

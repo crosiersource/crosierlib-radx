@@ -3,10 +3,9 @@
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Estoque;
 
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ListaPreco;
+use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco;
-use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
 
 /**
  *
