@@ -446,6 +446,8 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         /** @var Movimentacao $movimentOposta */
         $movimentOposta = $this->cloneEntityId($movimentacao);
+        $movimentOposta->carteira = $movimentacao->carteiraDestino;
+        $movimentOposta->carteiraDestino = $movimentacao->carteira;
         $movimentOposta->cadeiaOrdem = $cadeiaOrdemOposta;
         $movimentOposta->cadeiaQtde = 2;
         $movimentOposta->categoria = $categOposta;
