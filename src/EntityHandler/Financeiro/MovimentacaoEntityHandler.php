@@ -396,7 +396,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $movimentacao->cadeia->movimentacoes->count() !== 2) {
                 throw new ViewException('Apenas cadeias com 2 odem ser editadas ("TRANSFERÊNCIA ENTRE CARTEIRAS")');
             }
-
+            /** @var Movimentacao $movimentOposta */
             $movimentOposta = $this->getDoctrine()->getRepository(Movimentacao::class)
                 ->findOneBy(
                     [
@@ -407,19 +407,19 @@ class MovimentacaoEntityHandler extends EntityHandler
             // Campos que podem ser editados
             $movimentOposta->descricao = $movimentacao->descricao;
             $movimentOposta->fatura = $movimentacao->fatura;
-            $movimentOposta->setCategoria($categOposta);
-            $movimentOposta->setModo($movimentacao->modo);
+            $movimentOposta->categoria = ($categOposta);
+            $movimentOposta->modo = ($movimentacao->modo);
             if ($movimentacao->carteiraDestino) {
-                $movimentOposta->setCarteira($movimentacao->carteiraDestino);
+                $movimentOposta->carteira = ($movimentacao->carteiraDestino);
             }
-            $movimentOposta->setCarteiraDestino($movimentacao->carteira);
-            $movimentOposta->setValor($movimentacao->valor);
-            $movimentOposta->setValorTotal($movimentacao->valorTotal);
-            $movimentOposta->setCentroCusto($movimentacao->centroCusto);
-            $movimentOposta->setDtMoviment($movimentacao->dtMoviment);
-            $movimentOposta->setDtVencto($movimentacao->dtVencto);
-            $movimentOposta->setDtVenctoEfetiva($movimentacao->dtVenctoEfetiva);
-            $movimentOposta->setDtPagto($movimentacao->dtPagto);
+            $movimentOposta->carteiraDestino = ($movimentacao->carteira);
+            $movimentOposta->valor = ($movimentacao->valor);
+            $movimentOposta->valorTotal = ($movimentacao->valorTotal);
+            $movimentOposta->centroCusto = ($movimentacao->centroCusto);
+            $movimentOposta->dtMoviment = ($movimentacao->dtMoviment);
+            $movimentOposta->dtVencto = ($movimentacao->dtVencto);
+            $movimentOposta->dtVenctoEfetiva = ($movimentacao->dtVenctoEfetiva);
+            $movimentOposta->dtPagto = ($movimentacao->dtPagto);
 
             /** @var Movimentacao $movimentOposta */
             $movimentOposta = parent::save($movimentOposta);
