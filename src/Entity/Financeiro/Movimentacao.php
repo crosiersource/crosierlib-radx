@@ -75,12 +75,6 @@ class Movimentacao implements EntityId
     public ?string $cedente = null;
 
     /**
-     * @ORM\Column(name="fis_nf_id", type="integer")
-     * @Groups("entity")
-     */
-    public ?int $notaFiscalId = null;
-
-    /**
      * @ORM\Column(name="quitado", type="boolean")
      * @Groups("entity")
      */
