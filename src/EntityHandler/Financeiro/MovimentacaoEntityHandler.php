@@ -26,6 +26,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CategoriaRepository
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\TipoLanctoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\ResultSetMapping;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
@@ -885,6 +886,57 @@ class MovimentacaoEntityHandler extends EntityHandler
     public function beforeClone(/** @var Movimentacao $movimentacao */ $movimentacao)
     {
         $movimentacao->UUID = null;
+    }
+
+    /**
+     *
+     * @param Cadeia $cadeia
+     * @throws ViewException
+     */
+    public function deleteCadeiaETodasAsMovimentacoes(Cadeia $cadeia): void
+    {
+        try {
+            $this->doctrine->beginTransaction();
+            $movs = $cadeia->movimentacoes;
+            /** @var Movimentacao $mov */
+            foreach ($movs as $mov) {
+                $this->delete($mov);
+            }
+            $this->faturaEntityHandler->cadeiaEntityHandler->delete($cadeia);
+            $this->doctrine->commit();
+        } catch (\Throwable $e) {
+            $this->doctrine->rollback();
+            $err = $e->getMessage();
+            if (isset($mov)) {
+                $err .= ' (' . $mov->descricao . ')';
+            }
+            throw new ViewException($err);
+        }
+    }
+
+    /**
+     *
+     */
+    public function removerCadeiasComApenasUmaMovimentacao(): void
+    {
+        $rsm = new ResultSetMapping();
+        $sql = 'select id, cadeia_id, count(cadeia_id) as qt from fin_movimentacao group by cadeia_id having qt < 2';
+        $qry = $this->getDoctrine()->createNativeQuery($sql, $rsm);
+
+        $rsm->addScalarResult('id', 'id');
+        $rs = $qry->getResult();
+        if ($rs) {
+            foreach ($rs as $r) {
+                /** @var Movimentacao $movimentacao */
+                $movimentacao = $this->getDoctrine()->find(Movimentacao::class, $r['id']);
+                if ($movimentacao->cadeia) {
+                    $cadeia = $this->getDoctrine()->find(Cadeia::class, $movimentacao->cadeia);
+                    $movimentacao->cadeia = null;
+                    $this->getDoctrine()->remove($cadeia);
+                }
+            }
+        }
+        $this->getDoctrine()->flush();
     }
 
 

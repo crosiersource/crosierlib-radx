@@ -346,6 +346,8 @@ class NotaFiscalBusiness
             $repoProduto = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Produto::class);
 
 
+            $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal, false);
+
             /** @var VendaItem $vendaItem */
             foreach ($itensNaNota as $vendaItem) {
 
@@ -428,8 +430,8 @@ class NotaFiscalBusiness
                     $nfItem->setCofinsValorBc($nfItem->getSubTotal());
                 }
 
-                $this->notaFiscalEntityHandler->handleSavingEntityId($nfItem);
                 $notaFiscal->addItem($nfItem);
+                $this->notaFiscalItemEntityHandler->save($nfItem, false);
             }
 
             $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
