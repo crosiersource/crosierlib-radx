@@ -24,7 +24,7 @@ class NotaFiscalItem implements EntityId
      *
      * @var $notaFiscal null|NotaFiscal
      */
-    private ?NotaFiscal $notaFiscal = null;
+    public ?NotaFiscal $notaFiscal = null;
 
 
     /**
@@ -32,133 +32,133 @@ class NotaFiscalItem implements EntityId
      * @ORM\Column(name="codigo", type="string")
      * @var null|string
      */
-    private ?string $codigo = null;
+    public ?string $codigo = null;
 
     /**
      *
      * @ORM\Column(name="descricao", type="string")
      * @var null|string
      */
-    private ?string $descricao = null;
+    public ?string $descricao = null;
 
     /**
      *
      * @ORM\Column(name="cfop", type="string")
      * @var null|string
      */
-    private ?string $cfop = null;
+    public ?string $cfop = null;
 
     /**
      *
      * @ORM\Column(name="ean", type="string")
      * @var null|string
      */
-    private ?string $ean = null;
+    public ?string $ean = null;
 
     /**
      *
      * @ORM\Column(name="csosn", type="integer")
      * @var null|int
      */
-    private ?int $csosn = null;
+    public ?int $csosn = null;
 
     /**
      *
      * @ORM\Column(name="ncm", type="string", length=20)
      * @var null|string
      */
-    private ?string $ncm = null;
+    public ?string $ncm = null;
 
     /**
      *
      * @ORM\Column(name="cest", type="string",  length=20)
      * @var null|string
      */
-    private ?string $cest = null;
+    public ?string $cest = null;
 
     /**
      *
      * @ORM\Column(name="cst", type="string")
      * @var null|string
      */
-    private ?string $cst = null;
+    public ?string $cst = null;
 
     /**
      *
      * @ORM\Column(name="ordem", type="integer")
      * @var null|int
      */
-    private ?int $ordem = null;
+    public ?int $ordem = null;
 
     /**
      *
      * @ORM\Column(name="qtde", type="decimal", precision=15, scale=2)
      * @var null|float
      */
-    private ?float $qtde = null;
+    public ?float $qtde = null;
 
     /**
      *
      * @ORM\Column(name="unidade", type="string", length=50)
      * @var null|string
      */
-    private ?string $unidade = null;
+    public ?string $unidade = null;
 
     /**
      *
      * @ORM\Column(name="valor_total", type="decimal", precision=15, scale=2)
      * @var null|float
      */
-    private ?float $valorTotal = null;
+    public ?float $valorTotal = null;
 
     /**
      *
      * @ORM\Column(name="valor_unit", type="decimal", precision=15, scale=2)
      * @var null|float
      */
-    private ?float $valorUnit = null;
+    public ?float $valorUnit = null;
 
     /**
      *
      * @ORM\Column(name="valor_desconto", type="decimal",  precision=15, scale=2)
      * @var null|float
      */
-    private ?float $valorDesconto = null;
+    public ?float $valorDesconto = null;
 
     /**
      *
      * @ORM\Column(name="sub_total", type="decimal", precision=15, scale=2)
      * @var null|float
      */
-    private ?float $subTotal = null;
+    public ?float $subTotal = null;
 
     /**
      *
      * @ORM\Column(name="icms_valor", type="decimal",  precision=15, scale=2)
      * @var null|float
      */
-    private ?float $icmsValor = null;
+    public ?float $icmsValor = null;
 
     /**
      *
      * @ORM\Column(name="icms_mod_bc", type="string")
      * @var null|string
      */
-    private ?string $icmsModBC = null;
+    public ?string $icmsModBC = null;
 
     /**
      *
      * @ORM\Column(name="icms_valor_bc", type="decimal",  precision=15, scale=2)
      * @var null|float
      */
-    private ?float $icmsValorBc = null;
+    public ?float $icmsValorBc = null;
 
     /**
      *
      * @ORM\Column(name="icms", type="decimal",  precision=15, scale=2)
      * @var null|float
      */
-    private ?float $icmsAliquota = null;
+    public ?float $icmsAliquota = null;
 
 
     /**
@@ -166,21 +166,21 @@ class NotaFiscalItem implements EntityId
      * @ORM\Column(name="pis_valor", type="decimal",  precision=15, scale=2)
      * @var null|float
      */
-    private ?float $pisValor = null;
+    public ?float $pisValor = null;
 
     /**
      *
      * @ORM\Column(name="pis_valor_bc", type="decimal",  precision=15, scale=2)
      * @var null|float
      */
-    private ?float $pisValorBc = null;
+    public ?float $pisValorBc = null;
 
     /**
      *
      * @ORM\Column(name="pis", type="decimal",  precision=15, scale=2)
      * @var null|float
      */
-    private ?float $pisAliquota = null;
+    public ?float $pisAliquota = null;
 
 
     /**
@@ -188,28 +188,28 @@ class NotaFiscalItem implements EntityId
      * @ORM\Column(name="cofins_valor", type="decimal",  precision=15, scale=2)
      * @var null|float
      */
-    private ?float $cofinsValor = null;
+    public ?float $cofinsValor = null;
 
     /**
      *
      * @ORM\Column(name="cofins_valor_bc", type="decimal",  precision=15, scale=2)
      * @var null|float
      */
-    private ?float $cofinsValorBc = null;
+    public ?float $cofinsValorBc = null;
 
     /**
      *
      * @ORM\Column(name="cofins", type="decimal",  precision=15, scale=2)
      * @var null|float
      */
-    private ?float $cofinsAliquota = null;
+    public ?float $cofinsAliquota = null;
 
     /**
      *
      * @ORM\Column(name="ncm_existente", type="boolean")
      * @var null|bool
      */
-    private ?bool $ncmExistente = null;
+    public ?bool $ncmExistente = null;
 
     /**
      *

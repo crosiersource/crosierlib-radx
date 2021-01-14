@@ -4,6 +4,7 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use Doctrine\ORM\EntityManagerInterface;
@@ -47,6 +48,9 @@ class NotaFiscalItemEntityHandler extends EntityHandler
      */
     public function beforeSave($nfItem)
     {
+        if ($nfItem->valorUnit === null) {
+            throw new ViewException('Item sem valor unitário');
+        }
         /** @var NotaFiscalItem $nfItem */
         if (!$nfItem->getOrdem()) {
             $ultimaOrdem = 0;
@@ -65,6 +69,7 @@ class NotaFiscalItemEntityHandler extends EntityHandler
             }
         }
         $nfItem->calculaTotais();
+
     }
 
     /**
@@ -73,10 +78,7 @@ class NotaFiscalItemEntityHandler extends EntityHandler
      */
     public function afterSave(/** @var NotaFiscalItem $nfItem */ $nfItem)
     {
-        /** @var NotaFiscal $notaFiscal */
-        $notaFiscal = $this->getDoctrine()->getRepository(NotaFiscal::class)->findOneBy(['id' => $nfItem->getNotaFiscal()->getId()]);
-        $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
-        $this->notaFiscalEntityHandler->save($notaFiscal);
+        
     }
 
     /**

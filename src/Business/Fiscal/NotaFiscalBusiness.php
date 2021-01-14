@@ -602,6 +602,12 @@ class NotaFiscalBusiness
                 $notaFiscal->setCnf($cNF);
             }
 
+            $this->notaFiscalEntityHandler->save($notaFiscal, false);
+
+            foreach ($notaFiscal->itens as $item) {
+                $this->notaFiscalItemEntityHandler->save($item, false);
+            }
+
             $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
             $this->notaFiscalEntityHandler->save($notaFiscal);
             $this->notaFiscalEntityHandler->getDoctrine()->commit();

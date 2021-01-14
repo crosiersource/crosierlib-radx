@@ -12,11 +12,14 @@ use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ImageUtils\ImageUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\WebUtils\WebUtils;
+use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
@@ -66,6 +69,8 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
     private VendaItemEntityHandler $vendaItemEntityHandler;
 
+    private NotaFiscalBusiness $notaFiscalBusiness;
+
     private ClienteEntityHandler $clienteEntityHandler;
 
     private UploaderHelper $uploaderHelper;
@@ -94,6 +99,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
      * @param ProdutoEntityHandler $produtoEntityHandler
      * @param VendaEntityHandler $vendaEntityHandler
      * @param VendaItemEntityHandler $vendaItemEntityHandler
+     * @param NotaFiscalBusiness $notaFiscalBusiness
      * @param ClienteEntityHandler $clienteEntityHandler
      * @param UploaderHelper $uploaderHelper
      * @param ParameterBagInterface $params
@@ -109,6 +115,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
                                 ProdutoEntityHandler $produtoEntityHandler,
                                 VendaEntityHandler $vendaEntityHandler,
                                 VendaItemEntityHandler $vendaItemEntityHandler,
+                                NotaFiscalBusiness $notaFiscalBusiness,
                                 ClienteEntityHandler $clienteEntityHandler,
                                 UploaderHelper $uploaderHelper,
                                 ParameterBagInterface $params,
@@ -121,6 +128,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
         $this->produtoEntityHandler = $produtoEntityHandler;
         $this->vendaEntityHandler = $vendaEntityHandler;
         $this->vendaItemEntityHandler = $vendaItemEntityHandler;
+        $this->notaFiscalBusiness = $notaFiscalBusiness;
         $this->clienteEntityHandler = $clienteEntityHandler;
         $this->uploaderHelper = $uploaderHelper;
         $this->params = $params;
@@ -1130,7 +1138,85 @@ class IntegradorSimplo7 implements IntegradorECommerce
             $this->syslog->err($msg);
             throw new ViewException($msg);
         }
+    }
 
+
+    /**
+     * @param int $codVenda
+     * @return int|null
+     * @throws ViewException
+     * @throws \Doctrine\DBAL\Exception
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function gerarNFeParaVenda(int $codVenda): ?int
+    {
+        $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
+        $existe = $conn->fetchAssociative('SELECT id FROM fis_nf WHERE json_data->>"$.pedido_simplo7" = :codVenda', ['codVenda' => $codVenda]);
+        if ($existe) {
+            return $existe['id'];
+        }
+
+
+        $client = new Client();
+
+        $response = $client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $codVenda . '.json',
+            [
+                'headers' => [
+                    'Content-Type' => 'application/json; charset=UTF-8',
+                    'appKey' => $this->getChave(),
+                ]
+            ]
+        );
+
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        $arrPedido = $json['result'] ?? null;
+
+        $notaFiscal = new NotaFiscal();
+
+        $notaFiscal->jsonData['pedido_simplo7'] = $codVenda;
+        $notaFiscal->documentoEmitente = '34411048000104';
+        $notaFiscal->tipoNotaFiscal = 'NFE';
+        $notaFiscal->naturezaOperacao = 'VENDA';
+        $notaFiscal->entradaSaida = 'S';
+        $notaFiscal->dtEmissao = new \DateTime();
+        $notaFiscal->dtSaiEnt = new \DateTime();
+        $notaFiscal->transpModalidadeFrete = 'EMITENTE';
+        $notaFiscal->documentoDestinatario = $arrPedido['Wspedido']['cliente_cpfcnpj'];
+        $notaFiscal->xNomeDestinatario = $arrPedido['Wspedido']['cliente_razaosocial'];
+        $notaFiscal->logradouroDestinatario = $arrPedido['Wspedido']['cliente_logradouro'];
+        $notaFiscal->numeroDestinatario = $arrPedido['Wspedido']['cliente_numero'];
+        $notaFiscal->complementoDestinatario = $arrPedido['Wspedido']['cliente_informacoes_adicionais'];
+        $notaFiscal->bairroDestinatario = $arrPedido['Wspedido']['cliente_bairro'];
+        $notaFiscal->cidadeDestinatario = $arrPedido['Wspedido']['cliente_cidade'];
+        $notaFiscal->estadoDestinatario = $arrPedido['Wspedido']['cliente_estado'];
+        $notaFiscal->cepDestinatario = $arrPedido['Wspedido']['cliente_cep'];
+        $notaFiscal->foneDestinatario = $arrPedido['Wspedido']['cliente_telefone'];
+        $notaFiscal->emailDestinatario = $arrPedido['Wspedido']['cliente_email'];
+
+        $notaFiscal->infoCompl = 'Envio: ' . $arrPedido['Wspedido']['envio_servico'];
+        $notaFiscal->infoCompl .= PHP_EOL . 'Pedido: ' . $arrPedido['Wspedido']['numero'];
+        if (($arrPedido['WsPedido']['cliente_observacao'] ?? false) && $arrPedido['Wspedido']['cliente_observacao']) {
+            $notaFiscal->infoCompl .= PHP_EOL . PHP_EOL . 'Atenção: ' . $arrPedido['Wspedido']['cliente_observacao'];
+        }
+
+        foreach ($arrPedido['Item'] as $item) {
+            $notaFiscalItem = new NotaFiscalItem();
+            $notaFiscalItem->codigo = $item['sku'];
+            $notaFiscalItem->descricao = $item['nome_produto'];
+            $notaFiscalItem->qtde = $item['quantidade'];
+            $notaFiscalItem->cfop = $arrPedido['Wspedido']['cliente_estado'] === 'PR' ? '5102' : '6102';
+            $notaFiscalItem->csosn = 103;
+            $notaFiscalItem->ncm = '63052000';
+            $notaFiscalItem->unidade = 'UN';
+            $notaFiscalItem->valorUnit = $item['valor_unitario'];
+
+            $notaFiscal->addItem($notaFiscalItem);
+        }
+
+        $this->notaFiscalBusiness->saveNotaFiscal($notaFiscal);
+
+        return $notaFiscal->getId();
     }
 
 }
