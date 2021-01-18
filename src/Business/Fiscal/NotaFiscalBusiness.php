@@ -348,6 +348,17 @@ class NotaFiscalBusiness
 
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal, false);
 
+            // Vendas podem ter descontos globais, mas NFs não.
+            // Se uma venda tem apenas um desconto global e não nos itens, então o desconto global é rateado entre todos
+            $algumItemTemDesconto = false;
+            /** @var VendaItem $vendaItem */
+            foreach ($itensNaNota as $vendaItem) {
+                if ($vendaItem->desconto) {
+                    $algumItemTemDesconto = true;
+                    break;
+                }
+            }
+
             /** @var VendaItem $vendaItem */
             foreach ($itensNaNota as $vendaItem) {
 
@@ -367,7 +378,12 @@ class NotaFiscalBusiness
                 $valorTotalItem = bcmul($vendaItem->qtde, $vendaItem->precoVenda, 2);
                 $nfItem->setValorTotal($valorTotalItem);
 
-                $vDesconto = round(bcmul($valorTotalItem, $fatorDesconto, 4), 2);
+                if (!$algumItemTemDesconto) {
+                    $vDesconto = round(bcmul($valorTotalItem, $fatorDesconto, 4), 2);
+                } else {
+                    $vDesconto = $vendaItem->desconto;
+                }
+
                 $nfItem->setValorDesconto($vDesconto);
 
                 // Somando aqui pra verificar depois se o total dos descontos dos itens bate com o desconto global da nota.
