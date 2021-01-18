@@ -49,8 +49,6 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 /**
  * Regras de negócio para a integração com a WebStorm.
  *
- * Class IntegradorWebStorm
- * @package App\Business\ECommerce
  * @author Carlos Eduardo Pauluk
  */
 class IntegradorWebStorm implements IntegradorECommerce
@@ -915,7 +913,6 @@ class IntegradorWebStorm implements IntegradorECommerce
      * @param bool|null $respeitarDelay
      * @return void
      * @throws ViewException
-     * @throws \Doctrine\DBAL\Exception
      */
     public function integraProduto(Produto $produto, ?bool $integrarImagens = true, ?bool $respeitarDelay = false): void
     {
@@ -1725,8 +1722,10 @@ class IntegradorWebStorm implements IntegradorECommerce
                 $vendaItem->precoVenda = $produtoWebStorm->valorUnitario->__toString(); // $produto->jsonData['preco_site'];
                 $vendaItem->qtde = $produtoWebStorm->quantidade->__toString();
                 $vendaItem->subtotal = bcmul($vendaItem->precoVenda, $vendaItem->qtde, 2);
-                // Para arredondar para cima
-                $vendaItem->desconto = (float)$produtoWebStorm->desconto->__toString() ?? 0.0; //DecimalUtils::round(bcmul($pDesconto, $vendaItem->subtotal, 3));
+
+                $desconto = (float)$produtoWebStorm->desconto->__toString() ?? 0.0;
+                $descontof = (float)$produtoWebStorm->descontof->__toString() ?? 0.0;
+                $vendaItem->desconto = bcadd($desconto, $descontof, 2);
                 $descontoAcum = (float)bcadd($descontoAcum, $vendaItem->desconto, 2);
                 $vendaItem->produto = $produto;
 
