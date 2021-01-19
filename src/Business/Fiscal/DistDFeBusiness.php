@@ -102,7 +102,7 @@ class DistDFeBusiness
             // $nsu--; // decrementa, pois o webservice retorna a partir do próximo
             do {
                 $iCount++;
-                if ($iCount === 3) { // máximo de 5 * 50 (para respeitar as regras na RF e tbm não travar o servidor)
+                if ($iCount === 3) { // máximo de 3 * 50 (para respeitar as regras na RF e tbm não travar o servidor)
                     break;
                 }
                 $resp = $tools->sefazDistDFe($nsu);
@@ -111,6 +111,9 @@ class DistDFeBusiness
                 $r = $xmlResp->xpath('//soap:Body');
 
                 if (!($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip ?? false)) {
+                    if ($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo ?? false) {
+                        throw new ViewException($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo);
+                    }
                     break;
                 }
 
