@@ -238,6 +238,16 @@ class NotaFiscalBusiness
                             throw new ViewException('NFe sem UF no endereço de faturamento');
                         }
 
+                        // Primeiro já preenche com os dados já obtidos para, logo depois, fazer a consulta na receita (caso dê algum problema nela, já estará com o endereço preenchido)
+                        $notaFiscal->setLogradouroDestinatario($endereco_faturamento['logradouro'] ?? '');
+                        $notaFiscal->setNumeroDestinatario($endereco_faturamento['numero'] ?? '');
+                        $notaFiscal->complementoDestinatario = ($endereco_faturamento['complemento'] ?? '');
+                        $notaFiscal->setBairroDestinatario($endereco_faturamento['bairro'] ?? '');
+                        $notaFiscal->setCepDestinatario($endereco_faturamento['cep'] ?? '');
+                        $notaFiscal->setCidadeDestinatario($endereco_faturamento['cidade'] ?? '');
+                        $notaFiscal->setEstadoDestinatario($endereco_faturamento['estado']);
+
+
                         if (strlen($notaFiscal->getDocumentoDestinatario()) === 14 &&
                             (!($endereco_faturamento['logradouro'] ?? false) ||
                                 !($endereco_faturamento['complemento'] ?? false) ||
@@ -248,25 +258,22 @@ class NotaFiscalBusiness
 
                             $endereco_consultado = $this->consultarCNPJ($notaFiscal->getDocumentoDestinatario(), $endereco_faturamento['estado']);
 
-                            if (!$notaFiscal->getInscricaoEstadualDestinatario()) {
-                                $ie = preg_replace("/[^0-9]/", "", $endereco_consultado['dados']['IE'] ?? '');
-                                $notaFiscal->setInscricaoEstadualDestinatario($ie);
+                            if (!isset($endereco_consultado['dados'])) {
+                                $this->syslog->info('Nenhum dado retornado para endereço consultado (venda = ' . $venda->getId() . ')');
+                            } else {
+
+                                if (!$notaFiscal->getInscricaoEstadualDestinatario()) {
+                                    $ie = preg_replace("/[^0-9]/", "", $endereco_consultado['dados']['IE'] ?? '');
+                                    $notaFiscal->setInscricaoEstadualDestinatario($ie);
+                                }
+                                $notaFiscal->setLogradouroDestinatario($endereco_consultado['dados']['logradouro'] ?? '');
+                                $notaFiscal->setNumeroDestinatario($endereco_consultado['dados']['numero'] ?? '');
+                                $notaFiscal->complementoDestinatario = ($endereco_consultado['dados']['complemento'] ?? '');
+                                $notaFiscal->setBairroDestinatario($endereco_consultado['dados']['bairro'] ?? '');
+                                $notaFiscal->setCepDestinatario($endereco_consultado['dados']['CEP'] ?? '');
+                                $notaFiscal->setCidadeDestinatario($endereco_consultado['dados']['cidade'] ?? '');
+                                $notaFiscal->setEstadoDestinatario($endereco_consultado['dados']['UF']);
                             }
-                            $notaFiscal->setLogradouroDestinatario($endereco_consultado['dados']['logradouro'] ?? '');
-                            $notaFiscal->setNumeroDestinatario($endereco_consultado['dados']['numero'] ?? '');
-                            $notaFiscal->complementoDestinatario = ($endereco_consultado['dados']['complemento'] ?? '');
-                            $notaFiscal->setBairroDestinatario($endereco_consultado['dados']['bairro'] ?? '');
-                            $notaFiscal->setCepDestinatario($endereco_consultado['dados']['CEP'] ?? '');
-                            $notaFiscal->setCidadeDestinatario($endereco_consultado['dados']['cidade'] ?? '');
-                            $notaFiscal->setEstadoDestinatario($endereco_consultado['dados']['UF']);
-                        } else {
-                            $notaFiscal->setLogradouroDestinatario($endereco_faturamento['logradouro'] ?? '');
-                            $notaFiscal->setNumeroDestinatario($endereco_faturamento['numero'] ?? '');
-                            $notaFiscal->complementoDestinatario = ($endereco_faturamento['complemento'] ?? '');
-                            $notaFiscal->setBairroDestinatario($endereco_faturamento['bairro'] ?? '');
-                            $notaFiscal->setCepDestinatario($endereco_faturamento['cep'] ?? '');
-                            $notaFiscal->setCidadeDestinatario($endereco_faturamento['cidade'] ?? '');
-                            $notaFiscal->setEstadoDestinatario($endereco_faturamento['estado']);
                         }
                     }
                 } else {
