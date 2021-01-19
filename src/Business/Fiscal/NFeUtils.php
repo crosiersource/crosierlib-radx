@@ -9,6 +9,7 @@ use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use NFePHP\Common\Certificate;
 use NFePHP\NFe\Tools;
 use Psr\Cache\InvalidArgumentException;
@@ -186,7 +187,7 @@ class NFeUtils
         try {
             $idNfeConfigs = $this->getNFeConfigsByCNPJ($cnpj);
             return $this->getTools($idNfeConfigs['id']);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Erro ao obter tools do cachê');
             $this->logger->error($e->getMessage());
             throw new ViewException('Erro ao obter tools do cachê');
@@ -221,7 +222,7 @@ class NFeUtils
         $pwd = $configs['certificadoPwd'];
         try {
             $certificate = Certificate::readPfx($pfx, $pwd);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new ViewException('Erro ao ler certificado');
         }
         return new Tools(json_encode($configs), $certificate);
@@ -239,8 +240,11 @@ class NFeUtils
     public function getNFeConfigsByCNPJ(string $cnpj): array
     {
         try {
-            $nfeConfigsJSON = $this->conn->fetchAssoc('SELECT id, valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave = :chave',
+            $nfeConfigsJSON = $this->conn->fetchAssociative('SELECT id, valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave = :chave',
                 ['appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a', 'chave' => 'nfeConfigs_' . $cnpj]);
+            if (!$nfeConfigsJSON) {
+                throw new ViewException('Nenhum nfeConfigs encontrado para o CNPJ ' . $cnpj);
+            }
             $a = json_decode($nfeConfigsJSON['valor'], true);
             $a['atualizacao'] = isset($a['atualizacao']) ? DateTimeUtils::parseDateStr($a['atualizacao']) : '';
             $a['id'] = $nfeConfigsJSON['id'];
@@ -249,7 +253,7 @@ class NFeUtils
             $a['enderEmit_xBairro'] = strtoupper($a['enderEmit_xBairro']);
             unset($a['certificado'], $a['certificadoPwd']);
             return $a;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Erro ao obter nfeConfigs do cachê');
             $this->logger->error($e->getMessage());
             throw new ViewException('Erro ao obter nfeConfigs do cachê');
@@ -286,6 +290,30 @@ class NFeUtils
                 $msg = 'Erro ao obter nfeConfigs do cachê';
             }
             throw new ViewException($msg);
+        }
+    }
+
+
+    /**
+     * Retorna todos os CNPJs configurados em entradas nfeConfigs_% na cfg_app_config.
+     * @return array
+     * @throws ViewException
+     */
+    public function getNFeConfigsCNPJs(): array
+    {
+        try {
+            $nfeConfigs = $this->conn->fetchAllAssociative('SELECT id, valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave LIKE :chave',
+                ['appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a', 'chave' => 'nfeConfigs_%']);
+            $cnpjs = [];
+            foreach ($nfeConfigs as $nfeConfig) {
+                $nfeConfigDecoded = json_decode($nfeConfig['valor'], true);
+                if ($nfeConfigDecoded['cnpj'] ?? null) {
+                    $cnpjs[] = $nfeConfigDecoded['cnpj'];
+                }
+            }
+            return $cnpjs;
+        } catch (Exception $e) {
+            throw new ViewException('Erro ao pesquisar CNPJs em entradas nfeConfigs_%');
         }
     }
 

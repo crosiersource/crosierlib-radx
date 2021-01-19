@@ -13,6 +13,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\DistDFeEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\DistDFeRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +32,8 @@ class DistDFeBusiness
 
     private NotaFiscalEntityHandler $notaFiscalEntityHandler;
 
+    private NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler;
+
     private LoggerInterface $logger;
 
     private NFeUtils $nfeUtils;
@@ -42,6 +45,7 @@ class DistDFeBusiness
      * @param EntityManagerInterface $doctrine
      * @param DistDFeEntityHandler $distDFeEntityHandler
      * @param NotaFiscalEntityHandler $notaFiscalEntityHandler
+     * @param NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler
      * @param LoggerInterface $logger
      * @param NFeUtils $nfeUtils
      * @param NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler
@@ -49,6 +53,7 @@ class DistDFeBusiness
     public function __construct(EntityManagerInterface $doctrine,
                                 DistDFeEntityHandler $distDFeEntityHandler,
                                 NotaFiscalEntityHandler $notaFiscalEntityHandler,
+                                NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler,
                                 LoggerInterface $logger,
                                 NFeUtils $nfeUtils,
                                 NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler)
@@ -56,6 +61,7 @@ class DistDFeBusiness
         $this->doctrine = $doctrine;
         $this->distDFeEntityHandler = $distDFeEntityHandler;
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
+        $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
         $this->logger = $logger;
         $this->nfeUtils = $nfeUtils;
         $this->notaFiscalEventoEntityHandler = $notaFiscalEventoEntityHandler;
@@ -96,7 +102,7 @@ class DistDFeBusiness
             // $nsu--; // decrementa, pois o webservice retorna a partir do próximo
             do {
                 $iCount++;
-                if ($iCount === 5) { // máximo de 5 * 50 (para respeitar as regras na RF e tbm não travar o servidor)
+                if ($iCount === 3) { // máximo de 5 * 50 (para respeitar as regras na RF e tbm não travar o servidor)
                     break;
                 }
                 $resp = $tools->sefazDistDFe($nsu);
@@ -129,7 +135,7 @@ class DistDFeBusiness
                 }
                 sleep(3);
             } while (true);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Erro ao obter DFes (NSU: ' . $nsu . ')');
             $this->logger->error($e->getMessage());
             if ($e instanceof ViewException) {
@@ -335,7 +341,7 @@ class DistDFeBusiness
         $nf->setDtProtocoloAutorizacao(DateTimeUtils::parseDateStr($xml->protNFe->infProt->dhRecbto ?? null));
 
         /** @var NotaFiscal $nf */
-        $nf = $this->notaFiscalEntityHandler->save($nf);
+        $nf = $this->notaFiscalEntityHandler->save($nf, false);
 
         foreach ($xml->NFe->infNFe->det as $iValue) {
             $item = $iValue;
@@ -358,6 +364,10 @@ class DistDFeBusiness
             $this->notaFiscalEntityHandler->handleSavingEntityId($nfItem);
 
             $nf->addItem($nfItem);
+
+            $this->notaFiscalItemEntityHandler->save($nfItem, false);
+
+
         }
 
         // FRETE
@@ -620,7 +630,7 @@ class DistDFeBusiness
                     $this->logger->error('Erro ao processar DistDFe: não reconhecido (chave ' . $distDFe->chave . ')');
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Erro ao processarDistDFesObtidos()');
             $this->logger->error($e->getMessage());
             throw new ViewException('Erro ao processarDistDFesObtidos()');
@@ -796,4 +806,3 @@ class DistDFeBusiness
 
 
 }
-    

@@ -63,9 +63,12 @@ class NotaFiscalItemEntityHandler extends EntityHandler
         }
 
         if (!$nfItem->getCsosn()) {
-            $nfeConfigs = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsByCNPJ($nfItem->getNotaFiscal()->getDocumentoEmitente());
-            if ($nfeConfigs['CSOSN'] ?? false) {
-                $nfItem->setCsosn($nfeConfigs['CSOSN']);
+            $cnpjsProprios = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsCNPJs();
+            if (in_array(($nfItem->getNotaFiscal()->getDocumentoEmitente() ?? ''), $cnpjsProprios, true)) {
+                $nfeConfigs = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsByCNPJ($nfItem->getNotaFiscal()->getDocumentoEmitente());
+                if ($nfeConfigs['CSOSN'] ?? false) {
+                    $nfItem->setCsosn($nfeConfigs['CSOSN']);
+                }
             }
         }
         $nfItem->calculaTotais();
@@ -78,7 +81,7 @@ class NotaFiscalItemEntityHandler extends EntityHandler
      */
     public function afterSave(/** @var NotaFiscalItem $nfItem */ $nfItem)
     {
-        
+
     }
 
     /**
