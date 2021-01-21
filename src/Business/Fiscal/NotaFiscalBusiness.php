@@ -633,7 +633,7 @@ class NotaFiscalBusiness
                 $this->notaFiscalItemEntityHandler->save($item, false);
             }
 
-            $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
+            
             $this->notaFiscalEntityHandler->save($notaFiscal);
             $this->notaFiscalEntityHandler->getDoctrine()->commit();
             return $notaFiscal;

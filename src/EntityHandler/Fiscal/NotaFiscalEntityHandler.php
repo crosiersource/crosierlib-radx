@@ -98,7 +98,9 @@ class NotaFiscalEntityHandler extends EntityHandler
             $notaFiscal->setEstadoEmitente($arrEmitente['estado']);
             $notaFiscal->setFoneEmitente($arrEmitente['fone1']);
         }
+        $this->calcularTotais($notaFiscal);
     }
+
 
     /**
      * @param NotaFiscal $notaFiscal

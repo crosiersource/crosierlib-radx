@@ -72,7 +72,6 @@ class NotaFiscalItemEntityHandler extends EntityHandler
             }
         }
         $nfItem->calculaTotais();
-
     }
 
     /**
