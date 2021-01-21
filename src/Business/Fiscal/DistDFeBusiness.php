@@ -101,10 +101,10 @@ class DistDFeBusiness
             $iCount = 0; //executa a busca de DFe em loop
             // $nsu--; // decrementa, pois o webservice retorna a partir do próximo
             do {
-                $iCount++;
-                if ($iCount === 3) { // máximo de 3 * 50 (para respeitar as regras na RF e tbm não travar o servidor)
+                if ($iCount === 5) { // máximo de 5 * 50 (para respeitar as regras na RF e tbm não travar o servidor)
                     break;
                 }
+                $iCount++;
                 $resp = $tools->sefazDistDFe($nsu);
                 $xmlResp = simplexml_load_string($resp);
                 $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
