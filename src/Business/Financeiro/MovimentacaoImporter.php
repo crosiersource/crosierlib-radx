@@ -418,7 +418,7 @@ class MovimentacaoImporter
         foreach ($movs299Todas as $mov299) {
             if ($mov299->cadeia) {
                 foreach ($mov299->cadeia->movimentacoes as $movCadeia) {
-                    if ($movCadeia->getCategoria()->getCodigo() === 101 && $movCadeia->getId() !== $mov101->getId()) {
+                    if ($movCadeia->categoria->codigo === 101 && $movCadeia->getId() !== $mov101->getId()) {
                         $jaTem101Associada = true;
                         break;
                     }
@@ -925,7 +925,7 @@ class MovimentacaoImporter
                 $importada = $movs[0];
             }
 
-            if ($importada && !$importada->getDtPagto()) {
+            if ($importada && !$importada->dtPagto) {
                 $importada->setStatus('REALIZADA');
                 $importada->setDtPagto($dtVenctoEfetiva);
             } else {
