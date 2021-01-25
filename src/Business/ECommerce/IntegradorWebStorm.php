@@ -1725,7 +1725,7 @@ class IntegradorWebStorm implements IntegradorECommerce
 
                 $desconto = (float)$produtoWebStorm->desconto->__toString() ?? 0.0;
                 $descontof = (float)$produtoWebStorm->descontof->__toString() ?? 0.0;
-                $vendaItem->desconto = bcadd($desconto, $descontof, 2);
+                $vendaItem->desconto = bcmul(bcadd($desconto, $descontof, 2), $vendaItem->qtde, 2);
                 $descontoAcum = (float)bcadd($descontoAcum, $vendaItem->desconto, 2);
                 $vendaItem->produto = $produto;
 
