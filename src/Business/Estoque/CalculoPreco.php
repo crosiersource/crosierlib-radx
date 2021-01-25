@@ -53,30 +53,16 @@ class CalculoPreco
             throw new \LogicException('É necessário o coeficiente para calcular os preços');
         }
 
+        $precoCusto = $preco['precoCusto'];
         $coeficiente = $preco['coeficiente'];
         $custoFinanceiro = $preco['custoFinanceiro'];
         $custoFinanceiroCompl = 1.0 - (float)$custoFinanceiro;
-        $scale = 4;
-        $custoFinanceiroInv = bcdiv(1, $custoFinanceiroCompl, $scale);
-        $precoCusto = $preco['precoCusto'];
 
-        $custoFinanceiroInv = DecimalUtils::round($custoFinanceiroInv, $scale, DecimalUtils::ROUND_HALF_UP);
-        $pc_cfinv = bcmul($precoCusto, $custoFinanceiroInv, $scale);
-        $pc_cfinv_coef = (float)bcmul($pc_cfinv, $coeficiente, $scale);
-        $pc_cfinv_coef = DecimalUtils::round($pc_cfinv_coef, $scale, DecimalUtils::ROUND_HALF_UP);
+        $coeficiente_x_precoCusto = bcmul($coeficiente, $precoCusto, 8);
+        $coeficiente_x_precoCusto_d_ = bcdiv($coeficiente_x_precoCusto,$custoFinanceiroCompl,8);
+        $precoPrazo = $coeficiente_x_precoCusto_d_arr = DecimalUtils::round($coeficiente_x_precoCusto_d_, 8, DecimalUtils::ROUND_HALF_UP);
 
-        $precoPrazo = DecimalUtils::round($pc_cfinv_coef, 2, DecimalUtils::ROUND_HALF_UP);
-        $centavos = bcsub($precoPrazo, (int)$precoPrazo, 2);
-        if (false && $centavos >= 0.9) {
-            if (false && (float)$centavos === 0.95) {
-                $precoPrazo_corrigido = ((int)$precoPrazo + 1);
-            } else {
-                $precoPrazo_corrigido = ((int)$precoPrazo + 0.9);
-            }
-        } else {
-            $precoPrazo_corrigido = DecimalUtils::round($pc_cfinv_coef, 1, DecimalUtils::ROUND_UP);
-        }
-        $precoPrazo_centavosComDezenaExata = bcmul($precoPrazo_corrigido, 1, 1);
+        $precoPrazo_centavosComDezenaExata = DecimalUtils::round($precoPrazo, 1, DecimalUtils::ROUND_HALF_UP);
 
         $descontoAVista = 1.00 - 0.1;
 
@@ -85,6 +71,7 @@ class CalculoPreco
         $preco['precoPrazo'] = $precoPrazo_centavosComDezenaExata;
         $preco['precoVista'] = $precoVista;
     }
+
 
     /**
      * coeficiente = ( 1.0 / (1.0 - custoOperacional + margem) ) * depreciacaoPrazo
