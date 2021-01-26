@@ -5,19 +5,13 @@ namespace CrosierSource\CrosierLibRadxBundle\Business\ECommerce;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
-use CrosierSource\CrosierLibBaseBundle\Entity\Security\User;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
-use CrosierSource\CrosierLibBaseBundle\Utils\ImageUtils\ImageUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
-use CrosierSource\CrosierLibBaseBundle\Utils\WebUtils\WebUtils;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador;
@@ -26,10 +20,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaPagto;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler;
-use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DeptoEntityHandler;
-use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\GrupoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler;
-use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\SubgrupoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository;
@@ -39,12 +30,12 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\PlanoPagtoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\ConnectionException;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Cache\ItemInterface;
-use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 /**
  * Regras de negócio para a integração com a Simplo7.
@@ -53,6 +44,8 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
  */
 class IntegradorSimplo7 implements IntegradorECommerce
 {
+
+    private Client $client;
 
     private AppConfigEntityHandler $appConfigEntityHandler;
 
@@ -74,8 +67,6 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
     private ClienteEntityHandler $clienteEntityHandler;
 
-    private UploaderHelper $uploaderHelper;
-
     private ParameterBagInterface $params;
 
     private MessageBusInterface $bus;
@@ -84,25 +75,15 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
     private IntegradorMercadoPago $integradorMercadoPago;
 
-    private ?int $delayEntreIntegracoesDeProduto = null;
-
-    private ?bool $permiteIntegrarProdutosSemImagem = null;
-
-    private ?array $marcasNaSimplo7 = null;
-
     /**
      * IntegradorWebStorm constructor.
      * @param AppConfigEntityHandler $appConfigEntityHandler
      * @param Security $security
-     * @param DeptoEntityHandler $deptoEntityHandler
-     * @param GrupoEntityHandler $grupoEntityHandler
-     * @param SubgrupoEntityHandler $subgrupoEntityHandler
      * @param ProdutoEntityHandler $produtoEntityHandler
      * @param VendaEntityHandler $vendaEntityHandler
      * @param VendaItemEntityHandler $vendaItemEntityHandler
      * @param NotaFiscalBusiness $notaFiscalBusiness
      * @param ClienteEntityHandler $clienteEntityHandler
-     * @param UploaderHelper $uploaderHelper
      * @param ParameterBagInterface $params
      * @param MessageBusInterface $bus
      * @param SyslogBusiness $syslog
@@ -110,15 +91,11 @@ class IntegradorSimplo7 implements IntegradorECommerce
      */
     public function __construct(AppConfigEntityHandler $appConfigEntityHandler,
                                 Security $security,
-                                DeptoEntityHandler $deptoEntityHandler,
-                                GrupoEntityHandler $grupoEntityHandler,
-                                SubgrupoEntityHandler $subgrupoEntityHandler,
                                 ProdutoEntityHandler $produtoEntityHandler,
                                 VendaEntityHandler $vendaEntityHandler,
                                 VendaItemEntityHandler $vendaItemEntityHandler,
                                 NotaFiscalBusiness $notaFiscalBusiness,
                                 ClienteEntityHandler $clienteEntityHandler,
-                                UploaderHelper $uploaderHelper,
                                 ParameterBagInterface $params,
                                 MessageBusInterface $bus,
                                 SyslogBusiness $syslog,
@@ -131,11 +108,11 @@ class IntegradorSimplo7 implements IntegradorECommerce
         $this->vendaItemEntityHandler = $vendaItemEntityHandler;
         $this->notaFiscalBusiness = $notaFiscalBusiness;
         $this->clienteEntityHandler = $clienteEntityHandler;
-        $this->uploaderHelper = $uploaderHelper;
         $this->params = $params;
         $this->bus = $bus;
         $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
         $this->integradorMercadoPago = $integradorMercadoPago;
+        $this->client = new Client();
     }
 
 
@@ -190,441 +167,6 @@ class IntegradorSimplo7 implements IntegradorECommerce
         return $this->caixaSiteCarteiraId;
     }
 
-    /**
-     * Obtém as marcas cadastradas na Simplo7
-     * @return array
-     * @throws ViewException
-     */
-    public function selectMarcasNaSimplo7(): array
-    {
-        if (!$this->marcasNaSimplo7) {
-            $this->syslog->debug('selectMarcasNaSimplo7');
-            $client = $this->getNusoapClientExportacaoInstance();
-
-            $xml = '<![CDATA[<?xml version="1.0" encoding="iso-8859-1"?>
-            <ws_integracao xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                    <chave>' . $this->getChave() . '</chave>
-                    <acao>select</acao>
-                    <modulo>registros</modulo>    
-                    <filtro>
-                           <departamento></departamento>
-                           <tipoAtributo></tipoAtributo>
-                           <atributo></atributo>
-                           <tipoCaracteristica></tipoCaracteristica>
-                           <caracteristica></caracteristica>
-                           <marca>1</marca>
-                    </filtro>
-                    </ws_integracao>]]>';
-
-            $arResultado = $client->call('registrosSelect', [
-                'xml' => utf8_decode($xml)
-            ]);
-
-            if ($client->faultcode) {
-                $err = 'selectMarcasNaSimplo7 - faultcode: ' . (string)$client->faultcode;
-                $this->syslog->err($err);
-                throw new ViewException($err);
-            }
-            // else
-            if ($client->getError()) {
-                $err = 'selectMarcasNaSimplo7 - error: ' . $client->getError();
-                $this->syslog->err($err);
-                throw new ViewException($err);
-            }
-
-            $xmlResult = simplexml_load_string(utf8_encode($arResultado));
-
-            if ($xmlResult->erros ?? false) {
-                $err = $xmlResult->erros->erro->__toString();
-                $this->syslog->err('selectMarcasNaSimplo7 - erros: ' . $xmlResult->erros->erro->__toString());
-                throw new \RuntimeException($err);
-            }
-
-            $this->marcasNaSimplo7 = [];
-            foreach ($xmlResult->registros->marcas->marca as $marca) {
-                $this->marcasNaSimplo7[(int)$marca->idMarca->__toString()] = [
-                    'nome' => $marca->nome->__toString(),
-                ];
-            }
-            $this->syslog->debug('selectMarcasNaSimplo7 - OK: ' . count($this->marcasNaSimplo7) . ' marca(s)');
-        }
-
-        return $this->marcasNaSimplo7;
-    }
-
-
-    /**
-     * @param string $marca
-     * @return int
-     */
-    private function integraMarca(string $marca): int
-    {
-        return 0;
-    }
-
-    /**
-     *
-     */
-    public function integrarDeptosGruposSubgrupos()
-    {
-
-    }
-
-    /**
-     * @param Depto $depto
-     * @return int
-     * @throws ViewException
-     */
-    public function integraDepto(Depto $depto): int
-    {
-        return 0;
-    }
-
-    /**
-     * @param Grupo $grupo
-     * @return int
-     * @throws ViewException
-     */
-    public function integraGrupo(Grupo $grupo): int
-    {
-        return 0;
-    }
-
-    /**
-     * @param Subgrupo $subgrupo
-     * @return int
-     * @throws ViewException
-     */
-    public function integraSubgrupo(Subgrupo $subgrupo): int
-    {
-        return 0;
-    }
-
-    /**
-     * Integra um Depto, Grupo ou Subgrupo.
-     *
-     * @param string $descricao
-     * @param int $nivel
-     * @param int|null $idNivelPai1
-     * @param int|null $idNivelPai2
-     * @param int|null $ecommerce_id
-     */
-    public function integraDeptoGrupoSubgrupo(string $descricao, int $nivel, ?int $idNivelPai1 = null, ?int $idNivelPai2 = null, ?int $ecommerce_id = null)
-    {
-
-    }
-
-
-    /**
-     * @param Produto $produto
-     * @param bool $integrarImagens
-     * @param bool|null $respeitarDelay
-     * @return void
-     * @throws ViewException
-     */
-    public function integraProduto(Produto $produto, ?bool $integrarImagens = true, ?bool $respeitarDelay = false): void
-    {
-        $syslog_obs = 'produto = ' . $produto->getId() . '; integrarImagens = ' . $integrarImagens;
-
-        if (!$this->isPermiteIntegrarProdutosSemImagens() && $produto->imagens->count() < 1) {
-            $this->syslog->info('integraProduto - Não é permitido integrar produto sem imagens', $syslog_obs);
-            throw new ViewException('Não é permitido integrar produto sem imagens');
-        }
-        if ($respeitarDelay) {
-            if ($this->getDelayEntreIntegracoesDeProduto()) {
-                $this->syslog->info('integraProduto - delay de ' . $this->getDelayEntreIntegracoesDeProduto(), $syslog_obs);
-                sleep($this->getDelayEntreIntegracoesDeProduto());
-            } else {
-                $this->syslog->info('integraProduto - sem delay entre integrações');
-            }
-        }
-
-        $start = microtime(true);
-
-        $this->syslog->info('integraProduto - ini', $syslog_obs);
-
-        $preco = $produto->jsonData['preco_site'] ?? $produto->jsonData['preco_tabela'] ?? 0.0;
-        if ($preco <= 0) {
-            $err = 'Não é possível integrar produto com preço <= 0';
-            $this->syslog->err($err, $syslog_obs);
-            throw new \RuntimeException($err);
-        }
-
-        try {
-            $conn = $this->produtoEntityHandler->getDoctrine()->getConnection();
-            $rs = $conn->fetchAssociative('SELECT valor FROM cfg_app_config WHERE chave = :chave AND app_uuid = :appUUID',
-                [
-                    'chave' => 'est_produto_json_metadata',
-                    'appUUID' => $_SERVER['CROSIERAPPRADX_UUID']
-                ]);
-            $jsonCampos = json_decode($rs['valor'], true)['campos'];
-        } catch (\Throwable $e) {
-            $err = 'Erro ao pesquisar est_produto_json_metadata';
-            $this->syslog->err($err, $syslog_obs);
-            throw new \RuntimeException($err);
-        }
-
-        // Verifica se o depto, grupo e subgrupo já estão integrados
-        $idDepto = $produto->depto->jsonData['ecommerce_id'] ?? $this->integraDepto($produto->depto);
-        $idGrupo = $produto->grupo->jsonData['ecommerce_id'] ?? $this->integraGrupo($produto->grupo);
-        $idSubgrupo = $produto->subgrupo->jsonData['ecommerce_id'] ?? $this->integraSubgrupo($produto->subgrupo);
-
-        $idMarca = null;
-        if ($produto->jsonData['marca'] ?? false) {
-            $idMarca = $this->integraMarca($produto->jsonData['marca']);
-        }
-
-        $dimensoes = [];
-        if (isset($produto->jsonData['dimensoes'])) {
-            $dimensoes = explode('|', $produto->jsonData['dimensoes']);
-        }
-        $altura = $dimensoes[0] ?? '';
-        $largura = $dimensoes[1] ?? '';
-        $comprimento = $dimensoes[2] ?? '';
-
-        $produtoEcommerceId = null;
-        $produtoItemVendaId = null;
-        if (isset($produto->jsonData['ecommerce_id']) && $produto->jsonData['ecommerce_id'] > 0) {
-            $produtoEcommerceId = $produto->jsonData['ecommerce_id'];
-            $produtoItemVendaId = $produto->jsonData['ecommerce_item_venda_id'] ?? null;
-        }
-
-
-        if (!$integrarImagens && !$produtoEcommerceId) {
-            $err = 'Produto ainda não integrado. É necessário integrar as imagens!';
-            $this->syslog->err($err, $syslog_obs);
-            throw new ViewException($err);
-        }
-
-        $xml = '<![CDATA[<?xml version="1.0" encoding="iso-8859-1"?>
-            <ws_integracao xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-               <chave>' . $this->getChave() . '</chave>
-               <acao>' . ($produtoEcommerceId ? 'update' : 'insert') . '</acao>
-               <modulo>produto</modulo>
-               <produto pk="idProduto">' .
-            ($produtoEcommerceId ? '<idProduto>' . $produtoEcommerceId . '</idProduto>' : '');
-        $xml .= $idMarca ? '<idMarca>' . $idMarca . '</idMarca>' : '';
-        $xml .=
-            '<departamento pk="idDepartamento"><idDepartamento>' . $idDepto . '</idDepartamento></departamento>' .
-            '<departamento pk="idDepartamento"><idDepartamento>' . $idGrupo . '</idDepartamento></departamento>' .
-            '<departamento pk="idDepartamento"><idDepartamento>' . $idSubgrupo . '</idDepartamento></departamento>' .
-            // '<situacao>0</situacao>' .
-            '<prazoXD>0</prazoXD>' .
-            '<conjunto />' .
-            '<nome>' . $produto->jsonData['titulo'] . '</nome>' .
-            '<referencia>' . strtoupper($produto->jsonData['referencia'] ?? '') . '</referencia>';
-
-        $descricao_produto = '';
-        if ($produto->jsonData['descricao_produto'] ?? false) {
-            $descricao_produto = htmlspecialchars($produto->jsonData['descricao_produto']);
-        }
-        $xml .= '<descricao>' . $descricao_produto . '</descricao>';
-
-        $caracteristicas = '';
-        if ($produto->jsonData['caracteristicas'] ?? false) {
-            $caracteristicas = htmlspecialchars($produto->jsonData['caracteristicas']);
-        }
-        $xml .= '<descricao-descricao-caracteristicas>' . $caracteristicas . '</descricao-descricao-caracteristicas>';
-
-        $itens_inclusos = '';
-        if ($produto->jsonData['itens_inclusos'] ?? false) {
-            $itens_inclusos = htmlspecialchars($produto->jsonData['itens_inclusos']);
-        }
-        $xml .= '<descricao-itens-inclusos>' . $itens_inclusos . '</descricao-itens-inclusos>';
-
-        $compativel_com = '';
-        if ($produto->jsonData['compativel_com'] ?? false) {
-            $compativel_com = htmlspecialchars($produto->jsonData['compativel_com']);
-        }
-        $xml .= '<descricao-compativel-com>' . $compativel_com . '</descricao-compativel-com>';
-
-        $especif_tec = '';
-        if ($produto->jsonData['especif_tec'] ?? false) {
-            $especif_tec = htmlspecialchars($produto->jsonData['especif_tec']);
-        }
-        $xml .= '<descricao-especificacoes-tecnicas>' . $especif_tec . '</descricao-especificacoes-tecnicas>';
-
-
-        foreach ($produto->jsonData as $campo => $valor) {
-            if (isset($jsonCampos[$campo]['info_integr_ecommerce']['tipo_campo_ecommerce']) && $jsonCampos[$campo]['info_integr_ecommerce']['tipo_campo_ecommerce'] === 'caracteristica') {
-
-                if ($jsonCampos[$campo]['info_integr_ecommerce']['ecommerce_id'] ?: null) {
-                    $ecommerceId_tipoCaracteristica = (int)$jsonCampos[$campo]['info_integr_ecommerce']['ecommerce_id'];
-                } else {
-                    $ecommerceId_tipoCaracteristica = (int)$this->integraTipoCaracteristica($campo, $jsonCampos[$campo]['label']);
-                }
-
-                if ($jsonCampos[$campo]['tipo'] === 'tags') {
-                    $valoresTags = explode(',', $valor);
-                    foreach ($valoresTags as $valorTag) {
-                        $ecommerceId_caracteristica = $this->integraCaracteristica($ecommerceId_tipoCaracteristica, $valorTag);
-                        $xml .= '<caracteristicaProduto><idCaracteristica>' . $ecommerceId_caracteristica . '</idCaracteristica></caracteristicaProduto>';
-                    }
-                } else {
-                    $ecommerceId_caracteristica = $this->integraCaracteristica($ecommerceId_tipoCaracteristica, $valor);
-                    $xml .= '<caracteristicaProduto><idCaracteristica>' . $ecommerceId_caracteristica . '</idCaracteristica></caracteristicaProduto>';
-                }
-            }
-        }
-
-        $ecommerceId_caracteristica_unidade = $produto->unidadePadrao->jsonData['webstorm_info']['caracteristica_id'] ?? null;
-        if (!$ecommerceId_caracteristica_unidade) {
-            throw new ViewException('Erro ao integrar unidade do produto');
-        }
-        $xml .= '<caracteristicaProduto><idCaracteristica>' . $ecommerceId_caracteristica_unidade . '</idCaracteristica></caracteristicaProduto>';
-
-        if ($integrarImagens) {
-            foreach ($produto->imagens as $imagem) {
-                $url = $_SERVER['CROSIERAPP_URL'] . $this->uploaderHelper->asset($imagem, 'imageFile');
-                // verifica se existe a imagem "_1080.ext"
-                $pathinfo = pathinfo($url);
-                $parsedUrl = parse_url($url);
-                $url1080 = $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '_1080.' . $pathinfo['extension'];
-                try {
-                    if (!WebUtils::urlNot404($url1080)) {
-                        $imgDims = getimagesize($url);
-                        if ($imgDims[0] > 1500 || $imgDims[1] > 1500) {
-                            $imgUtils = new ImageUtils();
-                            $imgUtils->load($url);
-                            if ($imgDims[0] >= $imgDims[1]) {
-                                // largura maior que altura
-                                $imgUtils->resizeToWidth(1080);
-                            } else {
-                                $imgUtils->resizeToHeight(1080);
-                            }
-                            // '%kernel.project_dir%/public/images/produtos'
-                            $file1080 = $this->params->get('kernel.project_dir') . '/public' .
-                                str_replace($pathinfo['basename'], '', $parsedUrl['path']) .
-                                $pathinfo['filename'] . '_1080.' . $pathinfo['extension'];
-                            $imgUtils->save($file1080);
-                        } else {
-                            $url1080 = $url;
-                        }
-                    }
-                } catch (\Exception $e) {
-                    $err = 'Erro ao processar imagens: ' . $e->getMessage();
-                    $this->syslog->err($err);
-                    throw new \RuntimeException($err);
-                }
-
-                $xml .= '<imagens>
-				<url>' . $url1080 . '</url>
-				<prioridade>' . ($imagem->getOrdem() - 1) . '</prioridade>
-			</imagens>';
-            }
-        }
-
-        $referenciasExtras = '';
-        if ($produto->jsonData['referencias_extras'] ?? false) {
-            $referenciasExtras = htmlspecialchars($produto->jsonData['referencias_extras']);
-        }
-        $xml .= '<referenciasExtras>' . $referenciasExtras . '</referenciasExtras>';
-
-
-        $xml .=
-            '<itensVenda>
-				<idItemVenda>' . $produtoItemVendaId . '</idItemVenda>
-				<codigo>' . $produto->getId() . '</codigo>
-				<preco>' . $preco . '</preco>
-				<estoque>' . ($produto->jsonData['qtde_estoque_total'] ?? 0) . '</estoque>
-				<estoqueMin>0</estoqueMin>
-				<situacao>1</situacao>
-				<peso>' . ($produto->jsonData['peso'] ?? '') . '</peso>
-				<ean>' . htmlspecialchars(isset($produto->jsonData['ean']) ? $produto->jsonData['ean'] : '') . '</ean>
-				<altura>' . $altura . '</altura>
-				<largura>' . $largura . '</largura>
-				<comprimento>' . $comprimento . '</comprimento>
-            </itensVenda></produto>' .
-            '</ws_integracao>]]>';
-
-
-        $this->syslog->debug('integraProduto - XML REQUEST - ' . $syslog_obs, $xml);
-
-        $client = $this->getNusoapClientImportacaoInstance();
-
-        $arResultado = $client->call('produto' . ($produtoEcommerceId ? 'Update' : 'Add'), [
-            'xml' => utf8_decode($xml)
-        ]);
-
-        if ($client->faultcode) {
-            $this->syslog->err('integraProduto - faultcode: ' . (string)$client->faultcode, $syslog_obs);
-            throw new \RuntimeException($client->faultcode);
-        }
-        // else
-        if ($client->getError()) {
-            $this->syslog->err('integraProduto - faultcode: ' . $client->getError(), $syslog_obs);
-            throw new \RuntimeException($client->getError());
-        }
-
-        $arResultado = utf8_encode($arResultado);
-        $arResultado = str_replace('&nbsp;', ' ', $arResultado);
-
-        $this->syslog->debug('integraProduto - XML RESPONSE - ' . $syslog_obs, $xml);
-
-        $xmlResult = simplexml_load_string($arResultado);
-
-        if ($xmlResult->erros->erro ?? false) {
-            $this->syslog->err('integraProduto - erros: ' . $xmlResult->erros->erro->__toString(), $syslog_obs);
-            throw new \RuntimeException($xmlResult->erros->erro->__toString());
-        }
-
-        // está fazendo UPDATE
-        if ($produtoEcommerceId) {
-            $produto->jsonData['ecommerce_id'] = (int)$xmlResult->produtos->produto->idProduto->__toString();
-            $produto->jsonData['ecommerce_item_venda_id'] = (int)$xmlResult->produtos->produto->itensVenda->itemVenda->resultado->idItemVenda->__toString();
-        } else {
-            $produto->jsonData['ecommerce_id'] = (int)$xmlResult->produto->produto->idProduto->__toString();
-            $produto->jsonData['ecommerce_item_venda_id'] = (int)$xmlResult->produto->produto->itensVenda->itemVenda->idItemVenda->__toString();
-        }
-
-
-        $produto->jsonData['ecommerce_dt_integr'] = (new \DateTime())->modify('+1 minutes')->format('Y-m-d H:i:s');
-        $produto->jsonData['ecommerce_dt_marcado_integr'] = null;
-        $produto->jsonData['ecommerce_desatualizado'] = 0;
-
-        /** @var User $user */
-        $user = $this->security->getUser();
-        $produto->jsonData['ecommerce_integr_por'] = $user ? $user->getNome() : 'n/d';
-
-
-        $this->syslog->info('integraProduto - save', $syslog_obs);
-        $this->produtoEntityHandler->save($produto);
-
-        $tt = (int)(microtime(true) - $start);
-        $this->syslog->info('integraProduto - OK (em ' . $tt . ' segundos)', $syslog_obs);
-    }
-
-    /**
-     * Faz a integração de vários produtos em uma única chamada.
-     *
-     * @param array $produtosIds
-     * @return void
-     * @throws ViewException
-     */
-    public function atualizaEstoqueEPrecos(array $produtosIds): void
-    {
-        return;
-    }
-
-    /**
-     * Envia para a fila de integração os produtos que foram alterados mas que ainda não foram reintegrados no ecommerce.
-     * @return int
-     */
-    public function reenviarParaIntegracaoProdutosAlterados(): int
-    {
-        return 0;
-    }
-
-    /**
-     * Envia produtos para a fila (queue) que executará as integrações com o webstorm.
-     *
-     * @param int|null $limit
-     * @return int
-     */
-    public function reenviarTodosOsProdutosParaIntegracao(?int $limit = null): int
-    {
-
-    }
 
     /**
      * @param \DateTime $dtVenda
@@ -657,34 +199,19 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
     /**
      * @param \DateTime $dtVenda
-     * @return array
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ViewException
      */
     public function obterVendasPorData(\DateTime $dtVenda)
     {
         $dtIni = (clone $dtVenda)->setTime(0, 0);
         $dtIniS = $dtIni->format('Y-m-d');
 
-        $client = new Client();
-
         $jsons = [];
         $page = 1;
         do {
-            $response = $client->request('GET', $this->getEndpoint() . '/ws/wspedidos.json?data_inicio=' . $dtIniS . '&page=' . $page++,
-                [
-                    'headers' => [
-                        'Content-Type' => 'application/json; charset=UTF-8',
-                        'appKey' => $this->getChave(),
-                    ]
-                ]
-            );
 
-            $bodyContents = $response->getBody()->getContents();
-            $json = json_decode($bodyContents, true);
-
-            $results = $json['result'] ?? [];
-            foreach ($results as $result) {
-                $response = $client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $result['Wspedido']['id'] . '.json',
+            try {
+                $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wspedidos.json?data_inicio=' . $dtIniS . '&page=' . $page++,
                     [
                         'headers' => [
                             'Content-Type' => 'application/json; charset=UTF-8',
@@ -692,13 +219,76 @@ class IntegradorSimplo7 implements IntegradorECommerce
                         ]
                     ]
                 );
-
                 $bodyContents = $response->getBody()->getContents();
-                $uJson = json_decode($bodyContents, true);
+                $json = json_decode($bodyContents, true);
+                $results = $json['result'] ?? [];
+                foreach ($results as $result) {
+                    $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $result['Wspedido']['id'] . '.json',
+                        [
+                            'headers' => [
+                                'Content-Type' => 'application/json; charset=UTF-8',
+                                'appKey' => $this->getChave(),
+                            ]
+                        ]
+                    );
 
-                $jsons[] = $uJson['result'];
+                    $bodyContents = $response->getBody()->getContents();
+                    $uJson = json_decode($bodyContents, true);
+
+                    $jsons[] = $uJson['result'];
+                }
+                $hasNextPage = $json['pagination']['has_next_page'];
+            } catch (GuzzleException $e) {
+                throw new ViewException('Erro ao obterVendasPorData');
             }
-            $hasNextPage = $json['pagination']['has_next_page'];
+        } while ($hasNextPage);
+
+        return $jsons;
+    }
+
+    /**
+     * @param string $status
+     * @return null|array
+     * @throws ViewException
+     */
+    public function obterVendasPorStatus(string $status): ?array
+    {
+        $jsons = [];
+        $page = 1;
+        do {
+
+            try {
+                $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wspedidos.json?status=' . $status . '&page=' . $page++,
+                    [
+                        'headers' => [
+                            'Content-Type' => 'application/json; charset=UTF-8',
+                            'appKey' => $this->getChave(),
+                        ],
+                        'timeout' => 10
+                    ]
+                );
+                $bodyContents = $response->getBody()->getContents();
+                $json = json_decode($bodyContents, true);
+                $results = $json['result'] ?? [];
+                foreach ($results as $result) {
+                    $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $result['Wspedido']['id'] . '.json',
+                        [
+                            'headers' => [
+                                'Content-Type' => 'application/json; charset=UTF-8',
+                                'appKey' => $this->getChave(),
+                            ]
+                        ]
+                    );
+
+                    $bodyContents = $response->getBody()->getContents();
+                    $uJson = json_decode($bodyContents, true);
+
+                    $jsons[] = $uJson['result'];
+                }
+                $hasNextPage = $json['pagination']['has_next_page'];
+            } catch (GuzzleException $e) {
+                throw new ViewException('Erro ao obterVendasPorStatus');
+            }
         } while ($hasNextPage);
 
         return $jsons;
@@ -706,14 +296,10 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
 
     /**
-     * @param int $idClienteECommerce
+     * @param array $pedido
+     * @param bool|null $resalvar
+     * @throws ViewException
      */
-    public function obterCliente($cpfCnpj)
-    {
-
-
-    }
-
     private function integrarVendaParaCrosier(array $pedido, ?bool $resalvar = false): void
     {
         try {
@@ -1029,9 +615,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
             throw new ViewException('Venda sem ecommerce_idPedido');
         }
 
-        $client = new Client();
-
-        $response = $client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $venda->jsonData['ecommerce_idPedido'] . '.json',
+        $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $venda->jsonData['ecommerce_idPedido'] . '.json',
             [
                 'headers' => [
                     'Content-Type' => 'application/json; charset=UTF-8',
@@ -1050,60 +634,11 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
     /**
      * @param Venda $venda
+     * @return null
      */
     public function integrarVendaParaECommerce(Venda $venda)
     {
-
-    }
-
-
-    public function obterProdutos()
-    {
-        $client = new Client();
-
-        $response = $client->request('GET', $this->getEndpoint() . '/ws/wsprodutos.json',
-            [
-                'headers' => [
-                    'Content-Type' => 'application/json; charset=UTF-8',
-                    'appKey' => $this->getChave(),
-                ]
-            ]
-        );
-
-        $bodyContents = $response->getBody()->getContents();
-        $json = json_decode($bodyContents, true);
-
-        $depto1 = $this->deptoEntityHandler->getDoctrine()->getRepository(Depto::class)->find(1);
-        $grupo1 = $this->deptoEntityHandler->getDoctrine()->getRepository(Grupo::class)->find(1);
-        $subgrupo1 = $this->deptoEntityHandler->getDoctrine()->getRepository(Subgrupo::class)->find(1);
-
-        /** @var ProdutoRepository $repoProduto */
-        $repoProduto = $this->produtoEntityHandler->getDoctrine()->getRepository(Produto::class);
-
-        foreach ($json['result'] as $r) {
-            $wsProduto = $r['Wsproduto'];
-            $produto = $repoProduto->findOneByFiltersSimpl([['codigo', 'LIKE_END', $wsProduto['sku']]]);
-            if (!$produto) {
-                $produto = new Produto();
-                $produto->codigo = $wsProduto['sku'];
-                $produto->depto = $depto1;
-                $produto->grupo = $grupo1;
-                $produto->subgrupo = $subgrupo1;
-            }
-            $produto->nome = mb_strtoupper($wsProduto['nome']);
-
-            $produto->jsonData['titulo'] = $wsProduto['nome'];
-            $produto->jsonData['caracteristicas'] = $wsProduto['descricao_resumida'] ?? '';
-            $produto->jsonData['especif_tec'] = $wsProduto['descricao'] ?? '';
-            $produto->jsonData['peso'] = $r['WsprodutoEstoque'][0]['peso_liquido'] ?? '';
-            $produto->jsonData['dimensoes'] =
-                ($r['WsprodutoEstoque'][0]['altura'] ?? '') . '|' .
-                ($r['WsprodutoEstoque'][0]['largura'] ?? '') . '|' .
-                ($r['WsprodutoEstoque'][0]['comprimento'] ?? '');
-            $produto->jsonData['ecommerce_id'] = $wsProduto['id'];
-            $this->produtoEntityHandler->save($produto);
-        }
-
+        return null;
     }
 
 
@@ -1147,7 +682,6 @@ class IntegradorSimplo7 implements IntegradorECommerce
      * @return int|null
      * @throws ViewException
      * @throws \Doctrine\DBAL\Exception
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function gerarNFeParaVenda(int $codVenda): ?int
     {
@@ -1157,10 +691,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
             return $existe['id'];
         }
 
-
-        $client = new Client();
-
-        $response = $client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $codVenda . '.json',
+        $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $codVenda . '.json',
             [
                 'headers' => [
                     'Content-Type' => 'application/json; charset=UTF-8',
@@ -1220,9 +751,61 @@ class IntegradorSimplo7 implements IntegradorECommerce
         return $notaFiscal->getId();
     }
 
+    /**
+     *
+     */
     public function atualizarPedidosMelhorEnvio()
     {
+        $return = [];
+        $pedidosEnviados = $this->obterVendasPorStatus('enviado');
 
+        foreach ($pedidosEnviados as $pedidoEnviado) {
+            if (stripos(($pedidoEnviado['Wspedido']['envio_servico'] ?? ''), 'jadlog') !== FALSE) {
+                $return[] = 'Pedido: ' . $pedidoEnviado['Wspedido']['id'] . ' (' . $pedidoEnviado['Wspedido']['cliente_razaosocial'] . ')';
+                $tracking = $pedidoEnviado['Wspedido']['envio_codigo_objeto'] ?? '';
+                if (!$tracking) {
+                    $return[] = 'sem código de rastreio';
+                    $return[] = '---';
+                    continue;
+                }
+                $rMelhorRastreio = $this->client->request('GET', 'https://api.melhorrastreio.com.br/api/v1/trackings/' . $tracking, ['timeout' => 10]);
+                $bodyMelhorRastreio = $rMelhorRastreio->getBody()->getContents();
+                $jsonMelhorRastreio = json_decode($bodyMelhorRastreio, true);
+
+                if ($jsonMelhorRastreio['data']['status'] !== 'delivered') {
+                    $return[] = 'não entregue: ' . $jsonMelhorRastreio['data']['status'];
+                    $return[] = '---';
+                    continue;
+                }
+                $return[] = 'entregue... atualizando status';
+                $data['Wspedido']['Status']['id'] = 3;
+                $rAtualizaPedido = $this->client->request('PUT', $this->getEndpoint() . '/ws/wspedidos/' . $pedidoEnviado['Wspedido']['id'] . '.json',
+                    [
+                        'headers' => [
+                            'Content-Type' => 'application/json; charset=UTF-8',
+                            'appKey' => $this->getChave(),
+                        ],
+                        'body' => json_encode($data),
+                        'timeout' => 10
+                    ]
+                );
+                $bodyAtualizaPedido = $rAtualizaPedido->getBody()->getContents();
+                $jsonAtualizaPedido = json_decode($bodyAtualizaPedido, true);
+                if (($jsonAtualizaPedido['result']['Status']['nome'] ?? '') === 'Entregue') {
+                    $return[] = 'OK';
+                } else {
+                    $return[] = 'ERRO';
+                    $return[] = json_encode($jsonAtualizaPedido);
+                }
+                $return[] = '---';
+
+            }
+        }
+        return $return;
     }
 
+    public function obterCliente($idClienteECommerce)
+    {
+        // TODO: Implement obterCliente() method.
+    }
 }

@@ -29,7 +29,7 @@ class IntegradorECommerceFactory
     }
 
 
-    public function getIntegrador()
+    public function getIntegrador(): IntegradorWebStorm
     {
         $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
         $integrador = $repoAppConfig->findByChave('ecomm_info_integra');

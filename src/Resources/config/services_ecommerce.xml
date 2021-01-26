@@ -34,7 +34,6 @@
         <!-- IntegradorWebStorm -->
         <service id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_web_storm"
                  class="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorWebStorm">
-
             <argument type="service"
                       id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
             <argument type="service" id="security.helper"/>
@@ -64,24 +63,13 @@
         <!-- IntegradorSimplo7 -->
         <service id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_simplo7"
                  class="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorSimplo7">
-            <argument type="service"
-                      id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
             <argument type="service" id="security.helper"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depto_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.grupo_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.subgrupo_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
-            <argument type="service" id="Vich\UploaderBundle\Templating\Helper\UploaderHelper"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
             <argument type="service" id="parameter_bag"/>
             <argument type="service" id="messenger.bus.default"/>
             <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
@@ -94,19 +82,13 @@
         <!-- IntegradorMercadoPago -->
         <service id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_mercado_pago"
                  class="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorMercadoPago">
-            <argument type="service"
-                      id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
             <argument type="service" id="security.helper"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_preco_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_preco_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
             <argument type="service" id="parameter_bag"/>
             <argument type="service" id="messenger.bus.default"/>
             <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
