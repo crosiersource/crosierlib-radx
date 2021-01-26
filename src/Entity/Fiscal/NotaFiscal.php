@@ -603,9 +603,7 @@ class NotaFiscal implements EntityId
      *
      * @ORM\OneToMany(
      *      targetEntity="NotaFiscalItem",
-     *      cascade={"all"},
-     *      mappedBy="notaFiscal",
-     *      orphanRemoval=true
+     *      mappedBy="notaFiscal"
      * )
      * @ORM\OrderBy({"ordem" = "ASC"})
      */
@@ -1756,6 +1754,7 @@ class NotaFiscal implements EntityId
     {
         if (!$this->itens->contains($item)) {
             $this->itens->add($item);
+            $item->notaFiscal = $this;
         }
     }
 

@@ -144,7 +144,7 @@ class NotaFiscalBusiness
     {
         $dir = $_SERVER['PASTAARQUIVOSEKTFISCAL'];
         $files = scandir($dir, SCANDIR_SORT_NONE);
-        return in_array('controle.txt', $files, true) ? true : false;
+        return in_array('controle.txt', $files, true);
     }
 
     /**
@@ -212,6 +212,7 @@ class NotaFiscalBusiness
                         if ($venda->jsonData['ecommerce_entrega_logradouro'] ?? false) {
                             $endereco_faturamento['logradouro'] = $venda->jsonData['ecommerce_entrega_logradouro'];
                             $endereco_faturamento['numero'] = $venda->jsonData['ecommerce_entrega_numero'] ?? '';
+                            $endereco_faturamento['complemento'] = $venda->jsonData['ecommerce_entrega_complemento'] ?? '';
                             $endereco_faturamento['bairro'] = $venda->jsonData['ecommerce_entrega_bairro'] ?? '';
                             $endereco_faturamento['cidade'] = $venda->jsonData['ecommerce_entrega_cidade'] ?? '';
                             $endereco_faturamento['estado'] = $venda->jsonData['ecommerce_entrega_uf'] ?? '';
@@ -223,6 +224,7 @@ class NotaFiscalBusiness
                     } else {
                         $endereco_faturamento['logradouro'] = $notaFiscal->getLogradouroDestinatario();
                         $endereco_faturamento['numero'] = $notaFiscal->getNumeroDestinatario();
+                        $endereco_faturamento['complemento'] = $notaFiscal->complementoDestinatario;
                         $endereco_faturamento['bairro'] = $notaFiscal->getBairroDestinatario();
                         $endereco_faturamento['cidade'] = $notaFiscal->getCidadeDestinatario();
                         $endereco_faturamento['estado'] = $notaFiscal->getEstadoDestinatario();
@@ -236,8 +238,19 @@ class NotaFiscalBusiness
                             throw new ViewException('NFe sem UF no endereço de faturamento');
                         }
 
+                        // Primeiro já preenche com os dados já obtidos para, logo depois, fazer a consulta na receita (caso dê algum problema nela, já estará com o endereço preenchido)
+                        $notaFiscal->setLogradouroDestinatario($endereco_faturamento['logradouro'] ?? '');
+                        $notaFiscal->setNumeroDestinatario($endereco_faturamento['numero'] ?? '');
+                        $notaFiscal->complementoDestinatario = ($endereco_faturamento['complemento'] ?? '');
+                        $notaFiscal->setBairroDestinatario($endereco_faturamento['bairro'] ?? '');
+                        $notaFiscal->setCepDestinatario($endereco_faturamento['cep'] ?? '');
+                        $notaFiscal->setCidadeDestinatario($endereco_faturamento['cidade'] ?? '');
+                        $notaFiscal->setEstadoDestinatario($endereco_faturamento['estado']);
+
+
                         if (strlen($notaFiscal->getDocumentoDestinatario()) === 14 &&
                             (!($endereco_faturamento['logradouro'] ?? false) ||
+                                !($endereco_faturamento['complemento'] ?? false) ||
                                 !($endereco_faturamento['bairro'] ?? false) ||
                                 !($endereco_faturamento['cep'] ?? false) ||
                                 !($endereco_faturamento['cidade'] ?? false) ||
@@ -245,23 +258,22 @@ class NotaFiscalBusiness
 
                             $endereco_consultado = $this->consultarCNPJ($notaFiscal->getDocumentoDestinatario(), $endereco_faturamento['estado']);
 
-                            if (!$notaFiscal->getInscricaoEstadualDestinatario()) {
-                                $ie = preg_replace("/[^0-9]/", "", $endereco_consultado['dados']['IE'] ?? '');
-                                $notaFiscal->setInscricaoEstadualDestinatario($ie);
+                            if (!isset($endereco_consultado['dados'])) {
+                                $this->syslog->info('Nenhum dado retornado para endereço consultado (venda = ' . $venda->getId() . ')');
+                            } else {
+
+                                if (!$notaFiscal->getInscricaoEstadualDestinatario()) {
+                                    $ie = preg_replace("/[^0-9]/", "", $endereco_consultado['dados']['IE'] ?? '');
+                                    $notaFiscal->setInscricaoEstadualDestinatario($ie);
+                                }
+                                $notaFiscal->setLogradouroDestinatario($endereco_consultado['dados']['logradouro'] ?? '');
+                                $notaFiscal->setNumeroDestinatario($endereco_consultado['dados']['numero'] ?? '');
+                                $notaFiscal->complementoDestinatario = ($endereco_consultado['dados']['complemento'] ?? '');
+                                $notaFiscal->setBairroDestinatario($endereco_consultado['dados']['bairro'] ?? '');
+                                $notaFiscal->setCepDestinatario($endereco_consultado['dados']['CEP'] ?? '');
+                                $notaFiscal->setCidadeDestinatario($endereco_consultado['dados']['cidade'] ?? '');
+                                $notaFiscal->setEstadoDestinatario($endereco_consultado['dados']['UF']);
                             }
-                            $notaFiscal->setLogradouroDestinatario($endereco_consultado['dados']['logradouro'] ?? '');
-                            $notaFiscal->setNumeroDestinatario($endereco_consultado['dados']['numero'] ?? '');
-                            $notaFiscal->setBairroDestinatario($endereco_consultado['dados']['bairro'] ?? '');
-                            $notaFiscal->setCepDestinatario($endereco_consultado['dados']['CEP'] ?? '');
-                            $notaFiscal->setCidadeDestinatario($endereco_consultado['dados']['cidade'] ?? '');
-                            $notaFiscal->setEstadoDestinatario($endereco_consultado['dados']['UF']);
-                        } else {
-                            $notaFiscal->setLogradouroDestinatario($endereco_faturamento['logradouro'] ?? '');
-                            $notaFiscal->setNumeroDestinatario($endereco_faturamento['numero'] ?? '');
-                            $notaFiscal->setBairroDestinatario($endereco_faturamento['bairro'] ?? '');
-                            $notaFiscal->setCepDestinatario($endereco_faturamento['cep'] ?? '');
-                            $notaFiscal->setCidadeDestinatario($endereco_faturamento['cidade'] ?? '');
-                            $notaFiscal->setEstadoDestinatario($endereco_faturamento['estado']);
                         }
                     }
                 } else {
@@ -341,6 +353,19 @@ class NotaFiscalBusiness
             $repoProduto = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Produto::class);
 
 
+            $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal, false);
+
+            // Vendas podem ter descontos globais, mas NFs não.
+            // Se uma venda tem apenas um desconto global e não nos itens, então o desconto global é rateado entre todos
+            $algumItemTemDesconto = false;
+            /** @var VendaItem $vendaItem */
+            foreach ($itensNaNota as $vendaItem) {
+                if ($vendaItem->desconto) {
+                    $algumItemTemDesconto = true;
+                    break;
+                }
+            }
+
             /** @var VendaItem $vendaItem */
             foreach ($itensNaNota as $vendaItem) {
 
@@ -360,7 +385,12 @@ class NotaFiscalBusiness
                 $valorTotalItem = bcmul($vendaItem->qtde, $vendaItem->precoVenda, 2);
                 $nfItem->setValorTotal($valorTotalItem);
 
-                $vDesconto = round(bcmul($valorTotalItem, $fatorDesconto, 4), 2);
+                if (!$algumItemTemDesconto) {
+                    $vDesconto = round(bcmul($valorTotalItem, $fatorDesconto, 4), 2);
+                } else {
+                    $vDesconto = $vendaItem->desconto;
+                }
+
                 $nfItem->setValorDesconto($vDesconto);
 
                 // Somando aqui pra verificar depois se o total dos descontos dos itens bate com o desconto global da nota.
@@ -423,8 +453,8 @@ class NotaFiscalBusiness
                     $nfItem->setCofinsValorBc($nfItem->getSubTotal());
                 }
 
-                $this->notaFiscalEntityHandler->handleSavingEntityId($nfItem);
                 $notaFiscal->addItem($nfItem);
+                $this->notaFiscalItemEntityHandler->save($nfItem, false);
             }
 
             $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
@@ -597,7 +627,13 @@ class NotaFiscalBusiness
                 $notaFiscal->setCnf($cNF);
             }
 
-            $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
+            $this->notaFiscalEntityHandler->save($notaFiscal, false);
+
+            foreach ($notaFiscal->itens as $item) {
+                $this->notaFiscalItemEntityHandler->save($item, false);
+            }
+
+            
             $this->notaFiscalEntityHandler->save($notaFiscal);
             $this->notaFiscalEntityHandler->getDoctrine()->commit();
             return $notaFiscal;
@@ -1303,26 +1339,26 @@ class NotaFiscalBusiness
 
                     $movimentacao = new Movimentacao();
 
-                    $movimentacao->setFatura($fatura);
-                    $movimentacao->setTipoLancto($tipoLancto_parcelamento);
-                    $movimentacao->setModo($modo_boleto);
-                    $movimentacao->setCarteira($carteira_indefinida);
-                    $movimentacao->setCategoria($categoria_CustosMercadoria);
-                    $movimentacao->setCentroCusto($centroCusto);
-                    $movimentacao->setStatus('ABERTA');
+                    $movimentacao->fatura = ($fatura);
+                    $movimentacao->tipoLancto = ($tipoLancto_parcelamento);
+                    $movimentacao->modo = ($modo_boleto);
+                    $movimentacao->carteira = ($carteira_indefinida);
+                    $movimentacao->categoria = ($categoria_CustosMercadoria);
+                    $movimentacao->centroCusto = ($centroCusto);
+                    $movimentacao->status = ('ABERTA');
 
-                    $movimentacao->setDtMoviment($notaFiscal->getDtEmissao());
-                    $movimentacao->setDtVencto(DateTimeUtils::parseDateStr($duplicada['dVenc']));
-                    $movimentacao->setValor($duplicada['vDup']);
-                    $movimentacao->setParcelamento(true);
-                    $movimentacao->setCadeiaOrdem($i);
-                    $movimentacao->setCadeiaQtde($qtdeTotal);
+                    $movimentacao->dtMoviment = ($notaFiscal->getDtEmissao());
+                    $movimentacao->dtVencto = (DateTimeUtils::parseDateStr($duplicada['dVenc']));
+                    $movimentacao->valor = ($duplicada['vDup']);
+                    $movimentacao->parcelamento = (true);
+                    $movimentacao->cadeiaOrdem = ($i);
+                    $movimentacao->cadeiaQtde = ($qtdeTotal);
 
                     $movimentacao->jsonData['notafiscal_id'] = $notaFiscal->getId();
 
-                    $movimentacao->setDescricao('DUPLICATA ' . $duplicada['nDup'] . ' DE ' . $notaFiscal->getXNomeEmitente() . ' ' . StringUtils::strpad($i, 2) . '/' . StringUtils::strpad($qtdeTotal, 2));
+                    $movimentacao->descricao = ('DUPLICATA ' . $duplicada['nDup'] . ' DE ' . $notaFiscal->getXNomeEmitente() . ' ' . StringUtils::strpad($i, 2) . '/' . StringUtils::strpad($qtdeTotal, 2));
 
-                    $movimentacao->setQuitado(false);
+                    $movimentacao->quitado = (false);
                     $this->movimentacaoEntityHandler->save($movimentacao);
                     $i++;
                 }

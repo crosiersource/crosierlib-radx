@@ -23,7 +23,6 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoImagemRepositor
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;

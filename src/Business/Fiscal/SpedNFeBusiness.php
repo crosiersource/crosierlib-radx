@@ -20,7 +20,6 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorre
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
-use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use NFePHP\Common\Exception\ValidatorException;
 use NFePHP\NFe\Common\Standardize;
@@ -167,8 +166,10 @@ class SpedNFeBusiness
         $nfe->infNFe->emit->IE = $nfeConfigs['ie'];
         $nfe->infNFe->emit->enderEmit->xLgr = $nfeConfigs['enderEmit_xLgr'];
         $nfe->infNFe->emit->enderEmit->nro = $nfeConfigs['enderEmit_nro'];
+        if ($nfeConfigs['enderEmit_xCpl'] ?? false) {
+            $nfe->infNFe->emit->enderEmit->xCpl = $nfeConfigs['enderEmit_xCpl'];
+        }
         $nfe->infNFe->emit->enderEmit->xBairro = $nfeConfigs['enderEmit_xBairro'];
-        $nfe->infNFe->emit->enderEmit->xCpl = $nfeConfigs['enderEmit_xCpl'] ?? '';
         $nfe->infNFe->emit->enderEmit->CEP = preg_replace('/\D/', '', $nfeConfigs['enderEmit_cep']);
         $nfe->infNFe->emit->enderEmit->fone = preg_replace('/\D/', '', $nfeConfigs['telefone']);
 
@@ -208,8 +209,11 @@ class SpedNFeBusiness
 
                 $nfe->infNFe->dest->enderDest->xLgr = trim($notaFiscal->getLogradouroDestinatario());
                 $nfe->infNFe->dest->enderDest->nro = trim($notaFiscal->getNumeroDestinatario());
+                if ($notaFiscal->complementoDestinatario) {
+                    $nfe->infNFe->dest->enderDest->xCpl = trim($notaFiscal->complementoDestinatario);
+                }
                 $nfe->infNFe->dest->enderDest->xBairro = trim($notaFiscal->getBairroDestinatario());
-                $nfe->infNFe->dest->enderDest->xCpl = trim($notaFiscal->complementoDestinatario);
+
 
                 /** @var MunicipioRepository $repoMunicipio */
                 $repoMunicipio = $this->doctrine->getRepository(Municipio::class);
@@ -797,7 +801,6 @@ class SpedNFeBusiness
         }
 
     }
-
 
 
     /**

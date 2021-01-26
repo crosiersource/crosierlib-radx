@@ -8,7 +8,6 @@ use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\ViewUtils\Select2JsUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco;
 
 /**
  *

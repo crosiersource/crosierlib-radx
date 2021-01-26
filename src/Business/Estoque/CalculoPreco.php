@@ -4,6 +4,7 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Estoque;
 
 
+use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\DepreciacaoPreco;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DepreciacaoPrecoRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -52,25 +53,25 @@ class CalculoPreco
             throw new \LogicException('É necessário o coeficiente para calcular os preços');
         }
 
+        $precoCusto = $preco['precoCusto'];
         $coeficiente = $preco['coeficiente'];
         $custoFinanceiro = $preco['custoFinanceiro'];
         $custoFinanceiroCompl = 1.0 - (float)$custoFinanceiro;
-        $custoFinanceiroInv = bcdiv(1, $custoFinanceiroCompl, 25);
-        $precoCusto = $preco['precoCusto'];
 
-        $custoFinanceiroInv = round($custoFinanceiroInv, 13);
-        $pc_cfinv = bcmul($precoCusto, $custoFinanceiroInv, 13);
-        $pc_cfinv_coef = (float)bcmul($pc_cfinv, $coeficiente, 13);
-        $pc_cfinv_coef = round($pc_cfinv_coef, 2, PHP_ROUND_HALF_UP);
-        $precoPrazo = round($pc_cfinv_coef, 1, PHP_ROUND_HALF_UP);
+        $coeficiente_x_precoCusto = bcmul($coeficiente, $precoCusto, 8);
+        $coeficiente_x_precoCusto_d_ = bcdiv($coeficiente_x_precoCusto,$custoFinanceiroCompl,8);
+        $precoPrazo = $coeficiente_x_precoCusto_d_arr = DecimalUtils::round($coeficiente_x_precoCusto_d_, 8, DecimalUtils::ROUND_HALF_UP);
+
+        $precoPrazo_centavosComDezenaExata = DecimalUtils::round($precoPrazo, 1, DecimalUtils::ROUND_HALF_UP);
 
         $descontoAVista = 1.00 - 0.1;
 
-        $precoVista = bcmul($precoPrazo, $descontoAVista, 2);
+        $precoVista = bcmul($precoPrazo_centavosComDezenaExata, $descontoAVista, 2);
 
-        $preco['precoPrazo'] = $precoPrazo;
+        $preco['precoPrazo'] = $precoPrazo_centavosComDezenaExata;
         $preco['precoVista'] = $precoVista;
     }
+
 
     /**
      * coeficiente = ( 1.0 / (1.0 - custoOperacional + margem) ) * depreciacaoPrazo
@@ -85,7 +86,7 @@ class CalculoPreco
         }
 
         $margem = (float)$preco['margem'];
-        if ($margem > 99.99) {
+        if ($margem > 0.9999) {
             throw new \LogicException('Margem superior a 99,99%');
         }
 
@@ -96,7 +97,8 @@ class CalculoPreco
 
         $depreciacaoPrazo = $this->doctrine->getRepository(DepreciacaoPreco::class)->findDepreciacaoByPrazo($prazo);
 
-        $margemPorcent = (float)bcdiv($margem, '100.00', 4);
+        // Antes a margem não era passada em número decimal
+        $margemPorcent = $margem; // (float)bcdiv($margem, '100.00', 4);
 
 
         $margemMaximaPorcent = 1.0 - $custoOperacional - 0.0001;
@@ -104,10 +106,10 @@ class CalculoPreco
             throw new \LogicException('Margem não pode ser superior a ' . $margemMaximaPorcent . ' (C.O.: ' . $custoOperacional . ')');
         }
 
-        $coefNaoDeflacionado = (float)bcsub('1.0', ($custoOperacional + $margemPorcent), 3);
+        $coefNaoDeflacionado = (float)bcsub('1.0', ($custoOperacional + $margemPorcent), 25);
         $coefNaoDeflacionadoInv = $coefNaoDeflacionado > 0 ? bcdiv('1.0', $coefNaoDeflacionado, 25) : 0;
 
-        $coeficiente = round((float)bcmul($coefNaoDeflacionadoInv, $depreciacaoPrazo, 25), 3);
+        $coeficiente = DecimalUtils::round((float)bcmul($coefNaoDeflacionadoInv, $depreciacaoPrazo, 25), 3);
         // retorno
         $preco['coeficiente'] = $coeficiente;
     }

@@ -4,6 +4,7 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
@@ -59,6 +60,12 @@ class NotaFiscalEntityHandler extends EntityHandler
      */
     public function beforeSave(/** @var NotaFiscal $notaFiscal */ $notaFiscal)
     {
+        if (!$notaFiscal->entradaSaida) {
+            throw new ViewException('Entrada/Saída não informado');
+        }
+        if (!$notaFiscal->naturezaOperacao) {
+            throw new ViewException('Natureza da Operação não informada');
+        }
         if ($notaFiscal->getItens() && $notaFiscal->getItens()->count() > 0) {
             $this->calcularTotais($notaFiscal);
         }
@@ -91,15 +98,16 @@ class NotaFiscalEntityHandler extends EntityHandler
             $notaFiscal->setEstadoEmitente($arrEmitente['estado']);
             $notaFiscal->setFoneEmitente($arrEmitente['fone1']);
         }
+        $this->calcularTotais($notaFiscal);
     }
 
+
     /**
-     * @param $notaFiscal
+     * @param NotaFiscal $notaFiscal
      * @throws \Exception
      */
     public function beforeClone($notaFiscal)
     {
-        /** @var NotaFiscal $notaFiscal */
         $notaFiscal->setUuid(null);
         $notaFiscal->setNumero(null);
         $notaFiscal->setSerie(null);

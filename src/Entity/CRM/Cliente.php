@@ -25,13 +25,13 @@ class Cliente implements EntityId
      * @ORM\Column(name="documento", type="string")
      * @Groups("entity")
      */
-    public ?string $documento;
+    public ?string $documento = null;
 
     /**
      * @ORM\Column(name="nome", type="string")
      * @Groups("entity")
      */
-    public ?string $nome;
+    public ?string $nome = null;
 
     /**
      * @ORM\Column(name="json_data", type="json")

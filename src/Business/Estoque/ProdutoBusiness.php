@@ -3,7 +3,6 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Estoque;
 
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -20,7 +19,6 @@ class ProdutoBusiness
     {
         $this->doctrine = $doctrine;
     }
-
 
 
 }

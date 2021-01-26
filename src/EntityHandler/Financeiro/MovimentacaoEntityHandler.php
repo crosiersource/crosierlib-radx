@@ -26,6 +26,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CategoriaRepository
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\TipoLanctoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\ResultSetMapping;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
@@ -396,7 +397,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $movimentacao->cadeia->movimentacoes->count() !== 2) {
                 throw new ViewException('Apenas cadeias com 2 odem ser editadas ("TRANSFERÊNCIA ENTRE CARTEIRAS")');
             }
-
+            /** @var Movimentacao $movimentOposta */
             $movimentOposta = $this->getDoctrine()->getRepository(Movimentacao::class)
                 ->findOneBy(
                     [
@@ -407,19 +408,19 @@ class MovimentacaoEntityHandler extends EntityHandler
             // Campos que podem ser editados
             $movimentOposta->descricao = $movimentacao->descricao;
             $movimentOposta->fatura = $movimentacao->fatura;
-            $movimentOposta->setCategoria($categOposta);
-            $movimentOposta->setModo($movimentacao->modo);
+            $movimentOposta->categoria = ($categOposta);
+            $movimentOposta->modo = ($movimentacao->modo);
             if ($movimentacao->carteiraDestino) {
-                $movimentOposta->setCarteira($movimentacao->carteiraDestino);
+                $movimentOposta->carteira = ($movimentacao->carteiraDestino);
             }
-            $movimentOposta->setCarteiraDestino($movimentacao->carteira);
-            $movimentOposta->setValor($movimentacao->valor);
-            $movimentOposta->setValorTotal($movimentacao->valorTotal);
-            $movimentOposta->setCentroCusto($movimentacao->centroCusto);
-            $movimentOposta->setDtMoviment($movimentacao->dtMoviment);
-            $movimentOposta->setDtVencto($movimentacao->dtVencto);
-            $movimentOposta->setDtVenctoEfetiva($movimentacao->dtVenctoEfetiva);
-            $movimentOposta->setDtPagto($movimentacao->dtPagto);
+            $movimentOposta->carteiraDestino = ($movimentacao->carteira);
+            $movimentOposta->valor = ($movimentacao->valor);
+            $movimentOposta->valorTotal = ($movimentacao->valorTotal);
+            $movimentOposta->centroCusto = ($movimentacao->centroCusto);
+            $movimentOposta->dtMoviment = ($movimentacao->dtMoviment);
+            $movimentOposta->dtVencto = ($movimentacao->dtVencto);
+            $movimentOposta->dtVenctoEfetiva = ($movimentacao->dtVenctoEfetiva);
+            $movimentOposta->dtPagto = ($movimentacao->dtPagto);
 
             /** @var Movimentacao $movimentOposta */
             $movimentOposta = parent::save($movimentOposta);
@@ -446,6 +447,8 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         /** @var Movimentacao $movimentOposta */
         $movimentOposta = $this->cloneEntityId($movimentacao);
+        $movimentOposta->carteira = $movimentacao->carteiraDestino;
+        $movimentOposta->carteiraDestino = $movimentacao->carteira;
         $movimentOposta->cadeiaOrdem = $cadeiaOrdemOposta;
         $movimentOposta->cadeiaQtde = 2;
         $movimentOposta->categoria = $categOposta;
@@ -890,6 +893,57 @@ class MovimentacaoEntityHandler extends EntityHandler
     public function beforeClone(/** @var Movimentacao $movimentacao */ $movimentacao)
     {
         $movimentacao->UUID = null;
+    }
+
+    /**
+     *
+     * @param Cadeia $cadeia
+     * @throws ViewException
+     */
+    public function deleteCadeiaETodasAsMovimentacoes(Cadeia $cadeia): void
+    {
+        try {
+            $this->doctrine->beginTransaction();
+            $movs = $cadeia->movimentacoes;
+            /** @var Movimentacao $mov */
+            foreach ($movs as $mov) {
+                $this->delete($mov);
+            }
+            $this->faturaEntityHandler->cadeiaEntityHandler->delete($cadeia);
+            $this->doctrine->commit();
+        } catch (\Throwable $e) {
+            $this->doctrine->rollback();
+            $err = $e->getMessage();
+            if (isset($mov)) {
+                $err .= ' (' . $mov->descricao . ')';
+            }
+            throw new ViewException($err);
+        }
+    }
+
+    /**
+     *
+     */
+    public function removerCadeiasComApenasUmaMovimentacao(): void
+    {
+        $rsm = new ResultSetMapping();
+        $sql = 'select id, cadeia_id, count(cadeia_id) as qt from fin_movimentacao group by cadeia_id having qt < 2';
+        $qry = $this->getDoctrine()->createNativeQuery($sql, $rsm);
+
+        $rsm->addScalarResult('id', 'id');
+        $rs = $qry->getResult();
+        if ($rs) {
+            foreach ($rs as $r) {
+                /** @var Movimentacao $movimentacao */
+                $movimentacao = $this->getDoctrine()->find(Movimentacao::class, $r['id']);
+                if ($movimentacao->cadeia) {
+                    $cadeia = $this->getDoctrine()->find(Cadeia::class, $movimentacao->cadeia);
+                    $movimentacao->cadeia = null;
+                    $this->getDoctrine()->remove($cadeia);
+                }
+            }
+        }
+        $this->getDoctrine()->flush();
     }
 
 

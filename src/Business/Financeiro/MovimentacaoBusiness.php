@@ -289,8 +289,9 @@ class MovimentacaoBusiness
                     $operadoraCartao = $this->doctrine->getRepository(OperadoraCartao::class)->findOneBy(['carteira' => $m199->carteira]);
                     $m199->operadoraCartao = $operadoraCartao;
 
+                    /** @var Movimentacao $m199 */
                     $m199 = $this->movimentacaoEntityHandler->save($m199);
-                    $results[] = 'Operadora corrigida para "' . $m199->getDescricao() . '" - R$ ' . $m199->getValor() . ' (1.99): ' . $operadoraCartao->descricao;
+                    $results[] = 'Operadora corrigida para "' . $m199->descricao . '" - R$ ' . $m199->valor . ' (1.99): ' . $operadoraCartao->descricao;
                 } else {
                     $operadoraCartao = $m199->operadoraCartao;
                 }
@@ -827,10 +828,6 @@ class MovimentacaoBusiness
 
             if ($movComAlteracoes->bandeiraCartao) {
                 $mov->bandeiraCartao = $movComAlteracoes->bandeiraCartao;
-            }
-
-            if ($movComAlteracoes->planoPagtoCartao) {
-                $mov->planoPagtoCartao = $movComAlteracoes->planoPagtoCartao;
             }
 
             if ($movComAlteracoes->recorrente) {

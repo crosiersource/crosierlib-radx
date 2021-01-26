@@ -136,7 +136,7 @@ class MovimentacaoImporter
         }
 
         if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
-            if (!$carteiraExtrato || !$carteiraExtrato) {
+            if (!$carteiraDestino || !$carteiraExtrato) {
                 throw new ViewException('Para extratos de cartões de débito, é necessário informar a carteira de ||igem e de destino.');
             }
         } elseif (strpos($tipoExtrato, 'GRUPO') !== FALSE) {
@@ -175,11 +175,11 @@ class MovimentacaoImporter
             /** @var ImportExtratoCabec $dePara */
             foreach ($camposDePara as $dePara) {
                 // Se não está separado por vírgula, é um campo único (1-para-1).
-                if (strpos($dePara->getCamposCabecalho(), ',') === FALSE) {
+                if (strpos($dePara->camposCabecalho, ',') === FALSE) {
                     $achou = false;
                     foreach ($camposCSV as $key => $campoCSV) {
-                        if ($dePara->getCamposCabecalho() === $campoCSV) {
-                            $arrayCabecalho[$dePara->getCampoSistema()] = $key;
+                        if ($dePara->camposCabecalho === $campoCSV) {
+                            $arrayCabecalho[$dePara->campoSistema] = $key;
                             $achou = true;
                             break;
                         }
@@ -188,12 +188,12 @@ class MovimentacaoImporter
                         throw new ViewException('Não foi possível montar o array do cabeçalho.');
                     }
                 } else {
-                    $camposCabecalho = explode(',', $dePara->getCamposCabecalho());
+                    $camposCabecalho = explode(',', $dePara->camposCabecalho);
                     foreach ($camposCabecalho as $campoCabecalho) {
                         $achou = false;
                         foreach ($camposCSV as $key => $campoCSV) {
                             if ($campoCabecalho === $campoCSV) {
-                                $arrayCabecalho[$dePara->getCampoSistema()]['campos'][] = $key;
+                                $arrayCabecalho[$dePara->campoSistema]['campos'][] = $key;
                                 $achou = true;
                                 break;
                             }
@@ -202,7 +202,7 @@ class MovimentacaoImporter
                             throw new ViewException('Não foi possível montar o array do cabeçalho.');
                         }
                     }
-                    $arrayCabecalho[$dePara->getCampoSistema()]['formato'] = $dePara->getFormato();
+                    $arrayCabecalho[$dePara->campoSistema]['formato'] = $dePara->formato;
                 }
             }
         }
@@ -416,9 +416,9 @@ class MovimentacaoImporter
         $jaTem101Associada = false;
         /** @var Movimentacao $mov299 */
         foreach ($movs299Todas as $mov299) {
-            if ($mov299->getCadeia()) {
-                foreach ($mov299->getCadeia()->getMovimentacoes() as $movCadeia) {
-                    if ($movCadeia->getCategoria()->getCodigo() === 101 && $movCadeia->getId() !== $mov101->getId()) {
+            if ($mov299->cadeia) {
+                foreach ($mov299->cadeia->movimentacoes as $movCadeia) {
+                    if ($movCadeia->categoria->codigo === 101 && $movCadeia->getId() !== $mov101->getId()) {
                         $jaTem101Associada = true;
                         break;
                     }
@@ -434,31 +434,31 @@ class MovimentacaoImporter
 
         $mov299 = new Movimentacao();
         // aqui se inverte as carteiras, pois para salvar uma transferência entre carteiras se deve sempre começar pela 299 (ver como funciona o MovimentacaoDataMapperImpl.processSave)
-        $mov299->setCarteira($this->carteiraDestino); // vai debitar no 'CAIXA A VISTA'
-        $mov299->setCarteiraDestino($this->carteiraExtrato); // vai creditar na carteira do cartão (199)
-        $mov299->setCategoria($categ299);
-        $mov299->setValor($valor);
-        $mov299->setDescontos(0.00);
-        $mov299->setValorTotal($valorTotal);
-        $mov299->setDescricao($descricao);
-        $mov299->setTipoLancto($transfPropria); // para gerar as duas (299+199)
-        $mov299->setStatus('REALIZADA');
-        $mov299->setModo($modo);
-        $mov299->setDtMoviment($mov101->getDtMoviment());
-        $mov299->setDtVencto($dtVenctoEfetiva);
-        $mov299->setDtVenctoEfetiva($dtVenctoEfetiva); // por questão de informação, a data efetiva em que o cartão pagou o valor fica na dt vencto nossa
+        $mov299->carteira = $this->carteiraDestino; // vai debitar no 'CAIXA A VISTA'
+        $mov299->carteiraDestino = ($this->carteiraExtrato); // vai creditar na carteira do cartão (199)
+        $mov299->categoria = ($categ299);
+        $mov299->valor = ($valor);
+        $mov299->descontos = (0.00);
+        $mov299->valorTotal = ($valorTotal);
+        $mov299->descricao = ($descricao);
+        $mov299->tipoLancto = ($transfPropria); // para gerar as duas (299+199)
+        $mov299->status = ('REALIZADA');
+        $mov299->modo = ($modo);
+        $mov299->dtMoviment = ($mov101->dtMoviment);
+        $mov299->dtVencto = ($dtVenctoEfetiva);
+        $mov299->dtVenctoEfetiva = ($dtVenctoEfetiva); // por questão de informação, a data efetiva em que o cartão pagou o valor fica na dt vencto nossa
         // tenho que deixar a dtPagto como a dtMoviment porque a 299
         // no caixa a vista tem que ser com a mesma data da 101 (que foi lançada através do fechamento de caixa diário).
         // e não posso ter uma 199 com data diferente da 299 correspondente
-        $mov299->setDtPagto($mov101->getDtMoviment());
+        $mov299->dtPagto = $mov101->dtMoviment;
 
-        $mov299->setBandeiraCartao($bandeiraCartao);
-        $mov299->setUUID(StringUtils::guidv4());
+        $mov299->bandeiraCartao = $bandeiraCartao;
+        $mov299->UUID = StringUtils::guidv4();
 
         /** @var OperadoraCartao $operadoraCartao */
         $operadoraCartao = $this->doctrine->getRepository(OperadoraCartao::class)->findOneBy(['carteira' => $this->carteiraExtrato]);
 
-        $mov299->setOperadoraCartao($operadoraCartao);
+        $mov299->operadoraCartao = $operadoraCartao;
 
         return $mov299;
     }
@@ -506,25 +506,24 @@ class MovimentacaoImporter
         // else
         // se for pra gerar movimentações que não se encaixem nas regras...
         $movimentacao = new Movimentacao();
-        $movimentacao->setUUID(StringUtils::guidv4());
-        $movimentacao->setCarteira($this->carteiraExtrato);
-        $movimentacao->setValor($valor);
-        $movimentacao->setDescontos($desconto);
-        $movimentacao->setValorTotal($valorTotal);
-        $movimentacao->setDescricao($descricao);
+        $movimentacao->UUID = (StringUtils::guidv4());
+        $movimentacao->carteira = ($this->carteiraExtrato);
+        $movimentacao->valor = ($valor);
+        $movimentacao->descontos = ($desconto);
+        $movimentacao->valorTotal = ($valorTotal);
+        $movimentacao->descricao = ($descricao);
 
         /** @var TipoLancto $realizada */
         $realizada = $this->repoTipoLancto->findOneBy(['codigo' => 20]);
-        $movimentacao->setTipoLancto($realizada);
+        $movimentacao->tipoLancto = ($realizada);
 
-        $movimentacao->setStatus('REALIZADA');
-        $movimentacao->setModo($modo);
-        $movimentacao->setDtMoviment($dtMoviment);
-        $movimentacao->setDtVencto($dtVenctoEfetiva);
-        $movimentacao->setDtVenctoEfetiva($dtVenctoEfetiva);
-        $movimentacao->setDtPagto($dtVenctoEfetiva);
-        $movimentacao->setBandeiraCartao($bandeiraCartao);
-        $movimentacao->setPlanoPagtoCartao($planoPagtoCartao);
+        $movimentacao->status = ('REALIZADA');
+        $movimentacao->modo = ($modo);
+        $movimentacao->dtMoviment = ($dtMoviment);
+        $movimentacao->dtVencto = ($dtVenctoEfetiva);
+        $movimentacao->dtVenctoEfetiva = ($dtVenctoEfetiva);
+        $movimentacao->dtPagto = ($dtVenctoEfetiva);
+        $movimentacao->bandeiraCartao = ($bandeiraCartao);
 
         /** @var Categoria $categoria */
         $categoria = null;
@@ -537,7 +536,7 @@ class MovimentacaoImporter
                 $categoria = $this->repoCategoria->findOneBy(['codigo' => 1]);
             }
         }
-        $movimentacao->setCategoria($categoria);
+        $movimentacao->categoria = $categoria;
 
         return $movimentacao;
     }
@@ -597,11 +596,11 @@ class MovimentacaoImporter
         $regra = null;
         /** @var RegraImportacaoLinha $r */
         foreach ($regras as $r) {
-            if ($r->getRegraRegexJava()) {
-                if (preg_match('@' . $r->getRegraRegexJava() . '@', $descricao)) {
-                    if ($r->getSinalValor() === 0 ||
-                        ($r->getSinalValor() === -1 && $valorNegativo) ||
-                        ($r->getSinalValor() === 1 && !$valorNegativo)) {
+            if ($r->regraRegexJava) {
+                if (preg_match('@' . $r->regraRegexJava . '@', $descricao)) {
+                    if ($r->sinalValor === 0 ||
+                        ($r->sinalValor === -1 && $valorNegativo) ||
+                        ($r->sinalValor === 1 && !$valorNegativo)) {
                         $regra = $r;
                         break;
                     }
@@ -610,7 +609,7 @@ class MovimentacaoImporter
         }
 
         if ($regra) {
-            preg_match('@' . $regra->getRegraRegexJava() . '@', $descricao, $matches);
+            preg_match('@' . $regra->regraRegexJava . '@', $descricao, $matches);
             if (isset($matches['NUMCHEQUE'])) {
                 $numCheque = (int)preg_replace('[^\\d]', '', $matches['NUMCHEQUE']);
             }
@@ -668,48 +667,48 @@ class MovimentacaoImporter
         if (count($movs) > 0) {
             /** @var Movimentacao $movimentacao */
             $movimentacao = $this->repoMovimentacao->find($movs[0]);
-            if (!$movimentacao->getUUID()) {
-                $movimentacao->setUUID(StringUtils::guidv4());
+            if (!$movimentacao->UUID) {
+                $movimentacao->UUID = StringUtils::guidv4();
             }
-            $movimentacao->setDtPagto($dtVenctoEfetiva);
-            $movimentacao->setStatus('REALIZADA');
-            $movimentacao->setCarteira($this->carteiraExtrato);
+            $movimentacao->dtPagto = ($dtVenctoEfetiva);
+            $movimentacao->status = ('REALIZADA');
+            $movimentacao->carteira = ($this->carteiraExtrato);
             return $movimentacao;
         }
         // else
         if ($regra) {
             $movimentacao = new Movimentacao();
 
-            $movimentacao->setUUID(StringUtils::guidv4());
+            $movimentacao->UUID = StringUtils::guidv4();
 
-            $carteiraOrigem = $regra->getCarteira() ? $regra->getCarteira() : $this->carteiraExtrato;
-            $carteiraDestino = $regra->getCarteiraDestino() ? $regra->getCarteiraDestino() : $this->carteiraDestino;
+            $carteiraOrigem = $regra->carteira ? $regra->carteira : $this->carteiraExtrato;
+            $carteiraDestino = $regra->carteiraDestino ? $regra->carteiraDestino : $this->carteiraDestino;
 
-            $movimentacao->setCarteira($carteiraOrigem);
-            $movimentacao->setCarteiraDestino($carteiraDestino);
+            $movimentacao->carteira = ($carteiraOrigem);
+            $movimentacao->carteiraDestino = ($carteiraDestino);
 
-            if ($regra->getTipoLancto()->getCodigo() === 60) {
+            if ($regra->tipoLancto->codigo === 60) {
                 // Nas transferências entre contas próprias, a regra informa a carteira de ||igem.
                 // A de destino, se não for informada na regra, será a do extrato.
 
-                if (!$regra->getCategoria()->getCodigo() === '299') {
+                if (!$regra->categoria->codigo === '299') {
                     throw new ViewException('Regras para transferências entre carteiras próprias devem ser apenas com categoria 2.99');
                 }
 
                 // Se a regra informar a carteira da 299, prevalesce
-                $cart299 = $regra->getCarteira() ?: $this->carteiraExtrato;
+                $cart299 = $regra->carteira ?: $this->carteiraExtrato;
 
-                $cart199 = $regra->getCarteiraDestino();
-                if ((!$cart199) || $cart199->getCodigo() === '99') {
+                $cart199 = $regra->carteiraDestino;
+                if ((!$cart199) || $cart199->codigo === '99') {
                     $cart199 = $this->carteiraExtrato;
                 }
 
-                $movimentacao->setCarteira($cart299);
+                $movimentacao->carteira = ($cart299);
                 $carteiraDestino = $cart199;
-                $movimentacao->setCarteiraDestino($carteiraDestino);
+                $movimentacao->carteiraDestino = ($carteiraDestino);
                 // se NÃO for regra para TRANSF_PROPRIA
             } else {
-                if (in_array($regra->getTipoLancto()->getCodigo(), [40, 41], true)) {
+                if (in_array($regra->tipoLancto->codigo, [40, 41], true)) {
 
                     $movimentacao = $this->repoMovimentacao
                         ->findOneBy([
@@ -730,56 +729,54 @@ class MovimentacaoImporter
                     }
                     // else
                     $movimentacao = new Movimentacao();
-                    $movimentacao->setUUID(StringUtils::guidv4());
-                    $movimentacao->setChequeNumCheque($numCheque);
+                    $movimentacao->UUID = (StringUtils::guidv4());
+                    $movimentacao->chequeNumCheque = ($numCheque);
                     /** @var Carteira $carteira */
-                    $carteira = $regra->getCarteira() ?: $carteiraOrigem;
-                    $movimentacao->setCarteira($carteira);
-                    $movimentacao->setChequeBanco($carteira->getBanco());
-                    $movimentacao->setChequeAgencia($carteira->getAgencia());
-                    $movimentacao->setChequeConta($carteira->getConta());
+                    $carteira = $regra->carteira ?: $carteiraOrigem;
+                    $movimentacao->carteira = ($carteira);
+                    $movimentacao->chequeBanco = ($carteira->banco);
+                    $movimentacao->chequeAgencia = ($carteira->agencia);
+                    $movimentacao->chequeConta = ($carteira->conta);
 
-                } else if (in_array($regra->getTipoLancto()->getCodigo(), [42, 43], true)) {
-                    $movimentacao->setChequeNumCheque($numCheque);
+                } else if (in_array($regra->tipoLancto->codigo, [42, 43], true)) {
+                    $movimentacao->chequeNumCheque = $numCheque;
 
-                    if ($regra->getChequeConta()) {
-                        $movimentacao->setChequeAgencia($regra->getChequeAgencia());
-                        $movimentacao->setChequeConta($regra->getChequeConta());
-                        $movimentacao->setChequeBanco($regra->getChequeBanco());
+                    if ($regra->chequeConta) {
+                        $movimentacao->chequeAgencia = ($regra->chequeAgencia);
+                        $movimentacao->chequeConta = ($regra->chequeConta);
+                        $movimentacao->chequeBanco = ($regra->chequeBanco);
                     } else {
-                        $movimentacao->setChequeAgencia('9999');
-                        $movimentacao->setChequeConta('99999-9');
-                        $movimentacao->setChequeBanco(null);
+                        $movimentacao->chequeAgencia = ('9999');
+                        $movimentacao->chequeConta = ('99999-9');
+                        $movimentacao->chequeBanco = (null);
                     }
                 }
             }
 
-            $movimentacao->setTipoLancto($regra->getTipoLancto());
+            $movimentacao->tipoLancto = ($regra->tipoLancto);
 
 
-            if ($movimentacao->getTipoLancto()->getCodigo() === 60) {
-                $movimentacao->setCarteiraDestino($carteiraDestino);
+            if ($movimentacao->tipoLancto->codigo === 60) {
+                $movimentacao->carteiraDestino = ($carteiraDestino);
             }
 
-            $movimentacao->setDescricao($descricao);
+            $movimentacao->descricao = ($descricao);
 
-            $movimentacao->setCategoria($regra->getCategoria());
-            $movimentacao->setCentroCusto($regra->getCentroCusto());
+            $movimentacao->categoria = $regra->categoria;
+            $movimentacao->centroCusto = ($regra->centroCusto);
 
-            $movimentacao->setDtMoviment($dtVenctoEfetiva);
-            $movimentacao->setDtVencto($dtVenctoEfetiva);
+            $movimentacao->dtMoviment = ($dtVenctoEfetiva);
+            $movimentacao->dtVencto = ($dtVenctoEfetiva);
 
-            $movimentacao->setStatus($regra->getStatus());
+            $movimentacao->status = $regra->status;
 
-            $movimentacao->setModo($regra->getModo());
-            $movimentacao->setValor($valor);
-            $movimentacao->setValorTotal($valor);
+            $movimentacao->modo = ($regra->modo);
+            $movimentacao->valor = ($valor);
+            $movimentacao->valorTotal = ($valor);
 
-            if ($regra->getStatus() === 'REALIZADA') {
-                $movimentacao->setDtPagto($dtVenctoEfetiva);
+            if ($regra->status === 'REALIZADA') {
+                $movimentacao->dtPagto = ($dtVenctoEfetiva);
             }
-
-            $movimentacao->setPlanoPagtoCartao($planoPagtoCartao);
 
             return $movimentacao;
         }
@@ -787,23 +784,23 @@ class MovimentacaoImporter
         if ($this->gerarSemRegras) {
             // se for pra gerar movimentações que não se encaixem nas regras...
             $movimentacao = new Movimentacao();
-            $movimentacao->setUUID(StringUtils::guidv4());
-            $movimentacao->setCarteira($this->carteiraExtrato);
-            $movimentacao->setValor($valor);
-            $movimentacao->setDescontos($desconto);
-            $movimentacao->setValorTotal($valorTotal);
-            $movimentacao->setDescricao($descricao);
+            $movimentacao->UUID = (StringUtils::guidv4());
+            $movimentacao->carteira = ($this->carteiraExtrato);
+            $movimentacao->valor = ($valor);
+            $movimentacao->descontos = ($desconto);
+            $movimentacao->valorTotal = ($valorTotal);
+            $movimentacao->descricao = ($descricao);
             /** @var TipoLancto $realizada */
             $realizada = $this->repoTipoLancto->findOneBy(['codigo' => 20]);
-            $movimentacao->setTipoLancto($realizada);
-            $movimentacao->setStatus('REALIZADA');
-            $movimentacao->setModo($modo);
-            $movimentacao->setDtMoviment($dtMoviment);
-            $movimentacao->setDtVencto($dtVenctoEfetiva);
-            $movimentacao->setDtVenctoEfetiva($dtVenctoEfetiva);
-            $movimentacao->setDtPagto($dtVenctoEfetiva);
-            $movimentacao->setBandeiraCartao($bandeiraCartao);
-            $movimentacao->setPlanoPagtoCartao($planoPagtoCartao);
+            $movimentacao->tipoLancto = ($realizada);
+            $movimentacao->status = ('REALIZADA');
+            $movimentacao->modo = ($modo);
+            $movimentacao->dtMoviment = ($dtMoviment);
+            $movimentacao->dtVencto = ($dtVenctoEfetiva);
+            $movimentacao->dtVenctoEfetiva = ($dtVenctoEfetiva);
+            $movimentacao->dtPagto = ($dtVenctoEfetiva);
+            $movimentacao->bandeiraCartao = ($bandeiraCartao);
+
 
             /** @var Categoria $categoria */
             $categoria = null;
@@ -814,7 +811,7 @@ class MovimentacaoImporter
             } else {
                 $categoria = $this->repoCategoria->findOneBy(['codigo' => 1]);
             }
-            $movimentacao->setCategoria($categoria);
+            $movimentacao->categoria = ($categoria);
 
             return $movimentacao;
         }
@@ -928,40 +925,39 @@ class MovimentacaoImporter
                 $importada = $movs[0];
             }
 
-            if ($importada && !$importada->getDtPagto()) {
+            if ($importada && !$importada->dtPagto) {
                 $importada->setStatus('REALIZADA');
                 $importada->setDtPagto($dtVenctoEfetiva);
             } else {
 
                 $importada = new Movimentacao();
-                $importada->setUUID(StringUtils::guidv4());
+                $importada->UUID = (StringUtils::guidv4());
 
-                $importada->setGrupoItem($this->grupoItem);
+                $importada->grupoItem = ($this->grupoItem);
 
                 /** @var Categoria $categ101 */
                 $categ101 = $this->repoCategoria->findOneBy(['codigo' => '202001']);  // 2.02.001 - CUSTOS DE MERCADORIAS
-                $importada->setCategoria($categ101);
+                $importada->categoria = ($categ101);
 
+                $importada->centroCusto = ($this->repoCentroCusto->find(1));
+                $importada->modo = ($this->repoModo->find(50));
 
-                $importada->setCentroCusto($this->repoCentroCusto->find(1));
-                $importada->setModo($this->repoModo->find(50));
+                $importada->valor = ($valor);
+                $importada->descontos = ($desconto);
+                $importada->valorTotal = ($valorTotal);
 
-                $importada->setValor($valor);
-                $importada->setDescontos($desconto);
-                $importada->setValorTotal($valorTotal);
-
-                $importada->setDescricao(str_replace('  ', ' ', $descricao));
+                $importada->descricao = (str_replace('  ', ' ', $descricao));
                 /** @var TipoLancto $deGrupo */
                 $deGrupo = $this->repoTipoLancto->findOneBy(['codigo' => 70]);
-                $importada->setTipoLancto($deGrupo);
-                $importada->setStatus('REALIZADA');
+                $importada->tipoLancto = ($deGrupo);
+                $importada->status = ('REALIZADA');
 
-                $importada->setDtMoviment($dtMoviment);
-                $importada->setDtVencto($dtVenctoEfetiva);
-                $importada->setDtVenctoEfetiva($dtVenctoEfetiva);
-                $importada->setDtPagto($dtVenctoEfetiva);
+                $importada->dtMoviment = ($dtMoviment);
+                $importada->dtVencto = ($dtVenctoEfetiva);
+                $importada->dtVenctoEfetiva = ($dtVenctoEfetiva);
+                $importada->dtPagto = ($dtVenctoEfetiva);
 
-                $importada->setBandeiraCartao(null);
+                $importada->bandeiraCartao = (null);
             }
 
             $movimentacoes[] = $importada;
@@ -1334,31 +1330,31 @@ class MovimentacaoImporter
      */
     public function verificarImportadasAMais($movs, $tipoExtrato, ?Carteira $carteiraExtrato, ?Carteira $carteiraDestino, ?GrupoItem $grupoItem): void
     {
-        /** @var Movimentacao $primeira */
-        $primeira = $movs[0];
-        $dtPagto = $primeira->getDtPagto();
-        $dtIni = DateTimeUtils::getPrimeiroDiaMes($dtPagto);
-        $dtFim = DateTimeUtils::getUltimoDiaMes($dtPagto);
-
-        if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
-            $dql = 'SELECT m FROM App\Entity\Financeiro\Movimentacao m 
-                WHERE 
-                m.dtPagto BETWEEN :dtIni && :dtFim && 
-                m.carteira = :carteiraDestino &&
-                modo = :modo && 
-                && cadeia IN (SELECT m.cadeia FROM App\Entity\Financeiro\Movimentacao m2 WHERE m2.cadeia = m.cadeia && m2.carteira = :carteiraExtrato)';
-
-            $qry = $this->doctrine->createQuery($dql);
-            $qry->setParameter('dtIni', $dtIni);
-            $qry->setParameter('dtFim', $dtFim);
-            $qry->setParameter('carteiraDestino', $carteiraDestino);
-            $qry->setParameter('carteiraExtrato', $carteiraExtrato);
-            $modo = $this->repoModo->find(10); // 'RECEB. CARTÃO DEBITO'
-            $qry->setParameter('modo', $modo);
-            $rs = $qry->getResult();
-// FIXME: terminar
-
-        }
+//        /** @var Movimentacao $primeira */
+//        $primeira = $movs[0];
+//        $dtPagto = $primeira->getDtPagto();
+//        $dtIni = DateTimeUtils::getPrimeiroDiaMes($dtPagto);
+//        $dtFim = DateTimeUtils::getUltimoDiaMes($dtPagto);
+//
+//        if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
+//            $dql = 'SELECT m FROM App\Entity\Financeiro\Movimentacao m
+//                WHERE
+//                m.dtPagto BETWEEN :dtIni AND :dtFim AND
+//                m.carteira = :carteiraDestino AND
+//                m.modo = :modo AND
+//                m.cadeia IN (SELECT m.cadeia FROM App\Entity\Financeiro\Movimentacao m2 WHERE m2.cadeia = m.cadeia && m2.carteira = :carteiraExtrato)';
+//
+//            $qry = $this->doctrine->createQuery($dql);
+//            $qry->setParameter('dtIni', $dtIni);
+//            $qry->setParameter('dtFim', $dtFim);
+//            $qry->setParameter('carteiraDestino', $carteiraDestino);
+//            $qry->setParameter('carteiraExtrato', $carteiraExtrato);
+//            $modo = $this->repoModo->find(10); // 'RECEB. CARTÃO DEBITO'
+//            $qry->setParameter('modo', $modo);
+//            $rs = $qry->getResult();
+//// FIXME: terminar
+//
+//        }
 
     }
 

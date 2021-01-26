@@ -237,6 +237,8 @@
                       id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"/>
             <argument type="service"
                       id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
+            <argument type="service"
+                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"/>
             <argument type="service" id="monolog.logger"/>
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
             <argument type="service"

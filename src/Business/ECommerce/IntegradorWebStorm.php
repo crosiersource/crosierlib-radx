@@ -14,7 +14,6 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandl
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ImageUtils\ImageUtils;
-use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\WebUtils\WebUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
@@ -50,8 +49,6 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 /**
  * Regras de negócio para a integração com a WebStorm.
  *
- * Class IntegradorWebStorm
- * @package App\Business\ECommerce
  * @author Carlos Eduardo Pauluk
  */
 class IntegradorWebStorm implements IntegradorECommerce
@@ -916,7 +913,6 @@ class IntegradorWebStorm implements IntegradorECommerce
      * @param bool|null $respeitarDelay
      * @return void
      * @throws ViewException
-     * @throws \Doctrine\DBAL\Exception
      */
     public function integraProduto(Produto $produto, ?bool $integrarImagens = true, ?bool $respeitarDelay = false): void
     {
@@ -1122,7 +1118,7 @@ class IntegradorWebStorm implements IntegradorECommerce
 				<idItemVenda>' . $produtoItemVendaId . '</idItemVenda>
 				<codigo>' . $produto->getId() . '</codigo>
 				<preco>' . $preco . '</preco>
-				<estoque>' . ($produto->jsonData['qtde_estoque_total'] ?? 999999) . '</estoque>
+				<estoque>' . ($produto->jsonData['qtde_estoque_total'] ?? 0) . '</estoque>
 				<estoqueMin>0</estoqueMin>
 				<situacao>1</situacao>
 				<peso>' . ($produto->jsonData['peso'] ?? '') . '</peso>
@@ -1237,7 +1233,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                     <itensVenda> 
                     <idItemVenda>' . $produtoItemVendaId . '</idItemVenda>
                     <preco>' . ($jsonData['preco_site'] ?? $jsonData['preco_tabela'] ?? 0.0) . '</preco>
-                    <estoque>' . ($jsonData['qtde_estoque_total'] ?? 999999) . '</estoque>
+                    <estoque>' . ($jsonData['qtde_estoque_total'] ?? 0) . '</estoque>
                 </itensVenda></produto>';
                 $temAtualizacao = true;
             }
@@ -1379,7 +1375,6 @@ class IntegradorWebStorm implements IntegradorECommerce
      * @param \DateTime $dtVenda
      * @param bool|null $resalvar
      * @return int
-     * @throws ViewException
      */
     public function obterVendas(\DateTime $dtVenda, ?bool $resalvar = false): int
     {
@@ -1387,7 +1382,12 @@ class IntegradorWebStorm implements IntegradorECommerce
         $i = 0;
         if ($pedidos->pedido ?? false) {
             foreach ($pedidos->pedido as $pedido) {
-                $this->integrarVendaParaCrosier($pedido, (int)$pedido->status === 2 || $resalvar);
+                try {
+                    $this->integrarVendaParaCrosier($pedido, (int)$pedido->status === 2 || $resalvar);
+                } catch (ViewException $e) {
+                    $this->syslog->err('Erro ao integrarVendaParaCrosier - pedido: ' . $pedido->idPedido->__toString(), $e->getTraceAsString());
+                    continue;
+                }
                 $i++;
             }
         }
@@ -1693,7 +1693,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                     throw new ViewException('Erro ao integrar venda. Erro ao pesquisar produto (idProduto = ' . $produtoWebStorm->idProduto->__toString() . ')');
                 }
                 $produtosNoCrosier[$produtoWebStorm->idProduto->__toString()] = $produto; // RTA: dinâmico, para ser acessado no próximo foreach
-                $valorProduto = $produto->jsonData['preco_site']; // $produtoWebStorm->valorUnitario;
+                $valorProduto = $produtoWebStorm->valorUnitario; // $produto->jsonData['preco_site'];
 
                 $totalProdutos = bcadd($totalProdutos, bcmul($produtoWebStorm->quantidade, $valorProduto, 2), 2);
             }
@@ -1719,11 +1719,13 @@ class IntegradorWebStorm implements IntegradorECommerce
 
                 $vendaItem->unidade = $produto->unidadePadrao;
 
-                $vendaItem->precoVenda = $produto->jsonData['preco_site']; // $produtoWebStorm->valorUnitario->__toString();
+                $vendaItem->precoVenda = $produtoWebStorm->valorUnitario->__toString(); // $produto->jsonData['preco_site'];
                 $vendaItem->qtde = $produtoWebStorm->quantidade->__toString();
                 $vendaItem->subtotal = bcmul($vendaItem->precoVenda, $vendaItem->qtde, 2);
-                // Para arredondar para cima
-                $vendaItem->desconto = DecimalUtils::round(bcmul($pDesconto, $vendaItem->subtotal, 3));
+
+                $desconto = (float)$produtoWebStorm->desconto->__toString() ?? 0.0;
+                $descontof = (float)$produtoWebStorm->descontof->__toString() ?? 0.0;
+                $vendaItem->desconto = bcmul(bcadd($desconto, $descontof, 2), $vendaItem->qtde, 2);
                 $descontoAcum = (float)bcadd($descontoAcum, $vendaItem->desconto, 2);
                 $vendaItem->produto = $produto;
 
