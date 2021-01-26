@@ -50,6 +50,7 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
  */
 class IntegradorSimplo7 implements IntegradorECommerce
 {
+
     private AppConfigEntityHandler $appConfigEntityHandler;
 
     private ?string $chave = null;
@@ -1130,6 +1131,11 @@ class IntegradorSimplo7 implements IntegradorECommerce
             $this->syslog->err($msg);
             throw new ViewException($msg);
         }
+
+    }
+
+    public function atualizarPedidosMelhorEnvio()
+    {
 
     }
 

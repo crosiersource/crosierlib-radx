@@ -601,7 +601,7 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @return Movimentacao
      * @throws ViewException
      */
-    public function saveFaturaTransacional(Movimentacao $movimentacao): Movimentacao
+    public function saveFaturaTransacional(Movimentacao $movimentacao, bool $entradaEmFaturaRealizada = true): Movimentacao
     {
         $this->getDoctrine()->beginTransaction();
 
@@ -618,6 +618,9 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         if ($movimentacao->modo->codigo === 10) {
             $movimentacao->qtdeParcelasCartao = 1;
+        }
+        if ($movimentacao->modo->codigo === 9) {
+            $movimentacao->carteiraDestino = $movimentacao->operadoraCartao->carteira;
         }
 
         // Está editando
@@ -686,10 +689,14 @@ class MovimentacaoEntityHandler extends EntityHandler
         /** @var Movimentacao $moviment191 */
         $moviment191 = $this->cloneEntityId($movimentacao);
         $moviment191->categoria = $categ191;
-        $moviment191->carteira = $movimentacao->carteiraDestino ?? $movimentacao->operadoraCartao->carteira;
+        $moviment191->carteira = $movimentacao->carteiraDestino;
+        $moviment191->carteiraDestino = $movimentacao->carteira;
+        if (!$entradaEmFaturaRealizada) {
+            $moviment191->status = 'ABERTA';
+            $moviment191->dtPagto = null;
+        }
         parent::save($moviment191);
         $fatura->movimentacoes->add($moviment191);
-
 
         $this->getDoctrine()->commit();
 
