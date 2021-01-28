@@ -14,6 +14,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco;
 use CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador;
+use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaPagto;
@@ -22,6 +23,7 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandle
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoPrecoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaPagtoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository;
@@ -44,6 +46,8 @@ class IntegradorMercadoPago
 
     private Connection $conn;
 
+    private Client $client;
+
     public ?string $mlUser = null;
 
     private AppConfigEntityHandler $appConfigEntityHandler;
@@ -57,6 +61,8 @@ class IntegradorMercadoPago
     private VendaEntityHandler $vendaEntityHandler;
 
     private VendaItemEntityHandler $vendaItemEntityHandler;
+
+    private VendaPagtoEntityHandler $vendaPagtoEntityHandler;
 
     private ClienteEntityHandler $clienteEntityHandler;
 
@@ -76,6 +82,7 @@ class IntegradorMercadoPago
      * @param ProdutoPrecoEntityHandler $produtoPrecoEntityHandler
      * @param VendaEntityHandler $vendaEntityHandler
      * @param VendaItemEntityHandler $vendaItemEntityHandler
+     * @param VendaPagtoEntityHandler $vendaPagtoEntityHandler
      * @param ClienteEntityHandler $clienteEntityHandler
      * @param ParameterBagInterface $params
      * @param MessageBusInterface $bus
@@ -87,6 +94,7 @@ class IntegradorMercadoPago
                                 ProdutoPrecoEntityHandler $produtoPrecoEntityHandler,
                                 VendaEntityHandler $vendaEntityHandler,
                                 VendaItemEntityHandler $vendaItemEntityHandler,
+                                VendaPagtoEntityHandler $vendaPagtoEntityHandler,
                                 ClienteEntityHandler $clienteEntityHandler,
                                 ParameterBagInterface $params,
                                 MessageBusInterface $bus,
@@ -98,10 +106,13 @@ class IntegradorMercadoPago
         $this->produtoPrecoEntityHandler = $produtoPrecoEntityHandler;
         $this->vendaEntityHandler = $vendaEntityHandler;
         $this->vendaItemEntityHandler = $vendaItemEntityHandler;
+        $this->vendaPagtoEntityHandler = $vendaPagtoEntityHandler;
         $this->clienteEntityHandler = $clienteEntityHandler;
         $this->params = $params;
         $this->bus = $bus;
         $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
+        $this->conn = $this->appConfigEntityHandler->getDoctrine()->getConnection();
+        $this->client = new Client();
     }
 
     /**
@@ -146,8 +157,7 @@ class IntegradorMercadoPago
         }
 
         try {
-            $client = new Client();
-            $response = $client->request('GET', $this->getMercadoPagoConfigs()['endpoint_api'] . '/v1/payments/' . $pagto->jsonData['codigo_transacao'],
+            $response = $this->client->request('GET', $this->getMercadoPagoConfigs()['endpoint_api'] . '/v1/payments/' . $pagto->jsonData['codigo_transacao'],
                 [
                     'headers' => [
                         'Content-Type' => 'application/json; charset=UTF-8',
@@ -157,8 +167,33 @@ class IntegradorMercadoPago
                 ]
             );
             $bodyContents = $response->getBody()->getContents();
-
             $json = json_decode($bodyContents, true);
+
+
+            $responseShipments = $this->client->request('GET', 'https://api.mercadolibre.com/shipments/' . $pagto->venda->jsonData['mlOrder']['shipping']['id'],
+                [
+                    'headers' => [
+                        'Content-Type' => 'application/json; charset=UTF-8',
+                        'accept' => 'application/json',
+                        'Authorization' => 'Bearer ' . $this->getMercadoPagoConfigs()['token']
+                    ],
+                ]
+            );
+            $bodyContentsShipments = $responseShipments->getBody()->getContents();
+            $jsonShipments = json_decode($bodyContentsShipments, true);
+            // Atenção: não sei se esta regra é assim mesmo para todos os casos. Decifrei comparando os JSONs de compra onde o frete foi cobrado com outra que não foi.
+            $shipping_cost = $jsonShipments['shipping_option']['cost'] ?? 0.0;
+            $shipping_listCost = $jsonShipments['shipping_option']['list_cost'] ?? 0.0;
+            if ($shipping_cost !== $shipping_listCost) {
+                $json['fee_details'][] =
+                    [
+                        'amount' => $jsonShipments['shipping_option']['list_cost'] ?? 0.0,
+                        'fee_payer' => 'collector',
+                        'type' => 'FRETE PAGO PELO VENDEDOR',
+                        'OBS' => 'RTA CEP, POIS ML NAO RETORNA VALOR DO FRETE QUANDO PAGO PELO VENDEDOR'
+                    ];
+            }
+
             $pagto->jsonData['mercadopago_retorno'] = $json;
             $pagto_jsonData = json_encode($pagto->jsonData);
 
@@ -172,14 +207,23 @@ class IntegradorMercadoPago
         }
     }
 
-    public function obterVendas(\DateTime $dtVenda)
+    /**
+     * @param \DateTime $dtVenda
+     * @param bool|null $resalvar
+     * @return mixed
+     * @throws ViewException
+     */
+    public function obterVendasMercadoLivre(\DateTime $dtVenda, ?bool $resalvar = false)
     {
         try {
             $dtVendaStr = $dtVenda->format('Y-m-d');
-            $dtVendaStr_ini = '2020-01-01T00:00:00.000-03:00'; // $dtVendaStr . 'T00:00:00.000-03:00';
-            $dtVendaStr_fim = '2020-12-31T23:59:59.999-03:00';
-            $client = new Client();
-            $response = $client->request('GET', 'https://api.mercadolibre.com/orders/search?seller=' . $this->getMercadoPagoConfigs()['userid'] . '&order.date_created.from=' . $dtVendaStr_ini . '&order.date_created.to=' . $dtVendaStr_fim,
+            $dtVendaStr_ini = $dtVendaStr . 'T00:00:00.000-03:00'; // '2020-01-01T00:00:00.000-03:00';
+            $dtVendaStr_fim = $dtVendaStr . 'T23:59:59.999-03:00';
+
+//            $dtVendaStr_ini = '2020-01-01T00:00:00.000-03:00';
+//            $dtVendaStr_fim = '2021-12-31T00:00:00.000-03:00';
+
+            $response = $this->client->request('GET', 'https://api.mercadolibre.com/orders/search?seller=' . $this->getMercadoPagoConfigs()['userid'] . '&order.date_created.from=' . $dtVendaStr_ini . '&order.date_created.to=' . $dtVendaStr_fim,
                 [
                     'headers' => [
                         'Content-Type' => 'application/json; charset=UTF-8',
@@ -193,11 +237,11 @@ class IntegradorMercadoPago
             $json = json_decode($bodyContents, true);
             if ($json['results'] ?? false) {
                 foreach ($json['results'] as $rVenda) {
-                    try {
-                        $this->integrarVendaParaCrosier($rVenda);
-                    } catch (ViewException $e) {
-                        $this->syslog->err('Erro ao integrarVendaParaCrosier - id (ml)' . ($rVenda['id'] ?? 'n/d'));
-                    }
+                    //try {
+                    $this->integrarVendaParaCrosier($rVenda, $resalvar);
+                    //} catch (ViewException $e) {
+                    //    $this->syslog->err('Erro ao integrarVendaParaCrosier - id (ml)' . ($rVenda['id'] ?? 'n/d'));
+                    //}
                 }
             }
 
@@ -257,6 +301,8 @@ class IntegradorMercadoPago
                 $venda = new Venda();
             }
 
+            $conn->beginTransaction();
+
             $venda->dtVenda = $dtPedido;
 
             /** @var ColaboradorRepository $repoColaborador */
@@ -281,7 +327,7 @@ class IntegradorMercadoPago
                 $cliente = $cliente ?? new Cliente();
 
                 $cliente->documento = $cliente_cpfcnpj;
-                $cliente->nome = $mlOrder['cliente_razaosocial'];
+                $cliente->nome = $cliente_nome;
                 $cliente->jsonData['tipo_pessoa'] = strlen($cliente_cpfcnpj) === 11 ? 'PF' : 'PJ';
                 $cliente->jsonData['canal'] = self::CANAL;
                 $cliente->jsonData['ecommerce_id'] = $mlOrder['buyer']['id'] ?? '';
@@ -320,23 +366,28 @@ class IntegradorMercadoPago
                 $produto = null;
                 try {
                     // verifica se já existe uma ven_venda com o json_data.ecommerce_idPedido
-                    $sProduto = $conn->fetchAssociative('SELECT id FROM est_produto WHERE json_data->>"$.canal" = :canal AND json_data->>"$.ecommerce_id" = :idProduto',
+                    $sProduto = $conn->fetchAssociative('SELECT id FROM est_produto WHERE json_data->>"$.canal" = :canal AND json_data->>"$.ecommerce_id" = :idProdutoEcommerce',
                         [
                             'canal' => self::CANAL,
-                            'idProduto' => $item['produto_id']
+                            'idProdutoEcommerce' => $item['item']['id']
                         ]);
-                    if ($sProduto['id'] ?? false) {
+                    if (!($sProduto['id'] ?? false)) {
                         $produto = new Produto();
                         $produto->jsonData['canal'] = self::CANAL;
                         $produto->jsonData['ecommerce_id'] = $item['item']['id'];
                         $produto->nome = $item['item']['title'];
                         $produto->codigo = $item['item']['id'];
 
+
                         $this->produtoEntityHandler->save($produto, false);
 
                         $preco = new ProdutoPreco();
                         $preco->produto = $produto;
                         $preco->dtPrecoVenda = $dtPedido;
+                        $preco->precoCusto = 0.01;
+                        $preco->margem = 0.30;
+                        $preco->custoFinanceiro = 0.15;
+                        $preco->custoOperacional = 0.20;
                         $preco->precoPrazo = $item['full_unit_price'];
                         $this->produtoPrecoEntityHandler->save($preco, false);
 
@@ -392,44 +443,29 @@ class IntegradorMercadoPago
 
             $totalPagto = bcadd($venda->valorTotal, $venda->jsonData['ecommerce_entrega_frete_calculado'] ?? 0.0, 2);
 
-            $integrador = $pagamento['integrador'] ?? 'n/d';
+            $integrador = 'Mercado Pago';
 
-            $vendaPagto = [
-                'venda_id' => $venda->getId(),
-                'valor_pagto' => $totalPagto,
-                'json_data' => [
-                    'integrador' => $integrador,
-                    'codigo_transacao' => $pagamento['codigo_transacao'] ?? 'n/d',
-                    'carteira_id' => $this->getMercadoPagoConfigs()['carteira_id'],
-                ],
-                'inserted' => (new \DateTime())->format('Y-m-d H:i:s'),
-                'updated' => (new \DateTime())->format('Y-m-d H:i:s'),
-                'version' => 0,
-                'user_inserted_id' => 1,
-                'user_updated_id' => 1,
-                'estabelecimento_id' => 1
+            $vendaPagto = new VendaPagto();
+            $venda->addPagto($vendaPagto);
+            $vendaPagto->valorPagto = $totalPagto;
+            $vendaPagto->planoPagto = $this->vendaPagtoEntityHandler->getDoctrine()->getRepository(PlanoPagto::class)->findOneBy(['codigo' => 999]);
+            $vendaPagto->jsonData = [
+                'integrador' => $integrador,
+                'codigo_transacao' => $mlOrder['payments'][0]['id'],
+                'carteira_id' => $this->getMercadoPagoConfigs()['carteira_id'],
             ];
-            $descricaoPlanoPagto = null;
-
-            $vendaPagto['json_data'] = json_encode($vendaPagto['json_data']);
+            $this->vendaPagtoEntityHandler->save($vendaPagto);
 
             try {
-                $conn->insert('ven_venda_pagto', $vendaPagto);
-                $vendaPagtoId = $conn->lastInsertId();
-                if ($integrador === 'Mercado Pago') {
-                    $eVendaPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(VendaPagto::class)->find($vendaPagtoId);
-                    $this->handleTransacaoParaVendaPagto($eVendaPagto);
-                }
+                $this->handleTransacaoParaVendaPagto($vendaPagto);
+                $this->vendaItemEntityHandler->vendaBusiness->finalizarPV($venda);
             } catch (\Throwable $e) {
                 throw new ViewException('Erro ao salvar dados do pagamento');
             }
 
-
-            $venda->jsonData['infoPagtos'] = $descricaoPlanoPagto .
-                ': R$ ' . number_format($venda->valorTotal, 2, ',', '.');
-
-            $this->vendaEntityHandler->save($venda);
+            $conn->commit();
         } catch (\Throwable $e) {
+            $conn->rollBack();
             $this->syslog->err('Erro ao integrarVendaParaCrosier', $mlOrder['id']);
             throw new ViewException('Erro ao integrarVendaParaCrosier', 0, $e);
         }

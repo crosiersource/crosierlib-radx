@@ -88,6 +88,7 @@
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_preco_entity_handler"/>
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"/>
+            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_pagto_entity_handler"/>
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
             <argument type="service" id="parameter_bag"/>
             <argument type="service" id="messenger.bus.default"/>

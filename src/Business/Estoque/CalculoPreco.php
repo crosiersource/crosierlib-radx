@@ -144,27 +144,8 @@ class CalculoPreco
 
         $margem = bcsub($custoOperacionalCompl, $div, 4);
         $margem = bcmul($margem, '100.0', 2);
-        $preco['margem'] = round($margem, 2);
+        $preco['margem'] = bcdiv(round($margem, 2), 100.0, 5);
 
-
-//        $precoCusto_x_custoFinanceiroInv = bcmul($precoCusto, $custoFinanceiroInv, 13);
-//
-//        $depreciacaoPrazo_DIV_precoPrazo = $precoPrazo > 0 ? bcdiv($depreciacaoPrazo, $precoPrazo, 25) : 0.0;
-//
-//        $aux = bcmul($precoCusto_x_custoFinanceiroInv, $depreciacaoPrazo_DIV_precoPrazo, 25);
-//
-//        $custoOperacional = (float) bcdiv($custoOperacional, '100.0', 2);
-//        $margem = (float)bcmul(1.0 - $custoOperacional - $aux, '100.0', 2);
-//        if ($margem === 65.00) {
-//            $margem -= 0.0001;
-//        }
-//        $preco['margem'] = $margem;
-//        $this->calcularCoeficiente($preco);
-//
-//        $descontoAVista = 1.00 - 0.1;
-//
-//        $precoVista = bcmul($preco['precoPrazo'], $descontoAVista);
-//        $preco['precoVista'] = $precoVista;
     }
 
 

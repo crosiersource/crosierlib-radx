@@ -846,8 +846,12 @@ class MovimentacaoImporter
     private function importLinhaExtratoSimples($numLinha)
     {
         $linha = trim($this->linhas[$numLinha]);
-        preg_match(StringUtils::PATTERN_DATA, $linha, $matches);
-        $dataStr = $matches['data'];
+
+        $antesDoPrimeiroEspaco = substr($linha, 0, StringUtils::strposRegex($linha, '\s'));
+        $provavelData = substr($antesDoPrimeiroEspaco, 0, 10);
+
+        $dataStr = DateTimeUtils::parseDateStr($provavelData)->format('d/m/Y');
+        $linha = substr($linha, StringUtils::strposRegex($linha, '\s') + 1);
 
         preg_match(StringUtils::PATTERN_MONEY, $linha, $matches);
         $matches['SINAL_F'] = isset($matches['SINAL_F']) && $matches['SINAL_F'] === 'D' ? '-' : ($matches['SINAL_F'] ?? null);
@@ -859,7 +863,8 @@ class MovimentacaoImporter
 
         $entradaOuSaida = $valor < 0 ? 2 : 1;
 
-        $descricao = str_replace(array($dataStr, $valorStr), '', $linha);
+        $descricao = trim(str_replace($valorStr, '', $linha));
+        $descricao = preg_replace('/\s/', ' ', $descricao);
 
         // Se ainda não for a última linha...
         if ($numLinha < count($this->linhas) - 1) {

@@ -97,6 +97,27 @@ class VendaBusiness
      */
     public function finalizarPV(Venda $venda)
     {
+        if ($venda->status === 'PV FINALIZADO') {
+            throw new ViewException('PV já finalizado');
+        }
+        try {
+            if (in_array($venda->jsonData['canal'], ['ECOMMERCE', 'MERCADOLIVRE'], true)) {
+                $this->finalizarPVECommerce($venda);
+            } else {
+                $this->finalizarPVSimples($venda);
+            }
+        } catch (\Throwable $e) {
+            $this->doctrine->rollback();
+            throw new ViewException('Não foi possível finalizar o PV', 0, $e);
+        }
+    }
+
+    /**
+     * @param Venda $venda
+     * @throws ViewException
+     */
+    private function finalizarPVSimples(Venda $venda)
+    {
         try {
             $this->movimentacaoEntityHandler->getDoctrine()->beginTransaction();
             $venda->recalcularTotais();
@@ -124,11 +145,9 @@ class VendaBusiness
      * @param Venda $venda
      * @throws ViewException
      */
-    public function finalizarPVECommerce(Venda $venda)
+    private function finalizarPVECommerce(Venda $venda)
     {
         try {
-            $this->doctrine->beginTransaction();
-
             $fatura = null;
             foreach ($venda->pagtos as $pagto) {
                 $integrador = $pagto->jsonData['integrador'] ?? '';
@@ -144,12 +163,9 @@ class VendaBusiness
             $venda->jsonData['fatura_id'] = $fatura->getId();
             $venda->status = 'PV FINALIZADO';
             $this->vendaEntityHandler->save($venda);
-
-            $this->doctrine->commit();
         } catch (\Throwable $e) {
             $errMsg = 'Erro ao finalizar PV e-commerce';
             $msg = ExceptionUtils::treatException($e);
-            $this->doctrine->rollback();
             throw new ViewException($errMsg . ($msg ? '(' . $msg . ')' : ''), 0, $e);
         }
     }
@@ -160,65 +176,60 @@ class VendaBusiness
      */
     private function finalizarPVComPagtoPeloMercadoPago(VendaPagto $pagto): Fatura
     {
-        $venda = $pagto->venda;
-        $repoCategoria = $this->doctrine->getRepository(Categoria::class);
-        $categoria101 = $repoCategoria->findOneBy(['codigo' => 101]);
+        try {
+            $venda = $pagto->venda;
+            $repoCategoria = $this->doctrine->getRepository(Categoria::class);
+            $categoria101 = $repoCategoria->findOneBy(['codigo' => 101]);
+            $repoModo = $this->doctrine->getRepository(Modo::class);
+            $modo7 = $repoModo->findOneBy(['codigo' => 7]);
+            $repoCarteira = $this->doctrine->getRepository(Carteira::class);
+            if ($pagto->jsonData['carteira_id']) {
+                $carteiraMercadoPago = $repoCarteira->find($pagto->jsonData['carteira_id']);
+            } else {
+                $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
+                $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'ecomm_info_mercadopago_site_carteira_id'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
+                $ecomm_info_mercadopago_site_carteira_id = $rs->getValor();
+                $carteiraMercadoPago = $repoCarteira->find($ecomm_info_mercadopago_site_carteira_id);
+            }
 
-        $repoModo = $this->doctrine->getRepository(Modo::class);
-        $modo7 = $repoModo->findOneBy(['codigo' => 7]);
+            $movimentacao = new Movimentacao();
+            $movimentacao->carteira = $repoCarteira->find($pagto->jsonData['carteira_id']);
+            $movimentacao->dtPagto = $venda->dtVenda;
+            $movimentacao->valor = $pagto->valorPagto;
+            $movimentacao->categoria = $categoria101;
+            $movimentacao->modo = $modo7;
+            $movimentacao->carteiraDestino = $carteiraMercadoPago;
+            $movimentacao->descricao = 'RECEB VENDA MERCADOPAGO ' . str_pad($venda->getId(), 9, 0, STR_PAD_LEFT);
+            $sacado = '';
+            if (($venda->cliente->documento ?? false) && ($venda->cliente->nome ?? false)) {
+                $sacado .= StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' . mb_strtoupper($venda->cliente->nome);
+            }
+            $movimentacao->sacado = $sacado;
+            $movimentacao->jsonData['venda_id'] = $pagto->venda->getId();
 
+            $this->movimentacaoEntityHandler->saveFaturaTransacional($movimentacao);
+            $paymentMethodId = ($pagto->jsonData['mercadopago_retorno']['payment_method_id'] ?? '');
 
-        $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
-        $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'ecomm_info_mercadopago_site_carteira_id'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
-        $ecomm_info_mercadopago_site_carteira_id = $rs->getValor();
-
-        $repoCarteira = $this->doctrine->getRepository(Carteira::class);
-        $carteiraMercadoPago = $repoCarteira->find($ecomm_info_mercadopago_site_carteira_id);
-
-
-        $movimentacao = new Movimentacao();
-        $movimentacao->carteira = $repoCarteira->find($pagto->jsonData['carteira_id']);
-        $movimentacao->dtPagto = $venda->dtVenda;
-        $movimentacao->valor = $pagto->valorPagto;
-        $movimentacao->categoria = $categoria101;
-        $movimentacao->modo = $modo7;
-        $movimentacao->carteiraDestino = $carteiraMercadoPago;
-        $movimentacao->descricao = 'RECEB VENDA ECOMMERCE ' . str_pad($venda->getId(), 9, 0, STR_PAD_LEFT);
-        $sacado = '';
-        if (($venda->cliente->documento ?? false) && ($venda->cliente->nome ?? false)) {
-            $sacado .= StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' . mb_strtoupper($venda->cliente->nome);
-        }
-        $movimentacao->sacado = $sacado;
-        $movimentacao->jsonData['venda_id'] = $pagto->venda->getId();
-
-        $this->movimentacaoEntityHandler->saveFaturaTransacional($movimentacao);
-
-
-        $paymentMethodId = ($pagto->jsonData['mercadopago_retorno']['payment_method_id'] ?? '');
-
-        if (($pagto->jsonData['mercadopago_retorno']['status'] ?? '') === 'approved') {
-            foreach ($pagto->jsonData['mercadopago_retorno']['fee_details'] as $fee_detail) {
-                if (($fee_detail['fee_payer'] ?? '') === 'collector') {
-                    if ($paymentMethodId === 'credit_card') {
-                        $taxa = [
+            $taxas = [];
+            if (($pagto->jsonData['mercadopago_retorno']['status'] ?? '') === 'approved') {
+                foreach ($pagto->jsonData['mercadopago_retorno']['fee_details'] as $fee_detail) {
+                    if ($fee_detail['type'] === 'application_fee') {
+                        continue; // não sei o que é, mas não é cobrado do vendedor
+                    }
+                    if (($fee_detail['fee_payer'] ?? '') === 'collector') {
+                        $taxas[] = [
                             'valor' => $fee_detail['amount'],
-                            'descricao' => 'TAXA MERCADOPAGO (CREDIT CARD)',
-                            'categoria_codigo' => 202005001,
-                        ];
-                    } elseif (strpos($paymentMethodId, 'bol') === 0) {
-                        $taxa = [
-                            'valor' => $fee_detail['amount'],
-                            'descricao' => 'TAXA MERCADOPAGO (BOLBRADESCO)',
+                            'descricao' => 'TAXA MERCADOPAGO (' . $paymentMethodId . ') ' . ($fee_detail['type'] ?? ''),
                             'categoria_codigo' => 202005001,
                         ];
                     }
-                    $this->movimentacaoEntityHandler->lancarQuitamentoEmFaturaTransacional($movimentacao->fatura, $movimentacao->valorTotal, [$taxa]);
-
                 }
             }
+            $this->movimentacaoEntityHandler->lancarQuitamentoEmFaturaTransacional($movimentacao->fatura, $movimentacao->valorTotal, $taxas);
+            return $movimentacao->fatura;
+        } catch (\Throwable $e) {
+            throw new ViewException('Erro ao finalizarPVComPagtoPeloMercadoPago', 0, $e);
         }
-
-        return $movimentacao->fatura;
     }
 
 

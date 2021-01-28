@@ -22,7 +22,7 @@ use Symfony\Component\Security\Core\Security;
 class VendaItemEntityHandler extends EntityHandler
 {
 
-    private VendaBusiness $vendaBusiness;
+    public VendaBusiness $vendaBusiness;
 
     /**
      * VendaItemEntityHandler constructor.
@@ -63,6 +63,10 @@ class VendaItemEntityHandler extends EntityHandler
 
         if (!$vendaItem->descricao && $vendaItem->produto) {
             $vendaItem->descricao = $vendaItem->produto->nome;
+        }
+
+        if (!$vendaItem->unidade) {
+            $vendaItem->unidade = $vendaItem->produto->unidadePadrao;
         }
 
         $vendaItem->qtde = $vendaItem->devolucao ? (abs($vendaItem->qtde) * -1) : abs($vendaItem->qtde);

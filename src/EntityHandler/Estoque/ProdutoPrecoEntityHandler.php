@@ -5,6 +5,7 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque;
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Business\Estoque\CalculoPreco;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ListaPreco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -62,6 +63,22 @@ class ProdutoPrecoEntityHandler extends EntityHandler
         }
         if (!$produtoPreco->margem) {
             $produtoPreco->margem = $precoArr['margem'];
+        }
+        if (!$produtoPreco->coeficiente) {
+            $produtoPreco->coeficiente = $precoArr['coeficiente'];
+        }
+        if (!$produtoPreco->dtCusto) {
+            $produtoPreco->dtCusto = new \DateTime();
+        }
+        if (!$produtoPreco->dtPrecoVenda) {
+            $produtoPreco->dtPrecoVenda = new \DateTime();
+        }
+        if (!$produtoPreco->lista) {
+            $lista1 = $this->getDoctrine()->getRepository(ListaPreco::class)->find(1);// GERAL
+            $produtoPreco->lista = $lista1;
+        }
+        if (!$produtoPreco->unidade) {
+            $produtoPreco->unidade = $produtoPreco->produto->unidadePadrao;
         }
 
         $produtoPreco->precoVista = $precoArr['precoVista'];

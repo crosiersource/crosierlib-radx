@@ -144,6 +144,17 @@ class Venda implements EntityId
     }
 
     /**
+     * @param VendaPagto|null $pagto
+     */
+    public function addPagto(?VendaPagto $pagto): void
+    {
+        $pagto->venda = $this;
+        if (!$this->pagtos->contains($pagto)) {
+            $this->pagtos->add($pagto);
+        }
+    }
+
+    /**
      *
      */
     public function recalcularTotais()
@@ -172,4 +183,3 @@ class Venda implements EntityId
 
 
 }
-    

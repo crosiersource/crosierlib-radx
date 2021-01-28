@@ -595,10 +595,6 @@ class MovimentacaoEntityHandler extends EntityHandler
 
 
     /**
-     * Salva uma transferência de entrada de caixa. Uma cadeia com 3 movimentações:
-     * 101 - na carteira do caixa
-     * 291 - na carteira da operadora
-     * 191 - na carteira da operadora
      *
      * @param Movimentacao $movimentacao
      * @return Movimentacao

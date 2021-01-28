@@ -47,20 +47,22 @@ class VendaEntityHandler extends EntityHandler
     }
 
     /**
-     * @param $venda
+     * @param Venda $venda
      * @return mixed|void
      * @throws ViewException
      */
-    public function beforeSave(/** @var Venda $venda */ $venda)
+    public function beforeSave($venda)
     {
-        if ($venda->jsonData['ecommerce_status'] ?? false) {
-            /** @var AppConfigRepository $repoAppConfig */
-            $repoAppConfig = $this->getDoctrine()->getRepository(AppConfig::class);
-            $jsonMetadata = json_decode($repoAppConfig->findByChave('ven_venda_json_metadata'), true);
-            if (!($jsonMetadata['campos']['ecommerce_status']['sugestoes'][$venda->jsonData['ecommerce_status']] ?? false)) {
-                throw new \RuntimeException('ecommerce_status N/D');
+        if ($venda->jsonData['ecommerce_id'] ?? false) {
+            if (!($venda->jsonData['ecommerce_status_descricao'] ?? false) && $venda->jsonData['ecommerce_status'] ?? false) {
+                /** @var AppConfigRepository $repoAppConfig */
+                $repoAppConfig = $this->getDoctrine()->getRepository(AppConfig::class);
+                $jsonMetadata = json_decode($repoAppConfig->findByChave('ven_venda_json_metadata'), true);
+                if (!($jsonMetadata['campos']['ecommerce_status']['sugestoes'][$venda->jsonData['ecommerce_status']] ?? false)) {
+                    throw new \RuntimeException('ecommerce_status N/D');
+                }
+                $venda->jsonData['ecommerce_status_descricao'] = $jsonMetadata['campos']['ecommerce_status']['sugestoes'][$venda->jsonData['ecommerce_status']];
             }
-            $venda->jsonData['ecommerce_status_descricao'] = $jsonMetadata['campos']['ecommerce_status']['sugestoes'][$venda->jsonData['ecommerce_status']];
         }
 
         if (!$venda->cliente) {
