@@ -103,6 +103,12 @@ class MovimentacaoEntityHandler extends EntityHandler
         /** @var TipoLanctoRepository $repoTipoLancto */
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
 
+        if (in_array($movimentacao->tipoLancto->codigo, [60,61], true)) {
+            $movimentacao->dtVencto = clone($movimentacao->dtMoviment);
+            $movimentacao->dtVenctoEfetiva = clone($movimentacao->dtMoviment);
+            $movimentacao->dtPagto = clone($movimentacao->dtMoviment);
+        }
+
         // Regras Gerais
         $movimentacao->descricao = trim(preg_replace('/\t+/', '', $movimentacao->descricao));
 
@@ -192,6 +198,8 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
         }
 
+
+        // FIXME: verificar os tipos de lançamentos existentes atualmente
         // Regras para Movimentações de Grupos
         if (in_array($movimentacao->tipoLancto->getCodigo(), [70, 71], true)) { // 70,'MOVIMENTAÇÃO DE GRUPO'
             /** @var Modo $modo50 */

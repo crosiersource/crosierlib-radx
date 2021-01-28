@@ -975,12 +975,6 @@ class MovimentacaoBusiness
      */
     public function getEditingURL(Movimentacao $movimentacao): string
     {
-        if ($movimentacao->carteira->caixa) {
-            return '/fin/movimentacao/form/caixa/';
-        }
-        if (!$movimentacao->dtPagto) {
-            return '/fin/movimentacao/form/aPagarReceber/';
-        }
         if (in_array($movimentacao->categoria->codigo, [199, 299])) {
             if ($movimentacao->cadeia->movimentacoes->count() === 2) {
                 return '/fin/movimentacao/form/transferenciaEntreCarteiras/';
@@ -991,6 +985,12 @@ class MovimentacaoBusiness
         }
         if ($movimentacao->grupoItem) {
             return '/fin/movimentacao/form/grupo/';
+        }
+        if ($movimentacao->carteira->caixa) {
+            return '/fin/movimentacao/form/caixa/';
+        }
+        if (!$movimentacao->dtPagto) {
+            return '/fin/movimentacao/form/aPagarReceber/';
         }
         return '/fin/movimentacao/form/pagto/';
     }

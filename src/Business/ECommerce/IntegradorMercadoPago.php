@@ -170,29 +170,32 @@ class IntegradorMercadoPago
             $json = json_decode($bodyContents, true);
 
 
-            $responseShipments = $this->client->request('GET', 'https://api.mercadolibre.com/shipments/' . $pagto->venda->jsonData['mlOrder']['shipping']['id'],
-                [
-                    'headers' => [
-                        'Content-Type' => 'application/json; charset=UTF-8',
-                        'accept' => 'application/json',
-                        'Authorization' => 'Bearer ' . $this->getMercadoPagoConfigs()['token']
-                    ],
-                ]
-            );
-            $bodyContentsShipments = $responseShipments->getBody()->getContents();
-            $jsonShipments = json_decode($bodyContentsShipments, true);
-            // Atenção: não sei se esta regra é assim mesmo para todos os casos. Decifrei comparando os JSONs de compra onde o frete foi cobrado com outra que não foi.
-            $shipping_cost = $jsonShipments['shipping_option']['cost'] ?? 0.0;
-            $shipping_listCost = $jsonShipments['shipping_option']['list_cost'] ?? 0.0;
-            if ($shipping_listCost > $shipping_cost) {
-                $dif = bcsub($shipping_listCost, $shipping_cost, 2);
-                $json['fee_details'][] =
+            // pois pode ser
+            if ($pagto->venda->jsonData['mlOrder']['shipping']['id'] ?? false) {
+                $responseShipments = $this->client->request('GET', 'https://api.mercadolibre.com/shipments/' . $pagto->venda->jsonData['mlOrder']['shipping']['id'],
                     [
-                        'amount' => $dif,
-                        'fee_payer' => 'collector',
-                        'type' => 'DIF FRETE PAGO PELO VENDEDOR',
-                        'OBS' => 'RTA CEP, POIS ML NAO RETORNA VALOR DO FRETE QUANDO PAGO PELO VENDEDOR'
-                    ];
+                        'headers' => [
+                            'Content-Type' => 'application/json; charset=UTF-8',
+                            'accept' => 'application/json',
+                            'Authorization' => 'Bearer ' . $this->getMercadoPagoConfigs()['token']
+                        ],
+                    ]
+                );
+                $bodyContentsShipments = $responseShipments->getBody()->getContents();
+                $jsonShipments = json_decode($bodyContentsShipments, true);
+                // Atenção: não sei se esta regra é assim mesmo para todos os casos. Decifrei comparando os JSONs de compra onde o frete foi cobrado com outra que não foi.
+                $shipping_cost = $jsonShipments['shipping_option']['cost'] ?? 0.0;
+                $shipping_listCost = $jsonShipments['shipping_option']['list_cost'] ?? 0.0;
+                if ($shipping_listCost > $shipping_cost) {
+                    $dif = bcsub($shipping_listCost, $shipping_cost, 2);
+                    $json['fee_details'][] =
+                        [
+                            'amount' => $dif,
+                            'fee_payer' => 'collector',
+                            'type' => 'DIF FRETE PAGO PELO VENDEDOR',
+                            'OBS' => 'RTA CEP, POIS ML NAO RETORNA VALOR DO FRETE QUANDO PAGO PELO VENDEDOR'
+                        ];
+                }
             }
 
             $pagto->jsonData['mercadopago_retorno'] = $json;
