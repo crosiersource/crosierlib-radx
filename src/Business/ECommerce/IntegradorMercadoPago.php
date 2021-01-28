@@ -184,12 +184,13 @@ class IntegradorMercadoPago
             // Atenção: não sei se esta regra é assim mesmo para todos os casos. Decifrei comparando os JSONs de compra onde o frete foi cobrado com outra que não foi.
             $shipping_cost = $jsonShipments['shipping_option']['cost'] ?? 0.0;
             $shipping_listCost = $jsonShipments['shipping_option']['list_cost'] ?? 0.0;
-            if ($shipping_cost !== $shipping_listCost) {
+            if ($shipping_listCost > $shipping_cost) {
+                $dif = bcsub($shipping_listCost, $shipping_cost, 2);
                 $json['fee_details'][] =
                     [
-                        'amount' => $jsonShipments['shipping_option']['list_cost'] ?? 0.0,
+                        'amount' => $dif,
                         'fee_payer' => 'collector',
-                        'type' => 'FRETE PAGO PELO VENDEDOR',
+                        'type' => 'DIF FRETE PAGO PELO VENDEDOR',
                         'OBS' => 'RTA CEP, POIS ML NAO RETORNA VALOR DO FRETE QUANDO PAGO PELO VENDEDOR'
                     ];
             }
