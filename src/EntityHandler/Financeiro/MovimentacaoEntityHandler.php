@@ -359,7 +359,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
 
         // 62 - FATURA TRANSACIONAL
-        if ($movimentacao->tipoLancto->getCodigo() === 62) {
+        if ($movimentacao->tipoLancto->getCodigo() === 62 && !$movimentacao->getId()) {
             return $this->saveFaturaTransacional($movimentacao);
         }
 
@@ -610,6 +610,12 @@ class MovimentacaoEntityHandler extends EntityHandler
      */
     public function saveFaturaTransacional(Movimentacao $movimentacao, bool $entradaEmFaturaRealizada = true): Movimentacao
     {
+        // Está editando
+        if ($movimentacao->getId()) {
+            throw new ViewException('Só é possível resalvar movimentações de faturas transacionais individualmente');
+        }
+        // else
+
         $this->getDoctrine()->beginTransaction();
 
         /** @var TipoLanctoRepository $repoTipoLancto */
@@ -630,42 +636,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->carteiraDestino = $movimentacao->operadoraCartao->carteira;
         }
 
-        // Está editando
-        if ($movimentacao->getId()) {
-            if ($movimentacao->fatura->movimentacoes->count() !== 3) {
-                throw new ViewException('Apenas faturas com 3 movimentações podem ser editadas (FATURA TRANSACIONAL).');
-            }
 
-            $movs = $movimentacao->fatura->movimentacoes;
-            $outraMov = null;
-            /** @var Movimentacao $mov */
-            foreach ($movs as $mov) {
-                if ($mov->getId() !== $movimentacao->getId()) {
-                    $mov->descricao = $movimentacao->descricao;
-                    $mov->fatura = $movimentacao->fatura;
-                    $mov->categoria = $categ291;
-                    $mov->modo = $movimentacao->modo;
-                    $mov->valor = $movimentacao->valor;
-                    $mov->valorTotal = $movimentacao->valorTotal;
-                    $mov->centroCusto = $movimentacao->centroCusto;
-                    $mov->dtMoviment = clone($movimentacao->dtMoviment);
-                    $mov->dtVencto = clone($movimentacao->dtVencto);
-                    $mov->dtVenctoEfetiva = clone($movimentacao->dtVenctoEfetiva);
-                    $mov->dtPagto = clone($movimentacao->dtPagto);
-                    $mov->numCartao = $movimentacao->numCartao;
-                    $mov->qtdeParcelasCartao = $movimentacao->qtdeParcelasCartao;
-                    $mov->bandeiraCartao = $movimentacao->bandeiraCartao;
-                    parent::save($mov);
-                }
-            }
-
-            /** @var Movimentacao $movimentacao */
-            $movimentacao = parent::save($movimentacao);
-
-            $this->getDoctrine()->commit();
-            return $movimentacao;
-        }
-        // else
 
         if ($movimentacao->categoria->codigoSuper !== 1) {
             throw new ViewException('Uma FATURA TRANSACIONAL precisa ser lançada a partir de uma movimentação de categoria de entrada');
@@ -888,6 +859,11 @@ class MovimentacaoEntityHandler extends EntityHandler
                 /** @var Banco $chequeBanco */
                 $chequeBanco = $em->find(Banco::class, $movimentacao->chequeBanco->getId());
                 $movimentacao->chequeBanco = $chequeBanco;
+            }
+            if ($movimentacao->fatura && $movimentacao->fatura->getId()) {
+                /** @var Fatura $fatura */
+                $fatura = $em->find(Fatura::class, $movimentacao->fatura->getId());
+                $movimentacao->fatura = $fatura;
             }
         } catch (\Exception $e) {
             throw new ViewException('Erro ao realizar o refindAll');
