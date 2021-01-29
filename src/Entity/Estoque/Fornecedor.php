@@ -77,7 +77,7 @@ class Fornecedor implements EntityId
     {
         $r = StringUtils::mascararCnpjCpf($this->documento) . ' - ' . $this->nome;
         if ($this->nomeFantasia ?? false) {
-            $r .= ' (' . $this->jsonData['nomeFantasia'] . ')';
+            $r .= ' (' . $this->nomeFantasia ?? '' . ')';
         }
         return $r;
     }

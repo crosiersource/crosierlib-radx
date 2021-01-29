@@ -866,7 +866,8 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $movimentacao->fatura = $fatura;
             }
         } catch (\Exception $e) {
-            throw new ViewException('Erro ao realizar o refindAll');
+            $msg = ExceptionUtils::treatException($e);
+            throw new ViewException('Erro ao realizar o refindAll (' . $msg . ')');
         }
     }
 
