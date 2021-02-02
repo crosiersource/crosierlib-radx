@@ -10,6 +10,7 @@ use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -35,6 +36,7 @@ class NotaFiscalEntityHandler extends EntityHandler
      * @param ParameterBagInterface $parameterBag
      * @param SyslogBusiness $syslog
      * @param ContainerInterface $container
+     * @param NFeUtils $nfeUtils
      */
     public function __construct(EntityManagerInterface $doctrine,
                                 Security $security,
@@ -71,8 +73,10 @@ class NotaFiscalEntityHandler extends EntityHandler
         }
 
         $i = 1;
-        foreach ($notaFiscal->getItens() as $item) {
-            $item->setOrdem($i++);
+        if ($notaFiscal->getItens()) {
+            foreach ($notaFiscal->getItens() as $item) {
+                $item->setOrdem($i++);
+            }
         }
 
         $notaFiscal->setDocumentoEmitente(preg_replace("/[\D]/", '', $notaFiscal->getDocumentoEmitente()));
@@ -103,49 +107,75 @@ class NotaFiscalEntityHandler extends EntityHandler
 
 
     /**
-     * @param NotaFiscal $notaFiscal
+     * @param NotaFiscal $antiga
      * @throws \Exception
      */
-    public function beforeClone($notaFiscal)
+    public function doClone($antiga)
     {
-        $notaFiscal->setUuid(null);
-        $notaFiscal->setNumero(null);
-        $notaFiscal->setSerie(null);
-        $notaFiscal->setRandFaturam(null);
-        $notaFiscal->setChaveAcesso(null);
-        $notaFiscal->setDtEmissao(new \DateTime());
-        $notaFiscal->setDtSaiEnt(null);
-        $notaFiscal->setCStat(null);
-        $notaFiscal->setCStatLote(null);
-        $notaFiscal->setXMotivo(null);
-        $notaFiscal->setXMotivoLote(null);
-        $notaFiscal->setCnf(null);
-        $notaFiscal->setMotivoCancelamento(null);
-        $notaFiscal->setProtocoloAutorizacao(null);
-        $notaFiscal->setNRec(null);
-        $notaFiscal->setProtocoloAutorizacao(null);
-        $notaFiscal->setDtProtocoloAutorizacao(null);
-        $notaFiscal->setXmlNota(null);
-        $notaFiscal->setResumo(null);
+        $antiga = $this->getDoctrine()->getRepository(NotaFiscal::class)->findOneBy(['id' => $antiga->getId()]);
+        $notaFiscalBusiness = $this->container->get(NotaFiscalBusiness::class);
+        $notaFiscalItemEntityHandler = $notaFiscalBusiness->notaFiscalItemEntityHandler;
 
-        if ($notaFiscal->getItens() && $notaFiscal->getItens()->count() > 0) {
-            $oldItens = clone $notaFiscal->getItens();
-            $notaFiscal->getItens()->clear();
-            foreach ($oldItens as $oldItem) {
-                /** @var NotaFiscalItem $newItem */
-                $newItem = clone $oldItem;
-                $newItem->setId(null);
-                $newItem->setInserted(new \DateTime());
-                $newItem->setUserInsertedId($this->security->getUser()->getId());
-                $newItem->setNotaFiscal($notaFiscal);
-                $notaFiscal->getItens()->add($newItem);
+        $this->getDoctrine()->beginTransaction();
+
+        try {
+            $nova = clone $antiga;
+            $nova->setId(null);
+            $nova->setInserted(null);
+            $nova->setUpdated(null);
+            $nova->setUserInsertedId(null);
+            $nova->setUserUpdatedId(null);
+            $nova->setEstabelecimentoId(null);
+            $nova->setUuid(null);
+            $nova->setNumero(null);
+            $nova->setSerie(null);
+            $nova->setRandFaturam(null);
+            $nova->setChaveAcesso(null);
+            $nova->setDtEmissao(new \DateTime());
+            $nova->setDtSaiEnt(null);
+            $nova->setCStat(null);
+            $nova->setCStatLote(null);
+            $nova->setXMotivo(null);
+            $nova->setXMotivoLote(null);
+            $nova->setCnf(null);
+            $nova->setMotivoCancelamento(null);
+            $nova->setProtocoloAutorizacao(null);
+            $nova->setNRec(null);
+            $nova->setProtocoloAutorizacao(null);
+            $nova->setDtProtocoloAutorizacao(null);
+            $nova->setXmlNota(null);
+            $nova->setResumo(null);
+            $nova->setItens(new ArrayCollection());
+            $nova->setHistoricos(new ArrayCollection());
+            $this->save($nova, false);
+            if ($antiga->getItens()) {
+                foreach ($antiga->getItens() as $oldItem) {
+                    /** @var NotaFiscalItem $newItem */
+                    $newItem = clone $oldItem;
+                    $newItem->setId(null);
+                    $newItem->setInserted(new \DateTime());
+                    $newItem->setUserInsertedId($this->security->getUser()->getId());
+                    $newItem->setNotaFiscal($nova);
+                    $nova->getItens()->add($newItem);
+                    $notaFiscalItemEntityHandler->save($newItem, false);
+                }
             }
+            $this->save($nova);
+            $this->getDoctrine()->commit();
+            return $nova;
+        } catch (\Throwable $e) {
+            $this->getDoctrine()->rollback();
+            $this->syslog->err('Erro ao clonar nota', $e->getMessage());
+            throw new ViewException('Erro ao clonar nota', 0, $e->getMessage());
         }
 
-        if ($notaFiscal->getHistoricos()) {
-            $notaFiscal->getHistoricos()->clear();
-        }
     }
+
+    public function afterClone($nova, $antiga)
+    {
+
+    }
+
 
     /**
      * @param NotaFiscal $notaFiscal
@@ -173,10 +203,12 @@ class NotaFiscalEntityHandler extends EntityHandler
     {
         $subTotal = 0.0;
         $descontos = 0.0;
-        foreach ($notaFiscal->getItens() as $item) {
-            $item->calculaTotais();
-            $subTotal = bcadd($subTotal, DecimalUtils::round($item->getSubTotal()), 2);
-            $descontos = bcadd($descontos, DecimalUtils::round($item->getValorDesconto() ? $item->getValorDesconto() : 0.0), 2);
+        if ($notaFiscal->getItens()) {
+            foreach ($notaFiscal->getItens() as $item) {
+                $item->calculaTotais();
+                $subTotal = bcadd($subTotal, DecimalUtils::round($item->getSubTotal()), 2);
+                $descontos = bcadd($descontos, DecimalUtils::round($item->getValorDesconto() ? $item->getValorDesconto() : 0.0), 2);
+            }
         }
         $notaFiscal->setSubTotal($subTotal);
         $notaFiscal->setTotalDescontos($descontos);

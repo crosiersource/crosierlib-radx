@@ -65,7 +65,7 @@ class NotaFiscalBusiness
 
     private NotaFiscalEntityHandler $notaFiscalEntityHandler;
 
-    private NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler;
+    public NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler;
 
     private NotaFiscalVendaEntityHandler $notaFiscalVendaEntityHandler;
 
@@ -320,28 +320,34 @@ class NotaFiscalBusiness
 
             $notaFiscal->setIndicadorFormaPagto(IndicadorFormaPagto::VISTA['codigo']);
 
-            // Atenção, aqui tem que verificar a questão do arredondamento
-            if ($venda->subtotal > 0.0) {
-                $fatorDesconto = 1 - round(bcdiv($venda->valorTotal, $venda->subtotal, 4), 2);
-            } else {
-                $fatorDesconto = 1;
-            }
-
-            $somaDescontosItens = 0.0;
             $ordem = 1;
-
 
             $itensNaNota = [];
             /** @var VendaItem $vendaItem */
             foreach ($venda->itens as $vendaItem) {
                 if ($vendaItem->produto && $vendaItem->produto->composicao === 'S') {
+                    $qtdeItens = $vendaItem->produto->composicoes->count();
+                    $descontoPorItemMock = 0.0;
+                    if ($vendaItem->desconto) {
+                        $descontoPorItemMock = bcdiv($vendaItem->desconto, $qtdeItens, 2);
+                    }
+                    $totalDescontoMock = 0.0;
                     /** @var ProdutoComposicao $produtoComposicao */
                     foreach ($vendaItem->produto->composicoes as $produtoComposicao) {
                         $mockItem = new VendaItem();
                         $mockItem->produto = $produtoComposicao->produtoFilho;
                         $mockItem->qtde = bcmul($vendaItem->qtde, $produtoComposicao->qtde, 3);
                         $mockItem->precoVenda = $produtoComposicao->precoComposicao;
+                        $mockItem->desconto = $descontoPorItemMock;
+                        $totalDescontoMock = bcadd($totalDescontoMock, $descontoPorItemMock, 2);
                         $itensNaNota[] = $mockItem;
+                    }
+                    // Caso dê diferente, ajusta
+                    $mockItem = $itensNaNota[0];
+                    if ($totalDescontoMock > $vendaItem->desconto) {
+                        $mockItem->desconto = bcsub($mockItem->desconto, bcsub($totalDescontoMock, $vendaItem->desconto, 2), 2);
+                    } elseif ($vendaItem->desconto > $totalDescontoMock) {
+                        $mockItem->desconto = bcadd($mockItem->desconto, bcsub( $vendaItem->desconto, $totalDescontoMock, 2), 2);
                     }
                 } else {
                     $itensNaNota[] = $vendaItem;
@@ -354,6 +360,15 @@ class NotaFiscalBusiness
 
 
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal, false);
+
+            // Atenção, aqui tem que verificar a questão do arredondamento
+            if ($venda->subtotal > 0.0) {
+                $fatorDesconto = 1 - round(bcdiv($venda->valorTotal, $venda->subtotal, 4), 2);
+            } else {
+                $fatorDesconto = 1;
+            }
+
+            $somaDescontosItens = 0.0;
 
             // Vendas podem ter descontos globais, mas NFs não.
             // Se uma venda tem apenas um desconto global e não nos itens, então o desconto global é rateado entre todos
@@ -633,7 +648,7 @@ class NotaFiscalBusiness
                 $this->notaFiscalItemEntityHandler->save($item, false);
             }
 
-            
+
             $this->notaFiscalEntityHandler->save($notaFiscal);
             $this->notaFiscalEntityHandler->getDoctrine()->commit();
             return $notaFiscal;
