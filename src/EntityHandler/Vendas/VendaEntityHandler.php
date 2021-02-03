@@ -53,7 +53,7 @@ class VendaEntityHandler extends EntityHandler
      */
     public function beforeSave($venda)
     {
-        if ($venda->jsonData['ecommerce_id'] ?? false) {
+        if ($venda->jsonData['ecommerce_idPedido'] ?? false) {
             if (!($venda->jsonData['ecommerce_status_descricao'] ?? false) && $venda->jsonData['ecommerce_status'] ?? false) {
                 /** @var AppConfigRepository $repoAppConfig */
                 $repoAppConfig = $this->getDoctrine()->getRepository(AppConfig::class);
