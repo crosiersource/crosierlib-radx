@@ -467,6 +467,96 @@ class SpedNFeBusiness
     }
 
     /**
+     * @param NotaFiscalItem $nfItem
+     * @param \SimpleXMLElement $itemXML
+     * @throws ViewException
+     */
+    public function handleImpostos($nfe, NotaFiscalItem $nfItem, \SimpleXMLElement $itemXML): void
+    {
+        $csosn = $nfItem->getCsosn();
+
+        switch ($csosn) {
+            // não contribuinte SIMPLES NACIONAL
+            case null:
+            {
+
+                $cst = $nfItem->getCst();
+                if (!$cst) {
+                    throw new ViewException('CST não informado para o item ' . $nfItem->getOrdem() . ' (' . $nfItem->getDescricao() . ')');
+                }
+                $tagICMS = 'ICMS' . $cst;
+
+                if ($nfItem->getIcmsAliquota() > 0) {
+                    $itemXML->imposto->ICMS->$tagICMS->orig = '0';
+                    $itemXML->imposto->ICMS->$tagICMS->CST = $cst;
+                    $itemXML->imposto->ICMS->$tagICMS->modBC = (int)$nfItem->getIcmsModBC();
+                    $itemXML->imposto->ICMS->$tagICMS->vBC = bcmul($nfItem->getIcmsValorBc(), 1, 2);
+                    $itemXML->imposto->ICMS->$tagICMS->pICMS = bcmul($nfItem->getIcmsAliquota(), 1, 2);
+                    $itemXML->imposto->ICMS->$tagICMS->vICMS = bcmul($nfItem->getIcmsValor(), 1, 2);
+                } else {
+                    $itemXML->imposto->ICMS->$tagICMS->orig = '0';
+                    $itemXML->imposto->ICMS->$tagICMS->CST = $cst;
+                }
+
+                $itemXML->imposto->IPI->cEnq = '999';
+                $itemXML->imposto->IPI->IPINT->CST = '53';
+
+                if ($nfItem->getPisAliquota() > 0) {
+                    $itemXML->imposto->PIS->PISAliq->CST = '01';
+                    $itemXML->imposto->PIS->PISAliq->vBC = bcmul($nfItem->getPisValorBc(), 1, 2);
+                    $itemXML->imposto->PIS->PISAliq->pPIS = bcmul($nfItem->getPisAliquota(), 1, 2);
+                    $itemXML->imposto->PIS->PISAliq->vPIS = bcmul($nfItem->getPisValor(), 1, 2);
+                } else {
+                    $itemXML->imposto->PIS->PISNT->CST = '04';
+                }
+
+                if ($nfItem->getCofinsAliquota() > 0) {
+                    $itemXML->imposto->COFINS->COFINSAliq->CST = '01';
+                    $itemXML->imposto->COFINS->COFINSAliq->vBC = bcmul($nfItem->getCofinsValorBc(), 1, 2);
+                    $itemXML->imposto->COFINS->COFINSAliq->pCOFINS = bcmul($nfItem->getCofinsAliquota(), 1, 2);
+                    $itemXML->imposto->COFINS->COFINSAliq->vCOFINS = bcmul($nfItem->getCofinsValor(), 1, 2);
+                } else {
+                    $itemXML->imposto->COFINS->COFINSNT->CST = '04';
+                }
+
+                if ($nfe->infNFe->dest->indIEDest == 9 && $nfe->infNFe->ide->indFinal == 1 && $nfe->infNFe->ide->idDest == 2) {
+                    $itemXML->imposto->ICMSUFDest->vBCUFDest = $itemXML->imposto->ICMS->$tagICMS->vBC;
+                    $itemXML->imposto->ICMSUFDest->vBCFCPUFDest = 0.00;
+                    $itemXML->imposto->ICMSUFDest->pFCPUFDest = 0.0000;
+                    $itemXML->imposto->ICMSUFDest->pICMSUFDest = '17.00';
+                    $itemXML->imposto->ICMSUFDest->pICMSInter = $itemXML->imposto->ICMS->$tagICMS->pICMS;
+                    $itemXML->imposto->ICMSUFDest->pICMSInterPart = 100.00;
+                    $itemXML->imposto->ICMSUFDest->vFCPUFDest = 0.00;
+                    $itemXML->imposto->ICMSUFDest->vICMSUFDest = $itemXML->imposto->ICMS->$tagICMS->vICMS;
+                    $itemXML->imposto->ICMSUFDest->vICMSUFRemet = 0.00;
+                }
+                break;
+            }
+            case 900:
+            {
+                $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
+                $itemXML->imposto->ICMS->ICMSSN900->CSOSN = $nfItem->getCsosn();
+                $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
+                $itemXML->imposto->ICMS->ICMSSN900->vBC = number_format(abs($nfItem->getIcmsValorBc()), 2, '.', '');
+                $itemXML->imposto->ICMS->ICMSSN900->pICMS = bcmul($nfItem->getIcmsAliquota(), 1, 2);
+                $itemXML->imposto->ICMS->ICMSSN900->vICMS = number_format(abs($nfItem->getIcmsValor()), 2, '.', '');
+                break;
+            }
+            case 103:
+            default:
+            {
+                $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
+                $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();
+                $itemXML->imposto->PIS->PISNT->CST = '07';
+                $itemXML->imposto->COFINS->COFINSNT->CST = '07';
+                break;
+            }
+        }
+
+    }
+
+
+    /**
      * @param NotaFiscal $notaFiscal
      * @return NotaFiscal
      * @throws ViewException
@@ -876,94 +966,6 @@ class SpedNFeBusiness
         }
     }
 
-    /**
-     * @param NotaFiscalItem $nfItem
-     * @param \SimpleXMLElement $itemXML
-     * @throws ViewException
-     */
-    public function handleImpostos($nfe, NotaFiscalItem $nfItem, \SimpleXMLElement $itemXML): void
-    {
-        $csosn = $nfItem->getCsosn();
-
-        switch ($csosn) {
-            // não contribuinte SIMPLES NACIONAL
-            case null:
-            {
-
-                $cst = $nfItem->getCst();
-                if (!$cst) {
-                    throw new ViewException('CST não informado para o item ' . $nfItem->getOrdem() . ' (' . $nfItem->getDescricao() . ')');
-                }
-                $tagICMS = 'ICMS' . $cst;
-
-                if ($nfItem->getIcmsAliquota() > 0) {
-                    $itemXML->imposto->ICMS->$tagICMS->orig = '0';
-                    $itemXML->imposto->ICMS->$tagICMS->CST = $cst;
-                    $itemXML->imposto->ICMS->$tagICMS->modBC = (int)$nfItem->getIcmsModBC();
-                    $itemXML->imposto->ICMS->$tagICMS->vBC = bcmul($nfItem->getIcmsValorBc(), 1, 2);
-                    $itemXML->imposto->ICMS->$tagICMS->pICMS = bcmul($nfItem->getIcmsAliquota(), 1, 2);
-                    $itemXML->imposto->ICMS->$tagICMS->vICMS = bcmul($nfItem->getIcmsValor(), 1, 2);
-                } else {
-                    $itemXML->imposto->ICMS->$tagICMS->orig = '0';
-                    $itemXML->imposto->ICMS->$tagICMS->CST = $cst;
-                }
-
-                $itemXML->imposto->IPI->cEnq = '999';
-                $itemXML->imposto->IPI->IPINT->CST = '53';
-
-                if ($nfItem->getPisAliquota() > 0) {
-                    $itemXML->imposto->PIS->PISAliq->CST = '01';
-                    $itemXML->imposto->PIS->PISAliq->vBC = bcmul($nfItem->getPisValorBc(), 1, 2);
-                    $itemXML->imposto->PIS->PISAliq->pPIS = bcmul($nfItem->getPisAliquota(), 1, 2);
-                    $itemXML->imposto->PIS->PISAliq->vPIS = bcmul($nfItem->getPisValor(), 1, 2);
-                } else {
-                    $itemXML->imposto->PIS->PISNT->CST = '04';
-                }
-
-                if ($nfItem->getCofinsAliquota() > 0) {
-                    $itemXML->imposto->COFINS->COFINSAliq->CST = '01';
-                    $itemXML->imposto->COFINS->COFINSAliq->vBC = bcmul($nfItem->getCofinsValorBc(), 1, 2);
-                    $itemXML->imposto->COFINS->COFINSAliq->pCOFINS = bcmul($nfItem->getCofinsAliquota(), 1, 2);
-                    $itemXML->imposto->COFINS->COFINSAliq->vCOFINS = bcmul($nfItem->getCofinsValor(), 1, 2);
-                } else {
-                    $itemXML->imposto->COFINS->COFINSNT->CST = '04';
-                }
-
-                if ($nfe->infNFe->dest->indIEDest == 9 && $nfe->infNFe->ide->indFinal == 1 && $nfe->infNFe->ide->idDest == 2) {
-                    $itemXML->imposto->ICMSUFDest->vBCUFDest = $itemXML->imposto->ICMS->$tagICMS->vBC;
-                    $itemXML->imposto->ICMSUFDest->vBCFCPUFDest = 0.00;
-                    $itemXML->imposto->ICMSUFDest->pFCPUFDest = 0.0000;
-                    $itemXML->imposto->ICMSUFDest->pICMSUFDest = '17.00';
-                    $itemXML->imposto->ICMSUFDest->pICMSInter = $itemXML->imposto->ICMS->$tagICMS->pICMS;
-                    $itemXML->imposto->ICMSUFDest->pICMSInterPart = 100.00;
-                    $itemXML->imposto->ICMSUFDest->vFCPUFDest = 0.00;
-                    $itemXML->imposto->ICMSUFDest->vICMSUFDest = $itemXML->imposto->ICMS->$tagICMS->vICMS;
-                    $itemXML->imposto->ICMSUFDest->vICMSUFRemet = 0.00;
-                }
-                break;
-            }
-            case 900:
-            {
-                $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
-                $itemXML->imposto->ICMS->ICMSSN900->CSOSN = $nfItem->getCsosn();
-                $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
-                $itemXML->imposto->ICMS->ICMSSN900->vBC = number_format(abs($nfItem->getIcmsValorBc()), 2, '.', '');
-                $itemXML->imposto->ICMS->ICMSSN900->pICMS = bcmul($nfItem->getIcmsAliquota(), 1, 2);
-                $itemXML->imposto->ICMS->ICMSSN900->vICMS = number_format(abs($nfItem->getIcmsValor()), 2, '.', '');
-                break;
-            }
-            case 103:
-            default:
-            {
-                $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
-                $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();
-                $itemXML->imposto->PIS->PISNT->CST = '07';
-                $itemXML->imposto->COFINS->COFINSNT->CST = '07';
-                break;
-            }
-        }
-
-    }
 
 
     /**
