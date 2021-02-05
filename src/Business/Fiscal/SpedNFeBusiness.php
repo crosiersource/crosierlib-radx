@@ -355,8 +355,12 @@ class SpedNFeBusiness
         $nfe->infNFe->total->ICMSTot->vBC = number_format($total_bcICMS, 2, '.', '');
         $nfe->infNFe->total->ICMSTot->vICMS = number_format($total_vICMS, 2, '.', '');
         $nfe->infNFe->total->ICMSTot->vICMSDeson = '0.00';
-        $nfe->infNFe->total->ICMSTot->vFCPUFDest = '0.00'; //<vFCPUFDest>0.00</vFCPUFDest>
-        $nfe->infNFe->total->ICMSTot->vICMSUFDest = $nfe->infNFe->total->ICMSTot->vICMS;//<vICMSUFDest>18.99</vICMSUFDest>
+
+        if ($nfe->infNFe->dest->indIEDest == 9 && $nfe->infNFe->ide->indFinal == 1 && $nfe->infNFe->ide->idDest == 2) {
+            $nfe->infNFe->total->ICMSTot->vFCPUFDest = '0.00';
+            $nfe->infNFe->total->ICMSTot->vICMSUFDest = $nfe->infNFe->total->ICMSTot->vICMS;
+        }
+
         $nfe->infNFe->total->ICMSTot->vFCP = '0.00';
         $nfe->infNFe->total->ICMSTot->vBCST = '0.00';
         $nfe->infNFe->total->ICMSTot->vST = '0.00';
