@@ -199,7 +199,7 @@ class SpedNFeBusiness
                 if ($notaFiscal->jsonData['idDest'] ?? false) {
                     $idDest = $notaFiscal->jsonData['idDest'];
                 } else {
-                    if (($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF']) || ($nfeConfigs['idDest_sempre1'] ?? false)) {
+                    if (($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF']) || ($nfeConfigs[' t_sempre1'] ?? false)) {
                         $idDest = 1;
                     } else {
                         $idDest = 2;
@@ -258,8 +258,11 @@ class SpedNFeBusiness
                 if (($notaFiscal->getInscricaoEstadualDestinatario() === 'ISENTO') || !$notaFiscal->getInscricaoEstadualDestinatario()) {
                     unset($nfe->infNFe->dest->IE);
                     // Rejeição 805: A SEFAZ do destinatário não permite Contribuinte Isento de Inscrição Estadual
-                    if (in_array($notaFiscal->getEstadoDestinatario(), ['AM', 'BA', 'CE', 'GO', /** 'MG', */ 'MS', 'MT', 'PE', 'RN', 'SE', 'SP'])) {
+                    if (in_array($notaFiscal->getEstadoDestinatario(), ['AM', 'BA', 'CE', 'GO', 'MG', 'MS', 'MT', 'PA', 'PE', 'RN', 'SE', 'SP'])) {
                         $nfe->infNFe->dest->indIEDest = 9;
+                        if (strlen($notaFiscal->getDocumentoDestinatario()) === 11) {
+                            $nfe->infNFe->ide->indFinal = 1; // nesses casos, sendo CPF considera sempre como consumidor final
+                        }
                     } else {
                         $nfe->infNFe->dest->indIEDest = 2;
                     }
@@ -335,7 +338,7 @@ class SpedNFeBusiness
             }
             $itemXML->prod->indTot = '1';
 
-            $this->handleImpostos($nfItem, $itemXML);
+            $this->handleImpostos($nfe, $nfItem, $itemXML);
 
             $total_bcICMS += $nfItem->getIcmsValorBc();
             $total_vICMS += $nfItem->getIcmsValor();
@@ -352,6 +355,8 @@ class SpedNFeBusiness
         $nfe->infNFe->total->ICMSTot->vBC = number_format($total_bcICMS, 2, '.', '');
         $nfe->infNFe->total->ICMSTot->vICMS = number_format($total_vICMS, 2, '.', '');
         $nfe->infNFe->total->ICMSTot->vICMSDeson = '0.00';
+        $nfe->infNFe->total->ICMSTot->vFCPUFDest = '0.00'; //<vFCPUFDest>0.00</vFCPUFDest>
+        $nfe->infNFe->total->ICMSTot->vICMSUFDest = $nfe->infNFe->total->ICMSTot->vICMS;//<vICMSUFDest>18.99</vICMSUFDest>
         $nfe->infNFe->total->ICMSTot->vFCP = '0.00';
         $nfe->infNFe->total->ICMSTot->vBCST = '0.00';
         $nfe->infNFe->total->ICMSTot->vST = '0.00';
@@ -876,7 +881,7 @@ class SpedNFeBusiness
      * @param \SimpleXMLElement $itemXML
      * @throws ViewException
      */
-    public function handleImpostos(NotaFiscalItem $nfItem, \SimpleXMLElement $itemXML): void
+    public function handleImpostos($nfe, NotaFiscalItem $nfItem, \SimpleXMLElement $itemXML): void
     {
         $csosn = $nfItem->getCsosn();
 
@@ -924,9 +929,18 @@ class SpedNFeBusiness
                     $itemXML->imposto->COFINS->COFINSNT->CST = '04';
                 }
 
-
+                if ($nfe->infNFe->dest->indIEDest == 9 && $nfe->infNFe->ide->indFinal == 1 && $nfe->infNFe->ide->idDest == 2) {
+                    $itemXML->imposto->ICMSUFDest->vBCUFDest = $itemXML->imposto->ICMS->$tagICMS->vBC;
+                    $itemXML->imposto->ICMSUFDest->vBCFCPUFDest = 0.00;
+                    $itemXML->imposto->ICMSUFDest->pFCPUFDest = 0.0000;
+                    $itemXML->imposto->ICMSUFDest->pICMSUFDest = '17.00';
+                    $itemXML->imposto->ICMSUFDest->pICMSInter = $itemXML->imposto->ICMS->$tagICMS->pICMS;
+                    $itemXML->imposto->ICMSUFDest->pICMSInterPart = 100.00;
+                    $itemXML->imposto->ICMSUFDest->vFCPUFDest = 0.00;
+                    $itemXML->imposto->ICMSUFDest->vICMSUFDest = $itemXML->imposto->ICMS->$tagICMS->vICMS;
+                    $itemXML->imposto->ICMSUFDest->vICMSUFRemet = 0.00;
+                }
                 break;
-
             }
             case 900:
             {
