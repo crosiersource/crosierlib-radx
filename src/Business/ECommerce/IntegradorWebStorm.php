@@ -1736,7 +1736,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                 $i++;
             }
             if ($descontoTotal !== $descontoAcum) {
-                $diff = $descontoTotal - $descontoAcum;
+                $diff = bcsub($descontoTotal, $descontoAcum, 2);
                 $vendaItem->desconto = bcadd($vendaItem->desconto, $diff, 2);
                 $this->vendaItemEntityHandler->save($vendaItem);
             }
