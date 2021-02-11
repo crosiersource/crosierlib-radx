@@ -272,7 +272,7 @@ class ConferenciaFinanceiroBusiness
         $c102 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 102]);
 
         // Nos casos de CARTÕES DE DÉBITO, a carteira a ser realizada a totalização é sempre o CAIXA A VISTA.
-        if (strpos($modo->getDescricao(), 'DÉBITO') !== FALSE) {
+        if (strpos($modo->descricao, 'DÉBITO') !== FALSE) {
             $carteiraTotal = $this->doctrine->getRepository(Carteira::class)->findOneBy(['codigo' => 2]);
             $debito = true;
         } else {
@@ -311,17 +311,18 @@ class ConferenciaFinanceiroBusiness
 
         $list = [];
 
+        /** @var GrupoItem $gi */
         foreach ($gruposItens as $gi) {
             if (!$gi) {
                 continue;
             }
             $valorLanctos = $gi->getValorLanctos();
-            $valorInformado = $gi->getValorInformado();
+            $valorInformado = $gi->valorInformado;
 
             $icone = bcsub($valorLanctos, $valorInformado, 2) == 0.00 ? 'fas fa-thumbs-up' : 'fas fa-thumbs-down';
 
-            $list[] = ['titulo' => 'TOTAL LANÇADO - ' . $gi->getPai()->getDescricao(), 'valor' => $valorLanctos];
-            $list[] = ['titulo' => '*** TOTAL INFORMADO - ' . $gi->getPai()->getDescricao(), 'valor' => $valorInformado, 'icon' => $icone];
+            $list[] = ['titulo' => 'TOTAL LANÇADO - ' . $gi->pai->descricao, 'valor' => $valorLanctos];
+            $list[] = ['titulo' => '*** TOTAL INFORMADO - ' . $gi->pai->descricao, 'valor' => $valorInformado, 'icon' => $icone];
             $list[] = [];
         }
 
@@ -337,8 +338,11 @@ class ConferenciaFinanceiroBusiness
      */
     public function buildList199e299(\DateTime $dtIni, \DateTime $dtFim)
     {
+        /** @var Categoria $c199 */
         $c199 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 199]);
+        /** @var Categoria $c299 */
         $c299 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
+
 
         $t299 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, null, $c299);
         $t199 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, null, $c199);
@@ -346,8 +350,8 @@ class ConferenciaFinanceiroBusiness
         $icon = bcsub($t299, $t199, 2) == 0.00 ? 'fas fa-thumbs-up' : 'fas fa-thumbs-down';
 
         $list = [];
-        $list[] = ['titulo' => 'TOTAL - ' . $c299->getPai()->getDescricao(), 'valor' => $t299, 'icon' => $icon];
-        $list[] = ['titulo' => 'TOTAL - ' . $c199->getPai()->getDescricao(), 'valor' => $t199, 'icon' => $icon];
+        $list[] = ['titulo' => 'TOTAL - ' . $c299->pai->descricao, 'valor' => $t299, 'icon' => $icon];
+        $list[] = ['titulo' => 'TOTAL - ' . $c199->pai->descricao, 'valor' => $t199, 'icon' => $icon];
 
         return $list;
     }

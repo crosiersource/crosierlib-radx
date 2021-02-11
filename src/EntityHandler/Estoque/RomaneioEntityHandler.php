@@ -6,6 +6,7 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Romaneio;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\RomaneioItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
@@ -54,10 +55,11 @@ class RomaneioEntityHandler extends EntityHandler
         $romaneio->total = $notaFiscal->getValorTotal();
         $romaneio->notaFiscal = $notaFiscal;
 
+        /** @var NotaFiscalItem $nfItem */
         foreach ($notaFiscal->getItens() as $nfItem) {
             $romaneioItem = new RomaneioItem();
             $romaneio->addItem($romaneioItem);
-            $romaneioItem->descricao = $nfItem->getCodigo() . ' - ' . $nfItem->getDescricao();
+            $romaneioItem->descricao = $nfItem->codigo . ' - ' . $nfItem->descricao;
             $romaneioItem->ordem = $nfItem->getOrdem();
             $romaneioItem->precoCusto = $nfItem->getValorUnit();
             $romaneioItem->qtde = $nfItem->getQtde();

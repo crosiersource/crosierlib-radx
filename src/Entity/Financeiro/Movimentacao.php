@@ -31,7 +31,7 @@ class Movimentacao implements EntityId
     public ?string $UUID = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Fatura")
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Fatura", inversedBy="movimentacoes")
      * @ORM\JoinColumn(name="fatura_id")
      * @Groups("entity")
      * @MaxDepth(2)
@@ -323,7 +323,7 @@ class Movimentacao implements EntityId
 
 
     /**
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia")
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia", inversedBy="movimentacoes")
      * @ORM\JoinColumn(name="cadeia_id", referencedColumnName="id")
      * @Groups("entity")
      * @MaxDepth(2)
