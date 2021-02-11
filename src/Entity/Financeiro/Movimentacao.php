@@ -24,7 +24,7 @@ class Movimentacao implements EntityId
 
     /**
      * Utilizado, por exemplo, na importação (para tratar duplicidades).
-     *
+     * @Groups("entity")
      * @ORM\Column(name="uuid", type="string")
      * @NotUppercase()
      */
