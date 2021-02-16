@@ -2,6 +2,12 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -12,6 +18,33 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 /**
  * Entidade que representa um 'item de um Grupo de Movimentações' (como a fatura
  * de um mês do cartão de crédito, por exemplo).
+ * 
+ * @ApiResource(
+ *     normalizationContext={"groups"={"entity","entityId"}},
+ *     denormalizationContext={"groups"={"entity"}},
+ *
+ *     itemOperations={
+ *          "get"={"path"="/fin/grupoItem/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "put"={"path"="/fin/grupoItem/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "delete"={"path"="/fin/grupoItem/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *     },
+ *     collectionOperations={
+ *          "get"={"path"="/fin/grupoItem", "security"="is_granted('ROLE_FINAN')"},
+ *          "post"={"path"="/fin/grupoItem", "security"="is_granted('ROLE_FINAN')"}
+ *     },
+ *
+ *     attributes={
+ *          "pagination_items_per_page"=10,
+ *          "formats"={"jsonld", "csv"={"text/csv"}}
+ *     }
+ *
+ * )
+ *
+ * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "codigoGrupoItem": "exact", "id": "exact"})
+ * @ApiFilter(BooleanFilter::class, properties={"utilizado": "exact"})
+ * @ApiFilter(OrderFilter::class, properties={"id", "codigoGrupoItem", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ *
+ * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoItemEntityHandler")
  *
  * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\GrupoItemRepository")
  * @ORM\Table(name="fin_grupo_item")

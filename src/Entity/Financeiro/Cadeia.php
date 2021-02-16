@@ -2,6 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -14,6 +16,29 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Entidade 'Cadeia de Movimentações'.
  *
  * Movimentações podem ser dependentes umas das outras, formando uma cadeia de entradas e saídas entre carteiras.
+ *
+ * @ApiResource(
+ *     normalizationContext={"groups"={"entity","entityId"}},
+ *     denormalizationContext={"groups"={"entity"}},
+ *
+ *     itemOperations={
+ *          "get"={"path"="/fin/cadeia/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "put"={"path"="/fin/cadeia/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "delete"={"path"="/fin/cadeia/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *     },
+ *     collectionOperations={
+ *          "get"={"path"="/fin/cadeia", "security"="is_granted('ROLE_FINAN')"},
+ *          "post"={"path"="/fin/cadeia", "security"="is_granted('ROLE_FINAN')"}
+ *     },
+ *
+ *     attributes={
+ *          "pagination_items_per_page"=10,
+ *          "formats"={"jsonld", "csv"={"text/csv"}}
+ *     }
+ *
+ * )
+ *
+ * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CadeiaEntityHandler")
  *
  * @ORM\Entity()
  * @ORM\Table(name="fin_cadeia")
