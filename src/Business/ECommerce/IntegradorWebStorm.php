@@ -14,6 +14,7 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandl
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ImageUtils\ImageUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\WebUtils\WebUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
@@ -1673,7 +1674,6 @@ class IntegradorWebStorm implements IntegradorECommerce
             /** @var ProdutoRepository $repoProduto */
             $repoProduto = $this->produtoEntityHandler->getDoctrine()->getRepository(Produto::class);
 
-            $descontoTotal = (float)$pedido->pagamentos->pagamento->desconto->__toString();
             $totalProdutos = 0.0;
 
             $produtosNoCrosier = [];
@@ -1697,7 +1697,6 @@ class IntegradorWebStorm implements IntegradorECommerce
 
                 $totalProdutos = bcadd($totalProdutos, bcmul($produtoWebStorm->quantidade, $valorProduto, 2), 2);
             }
-            $pDesconto = bcdiv($descontoTotal, $totalProdutos, 8);
 
             // Salvo aqui para poder pegar o id
             $this->vendaEntityHandler->save($venda);
@@ -1724,7 +1723,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                 $vendaItem->subtotal = bcmul($vendaItem->precoVenda, $vendaItem->qtde, 2);
 
                 $desconto = (float)$produtoWebStorm->desconto->__toString() ?? 0.0;
-                $descontof = (float)$produtoWebStorm->descontof->__toString() ?? 0.0;
+                $descontof = DecimalUtils::round((float)$produtoWebStorm->descontof->__toString() ?? 0.0, 2, DecimalUtils::ROUND_DOWN);
                 $vendaItem->desconto = bcmul(bcadd($desconto, $descontof, 2), $vendaItem->qtde, 2);
                 $descontoAcum = (float)bcadd($descontoAcum, $vendaItem->desconto, 2);
                 $vendaItem->produto = $produto;
@@ -1734,11 +1733,6 @@ class IntegradorWebStorm implements IntegradorECommerce
 
                 $this->vendaItemEntityHandler->save($vendaItem);
                 $i++;
-            }
-            if ($descontoTotal !== $descontoAcum) {
-                $diff = bcsub($descontoTotal, $descontoAcum, 2);
-                $vendaItem->desconto = bcadd($vendaItem->desconto, $diff, 2);
-                $this->vendaItemEntityHandler->save($vendaItem);
             }
 
             $venda->recalcularTotais();
