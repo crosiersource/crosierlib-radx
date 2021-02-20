@@ -21,13 +21,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     denormalizationContext={"groups"={"entity"}},
  *
  *     itemOperations={
- *          "get"={"path"="/est/pedidoCompra/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
- *          "put"={"path"="/est/pedidoCompra/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
- *          "delete"={"path"="/est/pedidoCompra/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "get"={"path"="/est/movimentacao/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "put"={"path"="/est/movimentacao/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "delete"={"path"="/est/movimentacao/{id}", "security"="is_granted('ROLE_ADMIN')"}
  *     },
  *     collectionOperations={
- *          "get"={"path"="/est/pedidoCompra", "security"="is_granted('ROLE_ESTOQUE')"},
- *          "post"={"path"="/est/pedidoCompra", "security"="is_granted('ROLE_ESTOQUE')"}
+ *          "get"={"path"="/est/movimentacao", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "post"={"path"="/est/movimentacao", "security"="is_granted('ROLE_ESTOQUE')"}
  *     },
  *
  *     attributes={
@@ -39,44 +39,47 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
  *
- * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\PedidoCompraEntityHandler")
- *
- * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\PedidoCompraRepository")
- * @ORM\Table(name="est_pedidocompra")
+ * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\MovimentacaoEntityHandler")
+ * 
+ * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\MovimentacaoRepository")
+ * @ORM\Table(name="est_movimentacao")
  *
  * @author Carlos Eduardo Pauluk
  */
-class PedidoCompra implements EntityId
+class Movimentacao implements EntityId
 {
 
     use EntityIdTrait;
 
     /**
-     *
-     * @ORM\Column(name="dt_emissao", type="datetime")
-     * @Groups("entity")
-     *
-     * @var null|\DateTime
-     */
-    public ?\DateTime $dtEmissao = null;
-
-    /**
-     *
-     * @ORM\Column(name="dt_prev_entrega", type="datetime")
-     * @Groups("entity")
-     *
-     * @var null|\DateTime
-     */
-    public ?\DateTime $dtPrevEntrega = null;
-
-    /**
-     *
-     * @ORM\Column(name="prazos_pagto", type="string")
+     * E/S (Entrada/Saída)
+     * 
+     * @ORM\Column(name="direcao", type="string")
      * @Groups("entity")
      *
      * @var null|string
      */
-    public ?string $prazosPagto = null;
+    public ?string $direcao = null;
+
+    /**
+     *
+     * @ORM\Column(name="dt_lote", type="datetime")
+     * @Groups("entity")
+     *
+     * @var null|\DateTime
+     */
+    public ?\DateTime $dtLote = null;
+
+
+    /**
+     *
+     * @ORM\Column(name="descricao", type="string")
+     * @Groups("entity")
+     *
+     * @var null|string
+     */
+    public ?string $descricao = null;
+
 
     /**
      *
@@ -87,65 +90,26 @@ class PedidoCompra implements EntityId
      */
     public ?string $responsavel = null;
 
-    /**
-     *
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor")
-     * @ORM\JoinColumn(name="fornecedor_id")
-     * @Groups("entity")
-     *
-     * @var null|Fornecedor
-     */
-    public ?Fornecedor $fornecedor = null;
 
     /**
-     *
-     * @ORM\Column(name="subtotal", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
-     *
-     * @var null|float
-     */
-    public ?float $subtotal = null;
-
-    /**
-     *
-     * @ORM\Column(name="desconto", type="decimal", precision=15, scale=2)
-     * @var null|float
-     *
-     * @Groups("entity")
-     */
-    public ?float $desconto = null;
-
-    /**
-     *
-     * @ORM\Column(name="total", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
-     *
-     * @var null|float
-     */
-    public ?float $total = null;
-
-    /**
-     * 'INICIADO'
-     * 'ENVIADO'
-     * 'ENTREGUE PARCIAL'
-     * 'FINALIZADO'
-     * 'CANCELADO'
      *
      * @ORM\Column(name="status", type="string")
      * @Groups("entity")
      *
      * @var null|string
      */
-    public ?string $status = 'INICIADO';
+    public ?string $status = null;
+
 
     /**
      *
-     * @ORM\Column(name="obs", type="string")
+     * @ORM\Column(name="dt_integracao", type="datetime")
      * @Groups("entity")
      *
-     * @var null|string
+     * @var null|\DateTime
      */
-    public ?string $obs = null;
+    public ?\DateTime $dtIntegracao = null;
+
 
     /**
      *
@@ -158,14 +122,14 @@ class PedidoCompra implements EntityId
 
     /**
      *
-     * @var null|PedidoCompraItem[]|ArrayCollection
+     * @var null|MovimentacaoItem[]|ArrayCollection
      *
      * @ORM\OneToMany(
-     *      targetEntity="PedidoCompraItem",
+     *      targetEntity="MovimentacaoItem",
      *      cascade={"persist"},
-     *      mappedBy="pedidoCompra",
+     *      mappedBy="movimentacao",
      *      orphanRemoval=true)
-     * @ORM\OrderBy({"ordem" = "ASC"})
+     * @ORM\OrderBy({"updated" = "DESC"})
      * @Groups("entity")
      */
     public $itens;
@@ -176,7 +140,7 @@ class PedidoCompra implements EntityId
         $this->itens = new ArrayCollection();
     }
 
-    public function addItem(?PedidoCompraItem $item): void
+    public function addItem(?MovimentacaoItem $item): void
     {
         if (!$this->itens->contains($item)) {
             $this->itens->add($item);

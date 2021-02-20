@@ -20,13 +20,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     denormalizationContext={"groups"={"entity"}},
  *
  *     itemOperations={
- *          "get"={"path"="/est/romaneioItem/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
- *          "put"={"path"="/est/romaneioItem/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
- *          "delete"={"path"="/est/romaneioItem/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "get"={"path"="/est/movimentacaoItem/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "put"={"path"="/est/movimentacaoItem/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "delete"={"path"="/est/movimentacaoItem/{id}", "security"="is_granted('ROLE_ADMIN')"}
  *     },
  *     collectionOperations={
- *          "get"={"path"="/est/romaneioItem", "security"="is_granted('ROLE_ESTOQUE')"},
- *          "post"={"path"="/est/romaneioItem", "security"="is_granted('ROLE_ESTOQUE')"}
+ *          "get"={"path"="/est/movimentacaoItem", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "post"={"path"="/est/movimentacaoItem", "security"="is_granted('ROLE_ESTOQUE')"}
  *     },
  *
  *     attributes={
@@ -38,45 +38,35 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
  *
- * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioItemEntityHandler")
+ * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\MovimentacaoItemEntityHandler")
  *
- * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioItemRepository")
- * @ORM\Table(name="est_romaneio_item")
+ * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\MovimentacaoItemRepository")
+ * @ORM\Table(name="est_movimentacao_item")
  *
  * @author Carlos Eduardo Pauluk
  */
-class RomaneioItem implements EntityId
+class MovimentacaoItem implements EntityId
 {
 
     use EntityIdTrait;
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Romaneio", inversedBy="itens")
-     * @ORM\JoinColumn(name="romaneio_id")
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Movimentacao", inversedBy="itens")
+     * @ORM\JoinColumn(name="movimentacao_id")
      *
-     * @var null|Romaneio
+     * @var null|Movimentacao
      */
-    public ?Romaneio $romaneio = null;
+    public ?Movimentacao $movimentacao = null;
 
     /**
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto")
-     * @ORM\JoinColumn(name="produto_id")
+     * @ORM\JoinColumn(name="produto_id", nullable=false)
      *
      * @var null|Produto
      */
     public ?Produto $produto = null;
-
-    /**
-     *
-     * @ORM\Column(name="ordem", type="integer")
-     * @Groups("entity")
-     *
-     * @var null|integer
-     */
-    public ?int $ordem = null;
-
 
     /**
      *
@@ -87,45 +77,14 @@ class RomaneioItem implements EntityId
      */
     public ?float $qtde = null;
 
-
     /**
      *
-     * @ORM\Column(name="qtde_conferida", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade")
+     * @ORM\JoinColumn(name="unidade_id", nullable=false)
      *
-     * @var null|float
+     * @var null|Unidade
      */
-    public ?float $qtdeConferida = null;
-
-
-    /**
-     *
-     * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
-     *
-     * @var null|string
-     */
-    public ?string $descricao = null;
-
-
-    /**
-     *
-     * @ORM\Column(name="preco_custo", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
-     *
-     * @var null|float
-     */
-    public ?float $precoCusto = null;
-
-
-    /**
-     * @ORM\Column(name="total", type="decimal", precision=19, scale=2)
-     * @Groups("entity")
-     *
-     * @var null|float
-     */
-    public ?float $total = null;
-
+    public ?Unidade $unidade = null;
 
     /**
      *

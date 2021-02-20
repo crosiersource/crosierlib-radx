@@ -2,6 +2,12 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Entity\Estoque;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
@@ -10,6 +16,30 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups"={"entity","entityId"}},
+ *     denormalizationContext={"groups"={"entity"}},
+ *
+ *     itemOperations={
+ *          "get"={"path"="/est/subgrupo/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "put"={"path"="/est/subgrupo/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "delete"={"path"="/est/subgrupo/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *     },
+ *     collectionOperations={
+ *          "get"={"path"="/est/subgrupo", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "post"={"path"="/est/subgrupo", "security"="is_granted('ROLE_ESTOQUE')"}
+ *     },
+ *
+ *     attributes={
+ *          "pagination_items_per_page"=10,
+ *          "formats"={"jsonld", "csv"={"text/csv"}}
+ *     }
+ * )
+ *
+ * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "codigo": "exact", "id": "exact"})
+ * @ApiFilter(OrderFilter::class, properties={"id", "codigo", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ *
+ * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\SubgrupoEntityHandler")
  *
  * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\SubgrupoRepository")
  * @ORM\Table(name="est_subgrupo")
