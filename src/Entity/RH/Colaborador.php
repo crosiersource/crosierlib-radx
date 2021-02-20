@@ -2,6 +2,12 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Entity\RH;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
@@ -11,6 +17,30 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups"={"entity","entityId"}},
+ *     denormalizationContext={"groups"={"entity"}},
+ *
+ *     itemOperations={
+ *          "get"={"path"="/rh/colaborador/{id}", "security"="is_granted('ROLE_RH')"},
+ *          "put"={"path"="/rh/colaborador/{id}", "security"="is_granted('ROLE_RH')"},
+ *          "delete"={"path"="/rh/colaborador/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *     },
+ *     collectionOperations={
+ *          "get"={"path"="/rh/colaborador", "security"="is_granted('ROLE_RH')"},
+ *          "post"={"path"="/rh/colaborador", "security"="is_granted('ROLE_RH')"}
+ *     },
+ *
+ *     attributes={
+ *          "pagination_items_per_page"=10,
+ *          "formats"={"jsonld", "csv"={"text/csv"}}
+ *     }
+ * )
+ *
+ * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
+ * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ *
+ * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\RH\ColaboradorEntityHandler")
  *
  * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository")
  * @ORM\Table(name="rh_colaborador")
