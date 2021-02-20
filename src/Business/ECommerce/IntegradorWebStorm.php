@@ -1713,6 +1713,9 @@ class IntegradorWebStorm implements IntegradorECommerce
                 $vendaItem = new VendaItem();
                 $venda->addItem($vendaItem);
                 $vendaItem->descricao = $produto->nome;
+                if ($produto->jsonData['erp_codigo'] ?? false) {
+                    $vendaItem->descricao .= ' (' . $produto->jsonData['erp_codigo'] . ')';
+                }
                 $vendaItem->ordem = $ordem++;
                 $vendaItem->devolucao = false;
 

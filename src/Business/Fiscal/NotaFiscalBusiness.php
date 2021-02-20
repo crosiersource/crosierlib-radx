@@ -347,7 +347,7 @@ class NotaFiscalBusiness
                     if ($totalDescontoMock > $vendaItem->desconto) {
                         $mockItem->desconto = bcsub($mockItem->desconto, bcsub($totalDescontoMock, $vendaItem->desconto, 2), 2);
                     } elseif ($vendaItem->desconto > $totalDescontoMock) {
-                        $mockItem->desconto = bcadd($mockItem->desconto, bcsub( $vendaItem->desconto, $totalDescontoMock, 2), 2);
+                        $mockItem->desconto = bcadd($mockItem->desconto, bcsub($vendaItem->desconto, $totalDescontoMock, 2), 2);
                     }
                 } else {
                     $itensNaNota[] = $vendaItem;
@@ -425,15 +425,25 @@ class NotaFiscalBusiness
                 } else {
                     $nfItem->setUnidade('PC');
                 }
+                
+                
+                // Ordem de preferência para setar a descrição do item na nota
+                $descricaoNoItem = trim($vendaItem->descricao ?? '');
+                $produtoNome = trim($vendaItem->produto->nome ?? '');
+                $produtoNomeJson = trim($vendaItem->jsonData['produto']['descricao'] ?? '');
+                $descricaoDoItemNaNota = $descricaoNoItem ?? $produtoNome ?? $produtoNomeJson;
 
-                if ($vendaItem->produto !== null) {
-                    $repoProduto->findOneBy(['id' => $vendaItem->produto->getId()]);
-                    $nfItem->setCodigo($vendaItem->produto->getId());
-                    $nfItem->setDescricao(trim($vendaItem->produto->nome));
+                // Ordem de preferência para setar o código do item na nota
+                if ($vendaItem->produto) {
+                    /** @var Produto $produtoPorId_ */
+                    $produtoPorId_ = $repoProduto->findOneBy(['id' => $vendaItem->produto->getId()]);
+                    $codigoDoItemNaNota = $produtoPorId_->codigo;
                 } else {
-                    $nfItem->setCodigo($vendaItem->jsonData['produto']['reduzido'] ?? 00000);
-                    $nfItem->setDescricao(trim($vendaItem->jsonData['produto']['descricao']) ?? 'PRODUTO 00000');
+                    $codigoDoItemNaNota = $vendaItem->jsonData['produto']['reduzido'] ?? 00000;
                 }
+
+                $nfItem->setCodigo($codigoDoItemNaNota);
+                $nfItem->setDescricao($descricaoDoItemNaNota);
 
                 $csosn = null;
                 if ($vendaItem->produto->jsonData['csosn'] ?? false) {
