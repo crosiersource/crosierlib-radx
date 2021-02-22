@@ -355,10 +355,6 @@ class NotaFiscalBusiness
             }
 
 
-            /** @var ProdutoRepository $repoProduto */
-            $repoProduto = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Produto::class);
-
-
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal, false);
 
             // Atenção, aqui tem que verificar a questão do arredondamento
@@ -379,6 +375,11 @@ class NotaFiscalBusiness
                     $algumItemTemDesconto = true;
                     break;
                 }
+            }
+
+            $codigoPadraoDoProduto = $this->conn->fetchAssociative('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.item_codigo_padrao']);
+            if ($codigoPadraoDoProduto['valor'] ?? false) {
+                $codigoPadraoDoProduto = $codigoPadraoDoProduto['valor'];
             }
 
             /** @var VendaItem $vendaItem */
@@ -425,8 +426,8 @@ class NotaFiscalBusiness
                 } else {
                     $nfItem->setUnidade('PC');
                 }
-                
-                
+
+
                 // Ordem de preferência para setar a descrição do item na nota
                 $descricaoNoItem = trim($vendaItem->descricao ?? '');
                 $produtoNome = trim($vendaItem->produto->nome ?? '');
@@ -434,12 +435,18 @@ class NotaFiscalBusiness
                 $descricaoDoItemNaNota = $descricaoNoItem ?? $produtoNome ?? $produtoNomeJson;
 
                 // Ordem de preferência para setar o código do item na nota
-                if ($vendaItem->produto) {
-                    /** @var Produto $produtoPorId_ */
-                    $produtoPorId_ = $repoProduto->findOneBy(['id' => $vendaItem->produto->getId()]);
-                    $codigoDoItemNaNota = $produtoPorId_->codigo;
-                } else {
-                    $codigoDoItemNaNota = $vendaItem->jsonData['produto']['reduzido'] ?? 00000;
+                $codigoDoItemNaNota = null;  
+                if ($codigoPadraoDoProduto) {
+                    if (strpos($codigoPadraoDoProduto, 'produto.jsonData.') !== FALSE) {
+                        $codigoDoItemNaNota = $vendaItem->produto->jsonData[str_replace('produto.jsonData.', '', $codigoPadraoDoProduto)] ?? null;
+                    } elseif (strpos($codigoPadraoDoProduto, 'jsonData.') !== FALSE) {
+                        $codigoDoItemNaNota = $vendaItem->jsonData[str_replace('jsonData.', '', $codigoPadraoDoProduto)] ?? null;
+                    } elseif ($codigoPadraoDoProduto === 'codigo') {
+                        $codigoDoItemNaNota = $vendaItem->produto->codigo ?? null;
+                    }
+                }
+                if (!$codigoDoItemNaNota) {
+                    $codigoDoItemNaNota = $vendaItem->produto->getId() ?? $vendaItem->ordem;
                 }
 
                 $nfItem->setCodigo($codigoDoItemNaNota);
