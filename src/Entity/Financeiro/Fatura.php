@@ -80,8 +80,6 @@ class Fatura implements EntityId
 
     /**
      *
-     * A quitação de uma FATURA TRANSACIONAL se dá pela regra: somatório das movimentações 292 = valor da movimentação 291.
-     *
      * @ORM\Column(name="transacional", type="boolean")
      * @Groups("entity")
      *

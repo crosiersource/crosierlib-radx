@@ -10,10 +10,10 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandl
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\MunicipioRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoComposicao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria;
@@ -39,7 +39,6 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoE
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
-use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
@@ -435,7 +434,7 @@ class NotaFiscalBusiness
                 $descricaoDoItemNaNota = $descricaoNoItem ?? $produtoNome ?? $produtoNomeJson;
 
                 // Ordem de preferência para setar o código do item na nota
-                $codigoDoItemNaNota = null;  
+                $codigoDoItemNaNota = null;
                 if ($codigoPadraoDoProduto) {
                     if (strpos($codigoPadraoDoProduto, 'produto.jsonData.') !== FALSE) {
                         $codigoDoItemNaNota = $vendaItem->produto->jsonData[str_replace('produto.jsonData.', '', $codigoPadraoDoProduto)] ?? null;
@@ -1319,14 +1318,15 @@ class NotaFiscalBusiness
             $conn = $this->movimentacaoEntityHandler->getDoctrine()->getConnection();
             $conn->beginTransaction();
 
-
             try {
                 $fatura = [];
                 $fatura['json_data']['notaFiscal_id'] = $notaFiscal->getId();
                 $fatura['json_data']['notaFiscal_nFat'] = $notaFiscal->jsonData['fatura']['nFat'];
                 $fatura['json_data'] = json_encode($fatura['json_data']);
                 $fatura['dt_fatura'] = $notaFiscal->getDtEmissao()->format('Y-m-d');
-                $fatura['fechada'] = true;
+                $fatura['quitada'] = 0;
+                $fatura['fechada'] = 1;
+                $fatura['transacional'] = 0;
                 $fatura['inserted'] = (new \DateTime())->format('Y-m-d H:i:s');
                 $fatura['updated'] = (new \DateTime())->format('Y-m-d H:i:s');
                 /** @var User $user */
@@ -1346,8 +1346,8 @@ class NotaFiscalBusiness
 
 
                 $repoTipoLancto = $doctrine->getRepository(TipoLancto::class);
-                /** @var TipoLancto $tipoLancto_parcelamento */
-                $tipoLancto_parcelamento = $repoTipoLancto->findOneBy(['codigo' => 21]);
+                /** @var TipoLancto $tipoLancto */
+                $tipoLancto = $repoTipoLancto->findOneBy(['codigo' => 20]);
 
                 $repoModo = $doctrine->getRepository(Modo::class);
                 /** @var Modo $modo_boleto */
@@ -1372,7 +1372,7 @@ class NotaFiscalBusiness
                     $movimentacao = new Movimentacao();
 
                     $movimentacao->fatura = ($fatura);
-                    $movimentacao->tipoLancto = ($tipoLancto_parcelamento);
+                    $movimentacao->tipoLancto = ($tipoLancto);
                     $movimentacao->modo = ($modo_boleto);
                     $movimentacao->carteira = ($carteira_indefinida);
                     $movimentacao->categoria = ($categoria_CustosMercadoria);
@@ -1394,17 +1394,13 @@ class NotaFiscalBusiness
                     $this->movimentacaoEntityHandler->save($movimentacao);
                     $i++;
                 }
-
                 $notaFiscal->jsonData['fatura']['fatura_id'] = $faturaId;
                 $this->notaFiscalEntityHandler->save($notaFiscal);
-
-
                 $conn->commit();
             } catch (\Exception $e) {
-                if ($e instanceof ViewException) {
-                    throw $e;
-                }
-                $this->syslog->err('Erro ao gerar fatura', $e->getTraceAsString());
+                $msg = ExceptionUtils::treatException($e, 'Erro ao gerar fatura');
+                $this->syslog->err($msg, $e->getTraceAsString());
+                throw new ViewException($msg, 0, $e);
             }
         }
     }
