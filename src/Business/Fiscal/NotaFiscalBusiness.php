@@ -431,7 +431,7 @@ class NotaFiscalBusiness
                 $descricaoNoItem = trim($vendaItem->descricao ?? '');
                 $produtoNome = trim($vendaItem->produto->nome ?? '');
                 $produtoNomeJson = trim($vendaItem->jsonData['produto']['descricao'] ?? '');
-                $descricaoDoItemNaNota = $descricaoNoItem ?? $produtoNome ?? $produtoNomeJson;
+                $descricaoDoItemNaNota = $descricaoNoItem ?: $produtoNome ?: $produtoNomeJson;
 
                 // Ordem de preferência para setar o código do item na nota
                 $codigoDoItemNaNota = null;
