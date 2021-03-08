@@ -44,4 +44,16 @@ class FaturaEntityHandler extends EntityHandler
     }
 
 
+    /**
+     * @param Fatura $fatura
+     * @return mixed|void
+     */
+    public function beforeSave($fatura)
+    {
+        if (!$fatura->dtFatura) {
+            $fatura->dtFatura = new \DateTime();
+        }
+    }
+
+
 }
