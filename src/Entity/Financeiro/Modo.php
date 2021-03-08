@@ -20,8 +20,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Informa se a movimentação foi em 'espécie', 'cheque', 'boleto', etc.
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"}},
- *     denormalizationContext={"groups"={"entity"}},
+ *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -40,7 +40,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * )
  *
- * @ApiFilter(SearchFilter::class, properties={"descricao": "partial", "id": "exact", "modo": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"descricao": "partial", "id": "exact", "codigo": "exact"})
  * @ApiFilter(OrderFilter::class, properties={"id", "descricao", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\ModoEntityHandler")

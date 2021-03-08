@@ -73,10 +73,6 @@ class MovimentacaoEntityHandler extends EntityHandler
      */
     public function beforeSave($movimentacao)
     {
-        /** @var Movimentacao $movimentacao */
-        if (!$movimentacao->tipoLancto) {
-            throw new ViewException('Campo "Tipo de Lançamento" precisa ser informado');
-        }
         if (!$movimentacao->carteira) {
             throw new ViewException('Campo "Carteira" precisa ser informado');
         }
@@ -100,8 +96,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->centroCusto = $centroCusto;
         }
 
-        /** @var TipoLanctoRepository $repoTipoLancto */
-        $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
+        
 
         if (in_array($movimentacao->tipoLancto->codigo, [60,61], true)) {
             $movimentacao->dtVencto = clone($movimentacao->dtMoviment);
@@ -343,9 +338,12 @@ class MovimentacaoEntityHandler extends EntityHandler
      */
     public function save(EntityId $movimentacao, $flush = true)
     {
+
+        /** @var TipoLanctoRepository $repoTipoLancto */
+        $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
         /** @var Movimentacao $movimentacao */
         if (!$movimentacao->tipoLancto) {
-            throw new ViewException('Tipo Lancto não informado para ' . $movimentacao->getDescricaoMontada());
+            $movimentacao->tipoLancto = $repoTipoLancto->findOneBy(['codigo' => 20]);
         }
 
         // 60 - TRANSFERÊNCIA ENTRE CARTEIRAS
@@ -379,7 +377,6 @@ class MovimentacaoEntityHandler extends EntityHandler
      */
     public function saveTransfPropria(Movimentacao $movimentacao): Movimentacao
     {
-
         $this->getDoctrine()->beginTransaction();
 
         /** @var TipoLanctoRepository $repoTipoLancto */

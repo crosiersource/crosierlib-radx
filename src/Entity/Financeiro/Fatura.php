@@ -4,7 +4,6 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
@@ -20,10 +19,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Entidade 'Fatura'.
  *
  * Agrupa diversas movimentações que são pagas com referência a um documento fiscal.
- * 
+ *
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"}},
- *     denormalizationContext={"groups"={"entity"}},
+ *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/fatura/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -134,6 +133,34 @@ class Fatura implements EntityId
     public function setMovimentacoes($movimentacoes): Fatura
     {
         $this->movimentacoes = $movimentacoes;
+        return $this;
+    }
+
+    /**
+     * @param Movimentacao $movimentacao
+     * @return $this
+     */
+    public function addMovimentacao(Movimentacao $movimentacao): self
+    {
+        if (!$this->movimentacoes->contains($movimentacao)) {
+            $this->movimentacoes[] = $movimentacao;
+            $movimentacao->fatura = $this;
+        }
+        return $this;
+    }
+
+    /**
+     * @param Movimentacao $movimentacao
+     * @return $this
+     */
+    public function removeMovimentacao(Movimentacao $movimentacao): self
+    {
+        if ($this->movimentacoes->contains($movimentacao)) {
+            $this->movimentacoes->removeElement($movimentacao);
+            if ($movimentacao->fatura === $this) {
+                $movimentacao->fatura = null;
+            }
+        }
         return $this;
     }
 

@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"}},
- *     denormalizationContext={"groups"={"entity"}},
+ *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/produtoPreco/{id}", "security"="is_granted('ROLE_ESTOQUE')"},

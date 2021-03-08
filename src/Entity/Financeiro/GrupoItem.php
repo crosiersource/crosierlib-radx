@@ -20,8 +20,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * de um mês do cartão de crédito, por exemplo).
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"}},
- *     denormalizationContext={"groups"={"entity"}},
+ *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/grupoItem/{id}", "security"="is_granted('ROLE_FINAN')"},
