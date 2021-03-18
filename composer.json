@@ -42,6 +42,10 @@
         "symfony/webpack-encore-bundle": "^1.7",
         "crosiersource/crosierlib-base": "dev-master"
     },
+    "config": {
+        "minimum-stability": "dev",
+        "prefer-stable": false
+    },
     "autoload": {
         "psr-4": {
             "CrosierSource\\CrosierLibRadxBundle\\": "src/"
