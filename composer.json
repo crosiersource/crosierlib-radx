@@ -37,7 +37,7 @@
         "nfephp-org/sped-da": "^0",
         "nfephp-org/sped-nfe": "^5.0",
         "scienta/doctrine-json-functions": "~4.1",
-        "crosiersource/crosierlib-base": "@dev",
+        "crosiersource/crosierlib-base": "^1",
         "symfony/messenger": "^5.2",
         "econea/nusoap": "^0.9.7",
         "symfony/webpack-encore-bundle": "^1.7"
@@ -57,14 +57,5 @@
             "allow-contrib": false,
             "require": "5.2.*"
         }
-    },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../crosierlib-base/",
-            "options": {
-                "symlink": true
-            }
-        }
-    ]
+    }
 }
