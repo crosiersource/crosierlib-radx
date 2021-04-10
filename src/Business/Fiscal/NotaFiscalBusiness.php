@@ -445,7 +445,11 @@ class NotaFiscalBusiness
                     }
                 }
                 if (!$codigoDoItemNaNota) {
-                    $codigoDoItemNaNota = $vendaItem->produto->getId() ?? $vendaItem->ordem;
+                    if ($vendaItem->produto) {
+                        $codigoDoItemNaNota = $vendaItem->produto->getId();
+                    } else {
+                        $codigoDoItemNaNota = $vendaItem->ordem;
+                    }
                 }
 
                 $nfItem->setCodigo($codigoDoItemNaNota);
