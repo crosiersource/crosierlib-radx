@@ -107,7 +107,6 @@ class VendaBusiness
                 $this->finalizarPVSimples($venda);
             }
         } catch (\Throwable $e) {
-            $this->doctrine->rollback();
             throw new ViewException('Não foi possível finalizar o PV', 0, $e);
         }
     }

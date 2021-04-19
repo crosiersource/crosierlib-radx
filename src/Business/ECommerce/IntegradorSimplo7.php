@@ -42,7 +42,7 @@ use Symfony\Contracts\Cache\ItemInterface;
  *
  * @author Carlos Eduardo Pauluk
  */
-class IntegradorSimplo7 implements IntegradorECommerce
+class IntegradorSimplo7
 {
 
     private Client $client;
@@ -174,10 +174,10 @@ class IntegradorSimplo7 implements IntegradorECommerce
      * @return int
      * @throws ViewException
      */
-    public function obterVendas(\DateTime $dtVenda, ?bool $resalvar = false): int
+    public function obterVendasPorPeriodo(\DateTime $dtIni, \DateTime $dtFim, ?bool $resalvar = false): int
     {
         $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
-        $pedidos = $this->obterVendasPorData($dtVenda);
+        $pedidos = $this->obterVendasPorData($dtIni, $dtFim);
         if ($pedidos ?? false) {
             foreach ($pedidos as $pedido) {
                 $conn->beginTransaction();
@@ -201,9 +201,9 @@ class IntegradorSimplo7 implements IntegradorECommerce
      * @param \DateTime $dtVenda
      * @throws ViewException
      */
-    public function obterVendasPorData(\DateTime $dtVenda)
+    public function obterVendasPorData(\DateTime $dtIni, \DateTime $dtFim)
     {
-        $dtIni = (clone $dtVenda)->setTime(0, 0);
+        $dtIni = (clone $dtIni)->setTime(0, 0);
         $dtIniS = $dtIni->format('Y-m-d');
 
         $jsons = [];
@@ -221,8 +221,18 @@ class IntegradorSimplo7 implements IntegradorECommerce
                 );
                 $bodyContents = $response->getBody()->getContents();
                 $json = json_decode($bodyContents, true);
+
                 $results = $json['result'] ?? [];
                 foreach ($results as $result) {
+
+                    // Como a simplo7 retorna TODOS os pedidos a partir de tal data, verifica-se aqui para não pegar pedidos além da dtFim
+                    // Dessa forma, serão retornados no $jsons apenas os pedidos de $dtVenda
+                    $dtPedido = DateTimeUtils::parseDateStr($result['Wspedido']['data_pedido']);
+                    $dtPedido->setTime(0, 0);
+                    if ($dtPedido > $dtFim) {
+                        continue;
+                    }
+                    
                     $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $result['Wspedido']['id'] . '.json',
                         [
                             'headers' => [
@@ -234,9 +244,10 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
                     $bodyContents = $response->getBody()->getContents();
                     $uJson = json_decode($bodyContents, true);
-
+                    
                     $jsons[] = $uJson['result'];
                 }
+
                 $hasNextPage = $json['pagination']['has_next_page'];
             } catch (GuzzleException $e) {
                 throw new ViewException('Erro ao obterVendasPorData');
@@ -300,16 +311,16 @@ class IntegradorSimplo7 implements IntegradorECommerce
      * @param bool|null $resalvar
      * @throws ViewException
      */
-    private function integrarVendaParaCrosier(array $pedido, ?bool $resalvar = false): void
+    private function integrarVendaParaCrosier(array $wsPedido, ?bool $resalvar = false): void
     {
         try {
             $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
 
-            $itens = $pedido['Item'];
-            $pagamento = $pedido['Pagamento'] ?? null;
-            $status_id = $pedido['Status']['id'];
-            $status_nome = $pedido['Status']['nome'];
-            $pedido = $pedido['Wspedido'];
+            $itens = $wsPedido['Item'];
+            $pagamento = $wsPedido['Pagamento'] ?? null;
+            $status_id = $wsPedido['Status']['id'];
+            $status_nome = $wsPedido['Status']['nome'];
+            $pedido = $wsPedido['Wspedido'];
             $pedido['cliente_cpfcnpj'] = preg_replace("/[^0-9]/", "", $pedido['cliente_cpfcnpj']);
             $dtPedido = DateTimeUtils::parseDateStr($pedido['data_pedido']);
 
@@ -540,7 +551,9 @@ class IntegradorSimplo7 implements IntegradorECommerce
             $repoPlanoPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(PlanoPagto::class);
             $arrayByCodigo = $repoPlanoPagto->arrayByCodigo();
 
-            $totalPagto = bcadd($venda->valorTotal, $venda->jsonData['ecommerce_entrega_frete_calculado'] ?? 0.0, 2);
+            $totalPagto = bcmul(($pedido['total_pedido'] ?? 0.0), 1, 2);
+            
+            $venda->jsonData['total_pagtos'] = $totalPagto;
 
             $tipoFormaPagamento = $pedido['pagamento_forma'];
 
@@ -595,7 +608,11 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
             $venda->jsonData['infoPagtos'] = $descricaoPlanoPagto .
                 ': R$ ' . number_format($venda->valorTotal, 2, ',', '.');
+            
+            $venda->jsonData['forma_pagamento'] = mb_strtoupper($pagamento['pagamento_forma']);
 
+            $venda->jsonData['dados_completos_ecommerce'] = $wsPedido;
+            
             $this->vendaEntityHandler->save($venda);
         } catch (\Throwable $e) {
             $this->syslog->err('Erro ao integrarVendaParaCrosier', $pedido['id']);
