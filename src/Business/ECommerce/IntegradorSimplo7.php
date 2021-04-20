@@ -656,7 +656,8 @@ class IntegradorSimplo7
             $repoPlanoPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(PlanoPagto::class);
             $arrayByCodigo = $repoPlanoPagto->arrayByCodigo();
 
-            $totalPedido = bcadd($pedido['total_produtos'], $pedido['total_frete'], 2);
+            // Pega a $venda->valorTotal pois ali já constará os possíveis descontos
+            $totalPedido = bcadd($venda->valorTotal, $pedido['total_frete'], 2);
 
             // O total_pedido pode conter os acréscimos no caso de parcelamentos com qtde de parcelas acima do limite de parcelas sem juros.
             $venda->jsonData['total_pagtos'] = $pedido['total_pedido'];
