@@ -48,6 +48,7 @@ class IntegradorMercadoPago
 
     private Client $client;
 
+    // Deve ser passado após a instanciação do objeto para saber qual chave buscar, pois podem ter duas ou mais contas configuradas
     public ?string $mlUser = null;
 
     private AppConfigEntityHandler $appConfigEntityHandler;
