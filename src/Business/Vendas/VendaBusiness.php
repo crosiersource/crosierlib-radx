@@ -4,6 +4,7 @@ namespace CrosierSource\CrosierLibRadxBundle\Business\Vendas;
 
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
@@ -200,7 +201,16 @@ class VendaBusiness
 
             $movimentacao = new Movimentacao();
             $movimentacao->carteira = $carteiraMercadoPago;
-            $movimentacao->dtPagto = $venda->dtVenda;
+            $movimentacao->dtMoviment = $venda->dtVenda;
+            $movimentacao->dtVencto = $venda->dtVenda;
+            // A data em que o mercadopago realmente pagou
+            // em alguns casos pode não ser, é necessário verificar aqui um dia...
+            if ($pagto->jsonData['mercadopago_retorno']['date_approved'] ?? false) {
+                $movimentacao->dtPagto = DateTimeUtils::parseDateStr($pagto->jsonData['mercadopago_retorno']['date_approved']);    
+            } else {
+                $movimentacao->dtPagto = $venda->dtVenda;
+            }
+            
             $movimentacao->valor = $pagto->valorPagto;
             $movimentacao->categoria = $categoria101;
             $movimentacao->modo = $modo7;
@@ -267,22 +277,31 @@ class VendaBusiness
     private function finalizarPVComPagtoPorDepositoEmAberto(VendaPagto $pagto): Fatura
     {
         $venda = $pagto->venda;
+
+        $fatura = new Fatura();
+        $fatura->jsonData['venda_id'] = $pagto->venda->getId();
+        $fatura->dtFatura = clone $pagto->venda->dtVenda;
+        /** @var Fatura $fatura */
+        $fatura = $this->faturaEntityHandler->save($fatura);
+        
         $repoCategoria = $this->doctrine->getRepository(Categoria::class);
         $categoria101 = $repoCategoria->findOneBy(['codigo' => 101]);
 
         $repoModo = $this->doctrine->getRepository(Modo::class);
-        $modo5_boleto = $repoModo->findOneBy(['codigo' => 5]);
+        $modo_depositoBancario = $repoModo->findOneBy(['codigo' => 5]);
 
         $repoCarteira = $this->doctrine->getRepository(Carteira::class);
         $carteiraIndefinida = $repoCarteira->findOneBy(['codigo' => 99]);
 
         $movimentacao = new Movimentacao();
+        $movimentacao->status = 'ABERTA';
         $movimentacao->carteira = $repoCarteira->find($pagto->jsonData['carteira_id']);
-        $movimentacao->dtPagto = $venda->dtVenda;
+        $movimentacao->dtMoviment = $venda->dtVenda;
+        $movimentacao->dtVencto = $venda->dtVenda;
         $movimentacao->valor = $pagto->valorPagto;
         $movimentacao->categoria = $categoria101;
-        $movimentacao->modo = $modo5_boleto;
-        $movimentacao->carteiraDestino = $carteiraIndefinida;
+        $movimentacao->modo = $modo_depositoBancario;
+        
         $movimentacao->descricao = 'RECEB VENDA ECOMMERCE ' . str_pad($venda->getId(), 9, 0, STR_PAD_LEFT);
         $sacado = '';
         if (($venda->cliente->documento ?? false) && ($venda->cliente->nome ?? false)) {
@@ -291,7 +310,9 @@ class VendaBusiness
         $movimentacao->sacado = $sacado;
         $movimentacao->jsonData['venda_id'] = $pagto->venda->getId();
 
-        $this->movimentacaoEntityHandler->saveFaturaTransacional($movimentacao, false);
+        $fatura->addMovimentacao($movimentacao);
+        
+        $this->movimentacaoEntityHandler->save($movimentacao);
 
         return $movimentacao->fatura;
     }

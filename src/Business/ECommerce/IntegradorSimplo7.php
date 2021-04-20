@@ -549,6 +549,7 @@ class IntegradorSimplo7
 
             $venda->jsonData['canal'] = 'ECOMMERCE';
             $venda->jsonData['ecommerce_idPedido'] = $pedido['id'];
+            $venda->jsonData['ecommerce_numeroPedido'] = $pedido['numero'] ?? 'n/d';
             $venda->jsonData['ecommerce_status'] = $status_id;
             $venda->jsonData['ecommerce_status_descricao'] = $status_nome;
 
@@ -670,11 +671,11 @@ class IntegradorSimplo7
             switch ($pagamento['integrador']) {
                 case "Cartão de Crédito":
                 case "Boleto":
-                    $carteiraId = $this->carteiraMercadoPagoSiteId;
+                    $carteiraId = $this->getCarteiraMercadoPagoSiteId();
                     $integrador = "Mercado Pago";
                     break;
                 default:
-                    $carteiraId = $this->carteiraIndefinidaId;
+                    $carteiraId = $this->getCarteiraIndefinidaId();
                     $integrador = $pagamento['integrador'];
             }
 
