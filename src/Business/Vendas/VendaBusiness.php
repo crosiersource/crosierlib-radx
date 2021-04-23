@@ -149,6 +149,9 @@ class VendaBusiness
     {
         try {
             $fatura = null;
+            if (!$venda->pagtos || $venda->pagtos->count() < 1) {
+                throw new \LogicException('Venda sem pagtos');
+            }
             foreach ($venda->pagtos as $pagto) {
                 $integrador = $pagto->jsonData['integrador'] ?? '';
                 $formaPagamento = $pagto->jsonData['nomeFormaPagamento'] ?? '';

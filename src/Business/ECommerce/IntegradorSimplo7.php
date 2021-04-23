@@ -715,8 +715,9 @@ class IntegradorSimplo7
             try {
                 $conn->insert('ven_venda_pagto', $vendaPagto);
                 $vendaPagtoId = $conn->lastInsertId();
+                $eVendaPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(VendaPagto::class)->find($vendaPagtoId);
+                $venda->addPagto($eVendaPagto);
                 if ($integrador === 'Mercado Pago') {
-                    $eVendaPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(VendaPagto::class)->find($vendaPagtoId);
                     $this->integradorMercadoPago->mlUser = 'defamiliapg@gmail.com';
                     $this->integradorMercadoPago->handleTransacaoParaVendaPagto($eVendaPagto);
                 }
@@ -732,8 +733,7 @@ class IntegradorSimplo7
 
             $venda->jsonData['dados_completos_ecommerce'] = $wsPedido;
 
-            $this->vendaEntityHandler->save($venda);
-
+            $venda = $this->vendaEntityHandler->save($venda);
 
             if (!in_array($status_nome, ['Criado', 'Cancelado'])) {
                 $this->vendaBusiness->finalizarPV($venda);
