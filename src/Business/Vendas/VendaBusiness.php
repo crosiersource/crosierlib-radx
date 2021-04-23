@@ -180,7 +180,6 @@ class VendaBusiness
     private function finalizarPVComPagtoPeloMercadoPago(VendaPagto $pagto): Fatura
     {
         try {
-
             $fatura = new Fatura();
             $fatura->jsonData['venda_id'] = $pagto->venda->getId();
             $fatura->dtFatura = clone $pagto->venda->dtVenda;
@@ -218,7 +217,9 @@ class VendaBusiness
             $movimentacao->categoria = $categoria101;
             $movimentacao->modo = $modo7;
             
-            $movimentacao->descricao = 'RECEB VENDA MERCADOPAGO ' . str_pad($venda->getId(), 9, 0, STR_PAD_LEFT);
+            $movimentacao->descricao = 'RECEB VENDA MERCADOPAGO ' .
+                str_pad($venda->jsonData['ecommerce_numeroPedido'] ?? '0', 9, 0, STR_PAD_LEFT) . ' - Id: ' .
+                str_pad($venda->getId(), 9, 0, STR_PAD_LEFT) . ' (' . $venda->jsonData['infoPagtos'] . ')';
             $sacado = '';
             if (($venda->cliente->documento ?? false) && ($venda->cliente->nome ?? false)) {
                 $sacado .= StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' . mb_strtoupper($venda->cliente->nome);
@@ -305,7 +306,9 @@ class VendaBusiness
         $movimentacao->categoria = $categoria101;
         $movimentacao->modo = $modo_depositoBancario;
         
-        $movimentacao->descricao = 'RECEB VENDA ECOMMERCE ' . str_pad($venda->getId(), 9, 0, STR_PAD_LEFT);
+        $movimentacao->descricao = 'RECEB VENDA MERCADOPAGO ' .
+            str_pad($venda->jsonData['ecommerce_numeroPedido'] ?? '0', 9, 0, STR_PAD_LEFT) . ' - Id: ' .
+            str_pad($venda->getId(), 9, 0, STR_PAD_LEFT) . ' (' . $venda->jsonData['infoPagtos'] . ')';
         $sacado = '';
         if (($venda->cliente->documento ?? false) && ($venda->cliente->nome ?? false)) {
             $sacado .= StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' . mb_strtoupper($venda->cliente->nome);

@@ -638,9 +638,13 @@ class IntegradorSimplo7
                 $vendaItem->desconto = bcadd($vendaItem->desconto, $diff, 2);
                 $this->vendaItemEntityHandler->save($vendaItem);
             }
-
             $venda->recalcularTotais();
-
+            // aqui é onde entram descontos de cupons (que é um desconto aplicado globalmente na venda)
+            if ($pedido['total_descontos'] ?? false) {
+                $venda->desconto = bcadd($venda->desconto, $pedido['total_descontos'], 2);
+                $venda->valorTotal = bcsub($venda->subtotal, $venda->desconto, 2);
+            } 
+            
 
             try {
                 $conn->delete('ven_venda_pagto', ['venda_id' => $venda->getId()]);
@@ -728,6 +732,9 @@ class IntegradorSimplo7
 
             $venda->jsonData['infoPagtos'] = $descricaoPlanoPagto .
                 ': R$ ' . number_format($venda->valorTotal, 2, ',', '.');
+            if ($eVendaPagto->jsonData['codigo_transacao'] ?? false) {
+                $venda->jsonData['infoPagtos'] .= ' (Transação: ' . $eVendaPagto->jsonData['codigo_transacao'] . ')';
+            }
 
             $venda->jsonData['forma_pagamento'] = mb_strtoupper($pagamento['pagamento_forma']);
 
