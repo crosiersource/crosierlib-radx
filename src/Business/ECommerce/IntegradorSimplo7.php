@@ -673,12 +673,16 @@ class IntegradorSimplo7
             switch ($pagamento['integrador']) {
                 case "Cartão de Crédito":
                 case "Boleto":
+                case "Mercado Pago":
                     $carteiraId = $this->getCarteiraMercadoPagoSiteId();
                     $integrador = "Mercado Pago";
                     break;
-                default:
+                case "Depósito Bancário":
                     $carteiraId = $this->getCarteiraIndefinidaId();
                     $integrador = $pagamento['integrador'];
+                    break;
+                default:
+                    throw new ViewException('Integrador não configurado: ' . $pagamento['integrador'] . ' (Venda: ' . $pedido['numero'] . ')');
             }
 
             $vendaPagto = [
