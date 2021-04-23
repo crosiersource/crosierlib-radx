@@ -565,9 +565,7 @@ class IntegradorSimplo7
             $venda->jsonData['ecommerce_entrega_telefone'] = $pedido['entrega_telefone'];
             $venda->jsonData['ecommerce_entrega_frete_calculado'] = $pedido['total_frete'];
             $venda->jsonData['ecommerce_entrega_frete_real'] = 0.00;
-            $venda->jsonData['ecommerce_status'] = $pedido['pedidostatus_id'];
-            $venda->jsonData['ecommerce_status_descricao'] = $arrStatus[$pedido['pedidostatus_id']]['nome'] ?? 'STATUS N/D';
-
+            
 
             $obs[] = 'IP: ';
             $obs[] = 'Pagamento: ' . $pedido['pagamento_forma'];
