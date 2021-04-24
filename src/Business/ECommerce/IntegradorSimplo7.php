@@ -12,7 +12,11 @@ use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
@@ -26,6 +30,8 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandle
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DeptoRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\FornecedorRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\PlanoPagtoRepository;
@@ -60,6 +66,12 @@ class IntegradorSimplo7
     private ?int $carteiraMercadoPagoSiteId = null;
 
     private ?int $carteiraIndefinidaId = null;
+    
+    private Depto $deptoIndefinido;
+    private Grupo $grupoIndefinido;
+    private Subgrupo $subgrupoIndefinido;
+    
+    private Fornecedor $fornecedorDefamilia;
 
     private Security $security;
 
@@ -122,6 +134,23 @@ class IntegradorSimplo7
         $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
         $this->integradorMercadoPago = $integradorMercadoPago;
         $this->client = new Client();
+        
+        /** @var DeptoRepository $repoDepto */
+        $repoDepto = $this->produtoEntityHandler->getDoctrine()->getRepository(Depto::class);
+        $this->deptoIndefinido = $repoDepto->findOneBy(['codigo' => '00']);
+
+        /** @var GrupoRepository $repoGrupo */
+        $repoGrupo = $this->produtoEntityHandler->getDoctrine()->getRepository(Grupo::class);
+        $this->grupoIndefinido = $repoGrupo->findOneBy(['codigo' => '00']);
+
+        /** @var SubgrupoRepository $repoSubgrupo */
+        $repoSubgrupo = $this->produtoEntityHandler->getDoctrine()->getRepository(Subgrupo::class);
+        $this->subgrupoIndefinido = $repoSubgrupo->findOneBy(['codigo' => '00']);
+
+        /** @var FornecedorRepository $repoFornecedor */
+        $repoFornecedor = $this->produtoEntityHandler->getDoctrine()->getRepository(Fornecedor::class);
+        $this->fornecedorDefamilia = $repoFornecedor->findOneBy(['nome' => 'DEFAMILIA']);
+        
     }
 
 
@@ -604,7 +633,7 @@ class IntegradorSimplo7
                     // verifica se já existe uma ven_venda com o json_data.ecommerce_idPedido
                     $sProduto = $conn->fetchAssociative('SELECT id FROM est_produto WHERE json_data->>"$.ecommerce_id" = :idProduto', ['idProduto' => $item['produto_id']]);
                     if (!isset($sProduto['id'])) {
-                        throw new \RuntimeException();
+                        $sProduto = $this->obterProduto($item['produto_id']);
                     }
                     $produto = $repoProduto->find($sProduto['id']);
                 } catch (\Throwable $e) {
@@ -969,5 +998,46 @@ class IntegradorSimplo7
     public function obterCliente($idClienteECommerce)
     {
         // TODO: Implement obterCliente() method.
+    }
+
+    /**
+     * @param int $idProduto
+     * @throws ViewException
+     */
+    public function obterProduto(int $idProduto)
+    {
+        try {
+            $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wsprodutos/' . $idProduto . '.json',
+                [
+                    'headers' => [
+                        'Content-Type' => 'application/json; charset=UTF-8',
+                        'appKey' => $this->getChave(),
+                    ],
+                    'timeout' => 10
+                ]
+            );
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            $eproduto = $json['result'] ?? [];
+
+            $produto = new Produto();
+            $produto->jsonData['dados_ecommerce'] = $eproduto;
+            $produto->jsonData['ecommerce_id'] = $eproduto['Wsproduto']['id'];
+            $produto->codigo = $eproduto['Wsproduto']['sku'];
+            $produto->status = $eproduto['Wsproduto']['situacao'];            
+            $produto->depto = $this->deptoIndefinido;
+            $produto->grupo = $this->grupoIndefinido;
+            $produto->subgrupo = $this->subgrupoIndefinido;
+            $produto->fornecedor = $this->fornecedorDefamilia;
+            $produto->nome = $eproduto['Wsproduto']['nome'];
+            
+            $this->produtoEntityHandler->save($produto);
+            
+            $conn = $this->produtoEntityHandler->getDoctrine()->getConnection();
+            
+            return $conn->fetchAssociative('SELECT id FROM est_produto WHERE json_data->>"$.ecommerce_id" = :idProduto', ['idProduto' => $idProduto]);
+        } catch (GuzzleException $e) {
+            throw new ViewException('Erro ao obterVendasPorStatus');
+        }
     }
 }
