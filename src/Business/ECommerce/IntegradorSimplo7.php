@@ -58,7 +58,7 @@ class IntegradorSimplo7
     private ?int $caixaSiteCarteiraId = null;
 
     private ?int $carteiraMercadoPagoSiteId = null;
-    
+
     private ?int $carteiraIndefinidaId = null;
 
     private Security $security;
@@ -175,7 +175,7 @@ class IntegradorSimplo7
         }
         return $this->caixaSiteCarteiraId;
     }
-    
+
 
     /**
      * @return string
@@ -235,7 +235,7 @@ class IntegradorSimplo7
                     } catch (ConnectionException $e) {
                         throw new \RuntimeException('rollback err', 0, $e);
                     }
-                    break;
+                    throw new ViewException('Erro ao integrar');
                 }
             }
         }
@@ -565,7 +565,7 @@ class IntegradorSimplo7
             $venda->jsonData['ecommerce_entrega_telefone'] = $pedido['entrega_telefone'];
             $venda->jsonData['ecommerce_entrega_frete_calculado'] = $pedido['total_frete'];
             $venda->jsonData['ecommerce_entrega_frete_real'] = 0.00;
-            
+
 
             $obs[] = 'IP: ';
             $obs[] = 'Pagamento: ' . $pedido['pagamento_forma'];
@@ -643,8 +643,8 @@ class IntegradorSimplo7
             if ($pedido['total_descontos'] ?? false) {
                 $venda->desconto = bcadd($venda->desconto, $pedido['total_descontos'], 2);
                 $venda->valorTotal = bcsub($venda->subtotal, $venda->desconto, 2);
-            } 
-            
+            }
+
 
             try {
                 $conn->delete('ven_venda_pagto', ['venda_id' => $venda->getId()]);
@@ -657,7 +657,7 @@ class IntegradorSimplo7
 
             /** @var PlanoPagtoRepository $repoPlanoPagto */
             $repoPlanoPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(PlanoPagto::class);
-            $arrayByCodigo = $repoPlanoPagto->arrayByCodigo();
+            $arrPlanosPagtosByCodigo = $repoPlanoPagto->arrayByCodigo();
 
             // Pega a $venda->valorTotal pois ali já constará os possíveis descontos
             $totalPedido = bcadd($venda->valorTotal, $pedido['total_frete'], 2);
@@ -678,6 +678,7 @@ class IntegradorSimplo7
                     $integrador = "Mercado Pago";
                     break;
                 case "Depósito Bancário":
+                case "Pix":
                     $carteiraId = $this->getCarteiraIndefinidaId();
                     $integrador = $pagamento['integrador'];
                     break;
@@ -685,7 +686,28 @@ class IntegradorSimplo7
                     throw new ViewException('Integrador não configurado: ' . $pagamento['integrador'] . ' (Venda: ' . $pedido['numero'] . ')');
             }
 
+            $modoId = null;
+            $descricaoPlanoPagto = null;
+            $planoPagto = null;
+            switch ($tipoFormaPagamento) {
+                case 'Depósito Bancário':
+                    $planoPagto = $arrPlanosPagtosByCodigo['020'];
+                    break;
+                case 'Boleto':
+                    $planoPagto = $arrPlanosPagtosByCodigo['030'];
+                    break;
+                case 'Pix':
+                    $planoPagto = $arrPlanosPagtosByCodigo['040'];
+                    break;
+                default:
+                    $planoPagto = $arrPlanosPagtosByCodigo['010'];
+                    break;
+            }
+            $descricaoPlanoPagto = $planoPagto['descricao'];
+            $modoId = json_decode($planoPagto['json_data'], true)['modo_id'] ?? null;
+
             $vendaPagto = [
+                'plano_pagto_id' => $planoPagto['id'],
                 'venda_id' => $venda->getId(),
                 'valor_pagto' => $totalPedido,
                 'json_data' => [
@@ -693,6 +715,7 @@ class IntegradorSimplo7
                     'integrador' => $integrador,
                     'codigo_transacao' => $pagamento['codigo_transacao'] ?? 'n/d',
                     'carteira_id' => $carteiraId,
+                    'modo_id' => $modoId,
                 ],
                 'inserted' => (new \DateTime())->format('Y-m-d H:i:s'),
                 'updated' => (new \DateTime())->format('Y-m-d H:i:s'),
@@ -701,22 +724,7 @@ class IntegradorSimplo7
                 'user_updated_id' => 1,
                 'estabelecimento_id' => 1
             ];
-            $descricaoPlanoPagto = null;
-            switch ($tipoFormaPagamento) {
-                case 'Depósito Bancário':
-                    $vendaPagto['plano_pagto_id'] = $arrayByCodigo['020']['id'];
-                    $descricaoPlanoPagto = $arrayByCodigo['020']['descricao'];
-                    break;
-                case 'Boleto':
-                    $vendaPagto['plano_pagto_id'] = $arrayByCodigo['030']['id'];
-                    $descricaoPlanoPagto = $arrayByCodigo['030']['descricao'];
-                    break;
-                default:
-                    // por padrão, cai para Cartão de Crédito
-                    $vendaPagto['plano_pagto_id'] = $arrayByCodigo['010']['id'];
-                    $descricaoPlanoPagto = $arrayByCodigo['010']['descricao'];
-                    break;
-            }
+
 
             $vendaPagto['json_data'] = json_encode($vendaPagto['json_data']);
 
@@ -726,6 +734,7 @@ class IntegradorSimplo7
                 $eVendaPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(VendaPagto::class)->find($vendaPagtoId);
                 $venda->addPagto($eVendaPagto);
                 if ($integrador === 'Mercado Pago') {
+                    // no caso de pagamento via 'Mercado Pago', já busca as informações lá na API
                     $this->integradorMercadoPago->mlUser = 'defamiliapg@gmail.com';
                     $this->integradorMercadoPago->handleTransacaoParaVendaPagto($eVendaPagto);
                 }

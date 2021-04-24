@@ -157,7 +157,8 @@ class VendaBusiness
                 $formaPagamento = $pagto->jsonData['nomeFormaPagamento'] ?? '';
                 if ($integrador === 'Mercado Pago') {
                     $fatura = $this->finalizarPVComPagtoPeloMercadoPago($pagto);
-                } elseif ($formaPagamento === 'Depósito Bancário') {
+                } elseif (in_array($formaPagamento, ['Depósito Bancário', 'Pix'], true)) {
+                    // Pagamentos que precisarão de conferência se 'caíram' na conta
                     $fatura = $this->finalizarPVComPagtoPorDepositoEmAberto($pagto);
                 } else {
                     throw new \LogicException('integrador não implementado');
@@ -292,7 +293,8 @@ class VendaBusiness
         $categoria101 = $repoCategoria->findOneBy(['codigo' => 101]);
 
         $repoModo = $this->doctrine->getRepository(Modo::class);
-        $modo_depositoBancario = $repoModo->findOneBy(['codigo' => 5]);
+        $modoId = $pagto->jsonData['modo_id'];
+        $modo = $repoModo->findOneBy(['codigo' => $modoId]);
 
         $repoCarteira = $this->doctrine->getRepository(Carteira::class);
         $carteiraIndefinida = $repoCarteira->findOneBy(['codigo' => 99]);
@@ -304,7 +306,7 @@ class VendaBusiness
         $movimentacao->dtVencto = $venda->dtVenda;
         $movimentacao->valor = $pagto->valorPagto;
         $movimentacao->categoria = $categoria101;
-        $movimentacao->modo = $modo_depositoBancario;
+        $movimentacao->modo = $modo;
         
         $movimentacao->descricao = 'RECEB VENDA MERCADOPAGO ' .
             str_pad($venda->jsonData['ecommerce_numeroPedido'] ?? '0', 9, 0, STR_PAD_LEFT) . ' - Id: ' .
