@@ -57,7 +57,7 @@ class NotaFiscalVenda implements EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\vendas\Venda")
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda")
      * @ORM\JoinColumn(name="venda_id", nullable=false)
      *
      * @var null|Venda
