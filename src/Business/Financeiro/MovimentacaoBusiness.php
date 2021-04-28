@@ -774,9 +774,9 @@ class MovimentacaoBusiness
                 $mov->centroCusto = $movComAlteracoes->centroCusto;
             }
 
-            if ($movComAlteracoes->grupoItem) {
-                $mov->grupoItem = $movComAlteracoes->grupoItem;
-            }
+            
+            
+            
 
             if ($movComAlteracoes->grupoItem) {
                 $mov->grupoItem = $movComAlteracoes->grupoItem;
