@@ -445,6 +445,9 @@ class VendaBusiness
     public function permiteFinalizarVenda(Venda $venda): bool
     {
         try {
+            if ($venda->status !== 'PV ABERTO') {
+                return false;
+            }
             $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
             /** @var AppConfig $rs */
             $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'vendas.config.json'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
