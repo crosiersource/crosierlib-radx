@@ -625,18 +625,28 @@ class MovimentacaoImporter
                 ['carteira', 'EQ', $this->carteiraExtrato],
                 ['chequeNumCheque', 'LIKE_ONLY', $numCheque]
             ];
-            $movsAbertas = $this->repoMovimentacao->findByFiltersSimpl($filterByCheque, null, 0, -1);
+            $movsAbertasMesmoDia = $this->repoMovimentacao->findByFiltersSimpl($filterByCheque, null, 0, -1);
         } else {
 
             // Primeiro tenta encontrar movimentações em aberto de qualquer carteira, com o mesmo valor e dtVencto
             // Depois tenta encontrar movimentações de qualquer status somente da carteira do extrato
             // Junto os dois resultados
-            $filtersSimplAbertas = [
+            $filtersSimplAbertasMesmoDia = [
                 ['dtVenctoEfetiva', 'EQ', $dtVenctoEfetiva->format('Y-m-d')],
                 ['valor', 'EQ', $valor],
                 ['status', 'EQ', 'ABERTA']
             ];
-            $movsAbertas = $this->repoMovimentacao->findByFiltersSimpl($filtersSimplAbertas, null, 0, -1);
+            $movsAbertasMesmoDia = $this->repoMovimentacao->findByFiltersSimpl($filtersSimplAbertasMesmoDia, null, 0, -1);
+
+            // Depois de pesquisar nas movimentações abertas do mesmo dia, pesquisará dos últimos 5 dias.
+            $umDiaAntes = (clone $dtVenctoEfetiva)->setDate($dtVenctoEfetiva->format('Y'), $dtVenctoEfetiva->format('m'), $dtVenctoEfetiva->format('d') - 1);  
+            $seisDiasAntes = (clone $dtVenctoEfetiva)->setDate($dtVenctoEfetiva->format('Y'), $dtVenctoEfetiva->format('m'), $dtVenctoEfetiva->format('d') - 6);  
+            $filtersSimplAbertasDiasAnteriores = [
+                ['dtVenctoEfetiva', 'BETWEEN_DATE', [$seisDiasAntes->format('Y-m-d'),$umDiaAntes->format('Y-m-d')]],
+                ['valor', 'EQ', $valor],
+                ['status', 'EQ', 'ABERTA']
+            ];
+            $movsAbertasDiasAnteriores = $this->repoMovimentacao->findByFiltersSimpl($filtersSimplAbertasDiasAnteriores, ['dtVenctoEfetiva' => 'DESC'], 0, -1);
         }
 
         $filtersSimplTodas = [
@@ -648,9 +658,16 @@ class MovimentacaoImporter
         $movsTodas = $this->repoMovimentacao->findByFiltersSimpl($filtersSimplTodas, null, 0, -1);
 
         // array para atribuir a união dos outros dois
-        $movs = array();
+        $movs = [];
         /** @var Movimentacao $mov */
-        foreach ($movsAbertas as $mov) {
+        foreach ($movsAbertasMesmoDia as $mov) {
+            if ((!$this->checkJaImportada($mov)) && !in_array($mov->getId(), $movs, true)) {
+                $movs[] = $mov->getId();
+            }
+        }
+        // array para atribuir a união dos outros dois
+        /** @var Movimentacao $mov */
+        foreach ($movsAbertasDiasAnteriores as $mov) {
             if ((!$this->checkJaImportada($mov)) && !in_array($mov->getId(), $movs, true)) {
                 $movs[] = $mov->getId();
             }
