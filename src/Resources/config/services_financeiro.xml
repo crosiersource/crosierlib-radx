@@ -22,7 +22,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\BancoEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\BancoEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.banco_entity_handler"/>
 
 
@@ -42,7 +42,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\BandeiraCartaoEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\BandeiraCartaoEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.bandeira_cartao_entity_handler"/>
 
 
@@ -62,7 +62,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CarteiraEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CarteiraEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.carteira_entity_handler"/>
 
 
@@ -82,7 +82,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CadeiaEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CadeiaEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.cadeia_entity_handler"/>
 
 
@@ -102,7 +102,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CategoriaEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CategoriaEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.categoria_entity_handler"/>
 
 
@@ -122,7 +122,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CentroCustoEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CentroCustoEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.centro_custo_entity_handler"/>
 
 
@@ -142,7 +142,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_entity_handler"/>
 
 
@@ -162,7 +162,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoItemEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoItemEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_item_entity_handler"/>
 
 
@@ -182,7 +182,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\ModoEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\ModoEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.modo_entity_handler"/>
 
 
@@ -220,7 +220,7 @@
             <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.cadeia_entity_handler"/>
             <argument type="service" id="monolog.logger"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.fatura_entity_handler"/>
 
 
@@ -240,7 +240,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\OperadoraCartaoEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\OperadoraCartaoEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.operadora_cartao_entity_handler"/>
 
 
@@ -261,7 +261,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegistroConferenciaEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegistroConferenciaEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.registro_conferencia_entity_handler"/>
 
 
@@ -282,7 +282,7 @@
             <argument type="service" id="security.helper"/>
             <argument type="service" id="parameter_bag"/>
         </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegraImportacaoLinhaEntityHandler"
+        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegraImportacaoLinhaEntityHandler" public="true"
                  alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.regra_importacao_linha_entity_handler"/>
 
 
