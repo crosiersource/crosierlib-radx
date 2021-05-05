@@ -963,11 +963,12 @@ class IntegradorSimplo7
                 $bodyMelhorRastreio = $rMelhorRastreio->getBody()->getContents();
                 $jsonMelhorRastreio = json_decode($bodyMelhorRastreio, true);
 
-                if ($jsonMelhorRastreio['data']['status'] !== 'delivered') {
-                    $return[] = 'não entregue: ' . $jsonMelhorRastreio['data']['status'];
+                $status = $jsonMelhorRastreio['data']['status'] ?? $jsonMelhorRastreio['message'] ?? '';
+                if ($status !== 'delivered') {
+                    $return[] = 'não entregue: ' . $status;
                     $return[] = '---';
                     continue;
-                }
+                } 
                 $return[] = 'entregue... atualizando status';
                 $data['Wspedido']['Status']['id'] = 3;
                 $rAtualizaPedido = $this->client->request('PUT', $this->getEndpoint() . '/ws/wspedidos/' . $pedidoEnviado['Wspedido']['id'] . '.json',
