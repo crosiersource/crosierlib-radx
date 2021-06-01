@@ -10,8 +10,14 @@ use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
+use CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador;
@@ -24,6 +30,8 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandle
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DeptoRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\FornecedorRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\PlanoPagtoRepository;
@@ -42,7 +50,7 @@ use Symfony\Contracts\Cache\ItemInterface;
  *
  * @author Carlos Eduardo Pauluk
  */
-class IntegradorSimplo7 implements IntegradorECommerce
+class IntegradorSimplo7
 {
 
     private Client $client;
@@ -54,6 +62,16 @@ class IntegradorSimplo7 implements IntegradorECommerce
     private ?string $endpoint = null;
 
     private ?int $caixaSiteCarteiraId = null;
+
+    private ?int $carteiraMercadoPagoSiteId = null;
+
+    private ?int $carteiraIndefinidaId = null;
+    
+    private Depto $deptoIndefinido;
+    private Grupo $grupoIndefinido;
+    private Subgrupo $subgrupoIndefinido;
+    
+    private Fornecedor $fornecedorDefamilia;
 
     private Security $security;
 
@@ -83,6 +101,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
      * @param VendaEntityHandler $vendaEntityHandler
      * @param VendaItemEntityHandler $vendaItemEntityHandler
      * @param NotaFiscalBusiness $notaFiscalBusiness
+     * @param VendaBusiness $vendaBusiness
      * @param ClienteEntityHandler $clienteEntityHandler
      * @param ParameterBagInterface $params
      * @param MessageBusInterface $bus
@@ -95,6 +114,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
                                 VendaEntityHandler $vendaEntityHandler,
                                 VendaItemEntityHandler $vendaItemEntityHandler,
                                 NotaFiscalBusiness $notaFiscalBusiness,
+                                VendaBusiness $vendaBusiness,
                                 ClienteEntityHandler $clienteEntityHandler,
                                 ParameterBagInterface $params,
                                 MessageBusInterface $bus,
@@ -107,12 +127,30 @@ class IntegradorSimplo7 implements IntegradorECommerce
         $this->vendaEntityHandler = $vendaEntityHandler;
         $this->vendaItemEntityHandler = $vendaItemEntityHandler;
         $this->notaFiscalBusiness = $notaFiscalBusiness;
+        $this->vendaBusiness = $vendaBusiness;
         $this->clienteEntityHandler = $clienteEntityHandler;
         $this->params = $params;
         $this->bus = $bus;
         $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
         $this->integradorMercadoPago = $integradorMercadoPago;
         $this->client = new Client();
+        
+        /** @var DeptoRepository $repoDepto */
+        $repoDepto = $this->produtoEntityHandler->getDoctrine()->getRepository(Depto::class);
+        $this->deptoIndefinido = $repoDepto->findOneBy(['codigo' => '00']);
+
+        /** @var GrupoRepository $repoGrupo */
+        $repoGrupo = $this->produtoEntityHandler->getDoctrine()->getRepository(Grupo::class);
+        $this->grupoIndefinido = $repoGrupo->findOneBy(['codigo' => '00']);
+
+        /** @var SubgrupoRepository $repoSubgrupo */
+        $repoSubgrupo = $this->produtoEntityHandler->getDoctrine()->getRepository(Subgrupo::class);
+        $this->subgrupoIndefinido = $repoSubgrupo->findOneBy(['codigo' => '00']);
+
+        /** @var FornecedorRepository $repoFornecedor */
+        $repoFornecedor = $this->produtoEntityHandler->getDoctrine()->getRepository(Fornecedor::class);
+        $this->fornecedorDefamilia = $repoFornecedor->findOneBy(['nome' => 'DEFAMILIA']);
+        
     }
 
 
@@ -169,15 +207,51 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
 
     /**
+     * @return string
+     */
+    public function getCarteiraMercadoPagoSiteId(): string
+    {
+        // 
+        if (!$this->carteiraMercadoPagoSiteId) {
+            try {
+                $repoAppConfig = $this->appConfigEntityHandler->getDoctrine()->getRepository(AppConfig::class);
+                $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'ecomm_info_mercadopago_site_carteira_id'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
+                $this->carteiraMercadoPagoSiteId = (int)$rs->getValor();
+            } catch (\Throwable $e) {
+                throw new \RuntimeException('Erro ao pesquisar appConfig ecomm_info_caixa_site_carteira_id');
+            }
+        }
+        return $this->carteiraMercadoPagoSiteId;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getCarteiraIndefinidaId(): string
+    {
+        if (!$this->carteiraIndefinidaId) {
+            try {
+                $repoCarteira = $this->appConfigEntityHandler->getDoctrine()->getRepository(Carteira::class);
+                $this->carteiraIndefinidaId = $repoCarteira->findOneBy(['codigo' => 99])->getId();
+            } catch (\Throwable $e) {
+                throw new \RuntimeException('Erro ao pesquisar appConfig ecomm_info_caixa_site_carteira_id');
+            }
+        }
+        return $this->carteiraIndefinidaId;
+    }
+
+
+    /**
      * @param \DateTime $dtVenda
      * @param bool|null $resalvar
      * @return int
      * @throws ViewException
      */
-    public function obterVendas(\DateTime $dtVenda, ?bool $resalvar = false): int
+    public function obterVendasPorPeriodo(\DateTime $dtIni, \DateTime $dtFim, ?bool $resalvar = false): int
     {
         $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
-        $pedidos = $this->obterVendasPorData($dtVenda);
+        $pedidos = $this->obterJsonVendasPorPeriodo($dtIni, $dtFim);
         if ($pedidos ?? false) {
             foreach ($pedidos as $pedido) {
                 $conn->beginTransaction();
@@ -190,20 +264,21 @@ class IntegradorSimplo7 implements IntegradorECommerce
                     } catch (ConnectionException $e) {
                         throw new \RuntimeException('rollback err', 0, $e);
                     }
-                    break;
+                    throw new ViewException('Erro ao integrar');
                 }
             }
         }
         return count($pedidos);
     }
 
+
     /**
      * @param \DateTime $dtVenda
      * @throws ViewException
      */
-    public function obterVendasPorData(\DateTime $dtVenda)
+    public function obterJsonVendasPorPeriodo(\DateTime $dtIni, \DateTime $dtFim)
     {
-        $dtIni = (clone $dtVenda)->setTime(0, 0);
+        $dtIni = (clone $dtIni)->setTime(0, 0);
         $dtIniS = $dtIni->format('Y-m-d');
 
         $jsons = [];
@@ -221,8 +296,18 @@ class IntegradorSimplo7 implements IntegradorECommerce
                 );
                 $bodyContents = $response->getBody()->getContents();
                 $json = json_decode($bodyContents, true);
+
                 $results = $json['result'] ?? [];
                 foreach ($results as $result) {
+
+                    // Como a simplo7 retorna TODOS os pedidos a partir de tal data, verifica-se aqui para não pegar pedidos além da dtFim
+                    // Dessa forma, serão retornados no $jsons apenas os pedidos de $dtVenda
+                    $dtPedido = DateTimeUtils::parseDateStr($result['Wspedido']['data_pedido']);
+                    $dtPedido->setTime(0, 0);
+                    if ($dtPedido > $dtFim) {
+                        continue;
+                    }
+
                     $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $result['Wspedido']['id'] . '.json',
                         [
                             'headers' => [
@@ -237,6 +322,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
                     $jsons[] = $uJson['result'];
                 }
+
                 $hasNextPage = $json['pagination']['has_next_page'];
             } catch (GuzzleException $e) {
                 throw new ViewException('Erro ao obterVendasPorData');
@@ -244,6 +330,56 @@ class IntegradorSimplo7 implements IntegradorECommerce
         } while ($hasNextPage);
 
         return $jsons;
+    }
+
+
+    /**
+     * @param int $numero
+     * @param bool|null $resalvar
+     * @return int
+     */
+    public function obterVendasPorNumero(int $numero, ?bool $resalvar = false): int
+    {
+        $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
+        $pedido = $this->obterJsonVendaPorNumero($numero);
+
+        $conn->beginTransaction();
+        try {
+            $this->integrarVendaParaCrosier($pedido, $resalvar);
+            $conn->commit();
+        } catch (\Throwable $e) {
+            try {
+                $conn->rollBack();
+            } catch (ConnectionException $e) {
+                throw new \RuntimeException('rollback err', 0, $e);
+            }
+        }
+        return 1;
+    }
+
+
+    /**
+     * @param \DateTime $dtVenda
+     * @throws ViewException
+     */
+    public function obterJsonVendaPorNumero(int $numero)
+    {
+        try {
+            $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wspedidos/numero/' . $numero . '.json',
+                [
+                    'headers' => [
+                        'Content-Type' => 'application/json; charset=UTF-8',
+                        'appKey' => $this->getChave(),
+                    ]
+                ]
+            );
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            $result = $json['result'] ?? [];
+            return $result;
+        } catch (GuzzleException $e) {
+            throw new ViewException('Erro ao obterVendasPorData');
+        }
     }
 
     /**
@@ -300,16 +436,16 @@ class IntegradorSimplo7 implements IntegradorECommerce
      * @param bool|null $resalvar
      * @throws ViewException
      */
-    private function integrarVendaParaCrosier(array $pedido, ?bool $resalvar = false): void
+    private function integrarVendaParaCrosier(array $wsPedido, ?bool $resalvar = false): void
     {
         try {
             $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
 
-            $itens = $pedido['Item'];
-            $pagamento = $pedido['Pagamento'] ?? null;
-            $status_id = $pedido['Status']['id'];
-            $status_nome = $pedido['Status']['nome'];
-            $pedido = $pedido['Wspedido'];
+            $itens = $wsPedido['Item'];
+            $pagamento = $wsPedido['Pagamento'] ?? null;
+            $status_id = $wsPedido['Status']['id'];
+            $status_nome = $wsPedido['Status']['nome'];
+            $pedido = $wsPedido['Wspedido'];
             $pedido['cliente_cpfcnpj'] = preg_replace("/[^0-9]/", "", $pedido['cliente_cpfcnpj']);
             $dtPedido = DateTimeUtils::parseDateStr($pedido['data_pedido']);
 
@@ -349,6 +485,15 @@ class IntegradorSimplo7 implements IntegradorECommerce
                     $this->syslog->err($erro);
                     throw new \RuntimeException($erro);
                 }
+
+                try {
+                    $conn->executeQuery('DELETE FROM fin_fatura WHERE json_data->>"$.venda_id" = :venda_id', ['venda_id' => $venda['id']]);
+                } catch (\Throwable $e) {
+                    $erro = 'Erro ao deletar itens da venda (id = "' . $venda['id'] . ')';
+                    $this->syslog->err($erro);
+                    throw new \RuntimeException($erro);
+                }
+
                 /** @var VendaRepository $repoVenda */
                 $repoVenda = $this->vendaEntityHandler->getDoctrine()->getRepository(Venda::class);
                 $venda = $repoVenda->find($venda['id']);
@@ -433,6 +578,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
             $venda->jsonData['canal'] = 'ECOMMERCE';
             $venda->jsonData['ecommerce_idPedido'] = $pedido['id'];
+            $venda->jsonData['ecommerce_numeroPedido'] = $pedido['numero'] ?? 'n/d';
             $venda->jsonData['ecommerce_status'] = $status_id;
             $venda->jsonData['ecommerce_status_descricao'] = $status_nome;
 
@@ -448,8 +594,6 @@ class IntegradorSimplo7 implements IntegradorECommerce
             $venda->jsonData['ecommerce_entrega_telefone'] = $pedido['entrega_telefone'];
             $venda->jsonData['ecommerce_entrega_frete_calculado'] = $pedido['total_frete'];
             $venda->jsonData['ecommerce_entrega_frete_real'] = 0.00;
-            $venda->jsonData['ecommerce_status'] = $pedido['pedidostatus_id'];
-            $venda->jsonData['ecommerce_status_descricao'] = $arrStatus[$pedido['pedidostatus_id']]['nome'] ?? 'STATUS N/D';
 
 
             $obs[] = 'IP: ';
@@ -489,7 +633,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
                     // verifica se já existe uma ven_venda com o json_data.ecommerce_idPedido
                     $sProduto = $conn->fetchAssociative('SELECT id FROM est_produto WHERE json_data->>"$.ecommerce_id" = :idProduto', ['idProduto' => $item['produto_id']]);
                     if (!isset($sProduto['id'])) {
-                        throw new \RuntimeException();
+                        $sProduto = $this->obterProduto($item['produto_id']);
                     }
                     $produto = $repoProduto->find($sProduto['id']);
                 } catch (\Throwable $e) {
@@ -523,8 +667,12 @@ class IntegradorSimplo7 implements IntegradorECommerce
                 $vendaItem->desconto = bcadd($vendaItem->desconto, $diff, 2);
                 $this->vendaItemEntityHandler->save($vendaItem);
             }
-
             $venda->recalcularTotais();
+            // aqui é onde entram descontos de cupons (que é um desconto aplicado globalmente na venda)
+            if ($pedido['total_descontos'] ?? false) {
+                $venda->desconto = bcadd($venda->desconto, $pedido['total_descontos'], 2);
+                $venda->valorTotal = bcsub($venda->subtotal, $venda->desconto, 2);
+            }
 
 
             try {
@@ -538,22 +686,65 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
             /** @var PlanoPagtoRepository $repoPlanoPagto */
             $repoPlanoPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(PlanoPagto::class);
-            $arrayByCodigo = $repoPlanoPagto->arrayByCodigo();
+            $arrPlanosPagtosByCodigo = $repoPlanoPagto->arrayByCodigo();
 
-            $totalPagto = bcadd($venda->valorTotal, $venda->jsonData['ecommerce_entrega_frete_calculado'] ?? 0.0, 2);
+            // Pega a $venda->valorTotal pois ali já constará os possíveis descontos
+            $totalPedido = bcadd($venda->valorTotal, $pedido['total_frete'], 2);
+
+            // O total_pedido pode conter os acréscimos no caso de parcelamentos com qtde de parcelas acima do limite de parcelas sem juros.
+            $venda->jsonData['total_pagtos'] = $pedido['total_pedido'];
 
             $tipoFormaPagamento = $pedido['pagamento_forma'];
 
-            $integrador = $pagamento['integrador'] ?? 'n/d';
+            $carteiraId = null;
+
+
+            switch ($pagamento['integrador']) {
+                case "Cartão de Crédito":
+                case "Boleto":
+                case "Mercado Pago":
+                    $carteiraId = $this->getCarteiraMercadoPagoSiteId();
+                    $integrador = "Mercado Pago";
+                    break;
+                case "Depósito Bancário":
+                case "Pix":
+                    $carteiraId = $this->getCarteiraIndefinidaId();
+                    $integrador = $pagamento['integrador'];
+                    break;
+                default:
+                    throw new ViewException('Integrador não configurado: ' . $pagamento['integrador'] . ' (Venda: ' . $pedido['numero'] . ')');
+            }
+
+            $modoId = null;
+            $descricaoPlanoPagto = null;
+            $planoPagto = null;
+            switch ($tipoFormaPagamento) {
+                case 'Depósito Bancário':
+                    $planoPagto = $arrPlanosPagtosByCodigo['020'];
+                    break;
+                case 'Boleto':
+                    $planoPagto = $arrPlanosPagtosByCodigo['030'];
+                    break;
+                case 'Pix':
+                    $planoPagto = $arrPlanosPagtosByCodigo['040'];
+                    break;
+                default:
+                    $planoPagto = $arrPlanosPagtosByCodigo['010'];
+                    break;
+            }
+            $descricaoPlanoPagto = $planoPagto['descricao'];
+            $modoId = json_decode($planoPagto['json_data'], true)['modo_id'] ?? null;
 
             $vendaPagto = [
+                'plano_pagto_id' => $planoPagto['id'],
                 'venda_id' => $venda->getId(),
-                'valor_pagto' => $totalPagto,
+                'valor_pagto' => $totalPedido,
                 'json_data' => [
                     'nomeFormaPagamento' => $tipoFormaPagamento ?? 'n/d',
                     'integrador' => $integrador,
                     'codigo_transacao' => $pagamento['codigo_transacao'] ?? 'n/d',
-                    'carteira_id' => $this->getCaixaSiteCarteiraId(),
+                    'carteira_id' => $carteiraId,
+                    'modo_id' => $modoId,
                 ],
                 'inserted' => (new \DateTime())->format('Y-m-d H:i:s'),
                 'updated' => (new \DateTime())->format('Y-m-d H:i:s'),
@@ -562,30 +753,18 @@ class IntegradorSimplo7 implements IntegradorECommerce
                 'user_updated_id' => 1,
                 'estabelecimento_id' => 1
             ];
-            $descricaoPlanoPagto = null;
-            switch ($tipoFormaPagamento) {
-                case 'Depósito Bancário':
-                    $vendaPagto['plano_pagto_id'] = $arrayByCodigo['020']['id'];
-                    $descricaoPlanoPagto = $arrayByCodigo['020']['descricao'];
-                    break;
-                case 'Boleto':
-                    $vendaPagto['plano_pagto_id'] = $arrayByCodigo['030']['id'];
-                    $descricaoPlanoPagto = $arrayByCodigo['030']['descricao'];
-                    break;
-                default:
-                    // por padrão, cai para Cartão de Crédito
-                    $vendaPagto['plano_pagto_id'] = $arrayByCodigo['010']['id'];
-                    $descricaoPlanoPagto = $arrayByCodigo['010']['descricao'];
-                    break;
-            }
+
 
             $vendaPagto['json_data'] = json_encode($vendaPagto['json_data']);
 
             try {
                 $conn->insert('ven_venda_pagto', $vendaPagto);
                 $vendaPagtoId = $conn->lastInsertId();
+                $eVendaPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(VendaPagto::class)->find($vendaPagtoId);
+                $venda->addPagto($eVendaPagto);
                 if ($integrador === 'Mercado Pago') {
-                    $eVendaPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(VendaPagto::class)->find($vendaPagtoId);
+                    // no caso de pagamento via 'Mercado Pago', já busca as informações lá na API
+                    $this->integradorMercadoPago->mlUser = 'defamiliapg@gmail.com';
                     $this->integradorMercadoPago->handleTransacaoParaVendaPagto($eVendaPagto);
                 }
             } catch (\Throwable $e) {
@@ -595,8 +774,20 @@ class IntegradorSimplo7 implements IntegradorECommerce
 
             $venda->jsonData['infoPagtos'] = $descricaoPlanoPagto .
                 ': R$ ' . number_format($venda->valorTotal, 2, ',', '.');
+            if ($eVendaPagto->jsonData['codigo_transacao'] ?? false) {
+                $venda->jsonData['infoPagtos'] .= ' (Transação: ' . $eVendaPagto->jsonData['codigo_transacao'] . ')';
+            }
 
-            $this->vendaEntityHandler->save($venda);
+            $venda->jsonData['forma_pagamento'] = mb_strtoupper($pagamento['pagamento_forma']);
+
+            $venda->jsonData['dados_completos_ecommerce'] = $wsPedido;
+
+            $venda = $this->vendaEntityHandler->save($venda);
+
+            if (!in_array($status_nome, ['Criado', 'Cancelado'])) {
+                $this->vendaBusiness->finalizarPV($venda);
+            }
+
         } catch (\Throwable $e) {
             $this->syslog->err('Erro ao integrarVendaParaCrosier', $pedido['id']);
             throw new ViewException('Erro ao integrarVendaParaCrosier', 0, $e);
@@ -772,11 +963,12 @@ class IntegradorSimplo7 implements IntegradorECommerce
                 $bodyMelhorRastreio = $rMelhorRastreio->getBody()->getContents();
                 $jsonMelhorRastreio = json_decode($bodyMelhorRastreio, true);
 
-                if ($jsonMelhorRastreio['data']['status'] !== 'delivered') {
-                    $return[] = 'não entregue: ' . $jsonMelhorRastreio['data']['status'];
+                $status = $jsonMelhorRastreio['data']['status'] ?? $jsonMelhorRastreio['message'] ?? '';
+                if ($status !== 'delivered') {
+                    $return[] = 'não entregue: ' . $status;
                     $return[] = '---';
                     continue;
-                }
+                } 
                 $return[] = 'entregue... atualizando status';
                 $data['Wspedido']['Status']['id'] = 3;
                 $rAtualizaPedido = $this->client->request('PUT', $this->getEndpoint() . '/ws/wspedidos/' . $pedidoEnviado['Wspedido']['id'] . '.json',
@@ -807,5 +999,46 @@ class IntegradorSimplo7 implements IntegradorECommerce
     public function obterCliente($idClienteECommerce)
     {
         // TODO: Implement obterCliente() method.
+    }
+
+    /**
+     * @param int $idProduto
+     * @throws ViewException
+     */
+    public function obterProduto(int $idProduto)
+    {
+        try {
+            $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wsprodutos/' . $idProduto . '.json',
+                [
+                    'headers' => [
+                        'Content-Type' => 'application/json; charset=UTF-8',
+                        'appKey' => $this->getChave(),
+                    ],
+                    'timeout' => 10
+                ]
+            );
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            $eproduto = $json['result'] ?? [];
+
+            $produto = new Produto();
+            $produto->jsonData['dados_ecommerce'] = $eproduto;
+            $produto->jsonData['ecommerce_id'] = $eproduto['Wsproduto']['id'];
+            $produto->codigo = $eproduto['Wsproduto']['sku'];
+            $produto->status = $eproduto['Wsproduto']['situacao'];            
+            $produto->depto = $this->deptoIndefinido;
+            $produto->grupo = $this->grupoIndefinido;
+            $produto->subgrupo = $this->subgrupoIndefinido;
+            $produto->fornecedor = $this->fornecedorDefamilia;
+            $produto->nome = $eproduto['Wsproduto']['nome'];
+            
+            $this->produtoEntityHandler->save($produto);
+            
+            $conn = $this->produtoEntityHandler->getDoctrine()->getConnection();
+            
+            return $conn->fetchAssociative('SELECT id FROM est_produto WHERE json_data->>"$.ecommerce_id" = :idProduto', ['idProduto' => $idProduto]);
+        } catch (GuzzleException $e) {
+            throw new ViewException('Erro ao obterVendasPorStatus');
+        }
     }
 }
