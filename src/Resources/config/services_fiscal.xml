@@ -4,249 +4,249 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <services>
+  <services>
 
-        <!-- DistDFeRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.dist_dfe_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\DistDFeRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\DistDFeRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.dist_dfe_repository"/>
-        <!-- DistDFeEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\DistDFeEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\DistDFeEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"/>
-
-
-        <!-- MsgRetornoRFRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.msg_retorno_rf_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\MsgRetornoRFRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\MsgRetornoRFRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.msg_retorno_rf_repository"/>
+    <!-- DistDFeRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.dist_dfe_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\DistDFeRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\DistDFeRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.dist_dfe_repository"/>
+    <!-- DistDFeEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\DistDFeEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\DistDFeEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"/>
 
 
-        <!-- NCMRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.ncm_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.ncm_repository"/>
+    <!-- MsgRetornoRFRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.msg_retorno_rf_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\MsgRetornoRFRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\MsgRetornoRFRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.msg_retorno_rf_repository"/>
 
 
-        <!-- NotaFiscalRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_repository"/>
-        <!-- NotaFiscalEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="service_container"/>
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
+    <!-- NCMRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.ncm_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.ncm_repository"/>
 
 
-        <!-- NotaFiscalCartaCorrecaoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_carta_correcao_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalCartaCorrecaoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalCartaCorrecaoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_carta_correcao_repository"/>
-        <!-- NotaFiscalCartaCorrecaoEntityHandler -->
-        <service
-                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"
-                class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler"
-                parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"/>
+    <!-- NotaFiscalRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_repository"/>
+    <!-- NotaFiscalEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="service_container"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
 
 
-        <!-- NotaFiscalEventoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_evento_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalEventoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalEventoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_evento_repository"/>
-        <!-- NotaFiscalEventoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
+    <!-- NotaFiscalCartaCorrecaoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_carta_correcao_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalCartaCorrecaoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalCartaCorrecaoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_carta_correcao_repository"/>
+    <!-- NotaFiscalCartaCorrecaoEntityHandler -->
+    <service
+      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"
+      class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler"
+      parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"/>
 
 
-        <!-- NotaFiscalHistoricoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_historico_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalHistoricoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalHistoricoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_historico_repository"/>
-        <!-- NotaFiscalHistoricoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"/>
+    <!-- NotaFiscalEventoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_evento_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalEventoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalEventoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_evento_repository"/>
+    <!-- NotaFiscalEventoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
 
 
-        <!-- NotaFiscalItemRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_item_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalItemRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalItemRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_item_repository"/>
-        <!-- NotaFiscalItemEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"/>
+    <!-- NotaFiscalHistoricoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_historico_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalHistoricoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalHistoricoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_historico_repository"/>
+    <!-- NotaFiscalHistoricoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"/>
 
 
-        <!-- NotaFiscalVendaRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_venda_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalVendaRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-            <argument type="service" id="doctrine"/>
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalVendaRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_venda_repository"/>
-        <!-- NotaFiscalVendaEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"/>
+    <!-- NotaFiscalItemRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_item_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalItemRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalItemRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_item_repository"/>
+    <!-- NotaFiscalItemEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"/>
 
 
-        <!-- NFeUtils -->
-        <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"
-                 class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils">
-            <argument type="service" id="doctrine.dbal.default_connection"/>
-            <argument type="service" id="monolog.logger"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
-            <argument type="service" id="security.helper"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils"
-                 alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+    <!-- NotaFiscalVendaRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_venda_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalVendaRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+      <argument type="service" id="doctrine"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalVendaRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_venda_repository"/>
+    <!-- NotaFiscalVendaEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"/>
 
 
-        <!-- SpedNFeBusiness -->
-        <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"
-                 class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\SpedNFeBusiness">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"/>
-            <argument type="service" id="monolog.logger"/>
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\SpedNFeBusiness"
-                 alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"/>
+    <!-- NFeUtils -->
+    <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"
+             class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils">
+      <argument type="service" id="doctrine.dbal.default_connection"/>
+      <argument type="service" id="monolog.logger"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
+      <argument type="service" id="security.helper"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils"
+             alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
 
 
-        <!-- NotaFiscalBusiness -->
-        <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business"
-                 class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness">
-            <argument type="service" id="doctrine.dbal.default_connection"/>
-            <argument type="service" id="monolog.logger"/>
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"/>
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
-            <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_repository"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness"
-                 alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business" public="true"/>
+    <!-- SpedNFeBusiness -->
+    <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"
+             class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\SpedNFeBusiness">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"/>
+      <argument type="service" id="monolog.logger"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\SpedNFeBusiness"
+             alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"/>
 
 
-        <!-- DistDFeBusiness -->
-        <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"
-                 class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\DistDFeBusiness">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"/>
-            <argument type="service" id="monolog.logger"/>
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\DistDFeBusiness"
-                 alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"/>
+    <!-- NotaFiscalBusiness -->
+    <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business"
+             class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness">
+      <argument type="service" id="doctrine.dbal.default_connection"/>
+      <argument type="service" id="monolog.logger"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+      <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_repository"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness"
+             alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business" public="true"/>
 
 
-    </services>
+    <!-- DistDFeBusiness -->
+    <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"
+             class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\DistDFeBusiness">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"/>
+      <argument type="service" id="monolog.logger"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\DistDFeBusiness"
+             alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"/>
+
+
+  </services>
 </container>

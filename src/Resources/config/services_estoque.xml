@@ -4,392 +4,391 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <services>
+  <services>
 
-        <!-- DepreciacaoPrecoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.depreciacao_preco_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DepreciacaoPrecoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DepreciacaoPrecoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.depreciacao_preco_repository"/>
-        <!-- DepreciacaoPrecoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depreciacao_preco_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DepreciacaoPrecoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DepreciacaoPrecoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depreciacao_preco_entity_handler"/>
-
-
-        <!-- DeptoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.depto_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DeptoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DeptoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.depto_repository"/>
-        <!-- DeptoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depto_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DeptoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DeptoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depto_entity_handler"/>
+    <!-- DepreciacaoPrecoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.depreciacao_preco_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DepreciacaoPrecoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DepreciacaoPrecoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.depreciacao_preco_repository"/>
+    <!-- DepreciacaoPrecoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depreciacao_preco_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DepreciacaoPrecoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DepreciacaoPrecoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depreciacao_preco_entity_handler"/>
 
 
-        <!-- GrupoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.grupo_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\GrupoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\GrupoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.grupo_repository"/>
-        <!-- GrupoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.grupo_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\GrupoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\GrupoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.grupo_entity_handler"/>
+    <!-- DeptoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.depto_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DeptoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DeptoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.depto_repository"/>
+    <!-- DeptoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depto_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DeptoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DeptoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depto_entity_handler"/>
 
 
-        <!-- SubgrupoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.subgrupo_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\SubgrupoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\SubgrupoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.subgrupo_repository"/>
-        <!-- SubgrupoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.subgrupo_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\SubgrupoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\SubgrupoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.subgrupo_entity_handler"/>
+    <!-- GrupoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.grupo_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\GrupoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\GrupoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.grupo_repository"/>
+    <!-- GrupoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.grupo_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\GrupoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\GrupoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.grupo_entity_handler"/>
 
 
-        <!-- FornecedorRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.fornecedor_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\FornecedorRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\FornecedorRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.fornecedor_repository"/>
-        <!-- FornecedorEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.fornecedor_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\FornecedorEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\FornecedorEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.fornecedor_entity_handler"/>
+    <!-- SubgrupoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.subgrupo_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\SubgrupoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\SubgrupoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.subgrupo_repository"/>
+    <!-- SubgrupoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.subgrupo_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\SubgrupoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\SubgrupoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.subgrupo_entity_handler"/>
 
 
-        <!-- ListaPrecoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.lista_preco_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ListaPrecoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ListaPrecoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.lista_preco_repository"/>
-        <!-- ListaPrecoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.lista_preco_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ListaPrecoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ListaPrecoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.lista_preco_entity_handler"/>
+    <!-- FornecedorRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.fornecedor_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\FornecedorRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\FornecedorRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.fornecedor_repository"/>
+    <!-- FornecedorEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.fornecedor_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\FornecedorEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\FornecedorEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.fornecedor_entity_handler"/>
 
 
-        <!-- PedidoCompraRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.pedido_compra_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\PedidoCompraRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\PedidoCompraRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.pedido_compra_repository"/>
-        <!-- PedidoCompraEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.pedido_compra_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\PedidoCompraEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\PedidoCompraEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.pedido_compra_entity_handler"/>
+    <!-- ListaPrecoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.lista_preco_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ListaPrecoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ListaPrecoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.lista_preco_repository"/>
+    <!-- ListaPrecoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.lista_preco_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ListaPrecoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ListaPrecoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.lista_preco_entity_handler"/>
 
 
-        <!-- PedidoCompraItemRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.pedido_compra_item_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\PedidoCompraItemRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\PedidoCompraItemRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.pedido_compra_item_repository"/>
-        <!-- PedidoCompraItemEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.pedido_compra_item_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\PedidoCompraItemEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\PedidoCompraItemEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.pedido_compra_item_entity_handler"/>
+    <!-- PedidoCompraRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.pedido_compra_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\PedidoCompraRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\PedidoCompraRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.pedido_compra_repository"/>
+    <!-- PedidoCompraEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.pedido_compra_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\PedidoCompraEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\PedidoCompraEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.pedido_compra_entity_handler"/>
 
 
-
-        <!-- EntradaRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.entrada_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\EntradaRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\EntradaRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.entrada_repository"/>
-        <!-- EntradaEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.entrada_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\EntradaEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\EntradaEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.entrada_entity_handler"/>
-
-
-        <!-- EntradaItemRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.entrada_item_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\EntradaItemRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\EntradaItemRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.entrada_item_repository"/>
-        <!-- EntradaItemEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.entrada_item_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\EntradaItemEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\EntradaItemEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.entrada_item_entity_handler"/>
+    <!-- PedidoCompraItemRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.pedido_compra_item_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\PedidoCompraItemRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\PedidoCompraItemRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.pedido_compra_item_repository"/>
+    <!-- PedidoCompraItemEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.pedido_compra_item_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\PedidoCompraItemEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\PedidoCompraItemEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.pedido_compra_item_entity_handler"/>
 
 
-        <!-- RomaneioRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_repository"/>
-        <!-- RomaneioEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service"
-                      id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.fornecedor_entity_handler"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_entity_handler"/>
+    <!-- EntradaRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.entrada_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\EntradaRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\EntradaRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.entrada_repository"/>
+    <!-- EntradaEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.entrada_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\EntradaEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\EntradaEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.entrada_entity_handler"/>
 
 
-        <!-- RomaneioItemRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_item_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioItemRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioItemRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_item_repository"/>
-        <!-- RomaneioItemEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_item_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioItemEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioItemEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_item_entity_handler"/>
+    <!-- EntradaItemRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.entrada_item_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\EntradaItemRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\EntradaItemRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.entrada_item_repository"/>
+    <!-- EntradaItemEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.entrada_item_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\EntradaItemEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\EntradaItemEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.entrada_item_entity_handler"/>
 
 
-        <!-- ProdutoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_repository"/>
-        <!-- ProdutoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-
-            <argument type="service" id="monolog.logger"/>
-            <argument type="service"
-                      id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
-            <argument type="service" id="Vich\UploaderBundle\Templating\Helper\UploaderHelper"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_entity_handler"/>
+    <!-- RomaneioRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_repository"/>
+    <!-- RomaneioEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.fornecedor_entity_handler"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_entity_handler"/>
 
 
-        <!-- ProdutoComposicaoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_composicao_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoComposicaoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoComposicaoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_composicao_repository"/>
-        <!-- ProdutoComposicaoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_composicao_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoComposicaoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoComposicaoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_composicao_entity_handler"/>
+    <!-- RomaneioItemRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_item_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioItemRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\RomaneioItemRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.romaneio_item_repository"/>
+    <!-- RomaneioItemEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_item_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioItemEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\RomaneioItemEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.romaneio_item_entity_handler"/>
 
 
-        <!-- ProdutoImagemRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_imagem_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoImagemRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoImagemRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_imagem_repository"/>
-        <!-- ProdutoImagemEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_imagem_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoImagemEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoImagemEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_imagem_entity_handler"/>
+    <!-- ProdutoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_repository"/>
+    <!-- ProdutoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+
+      <argument type="service" id="monolog.logger"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
+      <argument type="service" id="Vich\UploaderBundle\Templating\Helper\UploaderHelper"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_entity_handler"/>
 
 
-        <!-- ProdutoPrecoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_preco_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoPrecoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoPrecoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_preco_repository"/>
-        <!-- ProdutoPrecoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_preco_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoPrecoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.estoque.calculo_preco"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoPrecoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_preco_entity_handler"/>
+    <!-- ProdutoComposicaoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_composicao_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoComposicaoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoComposicaoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_composicao_repository"/>
+    <!-- ProdutoComposicaoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_composicao_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoComposicaoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoComposicaoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_composicao_entity_handler"/>
 
 
-        <!-- ProdutoSaldoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_saldo_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoSaldoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoSaldoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_saldo_repository"/>
-        <!-- ProdutoSaldoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_saldo_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoSaldoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoSaldoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_saldo_entity_handler"/>
+    <!-- ProdutoImagemRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_imagem_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoImagemRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoImagemRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_imagem_repository"/>
+    <!-- ProdutoImagemEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_imagem_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoImagemEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoImagemEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_imagem_entity_handler"/>
 
 
-        <!-- UnidadeRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.unidade_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\UnidadeRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\UnidadeRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.unidade_repository"/>
-        <!-- UnidadeEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.unidade_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\UnidadeEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\UnidadeEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.unidade_entity_handler"/>
+    <!-- ProdutoPrecoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_preco_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoPrecoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoPrecoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_preco_repository"/>
+    <!-- ProdutoPrecoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_preco_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoPrecoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.estoque.calculo_preco"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoPrecoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_preco_entity_handler"/>
 
 
-        <!-- CalculoPreco -->
-        <service id="crosier_source.crosier_lib_radx_bundle.business.estoque.calculo_preco"
-                 class="CrosierSource\CrosierLibRadxBundle\Business\Estoque\CalculoPreco">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Business\Estoque\CalculoPreco"
-                 alias="crosier_source.crosier_lib_radx_bundle.business.estoque.calculo_preco"/>
-
-        <!-- FornecedorBusiness -->
-        <service id="crosier_source.crosier_lib_radx_bundle.business.estoque.fornecedor_business"
-                 class="CrosierSource\CrosierLibRadxBundle\Business\Estoque\FornecedorBusiness">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Business\Estoque\FornecedorBusiness"
-                 alias="crosier_source.crosier_lib_radx_bundle.business.estoque.fornecedor_business"/>
-
-        <!-- ProdutoBusiness -->
-        <service id="crosier_source.crosier_lib_radx_bundle.business.estoque.produto_business"
-                 class="CrosierSource\CrosierLibRadxBundle\Business\Estoque\ProdutoBusiness">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Business\Estoque\ProdutoBusiness"
-                 alias="crosier_source.crosier_lib_radx_bundle.business.estoque.produto_business"/>
+    <!-- ProdutoSaldoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_saldo_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoSaldoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoSaldoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.produto_saldo_repository"/>
+    <!-- ProdutoSaldoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_saldo_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoSaldoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoSaldoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_saldo_entity_handler"/>
 
 
-    </services>
+    <!-- UnidadeRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.estoque.unidade_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\UnidadeRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\UnidadeRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.estoque.unidade_repository"/>
+    <!-- UnidadeEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.unidade_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\UnidadeEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\UnidadeEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.unidade_entity_handler"/>
+
+
+    <!-- CalculoPreco -->
+    <service id="crosier_source.crosier_lib_radx_bundle.business.estoque.calculo_preco"
+             class="CrosierSource\CrosierLibRadxBundle\Business\Estoque\CalculoPreco">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Business\Estoque\CalculoPreco"
+             alias="crosier_source.crosier_lib_radx_bundle.business.estoque.calculo_preco"/>
+
+    <!-- FornecedorBusiness -->
+    <service id="crosier_source.crosier_lib_radx_bundle.business.estoque.fornecedor_business"
+             class="CrosierSource\CrosierLibRadxBundle\Business\Estoque\FornecedorBusiness">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Business\Estoque\FornecedorBusiness"
+             alias="crosier_source.crosier_lib_radx_bundle.business.estoque.fornecedor_business"/>
+
+    <!-- ProdutoBusiness -->
+    <service id="crosier_source.crosier_lib_radx_bundle.business.estoque.produto_business"
+             class="CrosierSource\CrosierLibRadxBundle\Business\Estoque\ProdutoBusiness">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Business\Estoque\ProdutoBusiness"
+             alias="crosier_source.crosier_lib_radx_bundle.business.estoque.produto_business"/>
+
+
+  </services>
 </container>

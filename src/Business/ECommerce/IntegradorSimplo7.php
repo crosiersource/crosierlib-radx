@@ -50,7 +50,7 @@ use Symfony\Contracts\Cache\ItemInterface;
  *
  * @author Carlos Eduardo Pauluk
  */
-class IntegradorSimplo7
+class IntegradorSimplo7 implements IntegradorECommerce
 {
 
     private Client $client;
@@ -279,6 +279,7 @@ class IntegradorSimplo7
     public function obterJsonVendasPorPeriodo(\DateTime $dtIni, \DateTime $dtFim)
     {
         $dtIni = (clone $dtIni)->setTime(0, 0);
+        $dtFim = (clone $dtFim)->setTime(23, 59, 59, 9999);
         $dtIniS = $dtIni->format('Y-m-d');
 
         $jsons = [];
@@ -1040,5 +1041,15 @@ class IntegradorSimplo7
         } catch (GuzzleException $e) {
             throw new ViewException('Erro ao obterVendasPorStatus');
         }
+    }
+
+    public function obterVendas(\DateTime $dtVenda, ?bool $resalvar = false): int
+    {
+        return $this->obterVendasPorPeriodo($dtVenda, $dtVenda, $resalvar);
+    }
+
+    public function obterVendasPorData(\DateTime $dtVenda)
+    {
+        return $this->obterVendasPorPeriodo($dtVenda);
     }
 }
