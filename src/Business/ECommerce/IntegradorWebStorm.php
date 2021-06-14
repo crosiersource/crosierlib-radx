@@ -1440,6 +1440,53 @@ class IntegradorWebStorm implements IntegradorECommerce
         return $xmlResult->resultado->filtro ?? null;
     }
 
+
+    /**
+     * @param int $idPedido
+     * @return \SimpleXMLElement|void|null
+     */
+    public function obterVendaPorId(int $idPedido, ?bool $resalvar = false)
+    {
+        $xml = '<![CDATA[<?xml version="1.0" encoding="ISO-8859-1"?>
+                    <ws_integracao xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <chave>' . $this->getChave() . '</chave>
+                    <acao>select</acao>
+                    <modulo>pedido</modulo>    
+                    <filtro>
+                        <idPedido>' . $idPedido . '</idPedido>
+                        <idCliente></idCliente>
+                        <cpf_cnpj></cpf_cnpj>
+                        <dataInicial></dataInicial>
+                        <dataFinal></dataFinal>
+                        <status></status>
+                    </filtro>
+                    </ws_integracao>]]>';
+
+        $client = $this->getNusoapClientExportacaoInstance();
+
+        $arResultado = $client->call('pedidoSelect', [
+            'xml' => utf8_decode($xml)
+        ]);
+
+        if ($client->faultcode) {
+            throw new \RuntimeException($client->faultcode);
+        }
+        if ($client->getError()) {
+            throw new \RuntimeException($client->getError());
+        }
+
+        $xmlResult = simplexml_load_string($arResultado);
+
+        if ($xmlResult->erros ?? false) {
+            throw new \RuntimeException($xmlResult->erros->erro->__toString());
+        }
+
+        $pedido = $xmlResult->resultado->filtro->pedido;
+        $this->integrarVendaParaCrosier($pedido, (int)$pedido->status === 2 || $resalvar);
+        return true;
+    }
+    
+
     /**
      * @param int $idClienteECommerce
      * @return \SimpleXMLElement|null
@@ -1690,7 +1737,9 @@ class IntegradorWebStorm implements IntegradorECommerce
                     }
                     $produto = $repoProduto->find($sProduto['id']);
                 } catch (\Throwable $e) {
-                    throw new ViewException('Erro ao integrar venda. Erro ao pesquisar produto (idProduto = ' . $produtoWebStorm->idProduto->__toString() . ')');
+                    $msg = 'Erro ao integrar venda. Erro ao pesquisar produto (idProduto = ' . $produtoWebStorm->idProduto->__toString() . ')';
+                    $this->syslog->err($msg);
+                    throw new ViewException($msg);
                 }
                 $produtosNoCrosier[$produtoWebStorm->idProduto->__toString()] = $produto; // RTA: dinâmico, para ser acessado no próximo foreach
                 $valorProduto = $produtoWebStorm->valorUnitario; // $produto->jsonData['preco_site'];
