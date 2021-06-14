@@ -4,72 +4,72 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <services>
+  <services>
 
-        <!-- VendaRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_repository"/>
-        <!-- VendaEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
-
-
-        <!-- VendaItemRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_item_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaItemRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaItemRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_item_repository"/>
-        <!-- VendaItemEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"/>
+    <!-- VendaRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_repository"/>
+    <!-- VendaEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
 
 
-        <!-- VendaPagtoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_pagto_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaPagtoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaPagtoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_pagto_repository"/>
-        <!-- VendaPagtoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_pagto_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaPagtoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaPagtoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_pagto_entity_handler"/>
+    <!-- VendaItemRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_item_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaItemRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaItemRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_item_repository"/>
+    <!-- VendaItemEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"/>
 
 
-        <!-- VendaBusiness -->
-        <service id="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"
-                 class="CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"/>
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.fatura_entity_handler"/>
-            <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness"
-                 alias="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"/>
+    <!-- VendaPagtoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_pagto_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaPagtoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaPagtoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.vendas.venda_pagto_repository"/>
+    <!-- VendaPagtoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_pagto_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaPagtoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaPagtoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_pagto_entity_handler"/>
 
-    </services>
+
+    <!-- VendaBusiness -->
+    <service id="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"
+             class="CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.fatura_entity_handler"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness"
+             alias="crosier_source.crosier_lib_radx_bundle.business.vendas.venda_business"/>
+
+  </services>
 </container>

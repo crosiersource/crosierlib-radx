@@ -4,49 +4,49 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <services>
+  <services>
 
-        <!-- CargoRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.rh.cargo_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\RH\CargoRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\RH\CargoRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.rh.cargo_repository"/>
+    <!-- CargoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.rh.cargo_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\RH\CargoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\RH\CargoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.rh.cargo_repository"/>
 
-        <!-- CargoEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.rh.cargo_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\RH\CargoEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\RH\CargoEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.rh.cargo_entity_handler"/>
-
-
-        <!-- ColaboradorRepository -->
-        <service id="crosier_source.crosier_lib_radx_bundle.repository.rh.colaborador_repository"
-                 class="CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository"
-                 parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository"
-                 alias="crosier_source.crosier_lib_radx_bundle.repository.rh.colaborador_repository"/>
-
-        <!-- ColaboradorEntityHandler -->
-        <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.rh.colaborador_entity_handler"
-                 class="CrosierSource\CrosierLibRadxBundle\EntityHandler\RH\ColaboradorEntityHandler"
-                 parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-            <argument type="service" id="security.helper"/>
-            <argument type="service" id="parameter_bag"/>
-        </service>
-        <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\RH\ColaboradorEntityHandler"
-                 alias="crosier_source.crosier_lib_radx_bundle.entity_handler.rh.colaborador_entity_handler"/>
+    <!-- CargoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.rh.cargo_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\RH\CargoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\RH\CargoEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.rh.cargo_entity_handler"/>
 
 
-    </services>
+    <!-- ColaboradorRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.rh.colaborador_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.rh.colaborador_repository"/>
+
+    <!-- ColaboradorEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.rh.colaborador_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\RH\ColaboradorEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\RH\ColaboradorEntityHandler"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.rh.colaborador_entity_handler"/>
+
+
+  </services>
 </container>

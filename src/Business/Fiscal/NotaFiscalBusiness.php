@@ -353,7 +353,7 @@ class NotaFiscalBusiness
                 }
             }
 
-
+            /** @var NotaFiscal $notaFiscal */
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal, false);
 
             // Atenção, aqui tem que verificar a questão do arredondamento
