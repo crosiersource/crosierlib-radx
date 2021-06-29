@@ -401,7 +401,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
                             'Content-Type' => 'application/json; charset=UTF-8',
                             'appKey' => $this->getChave(),
                         ],
-                        'timeout' => 10
+                        'timeout' => 30
                     ]
                 );
                 $bodyContents = $response->getBody()->getContents();
