@@ -66,11 +66,11 @@ class IntegradorSimplo7 implements IntegradorECommerce
     private ?int $carteiraMercadoPagoSiteId = null;
 
     private ?int $carteiraIndefinidaId = null;
-    
+
     private Depto $deptoIndefinido;
     private Grupo $grupoIndefinido;
     private Subgrupo $subgrupoIndefinido;
-    
+
     private Fornecedor $fornecedorDefamilia;
 
     private Security $security;
@@ -134,7 +134,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
         $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
         $this->integradorMercadoPago = $integradorMercadoPago;
         $this->client = new Client();
-        
+
         /** @var DeptoRepository $repoDepto */
         $repoDepto = $this->produtoEntityHandler->getDoctrine()->getRepository(Depto::class);
         $this->deptoIndefinido = $repoDepto->findOneBy(['codigo' => '00']);
@@ -150,7 +150,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
         /** @var FornecedorRepository $repoFornecedor */
         $repoFornecedor = $this->produtoEntityHandler->getDoctrine()->getRepository(Fornecedor::class);
         $this->fornecedorDefamilia = $repoFornecedor->findOneBy(['nome' => 'DEFAMILIA']);
-        
+
     }
 
 
@@ -424,7 +424,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
                 }
                 $hasNextPage = $json['pagination']['has_next_page'];
             } catch (GuzzleException $e) {
-                throw new ViewException('Erro ao obterVendasPorStatus');
+                throw new ViewException('Erro ao obterVendasPorStatus', 0, $e);
             }
         } while ($hasNextPage);
 
@@ -969,7 +969,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
                     $return[] = 'não entregue: ' . $status;
                     $return[] = '---';
                     continue;
-                } 
+                }
                 $return[] = 'entregue... atualizando status';
                 $data['Wspedido']['Status']['id'] = 3;
                 $rAtualizaPedido = $this->client->request('PUT', $this->getEndpoint() . '/ws/wspedidos/' . $pedidoEnviado['Wspedido']['id'] . '.json',
@@ -1026,17 +1026,17 @@ class IntegradorSimplo7 implements IntegradorECommerce
             $produto->jsonData['dados_ecommerce'] = $eproduto;
             $produto->jsonData['ecommerce_id'] = $eproduto['Wsproduto']['id'];
             $produto->codigo = $eproduto['Wsproduto']['sku'];
-            $produto->status = $eproduto['Wsproduto']['situacao'];            
+            $produto->status = $eproduto['Wsproduto']['situacao'];
             $produto->depto = $this->deptoIndefinido;
             $produto->grupo = $this->grupoIndefinido;
             $produto->subgrupo = $this->subgrupoIndefinido;
             $produto->fornecedor = $this->fornecedorDefamilia;
             $produto->nome = $eproduto['Wsproduto']['nome'];
-            
+
             $this->produtoEntityHandler->save($produto);
-            
+
             $conn = $this->produtoEntityHandler->getDoctrine()->getConnection();
-            
+
             return $conn->fetchAssociative('SELECT id FROM est_produto WHERE json_data->>"$.ecommerce_id" = :idProduto', ['idProduto' => $idProduto]);
         } catch (GuzzleException $e) {
             throw new ViewException('Erro ao obterVendasPorStatus');
@@ -1052,4 +1052,43 @@ class IntegradorSimplo7 implements IntegradorECommerce
     {
         return $this->obterVendasPorPeriodo($dtVenda);
     }
+
+    /**
+     * @param int $id
+     * @param \DateTime $dtPagto
+     * @throws GuzzleException
+     */
+    public function atualizarDtPagtoPedido(int $id, \DateTime $dtPagto)
+    {
+        $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wspedidos/' . $id . '.json',
+            [
+                'headers' => [
+                    'Content-Type' => 'application/json; charset=UTF-8',
+                    'appKey' => $this->getChave(),
+                ]
+            ]
+        );
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        $result = $json['result'] ?? [];
+        $pagamento = $json['result']['Pagamento'];
+        $pagamento['data'] = $dtPagto->format('Y-m-d');
+        $json = [
+            'Wspedido' => [ 'Pagamento' => $pagamento ]
+        ];
+        $response = $this->client->request('PUT', $this->getEndpoint() . '/ws/wspedidos/' . $id . '.json',
+            [
+                'headers' => [
+                    'Content-Type' => 'application/json; charset=UTF-8',
+                    'appKey' => $this->getChave(),
+                ],
+                'timeout' => 10,
+                'json' => $json
+            ]
+        );
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        return $json;
+    }
+
 }
