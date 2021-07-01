@@ -35,7 +35,7 @@ class VendaBusiness
 
     private EntityManagerInterface $doctrine;
 
-    private MovimentacaoEntityHandler $movimentacaoEntityHandler;
+    public MovimentacaoEntityHandler $movimentacaoEntityHandler;
 
     private FaturaEntityHandler $faturaEntityHandler;
 
