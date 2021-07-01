@@ -1196,7 +1196,6 @@ class IntegradorWebStorm implements IntegradorECommerce
      */
     public function atualizaEstoqueEPrecos(array $produtosIds): void
     {
-
         try {
             $start = microtime(true);
             $this->syslog->info('atualizaEstoqueEPrecos - ini');
@@ -1228,15 +1227,27 @@ class IntegradorWebStorm implements IntegradorECommerce
                     $this->syslog->err($err);
                     throw new ViewException($err);
                 }
+                $preco = ($jsonData['preco_site'] ?? $jsonData['preco_tabela'] ?? 0.0);
+                $estoque = ($jsonData['qtde_estoque_total'] ?? 0);
 
                 $xml .= '<produto pk="idProduto">' .
                     '<idProduto>' . $produtoEcommerceId . '</idProduto>
                     <itensVenda> 
                     <idItemVenda>' . $produtoItemVendaId . '</idItemVenda>
-                    <preco>' . ($jsonData['preco_site'] ?? $jsonData['preco_tabela'] ?? 0.0) . '</preco>
-                    <estoque>' . ($jsonData['qtde_estoque_total'] ?? 0) . '</estoque>
+                    <preco>' . $preco . '</preco>
+                    <estoque>' . $estoque . '</estoque>
                 </itensVenda></produto>';
                 $temAtualizacao = true;
+
+                $conn->insert('cfg_entity_change', [
+                    'entity_class' => Produto::class,
+                    'entity_id' => $produtoId,
+                    'changing_user_id' => 1,
+                    'changed_at' => (new \DateTime())->format('Y - m - d H:i:s'),
+                    'changes' => 'Preço: ' . $preco . ', Estoque: ' . $estoque,
+                    'obs' => 'ATUALIZANDO SALDO NA WEBSTORM',
+                ]);
+
             }
             if (!$temAtualizacao) {
                 $this->syslog->info('atualizaEstoqueEPrecos - OK (sem atualizações)');
@@ -1309,13 +1320,14 @@ class IntegradorWebStorm implements IntegradorECommerce
                 return 0;
             }
 
+            /** @var ProdutoRepository $repoProduto */
+            $repoProduto = $this->produtoEntityHandler->getDoctrine()->getRepository(Produto::class);
+
             foreach ($rProdutos as $rProduto) {
                 try {
-                    $conn->executeStatement('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_dt_marcado_integr\', :dt) where id = :id',
-                        [
-                            'dt' => (new \DateTime())->format('d/m/Y H:i:s'),
-                            'id' => $rProduto['id']
-                        ]);
+                    $produto = $repoProduto->find($rProduto['id']);
+                    $produto->jsonData['ecommerce_dt_marcado_integr'] = (new \DateTime())->format('d/m/Y H:i:s');
+                    $this->produtoEntityHandler->save($produto);
                     $this->bus->dispatch(new IntegrarProdutoEcommerceMessage($rProduto['id']));
                     $this->syslog->info('Produto reenviado para integração (id = "' . $rProduto['id'] . '"');
                 } catch (\Throwable $e) {
@@ -1351,14 +1363,16 @@ class IntegradorWebStorm implements IntegradorECommerce
         }
         $produtosParaIntegrar = $conn->fetchAllAssociative($sql);
 
+        /** @var ProdutoRepository $repoProduto */
+        $repoProduto = $this->produtoEntityHandler->getDoctrine()->getRepository(Produto::class);
+
         foreach ($produtosParaIntegrar as $rProduto) {
+            $produto = $repoProduto->find($rProduto['id']);
             $this->syslog->info('Enviar produto para integração', 'id = ' . $rProduto['id']);
             try {
-                $conn->executeStatement('UPDATE est_produto SET json_data = json_set(json_data, \'$.ecommerce_dt_marcado_integr\', :dt) where id = :id',
-                    [
-                        'dt' => (new \DateTime())->format('d/m/Y H:i:s'),
-                        'id' => $rProduto['id']
-                    ]);
+                $produto->jsonData['ecommerce_dt_marcado_integr'] = (new \DateTime())->format('d/m/Y H:i:s');
+                $this->produtoEntityHandler->save($produto);
+
                 $this->bus->dispatch(new IntegrarProdutoEcommerceMessage($rProduto['id']));
             } catch (\Throwable $e) {
                 try {
@@ -1485,7 +1499,7 @@ class IntegradorWebStorm implements IntegradorECommerce
         $this->integrarVendaParaCrosier($pedido, (int)$pedido->status === 2 || $resalvar);
         return true;
     }
-    
+
 
     /**
      * @param int $idClienteECommerce

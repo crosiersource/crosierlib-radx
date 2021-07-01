@@ -9,6 +9,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\TrackedEntity;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -44,6 +45,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *
  * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository")
  * @ORM\Table(name="est_produto")
+ * @TrackedEntity()
  *
  * @author Carlos Eduardo Pauluk
  */
