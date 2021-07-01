@@ -1243,7 +1243,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                     'entity_class' => Produto::class,
                     'entity_id' => $produtoId,
                     'changing_user_id' => 1,
-                    'changed_at' => (new \DateTime())->format('Y - m - d H:i:s'),
+                    'changed_at' => (new \DateTime())->format('Y-m-d H:i:s'),
                     'changes' => 'Preço: ' . $preco . ', Estoque: ' . $estoque,
                     'obs' => 'ATUALIZANDO SALDO NA WEBSTORM',
                 ]);
