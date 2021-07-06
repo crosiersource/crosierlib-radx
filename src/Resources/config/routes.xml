@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<routes xmlns="http://symfony.com/schema/routing"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/routing
+        http://symfony.com/schema/routing/routing-1.0.xsd">
+
+
+  <!-- ProdutoController -->
+  <route id="api_est_produto_getUrlsImagens"
+         controller="crosier_source.crosier_lib_radx_bundle.controller.estoque.produto_controller::getUrlsImagens"
+         path="/api/est/produto/getUrlsImagens/{produto}">
+    <requirement key="produto">\d+</requirement>
+  </route>
+
+
+</routes>

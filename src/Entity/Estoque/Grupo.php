@@ -18,6 +18,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * @ApiResource(
+ *     shortName="Estoque/Grupo",
  *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
  *

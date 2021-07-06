@@ -390,5 +390,12 @@
              alias="crosier_source.crosier_lib_radx_bundle.business.estoque.produto_business"/>
 
 
+    <!-- ProdutoController -->
+    <service id="crosier_source.crosier_lib_radx_bundle.controller.estoque.produto_controller"
+             class="CrosierSource\CrosierLibRadxBundle\Controller\Estoque\ProdutoController" public="true">
+      <argument type="service" id="service_container"/>
+    </service>
+
+
   </services>
 </container>

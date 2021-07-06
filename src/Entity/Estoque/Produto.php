@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
- *  @ApiResource(
+ * @ApiResource(
  *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
  *
@@ -38,7 +38,15 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     }
  * )
  *
- * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "id": "exact", 
+ *     "status": "exact", 
+ *     "nome": "partial", 
+ *     "codigo": "partial", 
+ *     "depto": "exact", 
+ *     "grupo": "exact", 
+ *     "subgrupo": "exact"
+ * })
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler")
