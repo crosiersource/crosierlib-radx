@@ -115,5 +115,10 @@ class Subgrupo implements EntityId
         return $this->codigo . ' - ' . $this->nome;
     }
 
+    public function __toString()
+    {
+        return $this->getId() . ' (' . $this->getDescricaoMontada() . ')';
+    }
+
 
 }
