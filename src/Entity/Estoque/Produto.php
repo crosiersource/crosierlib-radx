@@ -38,7 +38,15 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     }
  * )
  *
- * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "id": "exact", 
+ *     "status": "exact", 
+ *     "nome": "partial", 
+ *     "codigo": "partial", 
+ *     "depto": "exact", 
+ *     "grupo": "exact", 
+ *     "subgrupo": "exact"
+ * })
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler")
