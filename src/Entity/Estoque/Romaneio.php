@@ -18,8 +18,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"romaneio","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"romaneio"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/romaneio/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -57,7 +57,7 @@ class Romaneio implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor")
      * @ORM\JoinColumn(name="fornecedor_id")
-     * @Groups("entity")
+     * @Groups("romaneio")
      *
      * @var null|Fornecedor
      */
@@ -81,7 +81,7 @@ class Romaneio implements EntityId
      * 'CANCELADO'
      *
      * @ORM\Column(name="status", type="string")
-     * @Groups("entity")
+     * @Groups("romaneio")
      *
      * @var null|string
      */
@@ -91,7 +91,7 @@ class Romaneio implements EntityId
     /**
      *
      * @ORM\Column(name="dt_emissao", type="datetime")
-     * @Groups("entity")
+     * @Groups("romaneio")
      *
      * @var null|\DateTime
      */
@@ -101,7 +101,7 @@ class Romaneio implements EntityId
     /**
      *
      * @ORM\Column(name="dt_prev_entrega", type="datetime")
-     * @Groups("entity")
+     * @Groups("romaneio")
      *
      * @var null|\DateTime
      */
@@ -111,7 +111,7 @@ class Romaneio implements EntityId
     /**
      *
      * @ORM\Column(name="dt_entrega", type="datetime")
-     * @Groups("entity")
+     * @Groups("romaneio")
      *
      * @var null|\DateTime
      */
@@ -121,7 +121,7 @@ class Romaneio implements EntityId
     /**
      *
      * @ORM\Column(name="prazos_pagto", type="string")
-     * @Groups("entity")
+     * @Groups("romaneio")
      *
      * @var null|string
      */
@@ -131,7 +131,7 @@ class Romaneio implements EntityId
     /**
      *
      * @ORM\Column(name="valor_total", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("romaneio")
      *
      * @var null|float
      */
@@ -143,7 +143,7 @@ class Romaneio implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("romaneio")
      */
     public ?array $jsonData = null;
 
@@ -158,7 +158,7 @@ class Romaneio implements EntityId
      *      mappedBy="romaneio",
      *      orphanRemoval=true)
      * @ORM\OrderBy({"ordem" = "ASC"})
-     * @Groups("entity")
+     * @Groups("romaneio")
      */
     public $itens;
 

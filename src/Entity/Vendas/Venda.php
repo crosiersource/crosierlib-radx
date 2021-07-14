@@ -18,8 +18,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"venda","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"venda"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/ven/venda/{id}", "security"="is_granted('ROLE_VENDAS')"},
@@ -55,7 +55,7 @@ class Venda implements EntityId
     /**
      *
      * @ORM\Column(name="dt_venda", type="datetime", nullable=false)
-     * @Groups("entity")
+     * @Groups("venda")
      *
      * @var null|\DateTime
      */
@@ -65,7 +65,7 @@ class Venda implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente")
      * @ORM\JoinColumn(name="cliente_id")
-     * @Groups("entity")
+     * @Groups("venda")
      *
      * @var null|Cliente
      */
@@ -75,7 +75,7 @@ class Venda implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador")
      * @ORM\JoinColumn(name="vendedor_id")
-     * @Groups("entity")
+     * @Groups("venda")
      *
      * @var null|Colaborador
      */
@@ -84,7 +84,7 @@ class Venda implements EntityId
     /**
      *
      * @ORM\Column(name="subtotal", type="decimal")
-     * @Groups("entity")
+     * @Groups("venda")
      *
      * @var null|float
      */
@@ -93,7 +93,7 @@ class Venda implements EntityId
     /**
      *
      * @ORM\Column(name="desconto", type="decimal")
-     * @Groups("entity")
+     * @Groups("venda")
      *
      * @var null|float
      */
@@ -102,7 +102,7 @@ class Venda implements EntityId
     /**
      *
      * @ORM\Column(name="valor_total", type="decimal")
-     * @Groups("entity")
+     * @Groups("venda")
      *
      * @var null|float
      */
@@ -111,7 +111,7 @@ class Venda implements EntityId
     /**
      *
      * @ORM\Column(name="status", type="string")
-     * @Groups("entity")
+     * @Groups("venda")
      *
      * @var null|string
      */
@@ -122,7 +122,7 @@ class Venda implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("venda")
      */
     public ?array $jsonData = null;
 
@@ -136,7 +136,7 @@ class Venda implements EntityId
      *      mappedBy="venda",
      *      orphanRemoval=true)
      * @ORM\OrderBy({"ordem" = "ASC"})
-     * @Groups("entity")
+     * @Groups("venda")
      */
     public $itens;
 
@@ -149,7 +149,7 @@ class Venda implements EntityId
      *      cascade={"refresh"},
      *      mappedBy="venda",
      *      orphanRemoval=true)
-     * @Groups("entity")
+     * @Groups("venda")
      */
     public $pagtos;
 

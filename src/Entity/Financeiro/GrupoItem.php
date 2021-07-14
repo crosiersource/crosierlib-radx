@@ -20,8 +20,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * de um mês do cartão de crédito, por exemplo).
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"grupoItem","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"grupoItem"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/grupoItem/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -59,14 +59,14 @@ class GrupoItem implements EntityId
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Grupo", inversedBy="itens")
      * @ORM\JoinColumn(name="grupo_pai_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("grupoItem")
      * @MaxDepth(1)
      */
     public ?Grupo $pai = null;
 
     /**
      * @ORM\Column(name="descricao", type="string", nullable=false, length=40)
-     * @Groups("entity")
+     * @Groups("grupoItem")
      */
     public ?string $descricao = null;
 
@@ -74,7 +74,7 @@ class GrupoItem implements EntityId
      * Movimentações desta carteira não poderão ter suas datas alteradas para antes desta.
      *
      * @ORM\Column(name="dt_vencto", type="date", nullable=false)
-     * @Groups("entity")
+     * @Groups("grupoItem")
      */
     public ?\DateTime $dtVencto = null;
 
@@ -83,7 +83,7 @@ class GrupoItem implements EntityId
      *
      * @ORM\OneToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem")
      * @ORM\JoinColumn(name="anterior_id", referencedColumnName="id")
-     * @Groups("entity")
+     * @Groups("grupoItem")
      * @MaxDepth(1)
      */
     public ?GrupoItem $anterior = null;
@@ -93,7 +93,7 @@ class GrupoItem implements EntityId
      *
      * @ORM\OneToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem")
      * @ORM\JoinColumn(name="proximo_id", referencedColumnName="id")
-     * @Groups("entity")
+     * @Groups("grupoItem")
      * @MaxDepth(1)
      */
     public ?GrupoItem $proximo = null;
@@ -102,27 +102,27 @@ class GrupoItem implements EntityId
      * Utilizado para informar o limite disponível.
      *
      * @ORM\Column(name="valor_informado", type="decimal", nullable=true, precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("grupoItem")
      */
     public ?float $valorInformado = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_pagante_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("grupoItem")
      */
     public ?Carteira $carteiraPagante = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao")
      * @ORM\JoinColumn(name="movimentacao_pagante_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("grupoItem")
      */
     public ?Movimentacao $movimentacaoPagante = null;
 
     /**
      * @ORM\Column(name="fechado", type="boolean", nullable=false)
-     * @Groups("entity")
+     * @Groups("grupoItem")
      */
     public ?bool $fechado = false;
 

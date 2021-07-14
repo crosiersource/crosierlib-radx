@@ -17,8 +17,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"depto","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"depto"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/depto/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -54,7 +54,7 @@ class Depto implements EntityId
     /**
      * @ORM\Column(name="uuid", type="string", nullable=false, length=36)
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("depto")
      *
      * @var string|null
      */
@@ -64,7 +64,7 @@ class Depto implements EntityId
      *
      * @ORM\Column(name="codigo", type="string", nullable=false)
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("depto")
      *
      * @var string|null
      */
@@ -73,7 +73,7 @@ class Depto implements EntityId
     /**
      *
      * @ORM\Column(name="nome", type="string", nullable=false)
-     * @Groups("entity")
+     * @Groups("depto")
      * @NotUppercase()
      *
      * @var string|null
@@ -97,7 +97,7 @@ class Depto implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("depto")
      */
     public ?array $jsonData = null;
 
@@ -110,7 +110,7 @@ class Depto implements EntityId
 
     /**
      * @return string|null
-     * @Groups("entity")
+     * @Groups("depto")
      */
     public function getDescricaoMontada(): ?string
     {

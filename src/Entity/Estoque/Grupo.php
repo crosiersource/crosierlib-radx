@@ -18,8 +18,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"grupo","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"grupo"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/grupo/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -55,7 +55,7 @@ class Grupo implements EntityId
     /**
      * @ORM\Column(name="uuid", type="string", nullable=false, length=36)
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("grupo")
      *
      * @var string|null
      */
@@ -65,7 +65,7 @@ class Grupo implements EntityId
      *
      * @ORM\Column(name="codigo", type="string", nullable=false)
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("grupo")
      *
      * @var string|null
      */
@@ -74,7 +74,7 @@ class Grupo implements EntityId
     /**
      *
      * @ORM\Column(name="nome", type="string", nullable=false)
-     * @Groups("entity")
+     * @Groups("grupo")
      * @NotUppercase()
      *
      * @var string|null
@@ -85,7 +85,7 @@ class Grupo implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto")
      * @ORM\JoinColumn(name="depto_id", nullable=false)
-     * @Groups("entity")
+     * @Groups("grupo")
      * @MaxDepth(1)
      * @var $depto Depto
      */
@@ -108,7 +108,7 @@ class Grupo implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("grupo")
      */
     public ?array $jsonData = null;
 
@@ -120,7 +120,7 @@ class Grupo implements EntityId
 
     /**
      * @return string|null
-     * @Groups("entity")
+     * @Groups("grupo")
      */
     public function getDescricaoMontada(): ?string
     {

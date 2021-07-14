@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"distDFe","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"distDFe"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fis/distDFe/{id}", "security"="is_granted('ROLE_FISCAL')"},
@@ -54,7 +54,7 @@ class DistDFe implements EntityId
      *
      * @ORM\Column(name="documento", type="string")
      * @var null|string
-     * @Groups("entity")
+     * @Groups("distDFe")
      */
     public ?string $documento = null;
 
@@ -62,7 +62,7 @@ class DistDFe implements EntityId
      *
      * @ORM\Column(name="tipo_distdfe", type="string")
      * @var null|string
-     * @Groups("entity")
+     * @Groups("distDFe")
      */
     public ?string $tipoDistDFe = null;
 
@@ -71,7 +71,7 @@ class DistDFe implements EntityId
      *
      * @ORM\Column(name="proprio", type="boolean")
      * @var null|bool
-     * @Groups("entity")
+     * @Groups("distDFe")
      */
     public ?bool $proprio = null;
 
@@ -79,7 +79,7 @@ class DistDFe implements EntityId
      *
      * @ORM\Column(name="chnfe", type="string", length=44)
      * @var null|string
-     * @Groups("entity")
+     * @Groups("distDFe")
      */
     public ?string $chave = null;
 
@@ -87,7 +87,7 @@ class DistDFe implements EntityId
      *
      * @ORM\Column(name="tp_evento", type="integer")
      * @var null|int
-     * @Groups("entity")
+     * @Groups("distDFe")
      */
     public ?int $tpEvento = null;
 
@@ -95,7 +95,7 @@ class DistDFe implements EntityId
      *
      * @ORM\Column(name="nseq_evento", type="integer")
      * @var null|int
-     * @Groups("entity")
+     * @Groups("distDFe")
      */
     public ?int $nSeqEvento = null;
 
@@ -103,7 +103,7 @@ class DistDFe implements EntityId
      *
      * @ORM\Column(name="nsu", type="bigint", nullable=false)
      * @var null|int
-     * @Groups("entity")
+     * @Groups("distDFe")
      */
     public ?int $nsu = null;
 
@@ -120,7 +120,7 @@ class DistDFe implements EntityId
      *
      * @ORM\Column(name="status", length=255, type="string")
      * @var null|string
-     * @Groups("entity")
+     * @Groups("distDFe")
      * @NotUppercase()
      */
     public ?string $status = null;
@@ -160,7 +160,7 @@ class DistDFe implements EntityId
      * Transient.
      * Para não precisar retornar toda a notaFiscal como JSON para o list.
      *
-     * @Groups("entity")
+     * @Groups("distDFe")
      */
     public function getNotaFiscalId(): ?int
     {
@@ -171,7 +171,7 @@ class DistDFe implements EntityId
      * Transient.
      * Para não precisar retornar toda o notaFiscalEvento como JSON para o list.
      *
-     * @Groups("entity")
+     * @Groups("distDFe")
      */
     public function getEventoId(): ?int
     {

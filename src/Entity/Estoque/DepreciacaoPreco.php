@@ -13,8 +13,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"depreciacaoPreco","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"depreciacaoPreco"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/depreciacaoPreco/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -47,19 +47,19 @@ class DepreciacaoPreco implements EntityId
 
     /**
      * @ORM\Column(name="porcentagem", type="decimal", nullable=false)
-     * @Groups("entity")
+     * @Groups("depreciacaoPreco")
      */
     private ?float $porcentagem;
 
     /**
      * @ORM\Column(name="prazo_fim", type="integer", nullable=false)
-     * @Groups("entity")
+     * @Groups("depreciacaoPreco")
      */
     private ?int $prazoFim;
 
     /**
      * @ORM\Column(name="prazo_ini", type="integer", nullable=false)
-     * @Groups("entity")
+     * @Groups("depreciacaoPreco")
      */
     private ?int $prazoIni;
 

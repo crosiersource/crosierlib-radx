@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"notaFiscalEvento","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"notaFiscalEvento"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fis/notaFiscalEvento/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -65,7 +65,7 @@ class NotaFiscalEvento implements EntityId
      * @ORM\Column(name="tp_evento", type="integer", nullable=false)
      * @var null|int
      *
-     * @Groups("entity")
+     * @Groups("notaFiscalEvento")
      */
     private $tpEvento;
 
@@ -73,7 +73,7 @@ class NotaFiscalEvento implements EntityId
      *
      * @ORM\Column(name="nseq_evento", type="integer", nullable=true)
      * @var null|int
-     * @Groups("entity")
+     * @Groups("notaFiscalEvento")
      */
     private $nSeqEvento;
 
@@ -82,7 +82,7 @@ class NotaFiscalEvento implements EntityId
      * @ORM\Column(name="desc_evento", type="string", length=200, nullable=false)
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscalEvento")
      */
     private $descEvento;
 

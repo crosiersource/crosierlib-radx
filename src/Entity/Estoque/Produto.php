@@ -19,8 +19,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  *  @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"produto","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"produto"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/produto/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -57,7 +57,7 @@ class Produto implements EntityId
     /**
      * @ORM\Column(name="uuid", type="string", nullable=false, length=36)
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("produto")
      *
      * @var string|null
      */
@@ -67,7 +67,7 @@ class Produto implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto")
      * @ORM\JoinColumn(name="depto_id", nullable=false)
-     * @Groups("entity")
+     * @Groups("produto")
      * @MaxDepth(1)
      * @var $depto null|Depto
      */
@@ -77,7 +77,7 @@ class Produto implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo")
      * @ORM\JoinColumn(name="grupo_id", nullable=false)
-     * @Groups("entity")
+     * @Groups("produto")
      * @MaxDepth(1)
      * @var $grupo null|Grupo
      */
@@ -87,7 +87,7 @@ class Produto implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo")
      * @ORM\JoinColumn(name="subgrupo_id", nullable=false)
-     * @Groups("entity")
+     * @Groups("produto")
      * @MaxDepth(1)
      * @var $subgrupo null|Subgrupo
      */
@@ -105,7 +105,7 @@ class Produto implements EntityId
     /**
      *
      * @ORM\Column(name="codigo", type="string", nullable=false)
-     * @Groups("entity")
+     * @Groups("produto")
      *
      * @var null|string
      */
@@ -114,7 +114,7 @@ class Produto implements EntityId
     /**
      *
      * @ORM\Column(name="nome", type="string", nullable=false)
-     * @Groups("entity")
+     * @Groups("produto")
      *
      * @var null|string
      */
@@ -124,7 +124,7 @@ class Produto implements EntityId
      * ATIVO,INATIVO
      *
      * @ORM\Column(name="status", type="string", nullable=true)
-     * @Groups("entity")
+     * @Groups("produto")
      *
      * @var null|string
      */
@@ -143,7 +143,7 @@ class Produto implements EntityId
      * S,N
      *
      * @ORM\Column(name="composicao", type="string", nullable=true)
-     * @Groups("entity")
+     * @Groups("produto")
      *
      * @var null|string
      */
@@ -196,7 +196,7 @@ class Produto implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("produto")
      */
     public ?array $jsonData = null;
 

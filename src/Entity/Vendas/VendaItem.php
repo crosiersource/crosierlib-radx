@@ -18,8 +18,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"vendaItem","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"vendaItem"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/ven/vendaItem/{id}", "security"="is_granted('ROLE_VENDAS')"},
@@ -64,7 +64,7 @@ class VendaItem implements EntityId
     /**
      *
      * @ORM\Column(name="ordem", type="integer")
-     * @Groups("entity")
+     * @Groups("vendaItem")
      *
      * @var null|integer
      */
@@ -73,7 +73,7 @@ class VendaItem implements EntityId
     /**
      *
      * @ORM\Column(name="qtde", type="decimal", nullable=false)
-     * @Groups("entity")
+     * @Groups("vendaItem")
      *
      * @var null|float
      */
@@ -92,7 +92,7 @@ class VendaItem implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto")
      * @ORM\JoinColumn(name="produto_id")
-     * @Groups("entity")
+     * @Groups("vendaItem")
      *
      * @var null|Produto
      */
@@ -101,7 +101,7 @@ class VendaItem implements EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("vendaItem")
      *
      * @var null|string
      */
@@ -110,7 +110,7 @@ class VendaItem implements EntityId
     /**
      *
      * @ORM\Column(name="preco_venda", type="decimal")
-     * @Groups("entity")
+     * @Groups("vendaItem")
      *
      * @var null|float
      */
@@ -119,7 +119,7 @@ class VendaItem implements EntityId
     /**
      *
      * @ORM\Column(name="subtotal", type="decimal")
-     * @Groups("entity")
+     * @Groups("vendaItem")
      *
      * @var null|float
      */
@@ -128,7 +128,7 @@ class VendaItem implements EntityId
     /**
      *
      * @ORM\Column(name="desconto", type="decimal")
-     * @Groups("entity")
+     * @Groups("vendaItem")
      *
      * @var null|float
      */
@@ -136,7 +136,7 @@ class VendaItem implements EntityId
 
     /**
      * @ORM\Column(name="total", type="decimal")
-     * @Groups("entity")
+     * @Groups("vendaItem")
      *
      * @var null|float
      */
@@ -145,7 +145,7 @@ class VendaItem implements EntityId
     /**
      *
      * @ORM\Column(name="devolucao", type="boolean")
-     * @Groups("entity")
+     * @Groups("vendaItem")
      *
      * @var bool|null
      */
@@ -156,7 +156,7 @@ class VendaItem implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("vendaItem")
      */
     public ?array $jsonData = null;
 

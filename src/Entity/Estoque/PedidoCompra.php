@@ -17,8 +17,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"pedidoCompra","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"pedidoCompra"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/pedidoCompra/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -54,7 +54,7 @@ class PedidoCompra implements EntityId
     /**
      *
      * @ORM\Column(name="dt_emissao", type="datetime")
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      *
      * @var null|\DateTime
      */
@@ -63,7 +63,7 @@ class PedidoCompra implements EntityId
     /**
      *
      * @ORM\Column(name="dt_prev_entrega", type="datetime")
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      *
      * @var null|\DateTime
      */
@@ -72,7 +72,7 @@ class PedidoCompra implements EntityId
     /**
      *
      * @ORM\Column(name="prazos_pagto", type="string")
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      *
      * @var null|string
      */
@@ -81,7 +81,7 @@ class PedidoCompra implements EntityId
     /**
      *
      * @ORM\Column(name="responsavel", type="string")
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      *
      * @var null|string
      */
@@ -91,7 +91,7 @@ class PedidoCompra implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor")
      * @ORM\JoinColumn(name="fornecedor_id")
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      *
      * @var null|Fornecedor
      */
@@ -100,7 +100,7 @@ class PedidoCompra implements EntityId
     /**
      *
      * @ORM\Column(name="subtotal", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      *
      * @var null|float
      */
@@ -111,14 +111,14 @@ class PedidoCompra implements EntityId
      * @ORM\Column(name="desconto", type="decimal", precision=15, scale=2)
      * @var null|float
      *
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      */
     public ?float $desconto = null;
 
     /**
      *
      * @ORM\Column(name="total", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      *
      * @var null|float
      */
@@ -132,7 +132,7 @@ class PedidoCompra implements EntityId
      * 'CANCELADO'
      *
      * @ORM\Column(name="status", type="string")
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      *
      * @var null|string
      */
@@ -141,7 +141,7 @@ class PedidoCompra implements EntityId
     /**
      *
      * @ORM\Column(name="obs", type="string")
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      *
      * @var null|string
      */
@@ -152,7 +152,7 @@ class PedidoCompra implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      */
     public ?array $jsonData = null;
 
@@ -166,7 +166,7 @@ class PedidoCompra implements EntityId
      *      mappedBy="pedidoCompra",
      *      orphanRemoval=true)
      * @ORM\OrderBy({"ordem" = "ASC"})
-     * @Groups("entity")
+     * @Groups("pedidoCompra")
      */
     public $itens;
 

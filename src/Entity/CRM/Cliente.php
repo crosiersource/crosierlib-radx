@@ -18,8 +18,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"cliente","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"cliente"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/crm/cliente/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -53,27 +53,27 @@ class Cliente implements EntityId
 
     /**
      * @ORM\Column(name="documento", type="string")
-     * @Groups("entity")
+     * @Groups("cliente")
      */
     public ?string $documento = null;
 
     /**
      * @ORM\Column(name="nome", type="string")
-     * @Groups("entity")
+     * @Groups("cliente")
      */
     public ?string $nome = null;
 
     /**
      * @ORM\Column(name="json_data", type="json")
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("cliente")
      */
     public ?array $jsonData = null;
 
 
     /**
      * @return string
-     * @Groups("entity")
+     * @Groups("cliente")
      */
     public function getNomeMontadoComDocumento(): string
     {

@@ -18,8 +18,8 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"colaborador","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"colaborador"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/rh/colaborador/{id}", "security"="is_granted('ROLE_RH')"},
@@ -58,7 +58,7 @@ class Colaborador implements EntityId
      * @ORM\Column(name="cpf", type="string")
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("colaborador")
      */
     public ?string $cpf = null;
 
@@ -67,7 +67,7 @@ class Colaborador implements EntityId
      * @ORM\Column(name="nome", type="string")
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("colaborador")
      */
     public ?string $nome = null;
 
@@ -77,7 +77,7 @@ class Colaborador implements EntityId
      * @ORM\Column(name="atual", type="boolean")
      * @var null|bool
      *
-     * @Groups("entity")
+     * @Groups("colaborador")
      */
     public ?bool $atual = null;
 
@@ -86,7 +86,7 @@ class Colaborador implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("colaborador")
      */
     public ?array $jsonData = null;
 
@@ -99,7 +99,7 @@ class Colaborador implements EntityId
 
     /**
      * @ORM\Column(name="image_name", type="string")
-     * @Groups("entity")
+     * @Groups("colaborador")
      * @NotUppercase()
      * @var null|string
      */

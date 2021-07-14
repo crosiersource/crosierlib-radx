@@ -19,8 +19,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 /**
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"categoria","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"categoria"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/categoria/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -76,7 +76,7 @@ class Categoria implements EntityId
 
     /**
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("categoria")
      */
     public ?string $descricao = null;
 
@@ -89,7 +89,7 @@ class Categoria implements EntityId
 
     /**
      * @ORM\Column(name="codigo", type="bigint", nullable=false)
-     * @Groups("entity")
+     * @Groups("categoria")
      */
     public ?int $codigo = null;
 
@@ -126,7 +126,7 @@ class Categoria implements EntityId
      * Atalho para não precisar ficar fazendo parse.
      *
      * @ORM\Column(name="codigo_super", type="bigint", nullable=true)
-     * @Groups("entity")
+     * @Groups("categoria")
      */
     public ?int $codigoSuper = null;
 
@@ -134,7 +134,7 @@ class Categoria implements EntityId
      * Atalho para não precisar ficar fazendo parse.
      *
      * @ORM\Column(name="codigo_ord", type="bigint", nullable=true)
-     * @Groups("entity")
+     * @Groups("categoria")
      */
     public ?int $codigoOrd = null;
 
@@ -167,7 +167,7 @@ class Categoria implements EntityId
     /**
      * Retorna a descrição de uma Categoria no formato codigo + descricao (Ex.:
      * 2.01 - DESPESAS PESSOAIS).
-     * @Groups("entity")
+     * @Groups("categoria")
      */
     public function getDescricaoMontada(): ?string
     {
@@ -178,7 +178,7 @@ class Categoria implements EntityId
      *
      * Retorna a descrição de uma Categoria no formato codigo + descricao (Ex.:
      * 2.01 - DESPESAS PESSOAIS).
-     * @Groups("entity")
+     * @Groups("categoria")
      * @return string|null
      */
     public function getDescricaoMontadaTree(): ?string
@@ -188,7 +188,7 @@ class Categoria implements EntityId
 
     /**
      * @return string|null
-     * @Groups("entity")
+     * @Groups("categoria")
      */
     public function getCodigoM(): ?string
     {

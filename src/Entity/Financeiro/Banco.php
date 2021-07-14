@@ -18,8 +18,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Entidade 'Banco'.
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"banco","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"banco"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/banco/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -59,21 +59,21 @@ class Banco implements EntityId
      * @ORM\Column(name="codigo_banco", type="integer", nullable=false)
      * @Assert\NotBlank()
      * @Assert\Range(min = 1)
-     * @Groups("entity")
+     * @Groups("banco")
      */
     public ?int $codigoBanco = null;
 
     /**
      * @ORM\Column(name="nome", type="string", nullable=false, length=200)
      * @Assert\NotBlank()
-     * @Groups("entity")
+     * @Groups("banco")
      */
     public ?string $nome = null;
 
     /**
      * @ORM\Column(name="utilizado", type="boolean", nullable=false)
      * @Assert\NotNull()
-     * @Groups("entity")
+     * @Groups("banco")
      */
     public ?bool $utilizado = false;
 
@@ -93,7 +93,7 @@ class Banco implements EntityId
 
     /**
      * @return string
-     * @Groups("entity")
+     * @Groups("banco")
      */
     public function getDescricaoMontada(): string
     {

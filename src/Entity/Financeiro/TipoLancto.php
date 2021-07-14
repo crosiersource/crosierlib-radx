@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Entidade Tipo de Lançamento.
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"tipoLancto","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"tipoLancto"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/tipoLancto/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -58,7 +58,7 @@ class TipoLancto implements EntityId
     /**
      *
      * @ORM\Column(name="codigo", type="integer", nullable=false)
-     * @Groups("entity")
+     * @Groups("tipoLancto")
      *
      * @var int|null
      */
@@ -67,7 +67,7 @@ class TipoLancto implements EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=40)
-     * @Groups("entity")
+     * @Groups("tipoLancto")
      *
      * @var string|null
      */
@@ -94,7 +94,7 @@ class TipoLancto implements EntityId
     }
 
     /**
-     * @Groups("entity")
+     * @Groups("tipoLancto")
      * @return null|string
      */
     public function getDescricaoMontada(): ?string

@@ -17,8 +17,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Entidade 'Centro de Custo'.
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"centroCusto","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"centroCusto"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/centroCusto/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -54,19 +54,19 @@ class CentroCusto implements EntityId
 
     /**
      * @ORM\Column(name="codigo", type="integer", nullable=false)
-     * @Groups("entity")
+     * @Groups("centroCusto")
      */
     public ?int $codigo = null;
 
     /**
      * @ORM\Column(name="descricao", type="string", nullable=false, length=40)
-     * @Groups("entity")
+     * @Groups("centroCusto")
      */
     public ?string $descricao;
 
 
     /**
-     * @Groups("entity")
+     * @Groups("centroCusto")
      * @return string
      */
     public function getDescricaoMontada(): string

@@ -19,8 +19,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Entidade Nota Fiscal.
  * 
  *  @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"notaFiscal","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"notaFiscal"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fis/notaFiscal/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -58,7 +58,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="uuid", type="string", nullable=true, length=32)
      * @var null|string
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $uuid;
 
@@ -67,7 +67,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="ambiente", type="string", nullable=true, length=4)
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $ambiente;
 
@@ -93,7 +93,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="natureza_operacao", type="string", nullable=false, length=60)
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $naturezaOperacao;
 
@@ -102,7 +102,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="finalidade_nf", type="string", nullable=false, length=30)
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $finalidadeNf;
 
@@ -132,7 +132,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="dt_emissao", type="datetime", nullable=true)
      * @var null|\DateTime
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $dtEmissao;
 
@@ -141,7 +141,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="dt_saient", type="datetime", nullable=true)
      * @var null|\DateTime
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $dtSaiEnt;
 
@@ -150,7 +150,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="numero", type="integer", nullable=false)
      * @var null|int
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $numero;
 
@@ -159,7 +159,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="serie", type="integer", nullable=false)
      * @var null|int
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $serie;
 
@@ -168,7 +168,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="tipo", type="string", nullable=true, length=30)
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $tipoNotaFiscal;
 
@@ -177,7 +177,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="entrada_saida", nullable=false)
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $entradaSaida;
 
@@ -185,21 +185,21 @@ class NotaFiscal implements EntityId
     /**
      * @ORM\Column(name="documento_emitente", type="string", nullable=false)
      * @var null|string
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $documentoEmitente;
 
     /**
      * @ORM\Column(name="xnome_emitente", type="string", nullable=false)
      * @var null|string
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $xNomeEmitente;
 
     /**
      * @ORM\Column(name="inscr_est_emitente", type="string", nullable=true)
      * @var null|string
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $inscricaoEstadualEmitente;
 
@@ -208,7 +208,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="cep_emitente", type="string", nullable=true, length=9)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $cepEmitente;
 
@@ -217,7 +217,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="logradouro_emitente", type="string", nullable=true, length=200)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $logradouroEmitente;
 
@@ -226,7 +226,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="numero_emitente", type="string", nullable=true, length=200)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $numeroEmitente;
 
@@ -235,7 +235,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="complemento_emitente", type="string", nullable=true, length=60)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $complementoEmitente;
 
@@ -244,7 +244,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="fone_emitente", type="string", nullable=true, length=50)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $foneEmitente;
 
@@ -253,7 +253,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="bairro_emitente", type="string", nullable=true, length=120)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $bairroEmitente;
 
@@ -262,7 +262,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="cidade_emitente", type="string", nullable=true, length=120)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $cidadeEmitente;
 
@@ -271,7 +271,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="estado_emitente", type="string", nullable=true, length=2)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $estadoEmitente;
 
@@ -279,21 +279,21 @@ class NotaFiscal implements EntityId
     /**
      * @ORM\Column(name="documento_destinatario", type="string", nullable=false)
      * @var null|string
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $documentoDestinatario;
 
     /**
      * @ORM\Column(name="xnome_destinatario", type="string", nullable=false)
      * @var null|string
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $xNomeDestinatario;
 
     /**
      * @ORM\Column(name="inscr_est", type="string", nullable=false)
      * @var null|string
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $inscricaoEstadualDestinatario;
 
@@ -302,7 +302,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="logradouro_destinatario", type="string", nullable=true, length=200)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $logradouroDestinatario;
 
@@ -311,7 +311,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="numero_destinatario", type="string", nullable=true, length=200)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $numeroDestinatario;
 
@@ -320,7 +320,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="complemento_destinatario", type="string", nullable=true, length=60)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $complementoDestinatario;
 
@@ -329,7 +329,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="bairro_destinatario", type="string", nullable=true, length=120)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $bairroDestinatario;
 
@@ -338,7 +338,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="cidade_destinatario", type="string", nullable=true, length=120)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $cidadeDestinatario;
 
@@ -347,7 +347,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="estado_destinatario", type="string", nullable=true, length=2)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $estadoDestinatario;
 
@@ -356,7 +356,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="cep_destinatario", type="string", nullable=true, length=9)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $cepDestinatario;
 
@@ -365,7 +365,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="fone_destinatario", type="string", nullable=true, length=50)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $foneDestinatario;
 
@@ -374,7 +374,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="email_destinatario", type="string", nullable=true, length=200)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $emailDestinatario;
 
@@ -412,7 +412,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="valor_total", type="decimal", nullable=false, precision=15, scale=2)
      * @var null|float
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $valorTotal;
 
@@ -446,7 +446,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="transp_cidade", type="string", nullable=true, length=120)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $transpCidade;
 
@@ -455,7 +455,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="transp_estado", type="string", nullable=true, length=2)
      * @var string|null
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $transpEstado;
 
@@ -545,7 +545,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="resumo", type="boolean", nullable=true)
      * @var null|bool
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $resumo;
 
@@ -561,7 +561,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="cstat_lote", type="integer", nullable=true)
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $cStatLote;
 
@@ -570,7 +570,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="xmotivo_lote", type="string", length=255, nullable=true)
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $xMotivoLote;
 
@@ -579,7 +579,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="cstat", type="integer", nullable=true)
      * @var null|int
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $cStat;
 
@@ -588,7 +588,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="xmotivo", type="string", length=255, nullable=true)
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $xMotivo;
 
@@ -597,7 +597,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="manifest_dest", type="string", length=255, nullable=true)
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $manifestDest;
 
@@ -607,7 +607,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="dt_manifest_dest", type="datetime", nullable=true)
      * @var null|\DateTime
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $dtManifestDest;
 
@@ -616,7 +616,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="nsu", type="integer", nullable=false)
      * @var null|int
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public $nsu;
 
@@ -625,7 +625,7 @@ class NotaFiscal implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public ?array $jsonData = null;
 
@@ -1849,7 +1849,7 @@ class NotaFiscal implements EntityId
     /**
      * @return string
      *
-     * @Groups("entity")
+     * @Groups("notaFiscal")
      */
     public function getInfoStatus(): string
     {

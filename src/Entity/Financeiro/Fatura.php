@@ -21,8 +21,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Agrupa diversas movimentações que são pagas com referência a um documento fiscal.
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"fatura","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"fatura"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/fatura/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -60,7 +60,7 @@ class Fatura implements EntityId
      * Data em que a movimentação efetivamente aconteceu.
      *
      * @ORM\Column(name="dt_fatura", type="datetime")
-     * @Groups("entity")
+     * @Groups("fatura")
      *
      * @var \DateTime|null
      */
@@ -71,7 +71,7 @@ class Fatura implements EntityId
      * Se for fechada, não é possível incluir outras movimentações na fatura.
      *
      * @ORM\Column(name="fechada", type="boolean")
-     * @Groups("entity")
+     * @Groups("fatura")
      *
      * @var bool|null
      */
@@ -80,7 +80,7 @@ class Fatura implements EntityId
     /**
      *
      * @ORM\Column(name="transacional", type="boolean")
-     * @Groups("entity")
+     * @Groups("fatura")
      *
      * @var bool|null
      */
@@ -89,7 +89,7 @@ class Fatura implements EntityId
     /**
      *
      * @ORM\Column(name="quitada", type="boolean")
-     * @Groups("entity")
+     * @Groups("fatura")
      *
      * @var bool|null
      */
@@ -100,7 +100,7 @@ class Fatura implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("fatura")
      */
     public ?array $jsonData = null;
 

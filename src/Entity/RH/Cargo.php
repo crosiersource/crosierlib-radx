@@ -14,8 +14,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"cargo","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"cargo"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/rh/cargo/{id}", "security"="is_granted('ROLE_RH')"},
@@ -48,7 +48,7 @@ class Cargo implements EntityId
 
     /**
      * @ORM\Column(name="descricao", type="string", nullable=false, length=200)
-     * @Groups("entity")
+     * @Groups("cargo")
      */
     private ?string $descricao;
 

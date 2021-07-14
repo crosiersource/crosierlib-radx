@@ -19,8 +19,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Ex.: RDCARD, CIELO, STONE.
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"operadoraCartao","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"operadoraCartao"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/operadoraCartao/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -62,7 +62,7 @@ class OperadoraCartao implements EntityId
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=40)
      * @Assert\NotBlank()
-     * @Groups("entity")
+     * @Groups("operadoraCartao")
      */
     public ?string $descricao = null;
 
@@ -71,7 +71,7 @@ class OperadoraCartao implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("operadoraCartao")
      */
     public ?Carteira $carteira = null;
 

@@ -15,8 +15,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"unidade","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"unidade"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/unidade/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -52,7 +52,7 @@ class Unidade implements EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("unidade")
      * @var null|string
      */
     public ?string $descricao = null;
@@ -60,7 +60,7 @@ class Unidade implements EntityId
     /**
      *
      * @ORM\Column(name="label", type="string")
-     * @Groups("entity")
+     * @Groups("unidade")
      * @NotUppercase()
      * @var null|string
      */
@@ -69,7 +69,7 @@ class Unidade implements EntityId
     /**
      *
      * @ORM\Column(name="casas_decimais", type="integer")
-     * @Groups("entity")
+     * @Groups("unidade")
      * @var null|integer
      */
     public ?int $casasDecimais = null;
@@ -79,7 +79,7 @@ class Unidade implements EntityId
      * @ORM\Column(name="json_info", type="string")
      * @var null|string
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("unidade")
      */
     public ?string $jsonInfo = null;
 
@@ -88,14 +88,14 @@ class Unidade implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("unidade")
      */
     public ?array $jsonData = null;
 
     /**
      *
      * @ORM\Column(name="atual", type="boolean")
-     * @Groups("entity")
+     * @Groups("unidade")
      *
      * @var bool|null
      */

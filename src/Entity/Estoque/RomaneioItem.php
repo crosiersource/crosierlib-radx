@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"romaneioItem","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"romaneioItem"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/romaneioItem/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -71,7 +71,7 @@ class RomaneioItem implements EntityId
     /**
      *
      * @ORM\Column(name="ordem", type="integer")
-     * @Groups("entity")
+     * @Groups("romaneioItem")
      *
      * @var null|integer
      */
@@ -81,7 +81,7 @@ class RomaneioItem implements EntityId
     /**
      *
      * @ORM\Column(name="qtde", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("romaneioItem")
      *
      * @var null|float
      */
@@ -91,7 +91,7 @@ class RomaneioItem implements EntityId
     /**
      *
      * @ORM\Column(name="qtde_conferida", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("romaneioItem")
      *
      * @var null|float
      */
@@ -101,7 +101,7 @@ class RomaneioItem implements EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("romaneioItem")
      *
      * @var null|string
      */
@@ -111,7 +111,7 @@ class RomaneioItem implements EntityId
     /**
      *
      * @ORM\Column(name="preco_custo", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("romaneioItem")
      *
      * @var null|float
      */
@@ -120,7 +120,7 @@ class RomaneioItem implements EntityId
 
     /**
      * @ORM\Column(name="total", type="decimal", precision=19, scale=2)
-     * @Groups("entity")
+     * @Groups("romaneioItem")
      *
      * @var null|float
      */
@@ -132,7 +132,7 @@ class RomaneioItem implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("romaneioItem")
      */
     public ?array $jsonData = null;
 

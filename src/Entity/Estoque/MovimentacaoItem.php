@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"movimentacaoItem","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"movimentacaoItem"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/movimentacaoItem/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -71,7 +71,7 @@ class MovimentacaoItem implements EntityId
     /**
      *
      * @ORM\Column(name="qtde", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("movimentacaoItem")
      *
      * @var null|float
      */
@@ -91,7 +91,7 @@ class MovimentacaoItem implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("movimentacaoItem")
      */
     public ?array $jsonData = null;
 

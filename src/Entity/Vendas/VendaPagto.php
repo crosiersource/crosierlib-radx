@@ -15,8 +15,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"vendaPagto","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"vendaPagto"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/ven/vendaPagto/{id}", "security"="is_granted('ROLE_VENDAS')"},
@@ -62,7 +62,7 @@ class VendaPagto implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto")
      * @ORM\JoinColumn(name="plano_pagto_id")
-     * @Groups("entity")
+     * @Groups("vendaPagto")
      *
      * @var null|PlanoPagto
      */
@@ -71,7 +71,7 @@ class VendaPagto implements EntityId
     /**
      *
      * @ORM\Column(name="valor_pagto", type="decimal")
-     * @Groups("entity")
+     * @Groups("vendaPagto")
      *
      * @var null|float
      */
@@ -82,7 +82,7 @@ class VendaPagto implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("vendaPagto")
      */
     public ?array $jsonData = null;
 

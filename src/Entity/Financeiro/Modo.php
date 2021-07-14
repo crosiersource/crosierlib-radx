@@ -20,8 +20,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Informa se a movimentação foi em 'espécie', 'cheque', 'boleto', etc.
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"modo","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"modo"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -57,13 +57,13 @@ class Modo implements EntityId
 
     /**
      * @ORM\Column(name="codigo", type="integer")
-     * @Groups("entity")
+     * @Groups("modo")
      */
     public ?int $codigo = null;
 
     /**
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("modo")
      */
     public ?string $descricao = null;
 
@@ -73,7 +73,7 @@ class Modo implements EntityId
      *
      * @ORM\Column(name="transf_propria", type="boolean", nullable=false)
      * @Assert\NotNull()
-     * @Groups("entity")
+     * @Groups("modo")
      */
     public ?bool $modoDeTransfPropria = false;
 
@@ -83,7 +83,7 @@ class Modo implements EntityId
      *
      * @ORM\Column(name="moviment_agrup", type="boolean")
      * @Assert\NotNull()
-     * @Groups("entity")
+     * @Groups("modo")
      */
     public ?bool $modoDeMovimentAgrup = false;
 
@@ -93,7 +93,7 @@ class Modo implements EntityId
      *
      * @ORM\Column(name="modo_cartao", type="boolean")
      * @Assert\NotNull()
-     * @Groups("entity")
+     * @Groups("modo")
      */
     public ?bool $modoDeCartao = false;
 
@@ -102,7 +102,7 @@ class Modo implements EntityId
      * carteiras).
      *
      * @ORM\Column(name="modo_cheque", type="boolean")
-     * @Groups("entity")
+     * @Groups("modo")
      */
     public ?bool $modoDeCheque = false;
 
@@ -111,7 +111,7 @@ class Modo implements EntityId
      *
      * @ORM\Column(name="transf_caixa", type="boolean")
      * @Assert\NotNull()
-     * @Groups("entity")
+     * @Groups("modo")
      */
     public ?bool $modoDeTransfCaixa = false;
 
@@ -119,7 +119,7 @@ class Modo implements EntityId
      *
      * @ORM\Column(name="com_banco_origem", type="boolean", nullable=false)
      * @Assert\NotNull()
-     * @Groups("entity")
+     * @Groups("modo")
      *
      * @var bool|null
      */
@@ -140,7 +140,7 @@ class Modo implements EntityId
     }
 
     /**
-     * @Groups("entity")
+     * @Groups("modo")
      * @return string
      */
     public function getDescricaoMontada(): string

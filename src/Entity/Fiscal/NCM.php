@@ -15,8 +15,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"ncm","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"ncm"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fis/ncm/{id}", "security"="is_granted('ROLE_FINAN')"},

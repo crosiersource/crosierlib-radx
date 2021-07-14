@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"planoPagto","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"planoPagto"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/ven/planoPagto/{id}", "security"="is_granted('ROLE_VENDAS')"},
@@ -53,7 +53,7 @@ class PlanoPagto implements EntityId
     /**
      *
      * @ORM\Column(name="codigo", type="string")
-     * @Groups("entity")
+     * @Groups("planoPagto")
      *
      * @var null|string
      */
@@ -62,7 +62,7 @@ class PlanoPagto implements EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("planoPagto")
      *
      * @var null|string
      */
@@ -71,7 +71,7 @@ class PlanoPagto implements EntityId
     /**
      *
      * @ORM\Column(name="ativo", type="boolean")
-     * @Groups("entity")
+     * @Groups("planoPagto")
      *
      * @var bool|null
      */
@@ -82,7 +82,7 @@ class PlanoPagto implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("planoPagto")
      */
     public ?array $jsonData = null;
 

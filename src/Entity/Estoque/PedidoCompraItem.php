@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"pedidoCompraItem","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"pedidoCompraItem"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/pedidoCompraItem/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -62,7 +62,7 @@ class PedidoCompraItem implements EntityId
     /**
      *
      * @ORM\Column(name="ordem", type="integer")
-     * @Groups("entity")
+     * @Groups("pedidoCompraItem")
      *
      * @var null|integer
      */
@@ -71,7 +71,7 @@ class PedidoCompraItem implements EntityId
     /**
      *
      * @ORM\Column(name="qtde", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("pedidoCompraItem")
      *
      * @var null|float
      */
@@ -80,7 +80,7 @@ class PedidoCompraItem implements EntityId
     /**
      *
      * @ORM\Column(name="referencia", type="string")
-     * @Groups("entity")
+     * @Groups("pedidoCompraItem")
      *
      * @var null|string
      */
@@ -89,7 +89,7 @@ class PedidoCompraItem implements EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("pedidoCompraItem")
      *
      * @var null|string
      */
@@ -98,7 +98,7 @@ class PedidoCompraItem implements EntityId
     /**
      *
      * @ORM\Column(name="preco_custo", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("pedidoCompraItem")
      *
      * @var null|float
      */
@@ -107,7 +107,7 @@ class PedidoCompraItem implements EntityId
     /**
      *
      * @ORM\Column(name="desconto", type="decimal", precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("pedidoCompraItem")
      *
      * @var null|float
      */
@@ -115,7 +115,7 @@ class PedidoCompraItem implements EntityId
 
     /**
      * @ORM\Column(name="total", type="decimal", precision=19, scale=2)
-     * @Groups("entity")
+     * @Groups("pedidoCompraItem")
      *
      * @var null|float
      */
@@ -126,7 +126,7 @@ class PedidoCompraItem implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("pedidoCompraItem")
      */
     public ?array $jsonData = null;
 

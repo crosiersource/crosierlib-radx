@@ -15,8 +15,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  *  @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"produtoComposicao","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"produtoComposicao"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/produtoComposicao/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -53,7 +53,7 @@ class ProdutoComposicao implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto", inversedBy="composicoes")
      * @ORM\JoinColumn(name="produto_pai_id", nullable=false)
-     * @Groups("entity")
+     * @Groups("produtoComposicao")
      *
      * @var null|Produto
      */
@@ -64,7 +64,7 @@ class ProdutoComposicao implements EntityId
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto")
      * @ORM\JoinColumn(name="produto_filho_id", nullable=false)
      *
-     * @Groups("entity")
+     * @Groups("produtoComposicao")
      *
      * @var null|Produto
      */
@@ -73,7 +73,7 @@ class ProdutoComposicao implements EntityId
     /**
      *
      * @ORM\Column(name="ordem", type="integer", nullable=true)
-     * @Groups("entity")
+     * @Groups("produtoComposicao")
      * @var null|integer
      */
     public ?int $ordem = null;
@@ -81,7 +81,7 @@ class ProdutoComposicao implements EntityId
     /**
      *
      * @ORM\Column(name="qtde", type="decimal", nullable=false)
-     * @Groups("entity")
+     * @Groups("produtoComposicao")
      *
      * @var null|float
      */
@@ -90,7 +90,7 @@ class ProdutoComposicao implements EntityId
     /**
      *
      * @ORM\Column(name="preco_composicao", type="decimal", nullable=false)
-     * @Groups("entity")
+     * @Groups("produtoComposicao")
      * @var null|string
      */
     public ?string $precoComposicao = null;

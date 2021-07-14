@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Entidade para manter registros de conferências mensais.
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"registroConferencia","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"registroConferencia"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/registroConferencia/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -57,32 +57,32 @@ class RegistroConferencia implements EntityId
 
     /**
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("registroConferencia")
      */
     public ?string $descricao = null;
 
     /**
      * @ORM\Column(name="dt_registro", type="datetime")
-     * @Groups("entity")
+     * @Groups("registroConferencia")
      */
     public ?\Datetime $dtRegistro = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("registroConferencia")
      */
     public ?Carteira $carteira = null;
 
     /**
      * @ORM\Column(name="valor", type="decimal")
-     * @Groups("entity")
+     * @Groups("registroConferencia")
      */
     public ?float $valor = null;
 
     /**
      * @ORM\Column(name="obs", type="string")
-     * @Groups("entity")
+     * @Groups("registroConferencia")
      */
     public ?string $obs = null;
 

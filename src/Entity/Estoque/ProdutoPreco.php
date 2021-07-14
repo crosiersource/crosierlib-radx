@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"produtoPreco","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"produtoPreco"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/produtoPreco/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -54,7 +54,7 @@ class ProdutoPreco implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ListaPreco")
      * @ORM\JoinColumn(name="lista_id", nullable=false)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      * @var null|ListaPreco
      */
     public ?ListaPreco $lista = null;
@@ -72,7 +72,7 @@ class ProdutoPreco implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade")
      * @ORM\JoinColumn(name="unidade_id", nullable=false)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|Unidade
      */
@@ -81,7 +81,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="coeficiente", type="decimal", nullable=false, precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|float
      */
@@ -90,7 +90,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="custo_operacional", type="decimal", nullable=false, precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|float
      */
@@ -99,7 +99,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="dt_custo", type="date", nullable=false)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|\DateTime
      */
@@ -108,7 +108,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="dt_preco_venda", type="date", nullable=false)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|\DateTime
      */
@@ -117,7 +117,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="margem", type="decimal", nullable=false, precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|float
      */
@@ -126,7 +126,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="prazo", type="integer", nullable=false)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|integer
      */
@@ -135,7 +135,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="preco_custo", type="decimal", nullable=false, precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|float
      */
@@ -144,7 +144,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="preco_prazo", type="decimal", nullable=false, precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|float
      */
@@ -153,7 +153,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="preco_promo", type="decimal", nullable=true, precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|float
      */
@@ -162,7 +162,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="preco_vista", type="decimal", nullable=false, precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|float
      */
@@ -171,7 +171,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="custo_financeiro", type="decimal", nullable=false, precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var null|float
      */
@@ -180,7 +180,7 @@ class ProdutoPreco implements EntityId
     /**
      *
      * @ORM\Column(name="atual", type="boolean")
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      *
      * @var bool|null
      */
@@ -191,7 +191,7 @@ class ProdutoPreco implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("produtoPreco")
      */
     public ?array $jsonData = null;
 

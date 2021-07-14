@@ -18,8 +18,8 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 /**
  *  @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"produtoImagem","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"produtoImagem"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/produtoImagem/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -70,7 +70,7 @@ class ProdutoImagem implements EntityId
 
     /**
      * @ORM\Column(name="image_name", type="string")
-     * @Groups("entity")
+     * @Groups("produtoImagem")
      * @NotUppercase()
      * @var null|string
      */
@@ -79,7 +79,7 @@ class ProdutoImagem implements EntityId
     /**
      *
      * @ORM\Column(name="ordem", type="integer", nullable=true)
-     * @Groups("entity")
+     * @Groups("produtoImagem")
      * @var null|integer
      */
     private $ordem;
@@ -88,7 +88,7 @@ class ProdutoImagem implements EntityId
      *
      * @ORM\Column(name="descricao", type="string", nullable=false)
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("produtoImagem")
      * @var null|string
      */
     private $descricao;

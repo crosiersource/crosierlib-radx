@@ -14,8 +14,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"listaPreco","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"listaPreco"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/listaPreco/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -52,7 +52,7 @@ class ListaPreco implements EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false)
-     * @Groups("entity")
+     * @Groups("listaPreco")
      *
      * @var string|null
      */
@@ -61,7 +61,7 @@ class ListaPreco implements EntityId
     /**
      *
      * @ORM\Column(name="dt_vigencia_ini", type="datetime", nullable=false)
-     * @Groups("entity")
+     * @Groups("listaPreco")
      *
      * @var \DateTime|null
      */
@@ -70,7 +70,7 @@ class ListaPreco implements EntityId
     /**
      *
      * @ORM\Column(name="dt_vigencia_fim", type="datetime", nullable=true)
-     * @Groups("entity")
+     * @Groups("listaPreco")
      *
      * @var \DateTime|null
      */

@@ -20,8 +20,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Para movimentações que são agrupadas e pagas através de outra movimentação (como Cartão de Crédito, conta em postos, etc).
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"grupo","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"grupo"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/grupo/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -57,7 +57,7 @@ class Grupo implements EntityId
 
     /**
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("grupo")
      */
     public ?string $descricao = null;
 
@@ -67,7 +67,7 @@ class Grupo implements EntityId
      * 32 para sempre último (FIXME: meio burro isso).
      *
      * @ORM\Column(name="dia_vencto", type="integer")
-     * @Groups("entity")
+     * @Groups("grupo")
      */
     public ?int $diaVencto = null;
 
@@ -76,7 +76,7 @@ class Grupo implements EntityId
      * para próximo mês.
      *
      * @ORM\Column(name="dia_inicio", type="integer")
-     * @Groups("entity")
+     * @Groups("grupo")
      */
     public ?int $diaInicioAprox = 1;
 
@@ -85,7 +85,7 @@ class Grupo implements EntityId
      * útil principalmente para o relatório de contas a pagar/receber, para não considerar movimentações de outras carteiras.
      *
      * @ORM\Column(name="ativo", type="boolean", nullable=false)
-     * @Groups("entity")
+     * @Groups("grupo")
      */
     public ?bool $ativo = true;
 
@@ -93,7 +93,7 @@ class Grupo implements EntityId
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_pagante_id", nullable=true)
      *
-     * @Groups("entity")
+     * @Groups("grupo")
      */
     public ?Carteira $carteiraPagantePadrao = null;
 
@@ -102,7 +102,7 @@ class Grupo implements EntityId
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria")
      * @ORM\JoinColumn(name="categoria_padrao_id", nullable=true)
      *
-     * @Groups("entity")
+     * @Groups("grupo")
      */
     public ?Categoria $categoriaPadrao = null;
 

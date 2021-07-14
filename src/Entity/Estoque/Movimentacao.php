@@ -17,8 +17,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"movimentacao","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"movimentacao"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/movimentacao/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -55,7 +55,7 @@ class Movimentacao implements EntityId
      * E/S (Entrada/Saída)
      * 
      * @ORM\Column(name="direcao", type="string")
-     * @Groups("entity")
+     * @Groups("movimentacao")
      *
      * @var null|string
      */
@@ -64,7 +64,7 @@ class Movimentacao implements EntityId
     /**
      *
      * @ORM\Column(name="dt_lote", type="datetime")
-     * @Groups("entity")
+     * @Groups("movimentacao")
      *
      * @var null|\DateTime
      */
@@ -74,7 +74,7 @@ class Movimentacao implements EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("movimentacao")
      *
      * @var null|string
      */
@@ -84,7 +84,7 @@ class Movimentacao implements EntityId
     /**
      *
      * @ORM\Column(name="responsavel", type="string")
-     * @Groups("entity")
+     * @Groups("movimentacao")
      *
      * @var null|string
      */
@@ -94,7 +94,7 @@ class Movimentacao implements EntityId
     /**
      *
      * @ORM\Column(name="status", type="string")
-     * @Groups("entity")
+     * @Groups("movimentacao")
      *
      * @var null|string
      */
@@ -104,7 +104,7 @@ class Movimentacao implements EntityId
     /**
      *
      * @ORM\Column(name="dt_integracao", type="datetime")
-     * @Groups("entity")
+     * @Groups("movimentacao")
      *
      * @var null|\DateTime
      */
@@ -116,7 +116,7 @@ class Movimentacao implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("movimentacao")
      */
     public ?array $jsonData = null;
 
@@ -130,7 +130,7 @@ class Movimentacao implements EntityId
      *      mappedBy="movimentacao",
      *      orphanRemoval=true)
      * @ORM\OrderBy({"updated" = "DESC"})
-     * @Groups("entity")
+     * @Groups("movimentacao")
      */
     public $itens;
 

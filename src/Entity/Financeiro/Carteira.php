@@ -18,8 +18,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * Entidade 'Carteira'.
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"carteira","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"carteira"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/carteira/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -58,14 +58,14 @@ class Carteira implements EntityId
     /**
      *
      * @ORM\Column(name="codigo", type="integer", nullable=false)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?int $codigo = null;
 
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=40)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?string $descricao = null;
 
@@ -73,7 +73,7 @@ class Carteira implements EntityId
      * Movimentações desta carteira não poderão ter suas datas alteradas para antes desta.
      *
      * @ORM\Column(name="dt_consolidado", type="datetime", nullable=false)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?\DateTime $dtConsolidado = null;
 
@@ -87,7 +87,7 @@ class Carteira implements EntityId
      *
      *
      * @ORM\Column(name="concreta", type="boolean", nullable=false)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?bool $concreta = false;
 
@@ -95,7 +95,7 @@ class Carteira implements EntityId
      * Informa se esta carteira pode conter movimentações com status ABERTA.
      *
      * @ORM\Column(name="abertas", type="boolean", nullable=false)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?bool $abertas = false;
 
@@ -103,7 +103,7 @@ class Carteira implements EntityId
      * Informa se esta carteira é um caixa (ex.: caixa a vista, caixa a prazo).
      *
      * @ORM\Column(name="caixa", type="boolean", nullable=false)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?bool $caixa = false;
 
@@ -111,7 +111,7 @@ class Carteira implements EntityId
      * Informa se esta carteira possui talão de cheques.
      *
      * @ORM\Column(name="cheque", type="boolean", nullable=false)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?bool $cheque = false;
 
@@ -120,7 +120,7 @@ class Carteira implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Banco")
      * @ORM\JoinColumn(nullable=true)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?Banco $banco = null;
 
@@ -128,7 +128,7 @@ class Carteira implements EntityId
      * Código da agência (sem o dígito verificador).
      *
      * @ORM\Column(name="agencia", type="string", nullable=true, length=30)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?string $agencia = null;
 
@@ -136,7 +136,7 @@ class Carteira implements EntityId
      * Número da conta no banco (não segue um padrão).
      *
      * @ORM\Column(name="conta", type="string", nullable=true, length=30)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?string $conta = null;
 
@@ -144,7 +144,7 @@ class Carteira implements EntityId
      * Utilizado para informar o limite disponível.
      *
      * @ORM\Column(name="limite", type="decimal", nullable=true, precision=15, scale=2)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?float $limite = null;
 
@@ -153,7 +153,7 @@ class Carteira implements EntityId
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\OperadoraCartao")
      * @ORM\JoinColumn(name="operadora_cartao_id", nullable=true)
      *
-     * @Groups("entity")
+     * @Groups("carteira")
      * @MaxDepth(1)
      */
     public ?OperadoraCartao $operadoraCartao = null;
@@ -163,7 +163,7 @@ class Carteira implements EntityId
      * Informa se esta carteira está atualmente em utilização.
      *
      * @ORM\Column(name="atual", type="boolean", nullable=false)
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public ?bool $atual = false;
 
@@ -179,7 +179,7 @@ class Carteira implements EntityId
 
     /**
      * @return string
-     * @Groups("entity")
+     * @Groups("carteira")
      */
     public function getDescricaoMontada(): string
     {

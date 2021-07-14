@@ -17,8 +17,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"fornecedor","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"fornecedor"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/fornecedor/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -57,7 +57,7 @@ class Fornecedor implements EntityId
      * @ORM\Column(name="nome", type="string")
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("fornecedor")
      */
     public ?string $nome = null;
 
@@ -66,7 +66,7 @@ class Fornecedor implements EntityId
      * @ORM\Column(name="nome_fantasia", type="string")
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("fornecedor")
      */
     public ?string $nomeFantasia = null;
 
@@ -76,7 +76,7 @@ class Fornecedor implements EntityId
      * @ORM\Column(name="documento", type="string")
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("fornecedor")
      */
     public ?string $documento = null;
 
@@ -85,7 +85,7 @@ class Fornecedor implements EntityId
      * @ORM\Column(name="inscricao_estadual", type="string")
      * @var null|string
      *
-     * @Groups("entity")
+     * @Groups("fornecedor")
      */
     public ?string $inscricaoEstadual = null;
 
@@ -94,14 +94,14 @@ class Fornecedor implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("fornecedor")
      */
     public ?array $jsonData = null;
 
 
     /**
      * @return string
-     * @Groups("entity")
+     * @Groups("fornecedor")
      */
     public function getNomeMontadoComDocumento(): string
     {

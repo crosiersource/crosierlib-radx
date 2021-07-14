@@ -15,8 +15,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"notaFiscalItem","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"notaFiscalItem"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fis/notaFiscalItem/{id}", "security"="is_granted('ROLE_FINAN')"},

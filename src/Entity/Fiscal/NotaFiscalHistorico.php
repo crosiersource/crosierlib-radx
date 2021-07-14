@@ -18,8 +18,8 @@ use Doctrine\ORM\Mapping as ORM;
  * Entidade que guarda informações sobre o histórico da nota fiscal.
  *
  *  @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"notaFiscalHistorico","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"notaFiscalHistorico"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fis/notaFiscalHistorico/{id}", "security"="is_granted('ROLE_FINAN')"},

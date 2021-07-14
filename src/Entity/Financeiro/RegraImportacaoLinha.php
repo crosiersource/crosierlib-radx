@@ -19,8 +19,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Configura uma regra para setar corretamente a Movimentação ao importar uma linha de extrato.
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"regraImportacaoLinha","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"regraImportacaoLinha"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/regraImportacaoLinha/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -62,62 +62,62 @@ class RegraImportacaoLinha implements EntityId
      * Em casos especiais (como na utilização de named groups) posso usar uma regex em java.
      *
      * @ORM\Column(name="regra_regex_java", type="string")
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?string $regraRegexJava = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto")
      * @ORM\JoinColumn(name="tipo_lancto_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?TipoLancto $tipoLancto = null;
 
     /**
      * @ORM\Column(name="status", type="string")
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?string $status = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?Carteira $carteira = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_destino_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?Carteira $carteiraDestino = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto")
      * @ORM\JoinColumn(name="centrocusto_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?CentroCusto $centroCusto = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo")
      * @ORM\JoinColumn(name="modo_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?Modo $modo = null;
 
     /**
      * @NotUppercase()
      * @ORM\Column(name="padrao_descricao", type="string")
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?string $padraoDescricao = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria")
      * @ORM\JoinColumn(name="categoria_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?Categoria $categoria = null;
 
@@ -125,14 +125,14 @@ class RegraImportacaoLinha implements EntityId
      * Para poder aplicar a regra somente se for positivo (1), negativo (-1) ou ambos (0)
      *
      * @ORM\Column(name="sinal_valor", type="integer")
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?int $sinalValor = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Banco")
      * @ORM\JoinColumn(name="cheque_banco_id", nullable=true)
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?Banco $chequeBanco = null;
 
@@ -140,7 +140,7 @@ class RegraImportacaoLinha implements EntityId
      * Código da agência (sem o dígito verificador).
      *
      * @ORM\Column(name="cheque_agencia", type="string")
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?string $chequeAgencia = null;
 
@@ -148,7 +148,7 @@ class RegraImportacaoLinha implements EntityId
      * Número da conta no banco (não segue um padrão).
      *
      * @ORM\Column(name="cheque_conta", type="string")
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?string $chequeConta = null;
 
@@ -156,7 +156,7 @@ class RegraImportacaoLinha implements EntityId
      * Número da conta no banco (não segue um padrão).
      *
      * @ORM\Column(name="cheque_num_cheque", type="string")
-     * @Groups("entity")
+     * @Groups("regraImportacaoLinha")
      */
     public ?string $chequeNumCheque = null;
 

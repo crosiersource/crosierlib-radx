@@ -17,8 +17,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"subgrupo","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"subgrupo"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/est/subgrupo/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
@@ -54,7 +54,7 @@ class Subgrupo implements EntityId
     /**
      * @ORM\Column(name="uuid", type="string", nullable=false, length=36)
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("subgrupo")
      *
      * @var string|null
      */
@@ -64,7 +64,7 @@ class Subgrupo implements EntityId
      *
      * @ORM\Column(name="codigo", type="string", nullable=false)
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("subgrupo")
      *
      * @var string|null
      */
@@ -73,7 +73,7 @@ class Subgrupo implements EntityId
     /**
      *
      * @ORM\Column(name="nome", type="string", nullable=false)
-     * @Groups("entity")
+     * @Groups("subgrupo")
      * @NotUppercase()
      *
      * @var string|null
@@ -82,7 +82,7 @@ class Subgrupo implements EntityId
 
     /**
      * Transient.
-     * @Groups("entity")
+     * @Groups("subgrupo")
      * @var string|null
      */
     public ?string $descricaoMontada = null;
@@ -91,7 +91,7 @@ class Subgrupo implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo")
      * @ORM\JoinColumn(name="grupo_id", nullable=false)
-     * @Groups("entity")
+     * @Groups("subgrupo")
      * @MaxDepth(1)
      * @var $grupo Grupo
      */
@@ -102,13 +102,13 @@ class Subgrupo implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("entity")
+     * @Groups("subgrupo")
      */
     public ?array $jsonData = null;
 
     /**
      * @return string|null
-     * @Groups("entity")
+     * @Groups("subgrupo")
      */
     public function getDescricaoMontada(): ?string
     {

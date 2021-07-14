@@ -18,8 +18,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Ex.: MASTER MAESTRO, MASTER, VISA ELECTRON, VISA, etc.
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"bandeiraCartao","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"bandeiraCartao"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/bandeiraCartao/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -56,7 +56,7 @@ class BandeiraCartao implements EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string")
-     * @Groups("entity")
+     * @Groups("bandeiraCartao")
      */
     public ?string $descricao = null;
 
@@ -64,7 +64,7 @@ class BandeiraCartao implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups("entity")
+     * @Groups("bandeiraCartao")
      */
     public ?Modo $modo = null;
 
@@ -72,7 +72,7 @@ class BandeiraCartao implements EntityId
      * Para marcar diferentes nomes que podem ser utilizados para definir uma bandeira (ex.: MAESTRO ou MASTER MAESTRO ou M MAESTRO).
      *
      * @ORM\Column(name="labels", type="string")
-     * @Groups("entity")
+     * @Groups("bandeiraCartao")
      */
     public ?string $labels = null;
 

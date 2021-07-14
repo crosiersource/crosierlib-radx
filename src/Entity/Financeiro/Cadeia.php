@@ -18,8 +18,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Movimentações podem ser dependentes umas das outras, formando uma cadeia de entradas e saídas entre carteiras.
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"entity","entityId"},"enable_max_depth"=true},
- *     denormalizationContext={"groups"={"entity"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"cadeia","entityId"},"enable_max_depth"=true},
+ *     denormalizationContext={"groups"={"cadeia"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/cadeia/{id}", "security"="is_granted('ROLE_FINAN')"},
@@ -55,7 +55,7 @@ class Cadeia implements EntityId
      *
      * @ORM\Column(name="vinculante", type="boolean", nullable=false)
      * @Assert\NotNull()
-     * @Groups("entity")
+     * @Groups("cadeia")
      */
     public ?bool $vinculate = false;
 
@@ -64,7 +64,7 @@ class Cadeia implements EntityId
      *
      * @ORM\Column(name="fechada", type="boolean", nullable=false)
      * @Assert\NotNull()
-     * @Groups("entity")
+     * @Groups("cadeia")
      */
     public ?bool $fechada = false;
 
