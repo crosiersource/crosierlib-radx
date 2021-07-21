@@ -16,7 +16,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * Entidade 'Carteira'.
- * 
+ *
  * @ApiResource(
  *     normalizationContext={"groups"={"carteira","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"carteira"},"enable_max_depth"=true},
@@ -38,9 +38,20 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *
  * )
  *
- * @ApiFilter(BooleanFilter::class, properties={"caixa": "exact", "concreta": "exact", "abertas": "exact", "cheque": "exact"})
- * @ApiFilter(SearchFilter::class, properties={"codigo": "exact", "descricao": "partial", "id": "exact", "carteira": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "descricao", "dtConsolidado", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(BooleanFilter::class, properties={
+ *     "atual": "exact",
+ *     "caixa": "exact",
+ *     "concreta": "exact",
+ *     "abertas": "exact",
+ *     "cheque": "exact"})
+ *
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "codigo": "exact",
+ *     "descricao": "partial",
+ *     "id": "exact",
+ *     "operadoraCartao": "exact"})
+ *
+ * @ApiFilter(OrderFilter::class, properties={"id", "codigo", "descricao", "dtConsolidado", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CarteiraEntityHandler")
  *
