@@ -41,7 +41,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * )
  *
  * @ApiFilter(SearchFilter::class, properties={"descricao": "partial", "id": "exact", "codigo": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "descricao", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(OrderFilter::class, properties={"id", "codigo", "descricao", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\ModoEntityHandler")
  *
