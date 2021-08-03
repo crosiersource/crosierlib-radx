@@ -56,6 +56,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 class Movimentacao implements EntityId
 {
 
+    const ALL_SERIAL_GROUPS = ['movimentacao', 'modo', 'banco', 'tipoLancto', 'carteira', 'categoria', 'centroCusto', 'grupoItem', 'operadoraCartao', 'bandeiraCartao', 'cadeia', 'fatura'];
+    
     use EntityIdTrait;
 
     /**

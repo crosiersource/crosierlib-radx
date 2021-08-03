@@ -319,7 +319,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $this->doctrine->rollback();
             $err = 'Erro ao salvar movimentações';
             if ($e instanceof ViewException) {
-                $err = $e->getMessage();
+                $err = ExceptionUtils::treatException($e);
             }
             if (isset($mov)) {
                 $err .= ' (' . $mov->descricao . ')';
