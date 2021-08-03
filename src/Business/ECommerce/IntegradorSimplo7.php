@@ -8,6 +8,7 @@ use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness;
@@ -264,7 +265,9 @@ class IntegradorSimplo7 implements IntegradorECommerce
                     } catch (ConnectionException $e) {
                         throw new \RuntimeException('rollback err', 0, $e);
                     }
-                    throw new ViewException('Erro ao integrar');
+                    $msg = ExceptionUtils::treatException($e) ?? 'Erro n/d';
+                    $msg .= ' - Pedido ' . ($pedido['Wspedido']['numero'] ?? '????');
+                    throw new ViewException('Erro ao integrar (' . $msg . ')');
                 }
             }
         }
@@ -354,6 +357,9 @@ class IntegradorSimplo7 implements IntegradorECommerce
             } catch (ConnectionException $e) {
                 throw new \RuntimeException('rollback err', 0, $e);
             }
+            $msg = ExceptionUtils::treatException($e) ?? 'Erro n/d';
+            $msg .= ' - Pedido ' . ($pedido['Wspedido']['numero'] ?? '????');
+            throw new ViewException('Erro ao integrar (' . $msg . ')');
         }
         return 1;
     }
@@ -634,7 +640,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
                     // verifica se já existe uma ven_venda com o json_data.ecommerce_idPedido
                     $sProduto = $conn->fetchAssociative('SELECT id FROM est_produto WHERE json_data->>"$.ecommerce_id" = :idProduto', ['idProduto' => $item['produto_id']]);
                     if (!isset($sProduto['id'])) {
-                        $sProduto = $this->obterProduto($item['produto_id']);
+                        $sProduto = $this->obterProduto($item);
                     }
                     $produto = $repoProduto->find($sProduto['id']);
                 } catch (\Throwable $e) {
@@ -716,72 +722,74 @@ class IntegradorSimplo7 implements IntegradorECommerce
                     throw new ViewException('Integrador não configurado: ' . $pagamento['integrador'] . ' (Venda: ' . $pedido['numero'] . ')');
             }
 
-            $modoId = null;
-            $descricaoPlanoPagto = null;
-            $planoPagto = null;
-            switch ($tipoFormaPagamento) {
-                case 'Depósito Bancário':
-                    $planoPagto = $arrPlanosPagtosByCodigo['020'];
-                    break;
-                case 'Boleto':
-                    $planoPagto = $arrPlanosPagtosByCodigo['030'];
-                    break;
-                case 'Pix':
-                    $planoPagto = $arrPlanosPagtosByCodigo['040'];
-                    break;
-                default:
-                    $planoPagto = $arrPlanosPagtosByCodigo['010'];
-                    break;
-            }
-            $descricaoPlanoPagto = $planoPagto['descricao'];
-            $modoId = json_decode($planoPagto['json_data'], true)['modo_id'] ?? null;
-
-            $vendaPagto = [
-                'plano_pagto_id' => $planoPagto['id'],
-                'venda_id' => $venda->getId(),
-                'valor_pagto' => $totalPedido,
-                'json_data' => [
-                    'nomeFormaPagamento' => $tipoFormaPagamento ?? 'n/d',
-                    'integrador' => $integrador,
-                    'codigo_transacao' => $pagamento['codigo_transacao'] ?? 'n/d',
-                    'carteira_id' => $carteiraId,
-                    'modo_id' => $modoId,
-                ],
-                'inserted' => (new \DateTime())->format('Y-m-d H:i:s'),
-                'updated' => (new \DateTime())->format('Y-m-d H:i:s'),
-                'version' => 0,
-                'user_inserted_id' => 1,
-                'user_updated_id' => 1,
-                'estabelecimento_id' => 1
-            ];
-
-
-            $vendaPagto['json_data'] = json_encode($vendaPagto['json_data']);
-
-            try {
-                $conn->insert('ven_venda_pagto', $vendaPagto);
-                $vendaPagtoId = $conn->lastInsertId();
-                $eVendaPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(VendaPagto::class)->find($vendaPagtoId);
-                $venda->addPagto($eVendaPagto);
-                if ($integrador === 'Mercado Pago') {
-                    // no caso de pagamento via 'Mercado Pago', já busca as informações lá na API
-                    $this->integradorMercadoPago->mlUser = 'defamiliapg@gmail.com';
-                    $this->integradorMercadoPago->handleTransacaoParaVendaPagto($eVendaPagto);
+            if (!(in_array($venda->jsonData['ecommerce_status_descricao'], ['Criado','Cancelado'], true))) {
+                $modoId = null;
+                $descricaoPlanoPagto = null;
+                $planoPagto = null;
+                switch ($tipoFormaPagamento) {
+                    case 'Depósito Bancário':
+                        $planoPagto = $arrPlanosPagtosByCodigo['020'];
+                        break;
+                    case 'Boleto':
+                        $planoPagto = $arrPlanosPagtosByCodigo['030'];
+                        break;
+                    case 'Pix':
+                        $planoPagto = $arrPlanosPagtosByCodigo['040'];
+                        break;
+                    default:
+                        $planoPagto = $arrPlanosPagtosByCodigo['010'];
+                        break;
                 }
-            } catch (\Throwable $e) {
-                throw new ViewException('Erro ao salvar dados do pagamento');
+                $descricaoPlanoPagto = $planoPagto['descricao'];
+                $modoId = json_decode($planoPagto['json_data'], true)['modo_id'] ?? null;
+
+                $vendaPagto = [
+                    'plano_pagto_id' => $planoPagto['id'],
+                    'venda_id' => $venda->getId(),
+                    'valor_pagto' => $totalPedido,
+                    'json_data' => [
+                        'nomeFormaPagamento' => $tipoFormaPagamento ?? 'n/d',
+                        'integrador' => $integrador,
+                        'codigo_transacao' => $pagamento['codigo_transacao'] ?? 'n/d',
+                        'carteira_id' => $carteiraId,
+                        'modo_id' => $modoId,
+                    ],
+                    'inserted' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'updated' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'version' => 0,
+                    'user_inserted_id' => 1,
+                    'user_updated_id' => 1,
+                    'estabelecimento_id' => 1
+                ];
+
+
+                $vendaPagto['json_data'] = json_encode($vendaPagto['json_data']);
+
+                try {
+                    $conn->insert('ven_venda_pagto', $vendaPagto);
+                    $vendaPagtoId = $conn->lastInsertId();
+                    $eVendaPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(VendaPagto::class)->find($vendaPagtoId);
+                    $venda->addPagto($eVendaPagto);
+                    if ($integrador === 'Mercado Pago') {
+                        // no caso de pagamento via 'Mercado Pago', já busca as informações lá na API
+                        $this->integradorMercadoPago->mlUser = 'defamiliapg@gmail.com';
+                        $this->integradorMercadoPago->handleTransacaoParaVendaPagto($eVendaPagto);
+                    }
+                } catch (\Throwable $e) {
+                    throw new ViewException('Erro ao salvar dados do pagamento');
+                }
+
+
+                $venda->jsonData['infoPagtos'] = $descricaoPlanoPagto .
+                    ': R$ ' . number_format($venda->valorTotal, 2, ',', '.');
+                if ($eVendaPagto->jsonData['codigo_transacao'] ?? false) {
+                    $venda->jsonData['infoPagtos'] .= ' (Transação: ' . $eVendaPagto->jsonData['codigo_transacao'] . ')';
+                }
+                $venda->jsonData['forma_pagamento'] = mb_strtoupper($pagamento['pagamento_forma']);
             }
-
-
-            $venda->jsonData['infoPagtos'] = $descricaoPlanoPagto .
-                ': R$ ' . number_format($venda->valorTotal, 2, ',', '.');
-            if ($eVendaPagto->jsonData['codigo_transacao'] ?? false) {
-                $venda->jsonData['infoPagtos'] .= ' (Transação: ' . $eVendaPagto->jsonData['codigo_transacao'] . ')';
-            }
-
-            $venda->jsonData['forma_pagamento'] = mb_strtoupper($pagamento['pagamento_forma']);
-
+            
             $venda->jsonData['dados_completos_ecommerce'] = $wsPedido;
+            
 
             $venda = $this->vendaEntityHandler->save($venda);
 
@@ -1003,12 +1011,13 @@ class IntegradorSimplo7 implements IntegradorECommerce
     }
 
     /**
-     * @param int $idProduto
+     * @param array $item
      * @throws ViewException
      */
-    public function obterProduto(int $idProduto)
+    public function obterProduto(array $item)
     {
         try {
+            $idProduto = $item['produto_id'];
             $response = $this->client->request('GET', $this->getEndpoint() . '/ws/wsprodutos/' . $idProduto . '.json',
                 [
                     'headers' => [
@@ -1020,18 +1029,18 @@ class IntegradorSimplo7 implements IntegradorECommerce
             );
             $bodyContents = $response->getBody()->getContents();
             $json = json_decode($bodyContents, true);
-            $eproduto = $json['result'] ?? [];
+            $eproduto = $json['result'] ?? false;
 
             $produto = new Produto();
-            $produto->jsonData['dados_ecommerce'] = $eproduto;
-            $produto->jsonData['ecommerce_id'] = $eproduto['Wsproduto']['id'];
-            $produto->codigo = $eproduto['Wsproduto']['sku'];
-            $produto->status = $eproduto['Wsproduto']['situacao'];
+            $produto->jsonData['dados_ecommerce'] = $eproduto ?? $item;
+            $produto->jsonData['ecommerce_id'] = $item['produto_id'];
+            $produto->codigo = $item['sku'];
+            $produto->status = $eproduto['Wsproduto']['situacao'] ?? 'INATIVO';
             $produto->depto = $this->deptoIndefinido;
             $produto->grupo = $this->grupoIndefinido;
             $produto->subgrupo = $this->subgrupoIndefinido;
             $produto->fornecedor = $this->fornecedorDefamilia;
-            $produto->nome = $eproduto['Wsproduto']['nome'];
+            $produto->nome = $item['nome_produto'];
 
             $this->produtoEntityHandler->save($produto);
 
