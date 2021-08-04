@@ -184,7 +184,7 @@ class Carteira implements EntityId
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
-     * @Groups("fatura")
+     * @Groups("carteira")
      */
     public ?array $jsonData = null;
 
