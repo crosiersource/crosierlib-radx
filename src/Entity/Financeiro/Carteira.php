@@ -178,6 +178,15 @@ class Carteira implements EntityId
      */
     public ?bool $atual = false;
 
+    /**
+     *
+     * @ORM\Column(name="json_data", type="json")
+     * @var null|array
+     * @NotUppercase()
+     * @Groups("fatura")
+     */
+    public ?array $jsonData = null;
+
 
     public function getCodigo(bool $format = false)
     {
