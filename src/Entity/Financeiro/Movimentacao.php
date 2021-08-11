@@ -75,6 +75,13 @@ class Movimentacao implements EntityId
      * @MaxDepth(2)
      */
     public ?Fatura $fatura = null;
+    
+    
+    /**
+     * @ORM\Column(name="fatura_ordem", type="integer")
+     * @Groups("movimentacao")
+     */
+    public ?int $faturaOrdem = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo")
