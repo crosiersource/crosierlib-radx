@@ -8,6 +8,7 @@ use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\DiaUtilRepository;
+use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
@@ -23,7 +24,6 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\OperadoraCartao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
-use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CategoriaRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\TipoLanctoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -52,11 +52,11 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @param LoggerInterface $logger
      */
     public function __construct(EntityManagerInterface $doctrine,
-                                Security $security,
-                                ParameterBagInterface $parameterBag,
-                                SyslogBusiness $syslog,
-                                FaturaEntityHandler $faturaEntityHandler,
-                                LoggerInterface $logger)
+                                Security               $security,
+                                ParameterBagInterface  $parameterBag,
+                                SyslogBusiness         $syslog,
+                                FaturaEntityHandler    $faturaEntityHandler,
+                                LoggerInterface        $logger)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->faturaEntityHandler = $faturaEntityHandler;
@@ -97,9 +97,8 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->centroCusto = $centroCusto;
         }
 
-        
 
-        if (in_array($movimentacao->tipoLancto->codigo, [60,61], true)) {
+        if (in_array($movimentacao->tipoLancto->codigo, [60, 61], true)) {
             $movimentacao->dtVencto = clone($movimentacao->dtMoviment);
             $movimentacao->dtVenctoEfetiva = clone($movimentacao->dtMoviment);
             $movimentacao->dtPagto = clone($movimentacao->dtMoviment);
@@ -346,7 +345,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         if (!$movimentacao->tipoLancto) {
             $movimentacao->tipoLancto = $repoTipoLancto->findOneBy(['codigo' => 20]);
         }
-        
+
         // 60 - TRANSFERÊNCIA ENTRE CARTEIRAS
         if ($movimentacao->tipoLancto->getCodigo() === 60) {
             return $this->saveTransfPropria($movimentacao);
@@ -600,7 +599,6 @@ class MovimentacaoEntityHandler extends EntityHandler
     }
 
 
-
     /**
      *
      * @param Movimentacao $movimentacao
@@ -612,8 +610,8 @@ class MovimentacaoEntityHandler extends EntityHandler
         if (!$movimentacao->carteiraDestino || !$movimentacao->carteiraDestino->operadoraCartao) {
             throw new ViewException('Movimentação de cartão precisa ter carteira destino como operadora de cartão');
         }
-        
-        
+
+
         $this->getDoctrine()->beginTransaction();
 
         /** @var Categoria $categ291 */
@@ -625,15 +623,15 @@ class MovimentacaoEntityHandler extends EntityHandler
         if ($movimentacao->fatura && !$movimentacao->faturaOrdem) {
             $faturaOrdem = 1;
         }
-        
+
         $ehDebito = $movimentacao->modo->codigo === 10;
-        
+
         $qtdeParcelas = $ehDebito ? 1 : $movimentacao->jsonData['qtdeParcelas'];
         $cadeiaQtde = $qtdeParcelas + 2; // 101 + 291 + 191s...
 
         // Está editando
         if ($movimentacao->getId()) {
-            
+
             $movs = $movimentacao->cadeia->movimentacoes;
             $outraMov = null;
             /** @var Movimentacao $mov */
@@ -704,18 +702,18 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment291->jsonData = $movimentacao->jsonData;
         parent::save($moviment291);
 
-        $primeiraDtVencto = $ehDebito ? 
+        $primeiraDtVencto = $ehDebito ?
             (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1D')) :
             (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1M'));
-        
+
         $parcelas = DecimalUtils::gerarParcelas($movimentacao->valor, $qtdeParcelas);
-        
-        for ($i=0 ; $i<$qtdeParcelas; $i++) {
+
+        for ($i = 0; $i < $qtdeParcelas; $i++) {
             $moviment191 = new Movimentacao();
             $moviment191->tipoLancto = $movimentacao->tipoLancto;
             $moviment191->fatura = $movimentacao->fatura;
             $moviment191->cadeia = $cadeia;
-            $moviment191->cadeiaOrdem = 3+$i;
+            $moviment191->cadeiaOrdem = 3 + $i;
             $moviment191->faturaOrdem = $faturaOrdem ? ++$faturaOrdem : null;
             $moviment191->cadeiaQtde = $cadeiaQtde;
             $moviment191->descricao = $movimentacao->descricao;
@@ -730,7 +728,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
             $moviment191->dtMoviment = clone($movimentacao->dtMoviment);
             $moviment191->dtVencto = $i === 0 ? (clone $primeiraDtVencto) :
-                (clone $movimentacao->dtMoviment)->add(new \DateInterval('P' . ($i+1) . 'M'));
+                (clone $movimentacao->dtMoviment)->add(new \DateInterval('P' . ($i + 1) . 'M'));
             $moviment191->dtVenctoEfetiva = clone($moviment191->dtVencto);
 
             $moviment191->tipoLancto = $movimentacao->tipoLancto;
@@ -743,7 +741,6 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         return $movimentacao;
     }
-
 
 
     /**
@@ -925,6 +922,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
         $this->getDoctrine()->flush();
     }
+
 
 
 }
