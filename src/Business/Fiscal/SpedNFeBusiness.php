@@ -8,6 +8,7 @@ use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\MunicipioRepository;
 use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\FinalidadeNF;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\ModalidadeFrete;
@@ -782,7 +783,10 @@ class SpedNFeBusiness
             $xml = $xmlResp->xpath('//soap:Body');
             return $xml[0]->nfeResultMsg->retConsCad->infCons;
         } catch (\Exception $e) {
-            throw new ViewException('Erro ao consultar o CNPJ');
+            $msg = ExceptionUtils::treatException($e);
+            $this->logger->error($msg);
+            $this->logger->error($e->getTraceAsString());
+            throw new ViewException('Erro ao consultar o CNPJ', 0, $e);
         }
     }
 
