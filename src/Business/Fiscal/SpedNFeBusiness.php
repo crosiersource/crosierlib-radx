@@ -785,7 +785,7 @@ class SpedNFeBusiness
             if (!($xml[0] ?? null)) {
                 throw new RuntimeException('Erro no retorno da consulta ao CNPJ (' . $response . ')');
             }
-            return $xml[0]->nfeResultMsg->retConsCad->infCons || $xml[0]->consultaCadastro4Result->retConsCad->infCons;
+            return $xml[0]->nfeResultMsg->retConsCad->infCons ?? $xml[0]->consultaCadastro4Result->retConsCad->infCons;
         } catch (\Exception $e) {
             $msg = ExceptionUtils::treatException($e);
             $this->logger->error($msg);
