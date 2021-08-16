@@ -21,6 +21,7 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHand
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use http\Exception\RuntimeException;
 use NFePHP\Common\Exception\ValidatorException;
 use NFePHP\NFe\Common\Standardize;
 use NFePHP\NFe\Complements;
@@ -780,7 +781,10 @@ class SpedNFeBusiness
             $xmlResp = simplexml_load_string($response);
             $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
             $xml = $xmlResp->xpath('//soap:Body');
-            return $xml[0]->nfeResultMsg->retConsCad->infCons;
+            if (!($xml[0] ?? null)) {
+                throw new RuntimeException('Erro no retorno da consulta ao CNPJ (' . $response . ')');
+            }
+            return $xml[0]->nfeResultMsg->retConsCad->infCons || $xml[0]->consultaCadastro4Result->retConsCad->infCons;
         } catch (\Exception $e) {
             throw new ViewException('Erro ao consultar o CNPJ');
         }
