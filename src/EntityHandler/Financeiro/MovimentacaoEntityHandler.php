@@ -8,7 +8,9 @@ use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\DiaUtilRepository;
+use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Banco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao;
@@ -22,7 +24,6 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\OperadoraCartao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
-use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CategoriaRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\TipoLanctoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,11 +52,11 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @param LoggerInterface $logger
      */
     public function __construct(EntityManagerInterface $doctrine,
-                                Security $security,
-                                ParameterBagInterface $parameterBag,
-                                SyslogBusiness $syslog,
-                                FaturaEntityHandler $faturaEntityHandler,
-                                LoggerInterface $logger)
+                                Security               $security,
+                                ParameterBagInterface  $parameterBag,
+                                SyslogBusiness         $syslog,
+                                FaturaEntityHandler    $faturaEntityHandler,
+                                LoggerInterface        $logger)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->faturaEntityHandler = $faturaEntityHandler;
@@ -96,9 +97,8 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->centroCusto = $centroCusto;
         }
 
-        
 
-        if (in_array($movimentacao->tipoLancto->codigo, [60,61], true)) {
+        if (in_array($movimentacao->tipoLancto->codigo, [60, 61], true)) {
             $movimentacao->dtVencto = clone($movimentacao->dtMoviment);
             $movimentacao->dtVenctoEfetiva = clone($movimentacao->dtMoviment);
             $movimentacao->dtPagto = clone($movimentacao->dtMoviment);
@@ -356,9 +356,9 @@ class MovimentacaoEntityHandler extends EntityHandler
             return $this->saveTransfEntradaCaixa($movimentacao);
         }
 
-        // 62 - FATURA TRANSACIONAL
-        if ($movimentacao->tipoLancto->getCodigo() === 62 && !$movimentacao->getId()) {
-            return $this->saveFaturaTransacional($movimentacao);
+        // 62 - ENTRADA POR CARTÃO DE CRÉDITO
+        if ($movimentacao->tipoLancto->getCodigo() === 63 && !$movimentacao->getId()) {
+            return $this->saveEntradaCartaoDeCreditoOuDebito($movimentacao);
         }
 
         // else
@@ -599,6 +599,149 @@ class MovimentacaoEntityHandler extends EntityHandler
     }
 
 
+    /**
+     *
+     * @param Movimentacao $movimentacao
+     * @return Movimentacao
+     * @throws ViewException
+     */
+    private function saveEntradaCartaoDeCreditoOuDebito(Movimentacao $movimentacao): Movimentacao
+    {
+        if (!$movimentacao->carteiraDestino || !$movimentacao->carteiraDestino->operadoraCartao) {
+            throw new ViewException('Movimentação de cartão precisa ter carteira destino como operadora de cartão');
+        }
+
+
+        $this->getDoctrine()->beginTransaction();
+
+        /** @var Categoria $categ291 */
+        $categ291 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 291]);
+        /** @var Categoria $categ191 */
+        $categ191 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 191]);
+
+        $faturaOrdem = null;
+        if ($movimentacao->fatura && !$movimentacao->faturaOrdem) {
+            $faturaOrdem = 1;
+        }
+
+        $ehDebito = $movimentacao->modo->codigo === 10;
+
+        $qtdeParcelas = $ehDebito ? 1 : $movimentacao->jsonData['qtdeParcelas'];
+        $cadeiaQtde = $qtdeParcelas + 2; // 101 + 291 + 191s...
+
+        // Está editando
+        if ($movimentacao->getId()) {
+
+            $movs = $movimentacao->cadeia->movimentacoes;
+            $outraMov = null;
+            /** @var Movimentacao $mov */
+            foreach ($movs as $mov) {
+                if ($mov->getId() !== $movimentacao->getId()) {
+                    $mov->descricao = $movimentacao->descricao;
+                    $mov->fatura = $movimentacao->fatura;
+                    $mov->categoria = $categ291;
+                    $mov->modo = $movimentacao->modo;
+                    $mov->valor = $movimentacao->valor;
+                    $mov->valorTotal = $movimentacao->valorTotal;
+                    $mov->centroCusto = $movimentacao->centroCusto;
+                    $mov->dtMoviment = clone($movimentacao->dtMoviment);
+                    $mov->dtVencto = clone($movimentacao->dtVencto);
+                    $mov->dtVenctoEfetiva = clone($movimentacao->dtVenctoEfetiva);
+                    $mov->dtPagto = clone($movimentacao->dtPagto);
+                    $mov->cadeiaQtde = $cadeiaQtde;
+                    $mov->jsonData = $movimentacao->jsonData;
+                    parent::save($mov);
+                }
+            }
+
+            /** @var Movimentacao $movimentacao */
+            $movimentacao = parent::save($movimentacao);
+
+            $this->getDoctrine()->commit();
+            return $movimentacao;
+        }
+        // else
+
+        if (!in_array($movimentacao->categoria->codigo, [101, 102, 110], true)) {
+            throw new ViewException('Entrada por cartão precisa ser lançada a partir de uma movimentação de categorias 1.01, 1.02 ou 1.10');
+        }
+
+        $cadeia = new Cadeia();
+        $cadeia->fechada = true;
+        /** @var Cadeia $cadeia */
+        $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
+
+        $movimentacao->cadeia = $cadeia;
+        $movimentacao->cadeiaOrdem = 1;
+        $movimentacao->cadeiaQtde = $cadeiaQtde;
+
+        $moviment291 = new Movimentacao();
+        $moviment291->tipoLancto = $movimentacao->tipoLancto;
+        $moviment291->fatura = $movimentacao->fatura;
+        $moviment291->faturaOrdem = $faturaOrdem ? ++$faturaOrdem : null;
+        $moviment291->cadeia = $cadeia;
+        $moviment291->cadeiaOrdem = 2;
+        $moviment291->cadeiaQtde = $cadeiaQtde;
+        $moviment291->descricao = $movimentacao->descricao;
+        $moviment291->categoria = $categ291;
+        $moviment291->centroCusto = $movimentacao->centroCusto;
+        $moviment291->modo = $movimentacao->modo;
+        $moviment291->carteira = $movimentacao->carteira;
+        $moviment291->carteiraDestino = $movimentacao->carteiraDestino;
+        $moviment291->status = 'REALIZADA';
+        $moviment291->valor = $movimentacao->valor;
+        $moviment291->descontos = $movimentacao->descontos;
+        $moviment291->acrescimos = $movimentacao->acrescimos;
+        $moviment291->valorTotal = $movimentacao->valorTotal;
+        $moviment291->dtMoviment = clone($movimentacao->dtMoviment);
+        $moviment291->dtVencto = clone($movimentacao->dtMoviment);
+        $moviment291->dtVenctoEfetiva = clone($movimentacao->dtMoviment);
+        $moviment291->dtPagto = clone($movimentacao->dtMoviment);
+
+        $moviment291->tipoLancto = $movimentacao->tipoLancto;
+        $moviment291->jsonData = $movimentacao->jsonData;
+        parent::save($moviment291);
+
+        $primeiraDtVencto = $ehDebito ?
+            (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1D')) :
+            (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1M'));
+
+        $parcelas = DecimalUtils::gerarParcelas($movimentacao->valor, $qtdeParcelas);
+
+        for ($i = 0; $i < $qtdeParcelas; $i++) {
+            $moviment191 = new Movimentacao();
+            $moviment191->tipoLancto = $movimentacao->tipoLancto;
+            $moviment191->fatura = $movimentacao->fatura;
+            $moviment191->cadeia = $cadeia;
+            $moviment191->cadeiaOrdem = 3 + $i;
+            $moviment191->faturaOrdem = $faturaOrdem ? ++$faturaOrdem : null;
+            $moviment191->cadeiaQtde = $cadeiaQtde;
+            $moviment191->descricao = $movimentacao->descricao;
+            $moviment191->categoria = $categ191;
+            $moviment191->centroCusto = $movimentacao->centroCusto;
+            $moviment191->modo = $movimentacao->modo;
+            $moviment191->carteira = $movimentacao->carteiraDestino;
+            $moviment191->carteiraDestino = $movimentacao->carteira;
+            $moviment191->status = 'ABERTA'; // se torna 'REALIZADA' na consolidação do extrato
+            $moviment191->valor = $parcelas[$i];
+            $moviment191->valorTotal = $parcelas[$i];
+
+            $moviment191->dtMoviment = clone($movimentacao->dtMoviment);
+            $moviment191->dtVencto = $i === 0 ? (clone $primeiraDtVencto) :
+                (clone $movimentacao->dtMoviment)->add(new \DateInterval('P' . ($i + 1) . 'M'));
+            $moviment191->dtVenctoEfetiva = clone($moviment191->dtVencto);
+
+            $moviment191->tipoLancto = $movimentacao->tipoLancto;
+            $moviment191->jsonData = $movimentacao->jsonData;
+            parent::save($moviment191);
+        }
+
+        parent::save($movimentacao);
+        $this->getDoctrine()->commit();
+
+        return $movimentacao;
+    }
+
 
     /**
      * Tratamento para casos de movimentação em cadeia.
@@ -779,6 +922,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
         $this->getDoctrine()->flush();
     }
+
 
 
 }
