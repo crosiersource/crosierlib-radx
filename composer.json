@@ -23,23 +23,12 @@
         "ext-zip": "*",
         "ext-zlib": "*",
         "php-http/guzzle6-adapter": "^1.1",
-        "symfony/cache": "5.2.*",
-        "symfony/console": "5.2.*",
-        "symfony/debug-bundle": "5.2.*",
-        "symfony/form": "5.2.*",
-        "symfony/monolog-bundle": "^3.0",
-        "symfony/orm-pack": "2.*",
-        "symfony/security-bundle": "5.2.*",
-        "symfony/serializer-pack": "1.*",
-        "symfony/validator": "5.2.*",
         "vich/uploader-bundle": "^1.13",
         "nfephp-org/sped-common": "^5.0",
         "nfephp-org/sped-da": "^0",
         "nfephp-org/sped-nfe": "^5.0",
         "scienta/doctrine-json-functions": "~4.1",
-        "symfony/messenger": "^5.2",
         "econea/nusoap": "^0.9.7",
-        "symfony/webpack-encore-bundle": "^1.7",
         "crosiersource/crosierlib-base": "@dev"
     },
     "config": {
@@ -54,12 +43,6 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        }
-    },
-    "extra": {
-        "symfony": {
-            "allow-contrib": false,
-            "require": "5.2.*"
         }
     }
 }
