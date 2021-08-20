@@ -540,12 +540,24 @@ class SpedNFeBusiness
             }
             case 900:
             {
+
                 $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
-                $itemXML->imposto->ICMS->ICMSSN900->CSOSN = $nfItem->getCsosn();
+                $itemXML->imposto->ICMS->ICMSSN900->CSOSN = 900;
                 $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
                 $itemXML->imposto->ICMS->ICMSSN900->vBC = number_format(abs($nfItem->getIcmsValorBc()), 2, '.', '');
                 $itemXML->imposto->ICMS->ICMSSN900->pICMS = bcmul($nfItem->getIcmsAliquota(), 1, 2);
                 $itemXML->imposto->ICMS->ICMSSN900->vICMS = number_format(abs($nfItem->getIcmsValor()), 2, '.', '');
+
+                $itemXML->imposto->PIS->PISAliq->CST = '01';
+                $itemXML->imposto->PIS->PISAliq->vBC = '0.00';
+                $itemXML->imposto->PIS->PISAliq->pPIS = '0.0000';
+                $itemXML->imposto->PIS->PISAliq->vPIS = '0.00';
+
+                $itemXML->imposto->COFINS->COFINSAliq->CST = '01';
+                $itemXML->imposto->COFINS->COFINSAliq->vBC = '0.00';
+                $itemXML->imposto->COFINS->COFINSAliq->pCOFINS = '0.000';
+                $itemXML->imposto->COFINS->COFINSAliq->vCOFINS = '0.00';
+
                 break;
             }
             case 103:
