@@ -8,6 +8,7 @@ use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\MunicipioRepository;
 use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\FinalidadeNF;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\ModalidadeFrete;
@@ -21,6 +22,7 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHand
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use http\Exception\RuntimeException;
 use NFePHP\Common\Exception\ValidatorException;
 use NFePHP\NFe\Common\Standardize;
 use NFePHP\NFe\Complements;
@@ -538,12 +540,24 @@ class SpedNFeBusiness
             }
             case 900:
             {
+
                 $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
-                $itemXML->imposto->ICMS->ICMSSN900->CSOSN = $nfItem->getCsosn();
+                $itemXML->imposto->ICMS->ICMSSN900->CSOSN = 900;
                 $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
                 $itemXML->imposto->ICMS->ICMSSN900->vBC = number_format(abs($nfItem->getIcmsValorBc()), 2, '.', '');
                 $itemXML->imposto->ICMS->ICMSSN900->pICMS = bcmul($nfItem->getIcmsAliquota(), 1, 2);
                 $itemXML->imposto->ICMS->ICMSSN900->vICMS = number_format(abs($nfItem->getIcmsValor()), 2, '.', '');
+
+                $itemXML->imposto->PIS->PISAliq->CST = '01';
+                $itemXML->imposto->PIS->PISAliq->vBC = '0.00';
+                $itemXML->imposto->PIS->PISAliq->pPIS = '0.0000';
+                $itemXML->imposto->PIS->PISAliq->vPIS = '0.00';
+
+                $itemXML->imposto->COFINS->COFINSAliq->CST = '01';
+                $itemXML->imposto->COFINS->COFINSAliq->vBC = '0.00';
+                $itemXML->imposto->COFINS->COFINSAliq->pCOFINS = '0.000';
+                $itemXML->imposto->COFINS->COFINSAliq->vCOFINS = '0.00';
+
                 break;
             }
             case 103:
@@ -780,9 +794,15 @@ class SpedNFeBusiness
             $xmlResp = simplexml_load_string($response);
             $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
             $xml = $xmlResp->xpath('//soap:Body');
-            return $xml[0]->nfeResultMsg->retConsCad->infCons;
+            if (!($xml[0] ?? null)) {
+                throw new RuntimeException('Erro no retorno da consulta ao CNPJ (' . $response . ')');
+            }
+            return $xml[0]->nfeResultMsg->retConsCad->infCons ?? $xml[0]->consultaCadastro4Result->retConsCad->infCons;
         } catch (\Exception $e) {
-            throw new ViewException('Erro ao consultar o CNPJ');
+            $msg = ExceptionUtils::treatException($e);
+            $this->logger->error($msg);
+            $this->logger->error($e->getTraceAsString());
+            throw new ViewException('Erro ao consultar o CNPJ', 0, $e);
         }
     }
 
