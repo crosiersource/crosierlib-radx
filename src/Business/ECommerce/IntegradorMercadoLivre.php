@@ -1,0 +1,204 @@
+<?php
+
+
+namespace CrosierSource\CrosierLibRadxBundle\Business\ECommerce;
+
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
+use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DeptoEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler;
+use GuzzleHttp\Client;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Security\Core\Security;
+
+/**
+ * Regras de negócio para a integração com a Tray.
+ *
+ * @author Carlos Eduardo Pauluk
+ */
+class IntegradorMercadoLivre implements IntegradorECommerce
+{
+
+    private Client $client;
+
+    public string $endpoint;
+
+    public string $accessToken;
+
+    private Security $security;
+
+    private ParameterBagInterface $params;
+
+    private SyslogBusiness $syslog;
+
+    private DeptoEntityHandler $deptoEntityHandler;
+
+    private ProdutoEntityHandler $produtoEntityHandler;
+
+    private VendaEntityHandler $vendaEntityHandler;
+
+    private VendaItemEntityHandler $vendaItemEntityHandler;
+
+    private ?array $deptosNaTray = null;
+
+    private array $configsMercadoLivre;
+
+
+    public function __construct(Security               $security,
+                                ParameterBagInterface  $params,
+                                SyslogBusiness         $syslog,
+                                DeptoEntityHandler     $deptoEntityHandler,
+                                ProdutoEntityHandler   $produtoEntityHandler,
+                                VendaEntityHandler     $vendaEntityHandler,
+                                VendaItemEntityHandler $vendaItemEntityHandler
+    )
+    {
+        $this->security = $security;
+        $this->params = $params;
+        $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
+        $this->deptoEntityHandler = $deptoEntityHandler;
+        $this->produtoEntityHandler = $produtoEntityHandler;
+        $this->vendaEntityHandler = $vendaEntityHandler;
+        $this->vendaItemEntityHandler = $vendaItemEntityHandler;
+        $this->client = new Client();
+
+        $r = $this->deptoEntityHandler->getDoctrine()->getConnection()
+            ->fetchAssociative('SELECT valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave = :chave',
+                [
+                    'appUUID' => $_SERVER['CROSIERAPP_UUID'],
+                    'chave' => 'mercadolivre.configs.json'
+                ]);
+        $this->configsMercadoLivre = json_decode($r['valor'], true);
+    }
+
+    public function getEndpoint(): string
+    {
+        return $this->endpoint;
+    }
+
+
+    public function autorizarApp(string $tokenTg): array
+    {
+
+        try {
+            $url = $this->configsMercadoLivre['url_autoriz'];
+            $response = $this->client->request('POST', $url, [
+                'form_params' => [
+                    'grant_type' => 'authorization_code',
+                    'client_id' => $this->configsMercadoLivre['client_id'],
+                    'client_secret' => $this->configsMercadoLivre['client_secret'],
+                    'code' => $tokenTg,
+                    'redirect_uri' => $this->configsMercadoLivre['redirect_uri'],
+                ]
+            ]);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            return $json;
+        } catch (\Throwable $e) {
+            throw new ViewException('Erro ao autorizar app no Mercado Livre', 0, $e);
+        }
+    }
+
+
+    public function renewAccessToken(string $refreshToken): array
+    {
+        $url = $this->configsMercadoLivre['url_autoriz'];
+        $response = $this->client->request('POST', $url, [
+            'form_params' => [
+                'grant_type' => 'refresh_token',
+                'client_id' => $this->configsMercadoLivre['client_id'],
+                'client_secret' => $this->configsMercadoLivre['client_secret'],
+                'refresh_token' => $refreshToken,
+            ]
+        ]);
+
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        return $json;
+    }
+
+
+    public function getQuestions(string $accessToken, int $offset): array
+    {
+        $url = 'https://api.mercadolibre.com/my/received_questions/search?api_version=4';
+        $rs = [];
+        do {
+            $response = $this->client->request('GET', $url . '&offset=' . $offset, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                ],
+            ]);
+
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            $rs = array_merge($rs, ($json['questions'] ?? []));
+            $offset += ($json['limit'] ?? 0);
+            $hasResults = (count($json['questions'] ?? []) > 0);
+        } while ($hasResults);
+        return $rs;
+    }
+
+
+    public function answerQuestion(string $accessToken, string $questionId, string $text): array
+    {
+        $url = $this->configsMercadoLivre['url_autoriz'] . '/answer?api_version=4';
+        $response = $this->client->request('GET', $url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $accessToken,
+            ],
+            'form_params' => [
+                'question_id' => $questionId,
+                'text' => $text,
+            ]
+        ]);
+
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        return $json;
+    }
+
+
+    public function getItem(string $accessToken, string $itemId): array
+    {
+        $url = 'https://api.mercadolibre.com/items?ids=' . $itemId . '&api_version=4';
+        $response = $this->client->request('GET', $url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $accessToken,
+            ],
+        ]);
+
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        return $json[0]['body'] ?? [];
+    }
+
+    public function obterVendas(\DateTime $dtVenda, ?bool $resalvar = false): int
+    {
+        // TODO: Implement obterVendas() method.
+    }
+
+    public function obterVendasPorData(\DateTime $dtVenda)
+    {
+        // TODO: Implement obterVendasPorData() method.
+    }
+
+    public function obterCliente($idClienteECommerce)
+    {
+        // TODO: Implement obterCliente() method.
+    }
+
+    public function reintegrarVendaParaCrosier(Venda $venda)
+    {
+        // TODO: Implement reintegrarVendaParaCrosier() method.
+    }
+
+    public function integrarVendaParaECommerce(Venda $venda)
+    {
+        // TODO: Implement integrarVendaParaECommerce() method.
+    }
+
+
+}
