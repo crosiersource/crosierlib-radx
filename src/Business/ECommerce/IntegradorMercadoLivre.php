@@ -11,6 +11,8 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandle
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -142,17 +144,36 @@ class IntegradorMercadoLivre implements IntegradorECommerce
     }
 
 
-    public function answerQuestion(string $accessToken, string $questionId, string $text): array
+    public function responder(string $accessToken, string $questionId, string $text): array
     {
-        $url = $this->configsMercadoLivre['url_autoriz'] . '/answer?api_version=4';
+        try {
+            $url = 'https://api.mercadolibre.com/answers?api_version=4';
+            $response = $this->client->request('POST', $url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                ],
+                RequestOptions::JSON => [
+                    'question_id' => $questionId,
+                    'text' => $text,
+                ]
+            ]);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            return $json;
+        } catch (\Throwable $e) {
+            throw new ViewException('Erro ao responder pergunta no Mercado Livre', 0, $e);
+        }
+    }
+
+
+    public function atualizarPergunta(string $accessToken, string $questionId): array
+    {
+        $url = 'https://api.mercadolibre.com/questions/' . $questionId . '?api_version=4';
         $response = $this->client->request('GET', $url, [
             'headers' => [
                 'Authorization' => 'Bearer ' . $accessToken,
             ],
-            'form_params' => [
-                'question_id' => $questionId,
-                'text' => $text,
-            ]
         ]);
 
         $bodyContents = $response->getBody()->getContents();
