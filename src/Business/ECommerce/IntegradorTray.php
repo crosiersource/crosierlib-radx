@@ -84,7 +84,7 @@ class IntegradorTray implements IntegradorECommerce
                     'chave' => 'tray.configs.json'
                 ]);
         $rs = json_decode($r['valor'], true);
-        $url = $this->endpoint . '/web_api/auth';
+        $url = $this->endpoint . 'web_api/auth';
         $response = $this->client->request('POST', $url, [
             'form_params' => [
                 'consumer_key' => $rs['consumer_key'],
