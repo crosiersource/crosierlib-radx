@@ -84,7 +84,6 @@ class IntegradorMercadoLivre implements IntegradorECommerce
 
     public function autorizarApp(string $tokenTg): array
     {
-
         try {
             $url = $this->configsMercadoLivre['url_autoriz'];
             $response = $this->client->request('POST', $url, [
@@ -146,7 +145,7 @@ class IntegradorMercadoLivre implements IntegradorECommerce
 
     public function responder(string $accessToken, string $questionId, string $text): array
     {
-        try {
+        try {            
             $url = 'https://api.mercadolibre.com/answers?api_version=4';
             $response = $this->client->request('POST', $url, [
                 'headers' => [
@@ -169,16 +168,19 @@ class IntegradorMercadoLivre implements IntegradorECommerce
 
     public function atualizarPergunta(string $accessToken, string $questionId): array
     {
-        $url = 'https://api.mercadolibre.com/questions/' . $questionId . '?api_version=4';
-        $response = $this->client->request('GET', $url, [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $accessToken,
-            ],
-        ]);
-
-        $bodyContents = $response->getBody()->getContents();
-        $json = json_decode($bodyContents, true);
-        return $json;
+        try {
+            $url = 'https://api.mercadolibre.com/questions/' . $questionId . '?api_version=4';
+            $response = $this->client->request('GET', $url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                ],
+            ]);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            return $json;
+        } catch (GuzzleException $e) {
+            throw new ViewException('Erro ao atualizar a pergunta', 0, $e);
+        }
     }
 
 
