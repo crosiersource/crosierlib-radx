@@ -126,26 +126,6 @@ class ProdutoEntityHandler extends EntityHandler
 
         $produto->jsonData['qtde_imagens'] = count($imagens);
 
-        if ($produto->jsonData['qtde_imagens'] > 0) {
-
-            // Se já tem registrado a imagem1...
-            if ($produto->jsonData['imagem1'] ?? false) {
-                $primeiraDasImagens_semExtensao = substr($imagens[0]->getImageName(), 0, strpos($imagens[0]->getImageName(), '.'));
-                $imagem1_semExtensao = substr($produto->jsonData['imagem1'], 0, strpos($produto->jsonData['imagem1'], '.'));
-                // Verifica se é a mesma da primeira imagem, porém já em thumbnail. Se não...
-                if ($primeiraDasImagens_semExtensao . '_thumbnail' !== $imagem1_semExtensao) {
-                    $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
-                    $produto->jsonData['imagem1'] = $imgName_thumbnail;
-                }
-            } else {
-                $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
-                $produto->jsonData['imagem1'] = $imgName_thumbnail;
-            }
-        } else {
-            unset($produto->jsonData['imagem1']);
-        }
-
-
         if (!isset($produto->jsonData['ecommerce_id'])) {
             $produto->jsonData['ecommerce_id'] = 0;
         }
@@ -166,6 +146,24 @@ class ProdutoEntityHandler extends EntityHandler
         $this->corrigirEstoqueProdutoComposicao($produto);
 
         $this->verificaPathDasImagens($produto);
+
+        if ($produto->jsonData['qtde_imagens'] > 0) {
+            // Se já tem registrado a imagem1...
+            if ($produto->jsonData['imagem1'] ?? false) {
+                $primeiraDasImagens_semExtensao = substr($imagens[0]->getImageName(), 0, strpos($imagens[0]->getImageName(), '.'));
+                $imagem1_semExtensao = substr($produto->jsonData['imagem1'], 0, strpos($produto->jsonData['imagem1'], '.'));
+                // Verifica se é a mesma da primeira imagem, porém já em thumbnail. Se não...
+                if ($primeiraDasImagens_semExtensao . '_thumbnail' !== $imagem1_semExtensao) {
+                    $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
+                    $produto->jsonData['imagem1'] = $imgName_thumbnail;
+                }
+            } else {
+                $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
+                $produto->jsonData['imagem1'] = $imgName_thumbnail;
+            }
+        } else {
+            unset($produto->jsonData['imagem1']);
+        }
     }
 
     /**
@@ -175,23 +173,21 @@ class ProdutoEntityHandler extends EntityHandler
      */
     public function gerarThumbnail(Produto $produto, string $img = null)
     {
-        $url = $_SERVER['CROSIERAPP_URL'] . '/images/produtos/' . $produto->depto->getId() . '/' . $produto->grupo->getId() . '/' . $produto->subgrupo->getId() . '/' . $img;
-
-        $imgUtils = new ImageUtils();
-        $imgUtils->load($url);
-
-        $pathinfo = pathinfo($url);
-        $parsedUrl = parse_url($url);
-
-        $imgUtils->resizeToWidth(50);
-
-        // '%kernel.project_dir%/public/images/produtos'
-        $thumbnail = $_SERVER['DOCUMENT_ROOT'] .
-            str_replace($pathinfo['basename'], '', $parsedUrl['path']) .
-            $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
-        $imgUtils->save($thumbnail);
-
-        return $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
+        try {
+            $url = $_SERVER['CROSIERAPP_URL'] . '/images/produtos/' . $produto->depto->getId() . '/' . $produto->grupo->getId() . '/' . $produto->subgrupo->getId() . '/' . $img;
+            $imgUtils = new ImageUtils();
+            $imgUtils->load($url);
+            $pathinfo = pathinfo($url);
+            $parsedUrl = parse_url($url);
+            $imgUtils->resizeToWidth(50);// '%kernel.project_dir%/public/images/produtos'
+            $thumbnail = $_SERVER['DOCUMENT_ROOT'] .
+                str_replace($pathinfo['basename'], '', $parsedUrl['path']) .
+                $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
+            $imgUtils->save($thumbnail);
+            return $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
+        } catch (\Exception $e) {
+            throw new ViewException('Erro ao gerar thumbnail da imagem (' . $url . ')', 0, $e);
+        }
     }
 
 
