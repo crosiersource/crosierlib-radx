@@ -90,7 +90,7 @@ class NotaFiscal implements EntityId
 
     /**
      *
-     * @ORM\Column(name="natureza_operacao", type="string", nullable=false, length=60)
+     * @ORM\Column(name="natureza_operacao", type="string", nullable=true, length=60)
      * @var null|string
      *
      * @Groups("notaFiscal")

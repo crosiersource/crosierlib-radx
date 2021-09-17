@@ -65,9 +65,7 @@ class NotaFiscalEntityHandler extends EntityHandler
         if (!$notaFiscal->entradaSaida) {
             throw new ViewException('Entrada/Saída não informado');
         }
-        if (!$notaFiscal->naturezaOperacao) {
-            throw new ViewException('Natureza da Operação não informada');
-        }
+        
         if ($notaFiscal->getItens() && $notaFiscal->getItens()->count() > 0) {
             $this->calcularTotais($notaFiscal);
         }
