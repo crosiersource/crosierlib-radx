@@ -127,8 +127,8 @@ class IntegradorMercadoLivre implements IntegradorECommerce
         $url = 'https://api.mercadolibre.com/my/received_questions/search?api_version=4';
         $rs = [];
         $url = $url . '&offset=' . $offset;
-        do {
-            try {
+        try {
+            do {
                 $response = $this->client->request('GET', $url, [
                     'headers' => [
                         'Authorization' => 'Bearer ' . $accessToken,
@@ -138,18 +138,18 @@ class IntegradorMercadoLivre implements IntegradorECommerce
                 $json = json_decode($bodyContents, true);
                 $rs = array_merge($rs, ($json['questions'] ?? []));
                 $offset += ($json['limit'] ?? 0);
-                $hasResults = (count($json['questions'] ?? []) > 0);
-            } catch (GuzzleException $e) {
-                throw new ViewException('Erro - getQuestions (accessToken: ' . $accessToken . ') (URL: ' . $url . ')', 0, $e);
-            }
-        } while ($hasResults);
+                $hasResults = $json['total'] > $offset;
+            } while ($hasResults);
+        } catch (GuzzleException $e) {
+            throw new ViewException('Erro - getQuestions (accessToken: ' . $accessToken . ') (URL: ' . $url . ')', 0, $e);
+        }
         return $rs;
     }
 
 
     public function responder(string $accessToken, string $questionId, string $text): array
     {
-        try {            
+        try {
             $url = 'https://api.mercadolibre.com/answers?api_version=4';
             $response = $this->client->request('POST', $url, [
                 'headers' => [
