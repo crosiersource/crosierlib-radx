@@ -1006,7 +1006,8 @@ class NotaFiscalBusiness
     {
         $r = [];
         $infCons = $this->spedNFeBusiness->consultarCNPJ($cnpj, $uf);
-        if (in_array($infCons->cStat->__toString(), ['258', '259'], true)) {
+        $cstat = (int)((string)($infCons->cStat ?? '0'))[0];
+        if ($cstat !== 1) {
             $r['xMotivo'] = $infCons->xMotivo->__toString();
         } else {
             $r['dados'] = [
