@@ -11,9 +11,11 @@ use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use CrosierSource\CrosierLibBaseBundle\Entity\Security\User;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 /**
  * Entidade 'Carteira'.
@@ -120,6 +122,23 @@ class Carteira implements EntityId
     public ?bool $caixa = false;
 
     /**
+     * ABERTO / FECHADO / null
+     * @ORM\Column(name="caixa_status", type="string", nullable=true, length=20)
+     * @Groups("carteira")
+     * @var null|string
+     */
+    public ?string $caixaStatus = null;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibBaseBundle\Entity\Security\User")
+     * @ORM\JoinColumn(name="caixa_responsavel_id")
+     * @MaxDepth(2)
+     * @Groups("carteira")
+     * @var User|null
+     */
+    public ?User $caixaResponsavel = null;
+
+    /**
      * Informa se esta carteira possui talão de cheques.
      *
      * @ORM\Column(name="cheque", type="boolean", nullable=false)
@@ -156,7 +175,7 @@ class Carteira implements EntityId
      * Utilizado para informar o limite disponível.
      *
      * @ORM\Column(name="limite", type="decimal", nullable=true, precision=15, scale=2)
-     * @Groups("carteira")
+     * 
      */
     public ?float $limite = null;
 
@@ -205,6 +224,30 @@ class Carteira implements EntityId
     public function getDescricaoMontada(): string
     {
         return $this->getCodigo(true) . ' - ' . $this->descricao;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups({"carteira"})
+     * @SerializedName("limite")
+     * @return float
+     */
+    public function getLimiteFormatted(): float
+    {
+        return (float)$this->limite;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("carteira")
+     * @SerializedName("limite")
+     * @param float $limite
+     */
+    public function setLimiteFormatted(float $limite)
+    {
+        $this->limite = $limite;
     }
 
 

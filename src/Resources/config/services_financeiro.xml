@@ -66,6 +66,26 @@
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.carteira_entity_handler"/>
 
 
+    <!-- CaixaOperacaoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.financeiro.caixa_operacao_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CaixaOperacaoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CaixaOperacaoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.caixa_operacao_repository"/>
+    <!-- CaixaOperacaoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.caixa_operacao_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CaixaOperacaoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CaixaOperacaoEntityHandler" public="true"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.caixa_operacao_entity_handler"/>
+
+
     <!-- CadeiaRepository -->
     <service id="crosier_source.crosier_lib_radx_bundle.repository.financeiro.cadeia_repository"
              class="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CadeiaRepository"
