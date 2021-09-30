@@ -46,11 +46,13 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "caixa": "exact",
  *     "concreta": "exact",
  *     "abertas": "exact",
+ *     "caixaStatus": "exact",
  *     "cheque": "exact"})
  *
  * @ApiFilter(SearchFilter::class, properties={
  *     "codigo": "exact",
  *     "descricao": "partial",
+ *     "caixaResponsavel": "exact",
  *     "id": "exact",
  *     "operadoraCartao": "exact"})
  *
