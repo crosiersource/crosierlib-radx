@@ -84,7 +84,7 @@ class IntegradorTray implements IntegradorECommerce
                     'chave' => 'tray.configs.json'
                 ]);
         $rs = json_decode($r['valor'], true);
-        $url = $this->endpoint . '/web_api/auth';
+        $url = $this->endpoint . 'web_api/auth';
         $response = $this->client->request('POST', $url, [
             'form_params' => [
                 'consumer_key' => $rs['consumer_key'],
@@ -101,7 +101,7 @@ class IntegradorTray implements IntegradorECommerce
 
     public function renewAccessToken(string $refreshToken): array
     {
-        $response = $this->client->request('GET', $this->getEndpoint() . '/web_api/auth?refresh_token=' . $refreshToken);
+        $response = $this->client->request('GET', $this->getEndpoint() . 'web_api/auth?refresh_token=' . $refreshToken);
         $bodyContents = $response->getBody()->getContents();
         $json = json_decode($bodyContents, true);
         return $json;

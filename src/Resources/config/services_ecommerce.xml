@@ -129,5 +129,22 @@
     <service id="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorTray"
              alias="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_tray"/>
 
+    <!-- IntegradorMercadoLivre -->
+    <service id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_mercado_livre"
+             class="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorMercadoLivre">
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+      <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depto_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_entity_handler"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Business\ECommerce\IntegradorMercadoLivre"
+             alias="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_mercado_livre"/>
+
   </services>
 </container>
