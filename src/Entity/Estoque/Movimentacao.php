@@ -17,6 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
+ *     shortName="Estoque/Movimentacao",
  *     normalizationContext={"groups"={"movimentacao","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"movimentacao"},"enable_max_depth"=true},
  *

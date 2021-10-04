@@ -19,7 +19,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * Entidade 'Movimentação'.
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"movimentacao","entityId"},"enable_max_depth"=true},
+ *     shortName="Financeiro/Movimentacao",
+ *     normalizationContext={"groups"={"movimentacao","modo","carteira","categoria","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"movimentacao"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -42,7 +43,10 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * @ApiFilter(SearchFilter::class,
  *     properties={
  *     "id": "exact",
- *     "descricao": "partial"
+ *     "fatura": "exact",
+ *     "descricao": "partial",
+ *     "categoria": "exact",
+ *     "categoria.codigo": "exact"
  * })
  * @ApiFilter(OrderFilter::class, properties={"id", "descricao", "dtVencto", "updated"}, arguments={"orderParameterName"="order"})
  *
