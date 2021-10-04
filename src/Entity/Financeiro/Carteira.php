@@ -129,7 +129,7 @@ class Carteira implements EntityId
      * @Groups("carteira")
      * @var null|string
      */
-    public ?string $caixaStatus = null;
+    public ?string $caixaStatus = '';
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibBaseBundle\Entity\Security\User")
