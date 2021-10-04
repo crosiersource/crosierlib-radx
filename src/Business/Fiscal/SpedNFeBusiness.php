@@ -62,13 +62,13 @@ class SpedNFeBusiness
      * @param NFeUtils $nfeUtils
      * @param ParameterBagInterface $params
      */
-    public function __construct(EntityManagerInterface $doctrine,
-                                NotaFiscalEntityHandler $notaFiscalEntityHandler,
-                                NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler,
+    public function __construct(EntityManagerInterface               $doctrine,
+                                NotaFiscalEntityHandler              $notaFiscalEntityHandler,
+                                NotaFiscalEventoEntityHandler        $notaFiscalEventoEntityHandler,
                                 NotaFiscalCartaCorrecaoEntityHandler $notaFiscalCartaCorrecaoEntityHandler,
-                                LoggerInterface $logger,
-                                NFeUtils $nfeUtils,
-                                ParameterBagInterface $params)
+                                LoggerInterface                      $logger,
+                                NFeUtils                             $nfeUtils,
+                                ParameterBagInterface                $params)
     {
         $this->doctrine = $doctrine;
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
@@ -592,7 +592,8 @@ class SpedNFeBusiness
                 $xmlAssinado = $notaFiscal->getXmlNota();
             }
             $idLote = random_int(1000000000000, 9999999999999);
-            $resp = $tools->sefazEnviaLote([$xmlAssinado], $idLote);//transforma o xml de retorno em um stdClass
+            $sincrono = $notaFiscal->tipoNotaFiscal === 'NFCE';
+            $resp = $tools->sefazEnviaLote([$xmlAssinado], $idLote, $sincrono);
             $st = new Standardize();
             $std = $st->toStd($resp);
             $notaFiscal->setCStatLote($std->cStat);
@@ -601,14 +602,47 @@ class SpedNFeBusiness
                 $notaFiscal->setNRec($std->infRec->nRec);
             }
             $this->notaFiscalEntityHandler->save($notaFiscal);
-            $tentativa = 1;
-            while (true) {
-                $this->consultaRecibo($notaFiscal);
-                if (!$notaFiscal->getCStat() || (int)$notaFiscal->getCStat() === -100) {
-                    sleep(1);
-                    if (++$tentativa === 4) break;
-                } else {
-                    break;
+
+            if (!$sincrono) {
+                $tentativa = 1;
+                while (true) {
+                    $this->consultaRecibo($notaFiscal);
+                    if (!$notaFiscal->getCStat() || (int)$notaFiscal->getCStat() === -100) {
+                        sleep(1);
+                        if (++$tentativa === 4) break;
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                try {
+                    // Para notas síncronas não precisa consultar depois o protocolo, portanto a lógica é diferente
+                    // da consultaRecibo()
+                    $notaFiscal->setCStat($std->protNFe->infProt->cStat);
+                    $notaFiscal->setXMotivo($std->protNFe->infProt->xMotivo);
+                    if ($notaFiscal->getXmlNota() && $notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
+                        try {
+                            if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) &&
+                                !isset($notaFiscal->getXMLDecoded()->Signature)) {
+                                $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
+                                $notaFiscal->setXmlNota($xmlAssinado);
+                            }
+                            $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $resp);
+                            $notaFiscal->setXmlNota($r);
+                        } catch (\Exception $e) {
+                            $this->logger->error($e->getMessage());
+                            $this->logger->error('Erro no Complements::toAuthorize para $notaFiscal->id = ' . $notaFiscal->getId());
+                        }
+                    }
+                    if (in_array($std->protNFe->infProt->cStat, ['100', '302'])) { //DENEGADAS
+                        $notaFiscal->setProtocoloAutorizacao($std->protNFe->infProt->nProt);
+                        $notaFiscal->setDtProtocoloAutorizacao(DateTimeUtils::parseDateStr($std->protNFe->infProt->dhRecbto));
+                    }
+                    $this->notaFiscalEntityHandler->save($notaFiscal);
+                } catch (\Throwable $e) {
+                    $this->logger->error('consultaRecibo - Id: ' . $notaFiscal->getId());
+                    $this->logger->error($e->getMessage());
+                    throw new ViewException('Erro ao setar info de transmissão síncrona');
                 }
             }
             return $notaFiscal;
@@ -989,7 +1023,6 @@ class SpedNFeBusiness
             throw new ViewException('Erro ao consultar recibo');
         }
     }
-
 
 
     /**
