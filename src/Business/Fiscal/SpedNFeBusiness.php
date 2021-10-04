@@ -592,7 +592,7 @@ class SpedNFeBusiness
                 $xmlAssinado = $notaFiscal->getXmlNota();
             }
             $idLote = random_int(1000000000000, 9999999999999);
-            $sincrono = $notaFiscal->tipoNotaFiscal === 'NFCE';
+            $sincrono = $notaFiscal->tipoNotaFiscal === 'NFCE' ? 1 : 0;
             $resp = $tools->sefazEnviaLote([$xmlAssinado], $idLote, $sincrono);
             $st = new Standardize();
             $std = $st->toStd($resp);
