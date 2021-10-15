@@ -5,6 +5,7 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
@@ -38,8 +39,30 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     }
  * )
  *
- * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "documentoEmitente": "exact", 
+ *     "xNomeEmitente": "partial", 
+ *     "documentoDestinatario": "exact", 
+ *     "xNomeDestinatario": "partial", 
+ *     "chaveAcesso": "exact", 
+ *     "numero": "exact", 
+ *     "cidadeEmitente": "partial", 
+ *     "cidadeDestinatario": "partial", 
+ *     "valorTotal": "exact", 
+ *     "nsu": "exact", 
+ *     "id": "exact"
+ * })
+ * 
+ * @ApiFilter(DateFilter::class, properties={"dtEmissao"})
+ * 
+ * @ApiFilter(OrderFilter::class, properties={
+ *     "id", 
+ *     "numero", 
+ *     "documentoDestinatario", 
+ *     "valorTotal", 
+ *     "dtEmissao", 
+ *     "updated"
+ * }, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler")
  *
@@ -63,11 +86,9 @@ class NotaFiscal implements EntityId
     public $uuid;
 
     /**
-     *
      * @ORM\Column(name="ambiente", type="string", nullable=true, length=4)
-     * @var null|string
-     *
      * @Groups("notaFiscal")
+     * @var null|string
      */
     public $ambiente;
 
@@ -80,10 +101,11 @@ class NotaFiscal implements EntityId
      */
     public $randFaturam;
 
+    
     /**
      * $cNF = rand(10000000, 99999999);
-     *
      * @ORM\Column(name="cnf", type="string", nullable=true, length=8)
+     * @Groups("notaFiscal")
      * @var null|string
      */
     public $cnf;
@@ -91,12 +113,12 @@ class NotaFiscal implements EntityId
     /**
      *
      * @ORM\Column(name="natureza_operacao", type="string", nullable=true, length=60)
-     * @var null|string
-     *
      * @Groups("notaFiscal")
+     * @var null|string
      */
     public $naturezaOperacao;
 
+    
     /**
      *
      * @ORM\Column(name="finalidade_nf", type="string", nullable=false, length=30)
@@ -109,6 +131,7 @@ class NotaFiscal implements EntityId
     /**
      *
      * @ORM\Column(name="chave_acesso", type="string", nullable=true, length=44)
+     * @Groups("notaFiscal")
      * @var null|string
      */
     public $chaveAcesso;
