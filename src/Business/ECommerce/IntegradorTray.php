@@ -101,10 +101,14 @@ class IntegradorTray implements IntegradorECommerce
 
     public function renewAccessToken(string $refreshToken): array
     {
-        $response = $this->client->request('GET', $this->getEndpoint() . 'web_api/auth?refresh_token=' . $refreshToken);
-        $bodyContents = $response->getBody()->getContents();
-        $json = json_decode($bodyContents, true);
-        return $json;
+        try {
+            $response = $this->client->request('GET', $this->getEndpoint() . 'web_api/auth?refresh_token=' . $refreshToken);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            return $json;
+        } catch (GuzzleException $e) {
+            throw new ViewException('Erro - renewAccessToken', 0, $e);
+        }
     }
 
 
