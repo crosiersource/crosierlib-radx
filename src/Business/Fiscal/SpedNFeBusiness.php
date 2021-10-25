@@ -866,7 +866,15 @@ class SpedNFeBusiness
             $st = new Standardize($response);
 
             if ($st->simpleXml()->cStat->__toString() === '128') {
-                $notaFiscal->setManifestDest('210210 - Ciência da Operação');
+                $operacoes = 
+                    [
+                        210210 => '210210 - CIÊNCIA DA OPERAÇÃO',
+                        210200 => '210200 - CONFIRMAÇÃO DA OPERAÇÃO',
+                        210220 => '210220 - DESCONHECIMENTO DA OPERAÇÃO',
+                        210240 => '210240 - OPERAÇÃO NÃO REALIZADA',
+                    ];
+                
+                $notaFiscal->setManifestDest($operacoes[$codManifest]);
             }
             $notaFiscal->setDtManifestDest(new \DateTime());
 
