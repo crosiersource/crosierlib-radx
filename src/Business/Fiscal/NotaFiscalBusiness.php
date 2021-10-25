@@ -44,6 +44,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Query\ResultSetMapping;
+use NFePHP\DA\NFe\Danfe;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -1452,6 +1453,46 @@ class NotaFiscalBusiness
                 $venda->jsonData['cliente_documento'] = $cliente->documento;
                 $this->vendaEntityHandler->save($venda);
             }
+        }
+    }
+
+
+    public function gerarPDF(NotaFiscal $notaFiscal)
+    {
+        try {
+            if ($this->permiteFaturamento($notaFiscal)){
+                $notaFiscal = $this->spedNFeBusiness->gerarXML($notaFiscal);
+            }
+            $xml = $notaFiscal->getXmlNota();
+            $danfe = new Danfe($xml);
+            $danfe->debugMode(false);
+            $danfe->creditsIntegratorFooter('EKT Plus');
+
+
+            $arrContextOptions = array(
+                "ssl" => array(
+                    "verify_peer" => false,
+                    "verify_peer_name" => false,
+                ),
+            );
+
+            $logo = null;
+            $nfeConfigsEmUso = null;
+            if ($notaFiscal->getDocumentoEmitente() && in_array($notaFiscal->getDocumentoEmitente(), $this->nfeUtils->getNFeConfigsCNPJs(), true)) {
+                $nfeConfigsEmUso = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
+
+                $response = file_get_contents($nfeConfigsEmUso['logo_fiscal'] ?? $_SERVER['CROSIER_LOGO'], false, stream_context_create($arrContextOptions));
+                $logo = 'data://text/plain;base64,' . base64_encode($response);
+
+            }
+
+
+            $pdf = $danfe->render($logo);
+            
+            return $pdf;
+            
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Ocorreu um erro durante o processamento :' . $e->getMessage());
         }
     }
 

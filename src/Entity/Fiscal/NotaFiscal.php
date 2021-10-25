@@ -50,10 +50,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     "cidadeDestinatario": "partial", 
  *     "valorTotal": "exact", 
  *     "nsu": "exact", 
+ *     "manifestDest": "exact", 
  *     "id": "exact"
  * })
  * 
  * @ApiFilter(DateFilter::class, properties={"dtEmissao"})
+ * 
+ * @ApiFilter(BooleanFilter::class, properties={"resumo"})
  * 
  * @ApiFilter(OrderFilter::class, properties={
  *     "id", 
@@ -61,7 +64,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     "documentoDestinatario", 
  *     "valorTotal", 
  *     "dtEmissao", 
- *     "updated"
+ *     "updated",
+ *     "cStat"
  * }, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler")
