@@ -51,6 +51,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     "valorTotal": "exact", 
  *     "nsu": "exact", 
  *     "manifestDest": "exact", 
+ *     "entradaSaida": "exact",
  *     "id": "exact"
  * })
  * 
