@@ -23,7 +23,7 @@ use Symfony\Component\Security\Core\Security;
 class NFeUtils
 {
 
-    private Connection $conn;
+    public Connection $conn;
 
     private LoggerInterface $logger;
 
