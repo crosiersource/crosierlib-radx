@@ -8,6 +8,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\NotLikeFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
@@ -58,6 +59,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * @ApiFilter(DateFilter::class, properties={"dtEmissao"})
  * 
  * @ApiFilter(BooleanFilter::class, properties={"resumo"})
+ * 
+ * ApiFilter(NotLikeFilter::class, properties={"documentoDestinatario"})
  * 
  * @ApiFilter(OrderFilter::class, properties={
  *     "id", 
