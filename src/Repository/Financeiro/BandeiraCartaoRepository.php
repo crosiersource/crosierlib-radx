@@ -73,7 +73,7 @@ class BandeiraCartaoRepository extends FilterRepository
      */
     public function getSelect2js($sel = [])
     {
-        $rs = $this->getEntityManager()->getConnection()->fetchAll('SELECT * FROM fin_bandeira_cartao ORDER BY descricao');
+        $rs = $this->getEntityManager()->getConnection()->fetchAllAssociative('SELECT * FROM fin_bandeira_cartao ORDER BY descricao');
         if (!is_array($sel)) {
             $sel = [$sel];
         }

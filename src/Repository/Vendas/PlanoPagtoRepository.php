@@ -49,7 +49,7 @@ class PlanoPagtoRepository extends FilterRepository
     {
         $conn = $this->getEntityManager()->getConnection();
         $sql = 'SELECT * FROM ven_plano_pagto WHERE ativo IS TRUE ORDER BY codigo';
-        $rs = $conn->fetchAll($sql);
+        $rs = $conn->fetchAllAssociative($sql);
         $results = [
             [
                 'id' => 0,
@@ -57,9 +57,9 @@ class PlanoPagtoRepository extends FilterRepository
             ]
         ];
 
-        $rCarteirasCaixas = $conn->fetchAll('SELECT * FROM fin_carteira WHERE caixa IS TRUE');
-        $rCarteirasCartao = $conn->fetchAll('SELECT * FROM fin_carteira WHERE operadora_cartao_id IS NOT NULL');
-        $rCarteirasBanco = $conn->fetchAll('SELECT * FROM fin_carteira WHERE banco_id IS NOT NULL OR codigo = \'99\'');
+        $rCarteirasCaixas = $conn->fetchAllAssociative('SELECT * FROM fin_carteira WHERE caixa IS TRUE');
+        $rCarteirasCartao = $conn->fetchAllAssociative('SELECT * FROM fin_carteira WHERE operadora_cartao_id IS NOT NULL');
+        $rCarteirasBanco = $conn->fetchAllAssociative('SELECT * FROM fin_carteira WHERE banco_id IS NOT NULL OR codigo = \'99\'');
 
         foreach ($rs as $r) {
             $jsonData = json_decode($r['json_data'], true);
@@ -105,7 +105,7 @@ class PlanoPagtoRepository extends FilterRepository
     public function arrayByCodigo(?bool $somenteAtivos = true)
     {
         $sql = 'SELECT * FROM ven_plano_pagto WHERE ativo IS TRUE ORDER BY codigo';
-        $rs = $this->getEntityManager()->getConnection()->fetchAll($sql);
+        $rs = $this->getEntityManager()->getConnection()->fetchAllAssociative($sql);
         foreach ($rs as $r) {
             $results[$r['codigo']] = $r;
         }

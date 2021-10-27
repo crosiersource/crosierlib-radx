@@ -24,7 +24,7 @@ class ProdutoImagemEntityHandler extends EntityHandler
     {
         if (!$produtoImagem->getOrdem()) {
             /** @var ProdutoImagem $ultima */
-            $o = $this->getDoctrine()->getConnection()->fetchAssoc('SELECT max(ordem) + 1 as ordem FROM est_produto_imagem WHERE produto_id = :produtoId', ['produtoId' => $produtoImagem->getProduto()->getId()]);
+            $o = $this->getDoctrine()->getConnection()->fetchAssociative('SELECT max(ordem) + 1 as ordem FROM est_produto_imagem WHERE produto_id = :produtoId', ['produtoId' => $produtoImagem->getProduto()->getId()]);
             $produtoImagem->setOrdem($o['ordem'] ?? 1);
         }
     }

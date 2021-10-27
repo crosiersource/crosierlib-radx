@@ -26,7 +26,7 @@ class ListaPrecoRepository extends FilterRepository
     public function findAllSelect2JS(): array
     {
         $sql = 'SELECT * FROM est_lista_preco ORDER BY descricao';
-        $rs = $this->getEntityManager()->getConnection()->fetchAll($sql);
+        $rs = $this->getEntityManager()->getConnection()->fetchAllAssociative($sql);
         $results = [
             [
                 'id' => 0,

@@ -245,7 +245,7 @@ class ProdutoEntityHandler extends EntityHandler
                 /** @var Connection $conn */
                 $conn = $this->getDoctrine()->getConnection();
                 // Como ainda não foi salvo (estou no beforeSave), então ainda posso pegar os valores anteriores na base
-                $rImagem = $conn->fetchAll('select i.id, i.produto_id, depto_id, grupo_id, subgrupo_id, image_name from est_produto p, est_produto_imagem i where p.id = i.produto_id AND i.id = :image_id', ['image_id' => $imagem->getId()]);
+                $rImagem = $conn->fetchAllAssociative('select i.id, i.produto_id, depto_id, grupo_id, subgrupo_id, image_name from est_produto p, est_produto_imagem i where p.id = i.produto_id AND i.id = :image_id', ['image_id' => $imagem->getId()]);
 
                 $caminhoAntigo = $this->parameterBag->get('kernel.project_dir') .
                     '/public/images/produtos/' .

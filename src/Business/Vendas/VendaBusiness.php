@@ -62,7 +62,7 @@ class VendaBusiness
     {
         try {
             $conn = $this->doctrine->getConnection();
-            $rsTotais = $conn->fetchAll('SELECT sum(subtotal) as subtotal, sum(desconto) as desconto, sum(total) as total FROM ven_venda_item WHERE venda_id = :vendaId', ['vendaId' => $vendaId]);
+            $rsTotais = $conn->fetchAllAssociative('SELECT sum(subtotal) as subtotal, sum(desconto) as desconto, sum(total) as total FROM ven_venda_item WHERE venda_id = :vendaId', ['vendaId' => $vendaId]);
             if (!$rsTotais) {
                 throw new ViewException('Erro ao buscar totais da venda');
             }

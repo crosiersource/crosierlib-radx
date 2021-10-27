@@ -24,7 +24,7 @@ class ModoRepository extends FilterRepository
      */
     public function getSelect2js($sel = [])
     {
-        $rs = $this->getEntityManager()->getConnection()->fetchAll('SELECT * FROM fin_modo ORDER BY codigo');
+        $rs = $this->getEntityManager()->getConnection()->fetchAllAssociative('SELECT * FROM fin_modo ORDER BY codigo');
         if (!is_array($sel)) {
             $sel = [$sel];
         }

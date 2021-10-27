@@ -38,7 +38,7 @@ class DeptoRepository extends FilterRepository
             $cache = new FilesystemAdapter($_SERVER['CROSIERAPP_ID'] . '.buildDeptosGruposSubgruposSelect2', 0, $_SERVER['CROSIER_SESSIONS_FOLDER']);
             return $cache->get($chaveCache, function (ItemInterface $item) use ($deptoIdSelected, $grupoIdSelected, $subgrupoIdSelected) {
 
-                $subgrupos = $this->getEntityManager()->getConnection()->fetchAll('SELECT * FROM est_subgrupo ORDER BY json_data->>"$.depto_codigo", json_data->>"$.grupo_codigo", codigo');
+                $subgrupos = $this->getEntityManager()->getConnection()->fetchAllAssociative('SELECT * FROM est_subgrupo ORDER BY json_data->>"$.depto_codigo", json_data->>"$.grupo_codigo", codigo');
 
                 $deptos = [];
                 foreach ($subgrupos as $subgrupo) {

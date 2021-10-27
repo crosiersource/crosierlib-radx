@@ -27,7 +27,7 @@ class DistDFeRepository extends FilterRepository
     {
         /** @var Connection $conn */
         $conn = $this->getEntityManager()->getConnection();
-        $r = $conn->fetchAll('SELECT min(nsu) as primeiro_nsu FROM fis_distdfe WHERE documento = :documento', ['documento' => $documento]);
+        $r = $conn->fetchAllAssociative('SELECT min(nsu) as primeiro_nsu FROM fis_distdfe WHERE documento = :documento', ['documento' => $documento]);
         return $r[0]['primeiro_nsu'];
     }
 
@@ -40,7 +40,7 @@ class DistDFeRepository extends FilterRepository
     {
         /** @var Connection $conn */
         $conn = $this->getEntityManager()->getConnection();
-        $r = $conn->fetchAll('SELECT max(nsu) as ultimo_nsu FROM fis_distdfe WHERE documento = :documento', ['documento' => $documento]);
+        $r = $conn->fetchAllAssociative('SELECT max(nsu) as ultimo_nsu FROM fis_distdfe WHERE documento = :documento', ['documento' => $documento]);
         return $r[0]['ultimo_nsu'] ?? 0;
     }
 
@@ -54,7 +54,7 @@ class DistDFeRepository extends FilterRepository
     {
         /** @var Connection $conn */
         $conn = $this->getEntityManager()->getConnection();
-        return $conn->fetchAll('SELECT nsu FROM fis_distdfe WHERE nsu IS NOT NULL AND documento = :documento ORDER BY nsu', ['documento' => $documento]);
+        return $conn->fetchAllAssociative('SELECT nsu FROM fis_distdfe WHERE nsu IS NOT NULL AND documento = :documento ORDER BY nsu', ['documento' => $documento]);
     }
 
 
@@ -74,7 +74,7 @@ class DistDFeRepository extends FilterRepository
         // 3-Manifestar ciência/confirmação do DISTDFE.
         // 4-Baixar a distDFe com o NFEPROC da nota completa.
         // 5-Revincular a fis_nf ao distDFe completo)
-        return $conn->fetchAll('SELECT id FROM fis_distdfe 
+        return $conn->fetchAllAssociative('SELECT id FROM fis_distdfe 
             WHERE documento = :documento AND 
                   tipo_distdfe IN (\'NFEPROC\',\'RESNFE\') AND 
                   (nota_fiscal_id IS NULL OR 
@@ -90,7 +90,7 @@ class DistDFeRepository extends FilterRepository
     {
         /** @var Connection $conn */
         $conn = $this->getEntityManager()->getConnection();
-        return $conn->fetchAll('SELECT id FROM fis_distdfe WHERE tipo_distdfe IN(\'PROCEVENTONFE\',\'RESEVENTO\') AND 
+        return $conn->fetchAllAssociative('SELECT id FROM fis_distdfe WHERE tipo_distdfe IN(\'PROCEVENTONFE\',\'RESEVENTO\') AND 
                                  (chnfe,tp_evento,nseq_evento) NOT IN (SELECT nf.chave_acesso, evento.tp_evento, evento.nseq_evento FROM fis_nf nf, fis_nf_evento evento WHERE evento.nota_fiscal_id = nf.id) 
                                  AND chnfe IN (SELECT chave_acesso FROM fis_nf)', ['documento' => $documento]);
     }

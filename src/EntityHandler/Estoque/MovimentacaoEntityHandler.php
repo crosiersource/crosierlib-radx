@@ -60,7 +60,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $insertSQL = 'INSERT INTO est_produto_saldo(produto_id, qtde, unidade_id, inserted, updated, version, estabelecimento_id, user_inserted_id, user_updated_id) ' .
                     ' VALUES(:produtoId, :qtde, :unidadeId, now(), now(), 0, 1, 1, 1)';
                 foreach ($movimentacao->itens as $item) {
-                    if ($conn->fetchAll($selectSQL, [
+                    if ($conn->fetchAllAssociative($selectSQL, [
                         'produtoId' => $item->produto->getId(),
                         'unidadeId' => $item->unidade->getId()])) {
                         $conn->executeUpdate($updateSQL, [

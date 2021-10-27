@@ -57,7 +57,7 @@ class ProdutoRepository extends FilterRepository
             'prod.nome LIKE :nome OR ' .
             'prod.json_data->>"$.codigo" LIKE :codigo) ORDER BY prod.nome LIMIT ' . $max;
 
-        $rs = $this->getEntityManager()->getConnection()->fetchAll($sql,
+        $rs = $this->getEntityManager()->getConnection()->fetchAllAssociative($sql,
             [
                 'nome' => '%' . $str . '%',
                 'codigo' => '%' . $str

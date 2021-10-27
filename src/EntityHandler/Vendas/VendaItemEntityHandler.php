@@ -57,7 +57,7 @@ class VendaItemEntityHandler extends EntityHandler
         if (!$vendaItem->ordem) {
             /** @var Connection $conn */
             $conn = $this->getDoctrine()->getConnection();
-            $prox = $conn->fetchAssoc('SELECT (max(ordem) + 1) as prox FROM ven_venda_item WHERE venda_id = :vendaId', ['vendaId' => $vendaItem->venda->getId()]);
+            $prox = $conn->fetchAssociative('SELECT (max(ordem) + 1) as prox FROM ven_venda_item WHERE venda_id = :vendaId', ['vendaId' => $vendaItem->venda->getId()]);
             $vendaItem->ordem = $prox['prox'] ?? 1;
         }
 

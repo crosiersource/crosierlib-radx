@@ -33,7 +33,7 @@ class VendaRepository extends FilterRepository
     public function findByDtVendaAndPV(\DateTime $dtVenda, $pv): ?Venda
     {
         $r = $this->getEntityManager()->getConnection()
-            ->fetchAll('SELECT id FROM ven_venda WHERE json_data->>"$.pv" = :pv AND date(dt_venda) = :dtVenda',
+            ->fetchAllAssociative('SELECT id FROM ven_venda WHERE json_data->>"$.pv" = :pv AND date(dt_venda) = :dtVenda',
                 [
                     'pv' => $pv,
                     'dtVenda' => $dtVenda->format('Y-m-d')
@@ -62,7 +62,7 @@ class VendaRepository extends FilterRepository
     public function findByPVAndMesAno($pv, $mesano)
     {
         $r = $this->getEntityManager()->getConnection()
-            ->fetchAll('SELECT id FROM ven_venda WHERE json_data->>"$.pv" = :pv AND DATE_FORMAT(dt_venda, \'%Y%m\') = :mesano',
+            ->fetchAllAssociative('SELECT id FROM ven_venda WHERE json_data->>"$.pv" = :pv AND DATE_FORMAT(dt_venda, \'%Y%m\') = :mesano',
                 [
                     'pv' => $pv,
                     'mesno' => $mesano
@@ -170,7 +170,7 @@ class VendaRepository extends FilterRepository
         $dtFimF = $dtFim->setTime(23, 59, 59, 9999)->format('Y-m-d H:i:s');
         /** @var Connection $conn */
         $conn = $this->getEntityManager()->getConnection();
-        $rs = $conn->fetchAll($sql, ['dtIni' => $dtIniF, 'dtFim' => $dtFimF]);
+        $rs = $conn->fetchAllAssociative($sql, ['dtIni' => $dtIniF, 'dtFim' => $dtFimF]);
         $result = [];
         if ($addTodos) {
             $result[] = [

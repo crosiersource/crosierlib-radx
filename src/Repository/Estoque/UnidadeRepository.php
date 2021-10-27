@@ -23,7 +23,7 @@ class UnidadeRepository extends FilterRepository
     public function findUnidadesAtuaisSelect2JS(): array
     {
         $sql = 'SELECT * FROM est_unidade ORDER BY label';
-        $rs = $this->getEntityManager()->getConnection()->fetchAll($sql);
+        $rs = $this->getEntityManager()->getConnection()->fetchAllAssociative($sql);
         $results = [
             [
                 'id' => 0,
