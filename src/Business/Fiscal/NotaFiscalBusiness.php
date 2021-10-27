@@ -800,9 +800,9 @@ class NotaFiscalBusiness
             return false;
         }
         if ($notaFiscal && !$notaFiscal->getId()) {
-            if ($retornaMotivo) {
-                throw new ViewException('id n/d');
-            }
+//            if ($retornaMotivo) {
+//                throw new ViewException('id n/d');
+//            }
             return false;
         }
 
