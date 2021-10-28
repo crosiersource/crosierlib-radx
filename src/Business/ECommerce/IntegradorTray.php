@@ -161,10 +161,7 @@ class IntegradorTray implements IntegradorECommerce
      */
     public function handleAccessToken(array &$store): string
     {
-        if (!($store['date_expiration_access_token'] ?? false)) {
-            return;
-        }
-        if (DateTimeUtils::diffInMinutes($store['date_expiration_access_token'], new \DateTime()) < 60) {
+        if (!($store['date_expiration_access_token'] ?? false) || DateTimeUtils::diffInMinutes($store['date_expiration_access_token'], new \DateTime()) < 60) {
             try {
                 $this->syslog->info('Tray.renewAccessToken', $store['url_loja']);
                 $rs = $this->renewAccessToken($store['refresh_token']);
