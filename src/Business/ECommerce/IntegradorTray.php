@@ -226,7 +226,7 @@ class IntegradorTray implements IntegradorECommerce
         try {
             $store = $this->getStore($storeId);
 
-            $response = $this->client->request('GET', $this->getEndpoint() . 'web_api/auth?refresh_token=' . $refreshToken);
+            $response = $this->client->request('GET', $store['url_loja'] . 'web_api/auth?refresh_token=' . $store['refresh_token']);
             $bodyContents = $response->getBody()->getContents();
             $authInfo = json_decode($bodyContents, true);
 
@@ -235,7 +235,8 @@ class IntegradorTray implements IntegradorECommerce
             $store['date_expiration_access_token'] = $authInfo['date_expiration_access_token'];
             $store['date_expiration_refresh_token'] = $authInfo['date_expiration_refresh_token'];
             $store['date_activated'] = $authInfo['date_activated'];
-            $this->saveStoreConfig($store);
+            $store = $this->saveStoreConfig($store);
+            return $store;
         } catch (GuzzleException $e) {
             throw new ViewException('Erro - renewAccessTokenByStoreId', 0, $e);
         }
