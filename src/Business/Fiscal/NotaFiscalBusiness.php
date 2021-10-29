@@ -713,7 +713,7 @@ class NotaFiscalBusiness
      * @return NotaFiscal
      * @throws \Exception
      */
-    public function faturarNFe(NotaFiscal $notaFiscal): NotaFiscal
+    public function faturarNFe(NotaFiscal $notaFiscal, ?bool $gerarXML = true): NotaFiscal
     {
         // Verifica algumas regras antes de mandar faturar na receita.
         $this->checkNotaFiscal($notaFiscal);
@@ -729,7 +729,9 @@ class NotaFiscalBusiness
                     }
                 }
                 $this->handleIdeFields($notaFiscal);
-                $notaFiscal = $this->spedNFeBusiness->gerarXML($notaFiscal);
+                if ($gerarXML) {
+                    $notaFiscal = $this->spedNFeBusiness->gerarXML($notaFiscal);
+                }
                 $notaFiscal = $this->spedNFeBusiness->enviaNFe($notaFiscal);
                 $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, 'XML enviado', $notaFiscal->getXmlNota());
                 if ($notaFiscal) {
