@@ -161,16 +161,17 @@ class IntegradorTray implements IntegradorECommerce
      */
     public function handleAccessToken(array &$store): string
     {
-        if (!($store['date_expiration_access_token'] ?? false) || DateTimeUtils::diffInMinutes($store['date_expiration_access_token'], new \DateTime()) < 60) {
+        if (!($store['date_expiration_access_token'] ?? false) || DateTimeUtils::diffInMinutes(DateTimeUtils::parseDateStr($store['date_expiration_access_token']), new \DateTime()) < 60) {
             try {
                 $this->syslog->info('Tray.renewAccessToken', $store['url_loja']);
-                $rs = $this->renewAccessToken($store['refresh_token']);
+                $rs = $this->renewAccessToken($store);
                 $store = $this->saveStoreConfig($store);
             } catch (ViewException $e) {
                 if ($e->getPrevious() instanceof ClientException && $e->getPrevious()->getResponse()->getStatusCode() === 401) {
                     $store['ativa'] = false;
                     $store = $this->saveStoreConfig($store);
                 }
+                throw new ViewException($e->getMessage(), 0, $e);
             }
         }
         return $store['access_token'];
@@ -221,10 +222,10 @@ class IntegradorTray implements IntegradorECommerce
     }
 
 
-    public function renewAccessToken(?string $storeId = null): array
+    public function renewAccessToken(?array $store = null): array
     {
         try {
-            $store = $this->getStore($storeId);
+            $store = $store ?? $this->getStore();
 
             $response = $this->client->request('GET', $store['url_loja'] . 'web_api/auth?refresh_token=' . $store['refresh_token']);
             $bodyContents = $response->getBody()->getContents();
@@ -238,6 +239,9 @@ class IntegradorTray implements IntegradorECommerce
             $store = $this->saveStoreConfig($store);
             return $store;
         } catch (GuzzleException $e) {
+            if ($e->getCode() === 401) {
+                throw new ViewException('Erro: 401 - Unauthorized em renewAccessToken. É necessário reativar a loja.', 0, $e);    
+            }
             throw new ViewException('Erro - renewAccessTokenByStoreId', 0, $e);
         }
     }
