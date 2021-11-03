@@ -114,18 +114,18 @@ class IntegradorWebStorm implements IntegradorECommerce
      * @param SyslogBusiness $syslog
      */
     public function __construct(AppConfigEntityHandler $appConfigEntityHandler,
-                                Security $security,
-                                DeptoEntityHandler $deptoEntityHandler,
-                                GrupoEntityHandler $grupoEntityHandler,
-                                SubgrupoEntityHandler $subgrupoEntityHandler,
-                                ProdutoEntityHandler $produtoEntityHandler,
-                                VendaEntityHandler $vendaEntityHandler,
+                                Security               $security,
+                                DeptoEntityHandler     $deptoEntityHandler,
+                                GrupoEntityHandler     $grupoEntityHandler,
+                                SubgrupoEntityHandler  $subgrupoEntityHandler,
+                                ProdutoEntityHandler   $produtoEntityHandler,
+                                VendaEntityHandler     $vendaEntityHandler,
                                 VendaItemEntityHandler $vendaItemEntityHandler,
-                                ClienteEntityHandler $clienteEntityHandler,
-                                UploaderHelper $uploaderHelper,
-                                ParameterBagInterface $params,
-                                MessageBusInterface $bus,
-                                SyslogBusiness $syslog)
+                                ClienteEntityHandler   $clienteEntityHandler,
+                                UploaderHelper         $uploaderHelper,
+                                ParameterBagInterface  $params,
+                                MessageBusInterface    $bus,
+                                SyslogBusiness         $syslog)
     {
         $this->appConfigEntityHandler = $appConfigEntityHandler;
         $this->security = $security;
@@ -1729,16 +1729,12 @@ class IntegradorWebStorm implements IntegradorECommerce
             $venda->desconto = 0.0;// a ser recalculado posteriormente
             $venda->valorTotal = 0.0;// a ser recalculado posteriormente
 
+
             $conn->beginTransaction();
-
-
             /** @var ProdutoRepository $repoProduto */
             $repoProduto = $this->produtoEntityHandler->getDoctrine()->getRepository(Produto::class);
-
             $totalProdutos = 0.0;
-
             $produtosNoCrosier = [];
-
             foreach ($pedido->produtos->produto as $produtoWebStorm) {
 
                 /** @var Produto $produto */
@@ -1751,7 +1747,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                     }
                     $produto = $repoProduto->find($sProduto['id']);
                 } catch (\Throwable $e) {
-                    $msg = 'Erro ao integrar venda. Erro ao pesquisar produto (idProduto = ' . $produtoWebStorm->idProduto->__toString() . ')';
+                    $msg = 'Erro ao integrar venda (Id: ' . $pedido->idPedido->__toString() . '). Erro ao pesquisar produto (idProduto = ' . $produtoWebStorm->idProduto->__toString() . ')';
                     $this->syslog->err($msg);
                     throw new ViewException($msg);
                 }
@@ -1759,12 +1755,8 @@ class IntegradorWebStorm implements IntegradorECommerce
                 $valorProduto = $produtoWebStorm->valorUnitario; // $produto->jsonData['preco_site'];
 
                 $totalProdutos = bcadd($totalProdutos, bcmul($produtoWebStorm->quantidade, $valorProduto, 2), 2);
-            }
-
-            // Salvo aqui para poder pegar o id
+            }// Salvo aqui para poder pegar o id
             $this->vendaEntityHandler->save($venda);
-
-
             $ordem = 1;
             $i = 0;
             $descontoAcum = 0.0;
@@ -1800,10 +1792,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                 $this->vendaItemEntityHandler->save($vendaItem);
                 $i++;
             }
-
             $venda->recalcularTotais();
-
-
             try {
                 $conn->delete('ven_venda_pagto', ['venda_id' => $venda->getId()]);
             } catch (\Throwable $e) {
@@ -1811,21 +1800,16 @@ class IntegradorWebStorm implements IntegradorECommerce
                 $this->syslog->err($erro);
                 throw new \RuntimeException($erro);
             }
-
-
             /** @var PlanoPagtoRepository $repoPlanoPagto */
             $repoPlanoPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(PlanoPagto::class);
-            $arrayByCodigo = $repoPlanoPagto->arrayByCodigo();
-
-//codigo | descricao
-//-------+------------------------
-//999    | NÃO INFORMADO
-//001    | A VISTA (ESPÉCIE)
-//002    | A VISTA (CHEQUE)
-//003    | A VISTA (CARTÃO DÉBITO)
-//020    | CARTÃO DE CRÉDITO
-//030    | BOLETO
-
+            $arrayByCodigo = $repoPlanoPagto->arrayByCodigo();//codigo | descricao
+            //-------+------------------------
+            //999    | NÃO INFORMADO
+            //001    | A VISTA (ESPÉCIE)
+            //002    | A VISTA (CHEQUE)
+            //003    | A VISTA (CARTÃO DÉBITO)
+            //020    | CARTÃO DE CRÉDITO
+            //030    | BOLETO
             $tipoFormaPagamento = $pedido->pagamentos->pagamento->tipoFormaPagamento->__toString();
             $vendaPagto = [
                 'venda_id' => $venda->getId(),
@@ -1862,23 +1846,22 @@ class IntegradorWebStorm implements IntegradorECommerce
                     $descricaoPlanoPagto = $arrayByCodigo['999']['descricao'];
                     break;
             }
-
             $vendaPagto['json_data'] = json_encode($vendaPagto['json_data']);
-
             try {
                 $conn->insert('ven_venda_pagto', $vendaPagto);
             } catch (\Throwable $e) {
                 throw new ViewException('Erro ao salvar dados do pagamento');
             }
-
             $venda->jsonData['infoPagtos'] = $descricaoPlanoPagto .
                 ': R$ ' . number_format($venda->valorTotal, 2, ',', '.') . ' - ' .
                 $pedido->pagamentos->pagamento->nomeFormaPagamento->__toString() . ' ' .
                 ((int)$pedido->pagamentos->pagamento->parcelas->__toString() > 0 ? $pedido->pagamentos->pagamento->parcelas->__toString() . ' parcela(s)' : '');
-
             $this->vendaEntityHandler->save($venda);
             $conn->commit();
         } catch (\Throwable $e) {
+            if ($conn->isTransactionActive()) {
+                $conn->rollBack();
+            }
             $this->syslog->err('Erro ao integrarVendaParaCrosier', $pedido->asXML());
             throw new ViewException('Erro ao integrarVendaParaCrosier', 0, $e);
         }
