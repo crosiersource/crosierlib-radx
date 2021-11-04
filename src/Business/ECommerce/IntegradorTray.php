@@ -182,7 +182,7 @@ class IntegradorTray implements IntegradorECommerce
     {
         $stores = $this->getStores();
         foreach ($stores as $store) {
-            $this->renewAccessToken($store['store_id']);
+            $this->renewAccessToken($store);
         }
     }
 
