@@ -23,12 +23,12 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     denormalizationContext={"groups"={"produto"},"enable_max_depth"=true},
  *
  *     itemOperations={
- *          "get"={"path"="/est/produto/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "get"={"path"="/est/produto/{id}", "security"="is_granted('ROLE_ESTOQUE') or is_granted('ROLE_VENDAS')"},
  *          "put"={"path"="/est/produto/{id}", "security"="is_granted('ROLE_ESTOQUE')"},
- *          "delete"={"path"="/est/produto/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "delete"={"path"="/est/produto/{id}", "security"="is_granted('ROLE_ESTOQUE_ADMIN')"}
  *     },
  *     collectionOperations={
- *          "get"={"path"="/est/produto", "security"="is_granted('ROLE_ESTOQUE')"},
+ *          "get"={"path"="/est/produto", "security"="is_granted('ROLE_ESTOQUE') or is_granted('ROLE_VENDAS')"},
  *          "post"={"path"="/est/produto", "security"="is_granted('ROLE_ESTOQUE')"}
  *     },
  *
