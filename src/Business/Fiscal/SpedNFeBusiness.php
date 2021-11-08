@@ -351,7 +351,7 @@ class SpedNFeBusiness
 
             $total_vCOFINS += $nfItem->getCofinsValor();
 
-            $total_vICMSUFDest += (float)$itemXML->imposto->ICMSUFDest->vICMSUFDest->__toString() ?? 0.0;
+            $total_vICMSUFDest += (float)$itemXML->imposto->ICMSUFDest->vICMSUFDest ?? 0.0;
 
             // $itemXML->prod->vFrete = number_format($nfItem->jsonData['valor_frete_item'] ?? 0, 2, '.', '');
 
