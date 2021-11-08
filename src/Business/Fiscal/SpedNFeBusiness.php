@@ -308,6 +308,8 @@ class SpedNFeBusiness
 
         $total_vCOFINS = 0;
 
+        $total_vICMSUFDest = 0.0;
+        
         /** @var NotaFiscalItem $nfItem */
         foreach ($notaFiscal->getItens() as $nfItem) {
             $itemXML = $nfe->infNFe->addChild('det');
@@ -349,6 +351,8 @@ class SpedNFeBusiness
 
             $total_vCOFINS += $nfItem->getCofinsValor();
 
+            $total_vICMSUFDest += (float)$itemXML->imposto->ICMSUFDest->vICMSUFDest->__toString() ?? 0.0;
+
             // $itemXML->prod->vFrete = number_format($nfItem->jsonData['valor_frete_item'] ?? 0, 2, '.', '');
 
             $i++;
@@ -360,7 +364,7 @@ class SpedNFeBusiness
 
         if ($nfe->infNFe->dest->indIEDest == 9 && $nfe->infNFe->ide->indFinal == 1 && $nfe->infNFe->ide->idDest == 2) {
             $nfe->infNFe->total->ICMSTot->vFCPUFDest = '0.00';
-            $nfe->infNFe->total->ICMSTot->vICMSUFDest = $nfe->infNFe->total->ICMSTot->vICMS;
+            $nfe->infNFe->total->ICMSTot->vICMSUFDest = $total_vICMSUFDest;
         }
 
         $nfe->infNFe->total->ICMSTot->vFCP = '0.00';
@@ -529,11 +533,16 @@ class SpedNFeBusiness
                     $itemXML->imposto->ICMSUFDest->vBCUFDest = $itemXML->imposto->ICMS->$tagICMS->vBC;
                     $itemXML->imposto->ICMSUFDest->vBCFCPUFDest = 0.00;
                     $itemXML->imposto->ICMSUFDest->pFCPUFDest = 0.0000;
-                    $itemXML->imposto->ICMSUFDest->pICMSUFDest = '17.00';
+                    $icmsUFDest = 17;
+                    $itemXML->imposto->ICMSUFDest->pICMSUFDest = '17.00';                    
                     $itemXML->imposto->ICMSUFDest->pICMSInter = $itemXML->imposto->ICMS->$tagICMS->pICMS;
                     $itemXML->imposto->ICMSUFDest->pICMSInterPart = 100.00;
                     $itemXML->imposto->ICMSUFDest->vFCPUFDest = 0.00;
-                    $itemXML->imposto->ICMSUFDest->vICMSUFDest = $itemXML->imposto->ICMS->$tagICMS->vICMS;
+                    
+                    $calcICMS = bcdiv(bcsub($icmsUFDest, $itemXML->imposto->ICMS->$tagICMS->pICMS, 2), 100, 2);
+                    $vICMS = bcmul($itemXML->imposto->ICMS->$tagICMS->vBC, $calcICMS, 2);
+                    
+                    $itemXML->imposto->ICMSUFDest->vICMSUFDest = $vICMS;
                     $itemXML->imposto->ICMSUFDest->vICMSUFRemet = 0.00;
                 }
                 break;
