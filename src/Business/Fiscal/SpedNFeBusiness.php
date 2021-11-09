@@ -1020,7 +1020,7 @@ class SpedNFeBusiness
                 $cStat = $std->protNFe->infProt->cStat;
                 $notaFiscal->setCStat($cStat);
                 $notaFiscal->setXMotivo($std->protNFe->infProt->xMotivo);
-                if ($notaFiscal->getXmlNota() && $notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
+                if ($notaFiscal->getXmlNota() && $notaFiscal->getXMLDecoded() && $notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
                     try {
                         if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) &&
                             !isset($notaFiscal->getXMLDecoded()->Signature)) {
