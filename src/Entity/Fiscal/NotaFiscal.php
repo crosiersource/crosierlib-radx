@@ -568,18 +568,7 @@ class NotaFiscal implements EntityId
      * @NotUppercase()
      */
     private $xmlNota;
-
-    /**
-     * Transient
-     * @var \SimpleXMLElement|null
-     */
-    public ?\SimpleXMLElement $xmlDecoded = null;
-
-    /**
-     * Transient
-     * @var string|null
-     */
-    public ?string $xmlDecodedAsString = null;
+    
 
     /**
      * Informa se o XML é de um resumo <resNFe> (ainda não foi baixada o XML da nota completa).
@@ -2022,16 +2011,13 @@ class NotaFiscal implements EntityId
      */
     public function getXMLDecoded(): ?\SimpleXMLElement
     {
-        if (!$this->xmlDecoded) {
-            $xmlDecodedAsString = $this->getXMLDecodedAsString();
-            if ($xmlDecodedAsString) {
-                $r = simplexml_load_string($xmlDecodedAsString);
-                $this->xmlDecoded = ($r === null || $r instanceof \SimpleXMLElement) ? $r : null;
-            } else {
-                $this->xmlDecoded = null;
-            }
+        $xmlDecodedAsString = $this->getXMLDecodedAsString();
+        if ($xmlDecodedAsString) {
+            $r = simplexml_load_string($xmlDecodedAsString);
+            return ($r === null || $r instanceof \SimpleXMLElement) ? $r : null;
+        } else {
+            return null;
         }
-        return $this->xmlDecoded;
     }
 
 
@@ -2040,20 +2026,17 @@ class NotaFiscal implements EntityId
      */
     public function getXMLDecodedAsString(): ?string
     {
-        if (!$this->xmlDecodedAsString) {
-            if ($this->xmlNota) {
-                try {
-                    // Tenta decodificar (pois algumas podem estar como string mesmo na base)
-                    $this->xmlDecodedAsString = gzdecode(base64_decode($this->getXmlNota()));
-                } catch (\Throwable $e) {
-                    // Caso não tenha conseguido decodificar...
-                    $this->xmlDecodedAsString = $this->xmlNota;
-                }
-            } else {
-                $this->xmlDecodedAsString = null;
+        if ($this->xmlNota) {
+            try {
+                // Tenta decodificar (pois algumas podem estar como string mesmo na base)
+                return gzdecode(base64_decode($this->getXmlNota()));
+            } catch (\Throwable $e) {
+                // Caso não tenha conseguido decodificar...
+                return $this->xmlNota;
             }
+        } else {
+            return null;
         }
-        return $this->xmlDecodedAsString;
     }
 
 
