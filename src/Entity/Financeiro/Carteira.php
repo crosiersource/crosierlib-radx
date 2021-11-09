@@ -21,7 +21,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  * Entidade 'Carteira'.
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"carteira","entityId","user"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"carteira","operadoraCartao","entityId","user"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"carteira"},"enable_max_depth"=true},
  *
  *     itemOperations={

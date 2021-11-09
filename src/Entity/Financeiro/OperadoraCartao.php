@@ -19,13 +19,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Ex.: RDCARD, CIELO, STONE.
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"operadoraCartao","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"operadoraCartao","carteira","user","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"operadoraCartao"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/operadoraCartao/{id}", "security"="is_granted('ROLE_FINAN')"},
  *          "put"={"path"="/fin/operadoraCartao/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/operadoraCartao/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "delete"={"path"="/fin/operadoraCartao/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/operadoraCartao", "security"="is_granted('ROLE_FINAN')"},
@@ -44,7 +44,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     "id": "exact",
  *     "descricao": "partial"
  * })
- * @ApiFilter(OrderFilter::class, properties={"id", "descricao", "dtVencto", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(OrderFilter::class, properties={"id", "descricao", "carteira.descricao", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\OperadoraCartaoEntityHandler")
  *

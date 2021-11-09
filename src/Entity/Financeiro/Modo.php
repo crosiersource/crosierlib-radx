@@ -27,7 +27,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     itemOperations={
  *          "get"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_FINAN')"},
  *          "put"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "delete"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/modo", "security"="is_granted('ROLE_FINAN')"},
@@ -80,8 +80,6 @@ class Modo implements EntityId
     public ?bool $modoDeTransfPropria = false;
 
     /**
-     * Informa se este modo é aceito para transferências próprias (entre
-     * carteiras).
      *
      * @ORM\Column(name="moviment_agrup", type="boolean")
      * @Assert\NotNull()
@@ -90,8 +88,6 @@ class Modo implements EntityId
     public ?bool $modoDeMovimentAgrup = false;
 
     /**
-     * Informa se este modo é aceito para transferências próprias (entre
-     * carteiras).
      *
      * @ORM\Column(name="modo_cartao", type="boolean")
      * @Assert\NotNull()
@@ -100,8 +96,6 @@ class Modo implements EntityId
     public ?bool $modoDeCartao = false;
 
     /**
-     * Informa se este modo é aceito para transferências próprias (entre
-     * carteiras).
      *
      * @ORM\Column(name="modo_cheque", type="boolean")
      * @Groups("modo")
