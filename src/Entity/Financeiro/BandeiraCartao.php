@@ -18,13 +18,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Ex.: MASTER MAESTRO, MASTER, VISA ELECTRON, VISA, etc.
  * 
  * @ApiResource(
- *     normalizationContext={"groups"={"bandeiraCartao","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"bandeiraCartao","modo","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"bandeiraCartao"},"enable_max_depth"=true},
  *
  *     itemOperations={
  *          "get"={"path"="/fin/bandeiraCartao/{id}", "security"="is_granted('ROLE_FINAN')"},
  *          "put"={"path"="/fin/bandeiraCartao/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/bandeiraCartao/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "delete"={"path"="/fin/bandeiraCartao/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/bandeiraCartao", "security"="is_granted('ROLE_FINAN')"},
