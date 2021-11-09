@@ -593,6 +593,9 @@ class SpedNFeBusiness
         try {
             $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->getDocumentoEmitente());
             $tools->model($notaFiscal->getTipoNotaFiscal() === 'NFE' ? '55' : '65');
+            if (!$notaFiscal->getXMLDecoded()) {
+                throw new ViewException('Impossível enviar NFe. XMLDecoded n/d.');
+            }
             if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) && !isset($notaFiscal->getXMLDecoded()->Signature)) {
                 $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
                 $notaFiscal->setXmlNota($xmlAssinado);
@@ -629,7 +632,7 @@ class SpedNFeBusiness
                     // da consultaRecibo()
                     $notaFiscal->setCStat($std->protNFe->infProt->cStat);
                     $notaFiscal->setXMotivo($std->protNFe->infProt->xMotivo);
-                    if ($notaFiscal->getXmlNota() && $notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
+                    if ($notaFiscal->getXmlNota() && $notaFiscal->getXMLDecoded() && $notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
                         try {
                             if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) &&
                                 !isset($notaFiscal->getXMLDecoded()->Signature)) {
@@ -1002,6 +1005,9 @@ class SpedNFeBusiness
         try {
             if (!$notaFiscal->getNRec()) {
                 throw new ViewException('nRec N/D');
+            }
+            if (!$notaFiscal->getXMLDecoded()) {
+                throw new ViewException('Impossível consultar recibo. XMLDecoded n/d.');
             }
             $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->getDocumentoEmitente());
             $tools->model($notaFiscal->getTipoNotaFiscal() === 'NFE' ? '55' : '65');
