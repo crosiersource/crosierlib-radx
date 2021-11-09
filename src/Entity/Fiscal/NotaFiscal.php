@@ -2013,7 +2013,12 @@ class NotaFiscal implements EntityId
         if ($this->getXmlNota()) {
             try {
                 $xmlUnzip = gzdecode(base64_decode($this->getXmlNota()));
-                return simplexml_load_string($xmlUnzip);
+                $r = simplexml_load_string($xmlUnzip);
+                if ($r === null || $r instanceof \SimpleXMLElement) {
+                    return $r;
+                } else {
+                    return null;
+                }
             } catch (\Exception $e) {
                 try {
                     return simplexml_load_string($this->xmlNota);
