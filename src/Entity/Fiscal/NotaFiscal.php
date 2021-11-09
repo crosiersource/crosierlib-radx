@@ -568,7 +568,7 @@ class NotaFiscal implements EntityId
      * @NotUppercase()
      */
     private $xmlNota;
-    
+
 
     /**
      * Informa se o XML é de um resumo <resNFe> (ainda não foi baixada o XML da nota completa).
@@ -2028,8 +2028,9 @@ class NotaFiscal implements EntityId
     {
         if ($this->xmlNota) {
             try {
-                // Tenta decodificar (pois algumas podem estar como string mesmo na base)
-                return gzdecode(base64_decode($this->getXmlNota()));
+                // No PHP 7.4.25 não estava gerando exceção, apenas warning e retornando vazio
+                $decoded = @gzdecode(@base64_decode($this->xmlNota));
+                return $decoded ?: $this->xmlNota;
             } catch (\Throwable $e) {
                 // Caso não tenha conseguido decodificar...
                 return $this->xmlNota;
@@ -2037,6 +2038,7 @@ class NotaFiscal implements EntityId
         } else {
             return null;
         }
+
     }
 
 
