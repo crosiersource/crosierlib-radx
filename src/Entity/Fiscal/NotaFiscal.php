@@ -8,7 +8,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\NotLikeFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
@@ -19,8 +18,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Entidade Nota Fiscal.
- * 
- *  @ApiResource(
+ *
+ * @ApiResource(
  *     normalizationContext={"groups"={"notaFiscal","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"notaFiscal"},"enable_max_depth"=true},
  *
@@ -41,33 +40,33 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * )
  *
  * @ApiFilter(SearchFilter::class, properties={
- *     "documentoEmitente": "exact", 
- *     "xNomeEmitente": "partial", 
- *     "documentoDestinatario": "exact", 
- *     "xNomeDestinatario": "partial", 
- *     "chaveAcesso": "exact", 
- *     "numero": "exact", 
- *     "cidadeEmitente": "partial", 
- *     "cidadeDestinatario": "partial", 
- *     "valorTotal": "exact", 
- *     "nsu": "exact", 
- *     "manifestDest": "exact", 
+ *     "documentoEmitente": "exact",
+ *     "xNomeEmitente": "partial",
+ *     "documentoDestinatario": "exact",
+ *     "xNomeDestinatario": "partial",
+ *     "chaveAcesso": "exact",
+ *     "numero": "exact",
+ *     "cidadeEmitente": "partial",
+ *     "cidadeDestinatario": "partial",
+ *     "valorTotal": "exact",
+ *     "nsu": "exact",
+ *     "manifestDest": "exact",
  *     "entradaSaida": "exact",
  *     "id": "exact"
  * })
- * 
+ *
  * @ApiFilter(DateFilter::class, properties={"dtEmissao"})
- * 
+ *
  * @ApiFilter(BooleanFilter::class, properties={"resumo"})
- * 
+ *
  * ApiFilter(NotLikeFilter::class, properties={"documentoDestinatario"})
- * 
+ *
  * @ApiFilter(OrderFilter::class, properties={
- *     "id", 
- *     "numero", 
- *     "documentoDestinatario", 
- *     "valorTotal", 
- *     "dtEmissao", 
+ *     "id",
+ *     "numero",
+ *     "documentoDestinatario",
+ *     "valorTotal",
+ *     "dtEmissao",
  *     "updated",
  *     "cStat"
  * }, arguments={"orderParameterName"="order"})
@@ -109,7 +108,7 @@ class NotaFiscal implements EntityId
      */
     public $randFaturam;
 
-    
+
     /**
      * $cNF = rand(10000000, 99999999);
      * @ORM\Column(name="cnf", type="string", nullable=true, length=8)
@@ -126,7 +125,7 @@ class NotaFiscal implements EntityId
      */
     public $naturezaOperacao;
 
-    
+
     /**
      *
      * @ORM\Column(name="finalidade_nf", type="string", nullable=false, length=30)
@@ -568,7 +567,19 @@ class NotaFiscal implements EntityId
      *
      * @NotUppercase()
      */
-    public $xmlNota;
+    private $xmlNota;
+
+    /**
+     * Transient
+     * @var \SimpleXMLElement|null
+     */
+    public ?\SimpleXMLElement $xmlDecoded = null;
+
+    /**
+     * Transient
+     * @var string|null
+     */
+    public ?string $xmlDecodedAsString = null;
 
     /**
      * Informa se o XML é de um resumo <resNFe> (ainda não foi baixada o XML da nota completa).
@@ -2005,47 +2016,46 @@ class NotaFiscal implements EntityId
         return $this;
     }
 
+
     /**
      * @return \SimpleXMLElement|null
      */
     public function getXMLDecoded(): ?\SimpleXMLElement
     {
-        if ($this->getXmlNota()) {
-            try {
-                $xmlUnzip = gzdecode(base64_decode($this->getXmlNota()));
-                $r = simplexml_load_string($xmlUnzip);
-                return ($r === null || $r instanceof \SimpleXMLElement) ? $r : null;
-            } catch (\Exception $e) {
-                try {
-                    $r = simplexml_load_string($this->xmlNota);
-                    return ($r === null || $r instanceof \SimpleXMLElement) ? $r : null;
-                } catch (\Exception $e) {
-                    return null;
-                }
+        if (!$this->xmlDecoded) {
+            $xmlDecodedAsString = $this->getXMLDecodedAsString();
+            if ($xmlDecodedAsString) {
+                $r = simplexml_load_string($xmlDecodedAsString);
+                $this->xmlDecoded = ($r === null || $r instanceof \SimpleXMLElement) ? $r : null;
+            } else {
+                $this->xmlDecoded = null;
             }
         }
-        return null;
+        return $this->xmlDecoded;
     }
+
 
     /**
      * @return string|null
      */
     public function getXMLDecodedAsString(): ?string
     {
-        if ($this->getXmlNota()) {
-            try {
-                $xmlUnzip = gzdecode(base64_decode($this->getXmlNota()));
-                return $xmlUnzip;
-            } catch (\Exception $e) {
+        if (!$this->xmlDecodedAsString) {
+            if ($this->xmlNota) {
                 try {
-                    return $this->xmlNota;
-                } catch (\Exception $e) {
-                    return null;
+                    // Tenta decodificar (pois algumas podem estar como string mesmo na base)
+                    $this->xmlDecodedAsString = gzdecode(base64_decode($this->getXmlNota()));
+                } catch (\Throwable $e) {
+                    // Caso não tenha conseguido decodificar...
+                    $this->xmlDecodedAsString = $this->xmlNota;
                 }
+            } else {
+                $this->xmlDecodedAsString = null;
             }
         }
-        return null;
+        return $this->xmlDecodedAsString;
     }
+
 
     /**
      * @return null|string
@@ -2055,6 +2065,7 @@ class NotaFiscal implements EntityId
         return $this->xmlNota;
     }
 
+
     /**
      * @param null|string $xmlNota
      * @return NotaFiscal
@@ -2062,8 +2073,12 @@ class NotaFiscal implements EntityId
     public function setXmlNota(?string $xmlNota): NotaFiscal
     {
         $this->xmlNota = $xmlNota;
+        // força o reload nos transients.
+        $this->xmlDecoded = null;
+        $this->xmlDecodedAsString = null;
         return $this;
     }
+
 
     /**
      * @return bool|null
@@ -2072,6 +2087,7 @@ class NotaFiscal implements EntityId
     {
         return $this->resumo;
     }
+
 
     /**
      * @param bool|null $resumo

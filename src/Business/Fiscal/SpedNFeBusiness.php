@@ -593,9 +593,11 @@ class SpedNFeBusiness
         try {
             $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->getDocumentoEmitente());
             $tools->model($notaFiscal->getTipoNotaFiscal() === 'NFE' ? '55' : '65');
+            
             if (!$notaFiscal->getXMLDecoded()) {
                 throw new ViewException('Impossível enviar NFe. XMLDecoded n/d.');
             }
+            
             if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) && !isset($notaFiscal->getXMLDecoded()->Signature)) {
                 $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
                 $notaFiscal->setXmlNota($xmlAssinado);
@@ -603,6 +605,7 @@ class SpedNFeBusiness
             } else {
                 $xmlAssinado = $notaFiscal->getXmlNota();
             }
+            
             $idLote = random_int(1000000000000, 9999999999999);
             $sincrono = $notaFiscal->tipoNotaFiscal === 'NFCE' ? 1 : 0;
             $resp = $tools->sefazEnviaLote([$xmlAssinado], $idLote, $sincrono);
@@ -632,13 +635,9 @@ class SpedNFeBusiness
                     // da consultaRecibo()
                     $notaFiscal->setCStat($std->protNFe->infProt->cStat);
                     $notaFiscal->setXMotivo($std->protNFe->infProt->xMotivo);
-                    if ($notaFiscal->getXmlNota() && $notaFiscal->getXMLDecoded() && $notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
-                        try {
-                            if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) &&
-                                !isset($notaFiscal->getXMLDecoded()->Signature)) {
-                                $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
-                                $notaFiscal->setXmlNota($xmlAssinado);
-                            }
+                    
+                    if ($notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
+                        try {                            
                             $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $resp);
                             $notaFiscal->setXmlNota($r);
                         } catch (\Exception $e) {
@@ -702,6 +701,7 @@ class SpedNFeBusiness
                         !isset($notaFiscal->getXMLDecoded()->Signature)) {
                         $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
                         $notaFiscal->setXmlNota($xmlAssinado);
+                        $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
                     }
                     $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $xmlResp);
                     $notaFiscal->setXmlNota($r);
@@ -1026,6 +1026,7 @@ class SpedNFeBusiness
                             !isset($notaFiscal->getXMLDecoded()->Signature)) {
                             $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
                             $notaFiscal->setXmlNota($xmlAssinado);
+                            $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
                         }
                         $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $xmlResp);
                         $notaFiscal->setXmlNota($r);
