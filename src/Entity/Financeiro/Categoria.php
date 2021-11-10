@@ -25,7 +25,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     itemOperations={
  *          "get"={"path"="/fin/categoria/{id}", "security"="is_granted('ROLE_FINAN')"},
  *          "put"={"path"="/fin/categoria/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/categoria/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "delete"={"path"="/fin/categoria/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/categoria", "security"="is_granted('ROLE_FINAN')"},
@@ -39,8 +39,14 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *
  * )
  *
- * @ApiFilter(SearchFilter::class, properties={"codigo": "exact", "descricao": "partial", "id": "exact", "categoria": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "descricao", "dtConsolidado", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "codigo": "exact", 
+ *     "codigoSuper": "exact", 
+ *     "descricao": "partial", 
+ *     "id": "exact", 
+ *     "categoria": "exact"
+ * })
+ * @ApiFilter(OrderFilter::class, properties={"id", "codigoOrd", "descricao", "dtConsolidado", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CategoriaEntityHandler")
  * 
@@ -53,12 +59,13 @@ class Categoria implements EntityId
 {
     use EntityIdTrait;
 
-    public const MASK = '0.00.000.000.0000.00000';
+    public const MASK = '0.00.000.000.000';
 
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria", inversedBy="subCategs")
      * @ORM\JoinColumn(name="pai_id",nullable=true)
+     * @Groups("categoria")
      * @MaxDepth(1)
      */
     public ?Categoria $pai = null;
@@ -216,5 +223,25 @@ class Categoria implements EntityId
         }
         return null;
     }
+
+
+    /**
+     * @return string
+     * @Groups("categoria")
+     */
+    public function getMascaraDoFilho(): ?string {
+        if (!$this->codigo) {
+            return null;
+        }
+        $tam = strlen($this->codigo);
+        if ($tam === 1) {
+            return '99';
+        } elseif ($tam <= 12) {
+            return '999';
+        } else {
+            return null;
+        }
+    }
+    
 }
 
