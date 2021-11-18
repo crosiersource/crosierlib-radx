@@ -1210,8 +1210,7 @@ class IntegradorWebStorm implements IntegradorECommerce
             $temAtualizacao = false;
             foreach ($produtosIds as $produtoId) {
                 $stmt->bindValue('id', $produtoId);
-                $stmt->execute();
-                $produto = $stmt->fetchAssociative();
+                $produto = $stmt->executeQuery()->fetchAssociative();
 
                 $this->syslog->debug('atualizando estoque para o produto (id: ' . $produto['id'] . ')');
 
