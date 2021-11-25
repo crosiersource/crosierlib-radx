@@ -1385,6 +1385,37 @@ class IntegradorWebStorm implements IntegradorECommerce
         return count($produtosParaIntegrar);
     }
 
+    
+    /**
+     * Atualiza as qtdes de estoque e preços para todos os produtos.
+     *
+     * @param int|null $limit
+     * @return int
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function atualizarTodosOsEstoquesEPrecos(?int $limit = null): int
+    {
+        $this->syslog->info('atualizarTodosOsEstoquesEPrecos');
+        $conn = $this->produtoEntityHandler->getDoctrine()->getConnection();
+        $sql = 'SELECT id FROM est_produto WHERE not JSON_IS_NULL_OR_EMPTY_OR_ZERO(json_data,\'ecommerce_id\')';
+        if ($limit) {
+            $sql .= ' LIMIT ' . $limit;
+        }
+        $rs = $conn->fetchAllAssociative($sql);
+        $produtosIds = [];
+        foreach ($rs as $r) {
+            $produtosIds[] = $r['id'];
+        }
+        
+        $this->syslog->info('Atualizando qtdes/preços para ' . count($produtosIds) . ' produto(s)');
+
+        $this->atualizaEstoqueEPrecos($produtosIds);
+
+        return count($produtosIds);
+    }
+
+
+
     /**
      * @param \DateTime $dtVenda
      * @param bool|null $resalvar
