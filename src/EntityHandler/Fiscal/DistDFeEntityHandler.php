@@ -2,9 +2,9 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\DistDFe;
-use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use Symfony\Component\Security\Core\Security;
 
 /**

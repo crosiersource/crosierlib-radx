@@ -6,10 +6,12 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -63,9 +65,9 @@ class Fatura implements EntityId
      * @ORM\Column(name="dt_fatura", type="datetime")
      * @Groups("fatura")
      *
-     * @var \DateTime|null
+     * @var DateTime|null
      */
-    public ?\DateTime $dtFatura = null;
+    public ?DateTime $dtFatura = null;
 
     /**
      *
@@ -111,7 +113,7 @@ class Fatura implements EntityId
      *
      * @ORM\OneToMany(targetEntity="Movimentacao", mappedBy="fatura")
      */
-    public $movimentacoes;
+    public ?$movimentacoes = null;
 
 
     public function __construct()

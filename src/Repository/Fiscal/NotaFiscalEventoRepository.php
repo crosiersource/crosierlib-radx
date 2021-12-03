@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Fiscal;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalEvento;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalEvento;
 
 /**
  * Repository para a entidade NotaFiscalEvento.

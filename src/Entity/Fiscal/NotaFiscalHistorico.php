@@ -5,12 +5,13 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -60,28 +61,28 @@ class NotaFiscalHistorico implements EntityId
      *
      * @var $fisNf null|NotaFiscal
      */
-    private $notaFiscal;
+    public ?NotaFiscal $notaFiscal = null;
 
     /**
      *
      * @ORM\Column(name="codigo_status", type="integer", nullable=false)
      * @var null|int
      */
-    private $codigoStatus;
+    public ?int $codigoStatus = null;
 
     /**
      *
      * @ORM\Column(name="dt_historico", type="datetime", nullable=false)
-     * @var null|\DateTime
+     * @var null|DateTime
      */
-    private $dtHistorico;
+    public ?DateTime $dtHistorico = null;
 
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=2000)
      * @var null|string
      */
-    private $descricao;
+    public ?string $descricao = null;
 
     /**
      *
@@ -89,7 +90,7 @@ class NotaFiscalHistorico implements EntityId
      * @var null|string
      * @NotUppercase()
      */
-    private $obs;
+    public ?string $obs = null;
 
     /**
      * @return NotaFiscal|null
@@ -128,18 +129,18 @@ class NotaFiscalHistorico implements EntityId
     }
 
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getDtHistorico(): ?\DateTime
+    public function getDtHistorico(): ?DateTime
     {
         return $this->dtHistorico;
     }
 
     /**
-     * @param \DateTime|null $dtHistorico
+     * @param DateTime|null $dtHistorico
      * @return NotaFiscalHistorico
      */
-    public function setDtHistorico(?\DateTime $dtHistorico): NotaFiscalHistorico
+    public function setDtHistorico(?DateTime $dtHistorico): NotaFiscalHistorico
     {
         $this->dtHistorico = $dtHistorico;
         return $this;

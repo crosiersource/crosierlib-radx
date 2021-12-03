@@ -4,14 +4,16 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use CrosierSource\CrosierLibBaseBundle\Entity\Security\User;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -92,7 +94,7 @@ class Carteira implements EntityId
      * @ORM\Column(name="dt_consolidado", type="datetime", nullable=false)
      * @Groups("carteira")
      */
-    public ?\DateTime $dtConsolidado = null;
+    public ?DateTime $dtConsolidado = null;
 
     /**
      * Uma Carteira concreta é aquela em que podem ser efetuados créditos e
@@ -178,7 +180,7 @@ class Carteira implements EntityId
      * Utilizado para informar o limite disponível.
      *
      * @ORM\Column(name="limite", type="decimal", nullable=true, precision=15, scale=2)
-     * 
+     *
      */
     public ?float $limite = null;
 

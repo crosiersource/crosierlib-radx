@@ -3,8 +3,6 @@
 namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 
 /**
- * Class FinalidadeNF
- * @package CrosierSource\CrosierLibRadxBundle\Entity
  * @author Carlos Eduardo Pauluk
  */
 class FinalidadeNF
@@ -58,9 +56,9 @@ class FinalidadeNF
 
     /**
      * @param $key
-     * @return mixed|null
+     * @return array|null
      */
-    public static function get($key)
+    public static function get($key): ?array
     {
         foreach (self::ALL as $e) {
             if ($e['key'] === $key) {
@@ -73,9 +71,9 @@ class FinalidadeNF
 
     /**
      * @param $codigo
-     * @return mixed|null
+     * @return array|null
      */
-    public static function getByCodigo($codigo)
+    public static function getByCodigo($codigo): ?array
     {
         foreach (FinalidadeNF::ALL as $e) {
             if ($e['codigo'] === (int)$codigo) {

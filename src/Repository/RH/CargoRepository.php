@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\RH;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\RH\Cargo;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\RH\Cargo;
 
 /**
  * Repository para a entidade Cargo.

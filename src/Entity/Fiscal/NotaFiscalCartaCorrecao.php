@@ -4,13 +4,14 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -54,36 +55,36 @@ class NotaFiscalCartaCorrecao implements EntityId
      *
      * @var $notaFiscal null|NotaFiscal
      */
-    private $notaFiscal;
+    public ?NotaFiscal $notaFiscal = null;
 
     /**
      * @NotUppercase()
      * @ORM\Column(name="carta_correcao", type="string", nullable=true)
      * @var null|string
      */
-    private $cartaCorrecao;
+    public ?string $cartaCorrecao = null;
 
     /**
      *
      * @ORM\Column(name="seq", type="integer", nullable=true)
      * @var null|int
      */
-    private $seq;
+    public ?int $seq = null;
 
 
     /**
      *
      * @ORM\Column(name="dt_carta_correcao", type="datetime", nullable=false)
-     * @var null|\DateTime
+     * @var null|DateTime
      */
-    private $dtCartaCorrecao;
+    public ?DateTime $dtCartaCorrecao = null;
 
     /**
      * @NotUppercase()
      * @ORM\Column(name="msg_retorno", type="string", nullable=true)
      * @var null|string
      */
-    private $msgRetorno;
+    public ?string $msgRetorno = null;
 
 
     /**
@@ -141,18 +142,18 @@ class NotaFiscalCartaCorrecao implements EntityId
     }
 
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getDtCartaCorrecao(): ?\DateTime
+    public function getDtCartaCorrecao(): ?DateTime
     {
         return $this->dtCartaCorrecao;
     }
 
     /**
-     * @param \DateTime|null $dtCartaCorrecao
+     * @param DateTime|null $dtCartaCorrecao
      * @return NotaFiscalCartaCorrecao
      */
-    public function setDtCartaCorrecao(?\DateTime $dtCartaCorrecao): NotaFiscalCartaCorrecao
+    public function setDtCartaCorrecao(?DateTime $dtCartaCorrecao): NotaFiscalCartaCorrecao
     {
         $this->dtCartaCorrecao = $dtCartaCorrecao;
         return $this;

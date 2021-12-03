@@ -4,10 +4,10 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * Entidade Regra de Importação de Linha.
  * Configura uma regra para setar corretamente a Movimentação ao importar uma linha de extrato.
- * 
+ *
  * @ApiResource(
  *     normalizationContext={"groups"={"regraImportacaoLinha","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"regraImportacaoLinha"},"enable_max_depth"=true},
@@ -162,7 +162,7 @@ class RegraImportacaoLinha implements EntityId
     public ?string $chequeNumCheque = null;
 
 
-    public function getSinalValorLabel()
+    public function getSinalValorLabel(): ?string
     {
         switch ($this->sinalValor) {
             case 0:

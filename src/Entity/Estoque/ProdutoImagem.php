@@ -4,20 +4,23 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Estoque;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 /**
- *  @ApiResource(
+ * @ApiResource(
  *     normalizationContext={"groups"={"produtoImagem","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"produtoImagem"},"enable_max_depth"=true},
  *
@@ -61,13 +64,13 @@ class ProdutoImagem implements EntityId
      *
      * @var null|Produto
      */
-    private $produto;
+    public ?Produto $produto = null;
 
     /**
      * @Vich\UploadableField(mapping="produto_imagem", fileNameProperty="imageName")
      * @var null|File
      */
-    private $imageFile;
+    public ?File $imageFile = null;
 
     /**
      * @ORM\Column(name="image_name", type="string")
@@ -75,7 +78,7 @@ class ProdutoImagem implements EntityId
      * @NotUppercase()
      * @var null|string
      */
-    private $imageName;
+    public ?string $imageName = null;
 
     /**
      *
@@ -83,7 +86,7 @@ class ProdutoImagem implements EntityId
      * @Groups("produtoImagem")
      * @var null|integer
      */
-    private $ordem;
+    public ?int $ordem = null;
 
     /**
      *
@@ -92,7 +95,7 @@ class ProdutoImagem implements EntityId
      * @Groups("produtoImagem")
      * @var null|string
      */
-    private $descricao;
+    public ?string $descricao = null;
 
     /**
      * @return Produto|null
@@ -127,9 +130,9 @@ class ProdutoImagem implements EntityId
      * must be able to accept an instance of 'File' as the bundle will inject one here
      * during Doctrine hydration.
      *
-     * @param File|\Symfony\Component\HttpFoundation\File\UploadedFile|null $imageFile
+     * @param File|UploadedFile|null $imageFile
      * @return ProdutoImagem
-     * @throws \Exception
+     * @throws Exception
      */
     public function setImageFile(?File $imageFile = null): ProdutoImagem
     {
@@ -138,7 +141,7 @@ class ProdutoImagem implements EntityId
         if (null !== $imageFile) {
             // It is required that at least one field changes if you are using doctrine
             // otherwise the event listeners won't be called and the file is lost
-            $this->updated = new \DateTime();
+            $this->updated = new DateTime();
         }
         return $this;
     }

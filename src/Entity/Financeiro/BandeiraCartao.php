@@ -4,7 +4,6 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
@@ -17,7 +16,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * Entidade Bandeira de Cartão.
  * Ex.: MASTER MAESTRO, MASTER, VISA ELECTRON, VISA, etc.
- * 
+ *
  * @ApiResource(
  *     normalizationContext={"groups"={"bandeiraCartao","modo","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"bandeiraCartao"},"enable_max_depth"=true},

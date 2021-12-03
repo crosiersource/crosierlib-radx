@@ -4,7 +4,6 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
@@ -12,6 +11,7 @@ use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -64,7 +64,7 @@ class Movimentacao implements EntityId
 {
 
     const ALL_SERIAL_GROUPS = ['movimentacao', 'modo', 'banco', 'tipoLancto', 'carteira', 'categoria', 'centroCusto', 'grupoItem', 'operadoraCartao', 'bandeiraCartao', 'cadeia', 'fatura'];
-    
+
     use EntityIdTrait;
 
     /**
@@ -75,7 +75,7 @@ class Movimentacao implements EntityId
      */
     public ?string $UUID = null;
 
-    
+
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Fatura", inversedBy="movimentacoes")
      * @ORM\JoinColumn(name="fatura_id", nullable=true)
@@ -83,15 +83,15 @@ class Movimentacao implements EntityId
      * @MaxDepth(2)
      */
     public ?Fatura $fatura = null;
-    
-    
+
+
     /**
      * @ORM\Column(name="fatura_ordem", type="integer", nullable=true)
      * @Groups("movimentacao")
      */
     public ?int $faturaOrdem = null;
 
-    
+
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo")
      * @ORM\JoinColumn(name="modo_id")
@@ -99,7 +99,7 @@ class Movimentacao implements EntityId
      */
     public ?Modo $modo = null;
 
-    
+
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Banco")
      * @ORM\JoinColumn(name="documento_banco_id", nullable=true)
@@ -107,14 +107,14 @@ class Movimentacao implements EntityId
      */
     public ?Banco $documentoBanco = null;
 
-    
+
     /**
      * @ORM\Column(name="documento_num", type="string", length=200, nullable=true)
      * @Groups("movimentacao")
      */
     public ?string $documentoNum = null;
 
-    
+
     /**
      * CPF/CNPJ de quem paga esta movimentação.
      *
@@ -123,7 +123,7 @@ class Movimentacao implements EntityId
      */
     public ?string $sacado = null;
 
-    
+
     /**
      * CPF/CNPJ de quem recebe esta movimentação.
      *
@@ -132,14 +132,14 @@ class Movimentacao implements EntityId
      */
     public ?string $cedente = null;
 
-    
+
     /**
      * @ORM\Column(name="quitado", type="boolean", nullable=true)
      * @Groups("movimentacao")
      */
     public ?bool $quitado = false;
 
-    
+
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto")
      * @ORM\JoinColumn(name="tipo_lancto_id", nullable=true)
@@ -147,7 +147,7 @@ class Movimentacao implements EntityId
      */
     public ?TipoLancto $tipoLancto = null;
 
-    
+
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_id")
@@ -156,7 +156,7 @@ class Movimentacao implements EntityId
      */
     public ?Carteira $carteira = null;
 
-    
+
     /**
      * Carteira informada em casos de TRANSF_PROPRIA.
      *
@@ -167,7 +167,7 @@ class Movimentacao implements EntityId
      */
     public ?Carteira $carteiraDestino = null;
 
-    
+
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria")
      * @ORM\JoinColumn(name="categoria_id")
@@ -176,7 +176,7 @@ class Movimentacao implements EntityId
      */
     public ?Categoria $categoria = null;
 
-    
+
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CentroCusto")
      * @ORM\JoinColumn(name="centrocusto_id", nullable=true)
@@ -184,7 +184,7 @@ class Movimentacao implements EntityId
      */
     public ?CentroCusto $centroCusto = null;
 
-    
+
     /**
      * Caso seja uma movimentação agrupada em um Grupo de Movimentação (item).
      *
@@ -195,14 +195,14 @@ class Movimentacao implements EntityId
      */
     public ?GrupoItem $grupoItem = null;
 
-    
+
     /**
      * @ORM\Column(name="status", type="string", length=50, nullable=true)
      * @Groups("movimentacao")
      */
     public ?string $status = null;
 
-    
+
     /**
      * @ORM\Column(name="descricao", type="string", length=500)
      * @Groups("movimentacao")
@@ -216,43 +216,43 @@ class Movimentacao implements EntityId
      * @ORM\Column(name="dt_moviment", type="datetime")
      * @Groups("movimentacao")
      */
-    public ?\DateTime $dtMoviment = null;
+    public ?DateTime $dtMoviment = null;
 
-    
+
     /**
      * Data prevista para pagamento.
      *
      * @ORM\Column(name="dt_vencto", type="datetime")
      * @Groups("movimentacao")
      */
-    public ?\DateTime $dtVencto = null;
+    public ?DateTime $dtVencto = null;
 
-    
+
     /**
      * Data prevista (postergando para dia útil) para pagamento.
      *
      * @ORM\Column(name="dt_vencto_efetiva", type="datetime")
      * @Groups("movimentacao")
      */
-    public ?\DateTime $dtVenctoEfetiva = null;
+    public ?DateTime $dtVenctoEfetiva = null;
 
-    
+
     /**
      * Data em que a movimentação foi paga.
      *
      * @ORM\Column(name="dt_pagto", type="datetime", nullable=true)
      * @Groups("movimentacao")
      */
-    public ?\DateTime $dtPagto = null;
+    public ?DateTime $dtPagto = null;
 
-    
+
     /**
      * Se dtPagto != null ? dtPagto : dtVencto.
      *
      * @ORM\Column(name="dt_util", type="datetime", nullable=true)
      * @Groups("movimentacao")
      */
-    public ?\DateTime $dtUtil = null;
+    public ?DateTime $dtUtil = null;
 
 
     /**
@@ -262,7 +262,7 @@ class Movimentacao implements EntityId
      */
     public ?Banco $chequeBanco = null;
 
-    
+
     /**
      * Código da agência (sem o dígito verificador).
      *
@@ -271,7 +271,7 @@ class Movimentacao implements EntityId
      */
     public ?string $chequeAgencia = null;
 
-    
+
     /**
      * Número da conta no banco (não segue um padrão).
      *
@@ -280,7 +280,7 @@ class Movimentacao implements EntityId
      */
     public ?string $chequeConta = null;
 
-    
+
     /**
      * @ORM\Column(name="cheque_num_cheque", type="string", length=30, nullable=true)
      * @Groups("movimentacao")
@@ -296,7 +296,7 @@ class Movimentacao implements EntityId
      */
     public ?OperadoraCartao $operadoraCartao = null;
 
-    
+
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao")
      * @ORM\JoinColumn(name="bandeira_cartao_id", nullable=true)
@@ -304,7 +304,7 @@ class Movimentacao implements EntityId
      */
     public ?BandeiraCartao $bandeiraCartao = null;
 
-    
+
     /**
      *
      * @ORM\Column(name="qtde_parcelas_cartao", type="integer", nullable=true)
@@ -312,7 +312,7 @@ class Movimentacao implements EntityId
      */
     public ?int $qtdeParcelasCartao = null;
 
-    
+
     /**
      * Geralmente o NSU.
      *
@@ -321,7 +321,7 @@ class Movimentacao implements EntityId
      */
     public ?string $idTransacaoCartao = null;
 
-    
+
     /**
      * Número do cartão, geralmente identificado como: **** **** **** 1234
      * @ORM\Column(name="num_cartao", type="string", nullable=true)
@@ -336,21 +336,21 @@ class Movimentacao implements EntityId
      */
     public ?bool $recorrente = false;
 
-    
+
     /**
      * @ORM\Column(name="recorr_frequencia", type="string", length=50, nullable=true)
      * @Groups("movimentacao")
      */
     public ?string $recorrFrequencia = null;
 
-    
+
     /**
      * @ORM\Column(name="recorr_tipo_repet", type="string", length=50, nullable=true)
      * @Groups("movimentacao")
      */
     public ?string $recorrTipoRepet = null;
 
-    
+
     /**
      * Utilizar 32 para marcar o último dia do mês.
      *
@@ -359,7 +359,7 @@ class Movimentacao implements EntityId
      */
     public ?int $recorrDia = null;
 
-    
+
     /**
      * Utilizado para marcar a variação em relação ao dia em que seria o vencimento.
      * Exemplo: dia=32 (último dia do mês) + variacao=-2 >>> 2 dias antes do último dia do mês
@@ -378,7 +378,7 @@ class Movimentacao implements EntityId
      */
     public ?string $valor = null;
 
-    
+
     /**
      * Possíveis descontos (sempre negativo).
      *
@@ -387,7 +387,7 @@ class Movimentacao implements EntityId
      */
     public ?string $descontos = null;
 
-    
+
     /**
      * Possíveis acréscimos (sempre positivo).
      *
@@ -396,7 +396,7 @@ class Movimentacao implements EntityId
      */
     public ?string $acrescimos = null;
 
-    
+
     /**
      * Valor total informado no campo e que é salvo no banco (pode divergir da
      * conta por algum motivo).
@@ -415,14 +415,14 @@ class Movimentacao implements EntityId
      */
     public ?Cadeia $cadeia = null;
 
-    
+
     /**
      * @ORM\Column(name="parcelamento", type="boolean", nullable=true)
      * @Groups("movimentacao")
      */
     public ?bool $parcelamento = false;
 
-    
+
     /**
      * Caso a movimentação faça parte de uma cadeia, informa em qual posição.
      * Também é utilizado para armazenar o número da parcela.
@@ -432,7 +432,7 @@ class Movimentacao implements EntityId
      */
     public ?int $cadeiaOrdem = null;
 
-    
+
     /**
      * Informa o total de movimentações na cadeia. Campo apenas auxiliar.
      * Obs.: não pode nunca ser 1.
@@ -442,14 +442,14 @@ class Movimentacao implements EntityId
      */
     public ?int $cadeiaQtde = null;
 
-    
+
     /**
      * @ORM\Column(name="obs", type="string", length=5000, nullable=true)
      * @Groups("movimentacao")
      */
     public ?string $obs = null;
 
-    
+
     /**
      * @ORM\Column(name="json_data", type="json", nullable=true)
      * @NotUppercase()
@@ -502,8 +502,8 @@ class Movimentacao implements EntityId
     {
         $this->descontos = $descontos;
     }
-    
-    
+
+
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
@@ -525,8 +525,8 @@ class Movimentacao implements EntityId
     {
         $this->acrescimos = $acrescimos;
     }
-    
-    
+
+
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")

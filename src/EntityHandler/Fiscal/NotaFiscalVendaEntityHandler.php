@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalVenda;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalVenda;
 
 /**
  * Class NotaFiscalVendaEntityHandler

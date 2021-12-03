@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\RH;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\RH\Cargo;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Entity\RH\Cargo;
 
 /**
  * EntityHandler para a entidade Cargo.

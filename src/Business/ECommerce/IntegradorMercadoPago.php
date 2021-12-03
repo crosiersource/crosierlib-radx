@@ -5,7 +5,6 @@ namespace CrosierSource\CrosierLibRadxBundle\Business\ECommerce;
 
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
-use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;

@@ -6,7 +6,6 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CaixaOperacao;
-use Symfony\Component\Security\Core\Security;
 
 /**
  * @package CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro

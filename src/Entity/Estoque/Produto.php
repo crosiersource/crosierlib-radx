@@ -4,10 +4,10 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Estoque;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\TrackedEntity;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
- *  @ApiResource(
+ * @ApiResource(
  *     normalizationContext={"groups"={"produto","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"produto"},"enable_max_depth"=true},
  *
@@ -40,12 +40,12 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(SearchFilter::class, properties={
- *     "id": "exact", 
- *     "status": "exact", 
- *     "nome": "partial", 
- *     "codigo": "partial", 
- *     "depto": "exact", 
- *     "grupo": "exact", 
+ *     "id": "exact",
+ *     "status": "exact",
+ *     "nome": "partial",
+ *     "codigo": "partial",
+ *     "depto": "exact",
+ *     "grupo": "exact",
  *     "subgrupo": "exact"
  * })
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})

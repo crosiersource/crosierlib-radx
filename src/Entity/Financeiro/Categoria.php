@@ -4,15 +4,16 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
@@ -41,16 +42,16 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(SearchFilter::class, properties={
- *     "codigo": "exact", 
- *     "codigoSuper": "exact", 
- *     "descricao": "partial", 
- *     "id": "exact", 
+ *     "codigo": "exact",
+ *     "codigoSuper": "exact",
+ *     "descricao": "partial",
+ *     "id": "exact",
  *     "categoria": "exact"
  * })
  * @ApiFilter(OrderFilter::class, properties={"id", "codigoOrd", "descricao", "dtConsolidado", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CategoriaEntityHandler")
- * 
+ *
  * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CategoriaRepository")
  * @ORM\Table(name="fin_categoria")
  *
@@ -80,7 +81,7 @@ class Categoria implements EntityId
      *
      * @var Categoria[]|ArrayCollection|null
      */
-    public $subCategs;
+    public ?$subCategs = null;
 
     /**
      * @ORM\Column(name="descricao", type="string")
@@ -166,7 +167,7 @@ class Categoria implements EntityId
      * @param Categoria[]|ArrayCollection|null $subCategs
      * @return Categoria
      */
-    public function setSubCategs($subCategs)
+    public function setSubCategs($subCategs): Categoria
     {
         $this->subCategs = $subCategs;
         return $this;
@@ -202,7 +203,7 @@ class Categoria implements EntityId
     {
         try {
             return StringUtils::mascarar($this->codigo, self::MASK);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->codigo;
         }
     }
@@ -230,7 +231,8 @@ class Categoria implements EntityId
      * @return string
      * @Groups("categoria")
      */
-    public function getMascaraDoFilho(): ?string {
+    public function getMascaraDoFilho(): ?string
+    {
         if (!$this->codigo) {
             return null;
         }
@@ -243,6 +245,6 @@ class Categoria implements EntityId
             return null;
         }
     }
-    
+
 }
 

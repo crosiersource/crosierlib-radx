@@ -55,9 +55,9 @@ final class ModalidadeFrete
 
     /**
      * @param $key
-     * @return mixed
+     * @return array
      */
-    public static function get($key)
+    public static function get($key): array
     {
         $all = self::ALL;
         return $all[$key];
@@ -65,9 +65,9 @@ final class ModalidadeFrete
 
     /**
      * @param $codigo
-     * @return mixed|null
+     * @return array|null
      */
-    public static function getByCodigo($codigo)
+    public static function getByCodigo($codigo): ?array
     {
         foreach (self::ALL as $e) {
             if ($e['codigo'] === (int)$codigo) {

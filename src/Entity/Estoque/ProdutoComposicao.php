@@ -4,17 +4,17 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Estoque;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- *  @ApiResource(
+ * @ApiResource(
  *     normalizationContext={"groups"={"produtoComposicao","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"produtoComposicao"},"enable_max_depth"=true},
  *
@@ -96,27 +96,14 @@ class ProdutoComposicao implements EntityId
      */
     public ?string $precoComposicao = null;
 
-    /**
-     * produtoFilho.jsonData.qtde_atual * produtoFilho.jsonData.preco_tabela
-     *
-     * @var null|float
-     */
-    private ?float $totalAtual = null;
-
-    /**
-     * qtde * precoComposicao
-     *
-     * @var null|float
-     */
-    private ?float $totalComposicao = null;
+    
 
     /**
      * @return float|null
      */
     public function getTotalAtual(): ?float
     {
-        $this->totalAtual = bcmul($this->produtoFilho->jsonData['qtde_estoque_total'] ?? 0.0, $this->produtoFilho->jsonData['preco_tabela'], 2);
-        return $this->totalAtual;
+        return bcmul($this->produtoFilho->jsonData['qtde_estoque_total'] ?? 0.0, $this->produtoFilho->jsonData['preco_tabela'], 2);
     }
 
     /**
@@ -124,8 +111,7 @@ class ProdutoComposicao implements EntityId
      */
     public function getTotalComposicao(): ?float
     {
-        $this->totalComposicao = bcmul($this->qtde ?? 0.0, $this->precoComposicao ?? 0.0, 2);
-        return $this->totalComposicao;
+        return bcmul($this->qtde ?? 0.0, $this->precoComposicao ?? 0.0, 2);
     }
 
 

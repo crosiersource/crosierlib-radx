@@ -4,14 +4,15 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\ORM\Mapping as ORM;
+use SimpleXMLElement;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
@@ -59,7 +60,7 @@ class NotaFiscalEvento implements EntityId
      *
      * @var $notaFiscal null|NotaFiscal
      */
-    private $notaFiscal;
+    public ?NotaFiscal $notaFiscal = null;
 
     /**
      *
@@ -68,7 +69,7 @@ class NotaFiscalEvento implements EntityId
      *
      * @Groups("notaFiscalEvento")
      */
-    private $tpEvento;
+    public ?int $tpEvento = null;
 
     /**
      *
@@ -76,7 +77,7 @@ class NotaFiscalEvento implements EntityId
      * @var null|int
      * @Groups("notaFiscalEvento")
      */
-    private $nSeqEvento;
+    public ?int $nSeqEvento = null;
 
     /**
      *
@@ -85,7 +86,7 @@ class NotaFiscalEvento implements EntityId
      *
      * @Groups("notaFiscalEvento")
      */
-    private $descEvento;
+    public ?string $descEvento = null;
 
     /**
      *
@@ -94,7 +95,7 @@ class NotaFiscalEvento implements EntityId
      *
      * @NotUppercase()
      */
-    private $xml;
+    public ?string $xml = null;
 
     /**
      * @return NotaFiscal|null
@@ -187,9 +188,9 @@ class NotaFiscalEvento implements EntityId
     }
 
     /**
-     * @return \SimpleXMLElement|null
+     * @return SimpleXMLElement|null
      */
-    public function getXMLDecoded(): ?\SimpleXMLElement
+    public function getXMLDecoded(): ?SimpleXMLElement
     {
         if ($this->getXml()) {
             $xmlUnzip = gzdecode(base64_decode($this->getXml()));

@@ -5,8 +5,8 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
@@ -55,7 +55,7 @@ class NotaFiscalVenda implements EntityId
      *
      * @var $notaFiscal null|NotaFiscal
      */
-    private $notaFiscal;
+    public ?NotaFiscal $notaFiscal = null;
 
     /**
      *
@@ -64,7 +64,7 @@ class NotaFiscalVenda implements EntityId
      *
      * @var null|Venda
      */
-    private $venda;
+    public ?Venda $venda = null;
 
     /**
      * @return NotaFiscal|null

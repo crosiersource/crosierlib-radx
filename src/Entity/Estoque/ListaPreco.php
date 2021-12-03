@@ -6,9 +6,11 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -57,25 +59,25 @@ class ListaPreco implements EntityId
      *
      * @var string|null
      */
-    public ?string $descricao;
+    public ?string $descricao = null;
 
     /**
      *
      * @ORM\Column(name="dt_vigencia_ini", type="datetime", nullable=false)
      * @Groups("listaPreco")
      *
-     * @var \DateTime|null
+     * @var DateTime|null
      */
-    public ?\DateTime $dtVigenciaIni;
+    public ?DateTime $dtVigenciaIni = null;
 
     /**
      *
      * @ORM\Column(name="dt_vigencia_fim", type="datetime", nullable=true)
      * @Groups("listaPreco")
      *
-     * @var \DateTime|null
+     * @var DateTime|null
      */
-    public ?\DateTime $dtVigenciaFim;
+    public ?DateTime $dtVigenciaFim = null;
 
 
 }

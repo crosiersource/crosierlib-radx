@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ListaPreco;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ListaPreco;
 
 /**
  *

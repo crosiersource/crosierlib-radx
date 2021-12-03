@@ -3,8 +3,8 @@
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Estoque;
 
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\PedidoCompra;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\PedidoCompra;
 
 /**
  *

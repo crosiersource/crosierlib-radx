@@ -7,9 +7,11 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -18,7 +20,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 /**
  * Entidade que representa um 'item de um Grupo de Movimentações' (como a fatura
  * de um mês do cartão de crédito, por exemplo).
- * 
+ *
  * @ApiResource(
  *     normalizationContext={"groups"={"grupoItem","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"grupoItem"},"enable_max_depth"=true},
@@ -77,7 +79,7 @@ class GrupoItem implements EntityId
      * @ORM\Column(name="dt_vencto", type="date", nullable=false)
      * @Groups("grupoItem")
      */
-    public ?\DateTime $dtVencto = null;
+    public ?DateTime $dtVencto = null;
 
     /**
      * Para efeitos de navegação.
@@ -133,7 +135,7 @@ class GrupoItem implements EntityId
      *
      * @var Movimentacao[]|ArrayCollection|null
      */
-    public $movimentacoes;
+    public ?$movimentacoes = null;
 
 
     /**
@@ -148,12 +150,12 @@ class GrupoItem implements EntityId
      *
      * @return number
      */
-    public function getValorLanctos()
+    public function getValorLanctos(): float
     {
         if ($this->movimentacoes && count($this->movimentacoes) > 0) {
             $bdValor = 0.0;
             foreach ($this->movimentacoes as $m) {
-                if (strpos($m->getCategoria()->getCodigo(), 0) === '1') {
+                if (strpos($m->getCategoria()->getCodigo(), 0) === 1) {
                     $bdValor += $m->getValorTotal();
                 } else {
                     $bdValor -= $m->getValorTotal();
@@ -169,7 +171,7 @@ class GrupoItem implements EntityId
      *
      * @return number
      */
-    public function getDiferenca()
+    public function getDiferenca(): ?float
     {
         return $this->getValorLanctos() - $this->valorInformado;
     }

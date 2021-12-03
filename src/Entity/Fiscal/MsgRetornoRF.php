@@ -20,72 +20,52 @@ class MsgRetornoRF implements EntityId
     use EntityIdTrait;
 
     /**
-     *
      * @ORM\Column(name="codigo", type="integer", nullable=false)
+     * @var int|null
      */
-    private $codigo;
+    public ?int $codigo;
 
     /**
-     *
      * @ORM\Column(name="mensagem", type="string", nullable=false, length=2000)
+     * @var string|null
      */
-    private $mensagem;
+    public ?string $mensagem;
 
     /**
-     *
      * @ORM\Column(name="versao", type="string", nullable=false, length=10)
+     * @var string|null
      */
-    private $versao;
+    public ?string $versao;
 
-    /**
-     * @return mixed
-     */
-    public function getCodigo()
+
+    public function getCodigo(): ?int
     {
         return $this->codigo;
     }
 
-    /**
-     * @param mixed $codigo
-     * @return MsgRetornoRF
-     */
-    public function setCodigo($codigo)
+    public function setCodigo($codigo): MsgRetornoRF
     {
         $this->codigo = $codigo;
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getMensagem()
+    public function getMensagem(): ?string
     {
         return $this->mensagem;
     }
 
-    /**
-     * @param mixed $mensagem
-     * @return MsgRetornoRF
-     */
-    public function setMensagem($mensagem)
+    public function setMensagem($mensagem): MsgRetornoRF
     {
         $this->mensagem = $mensagem;
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getVersao()
+    public function getVersao(): ?string
     {
         return $this->versao;
     }
 
-    /**
-     * @param mixed $versao
-     * @return MsgRetornoRF
-     */
-    public function setVersao($versao)
+    public function setVersao($versao): MsgRetornoRF
     {
         $this->versao = $versao;
         return $this;

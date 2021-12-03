@@ -6,8 +6,8 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
@@ -38,7 +38,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     }
  *
  * )
- * 
+ *
  * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "codigoBanco": "exact", "id": "exact"})
@@ -85,7 +85,7 @@ class Banco implements EntityId
      * @param bool $format
      * @return int|null
      */
-    public function getCodigoBanco(bool $format = false)
+    public function getCodigoBanco(bool $format = false): ?int
     {
         if ($format) {
             return str_pad($this->codigoBanco, 3, '0', STR_PAD_LEFT);

@@ -4,13 +4,14 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Estoque;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -57,18 +58,18 @@ class PedidoCompra implements EntityId
      * @ORM\Column(name="dt_emissao", type="datetime")
      * @Groups("pedidoCompra")
      *
-     * @var null|\DateTime
+     * @var null|DateTime
      */
-    public ?\DateTime $dtEmissao = null;
+    public ?DateTime $dtEmissao = null;
 
     /**
      *
      * @ORM\Column(name="dt_prev_entrega", type="datetime")
      * @Groups("pedidoCompra")
      *
-     * @var null|\DateTime
+     * @var null|DateTime
      */
-    public ?\DateTime $dtPrevEntrega = null;
+    public ?DateTime $dtPrevEntrega = null;
 
     /**
      *

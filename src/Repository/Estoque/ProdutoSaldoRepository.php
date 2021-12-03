@@ -2,8 +2,8 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Estoque;
 
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoSaldo;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoSaldo;
 
 /**
  *

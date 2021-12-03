@@ -4,10 +4,10 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\ORM\Mapping as ORM;
@@ -51,51 +51,38 @@ class NCM implements EntityId
     use EntityIdTrait;
 
     /**
-     *
      * @ORM\Column(name="codigo", type="integer", nullable=false)
      * @Assert\NotBlank(message="O campo 'codigo' deve ser informado")
      * @Assert\Range(min = 0)
+     * @var int|null
      */
-    private $codigo;
+    public ?int $codigo;
 
     /**
-     *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=200)
      * @Assert\NotBlank(message="O campo 'descricao' deve ser informado")
+     * @var string|null
      */
-    private $descricao;
+    public ?string $descricao;
 
-    /**
-     * @return mixed
-     */
-    public function getCodigo()
+
+    public function getCodigo(): ?int
     {
         return $this->codigo;
     }
 
-    /**
-     * @param mixed $codigo
-     * @return NCM
-     */
-    public function setCodigo($codigo)
+    public function setCodigo($codigo): NCM
     {
         $this->codigo = $codigo;
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getDescricao()
+    public function getDescricao(): ?string
     {
         return $this->descricao;
     }
 
-    /**
-     * @param mixed $descricao
-     * @return NCM
-     */
-    public function setDescricao($descricao)
+    public function setDescricao($descricao): NCM
     {
         $this->descricao = $descricao;
         return $this;

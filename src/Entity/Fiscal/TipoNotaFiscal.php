@@ -26,7 +26,7 @@ class TipoNotaFiscal
     );
 
 
-    public static function getChoices()
+    public static function getChoices(): array
     {
         $arr = array();
         foreach (TipoNotaFiscal::ALL as $status) {
@@ -35,19 +35,20 @@ class TipoNotaFiscal
         return $arr;
     }
 
-    public static function get($key)
+    public static function get($key): array
     {
         $all = TipoNotaFiscal::ALL;
         return $all[$key];
     }
 
-    public static function getByCodigo($codigo)
+    public static function getByCodigo($codigo): ?array
     {
         foreach (self::ALL as $tipo) {
             if ($tipo['codigo'] === (int)$codigo) {
                 return $tipo;
             }
         }
+        return null;
     }
 
 }

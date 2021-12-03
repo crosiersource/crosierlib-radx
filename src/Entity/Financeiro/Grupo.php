@@ -4,10 +4,10 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Entidade 'Grupo de Movimentações'.
  *
  * Para movimentações que são agrupadas e pagas através de outra movimentação (como Cartão de Crédito, conta em postos, etc).
- * 
+ *
  * @ApiResource(
  *     normalizationContext={"groups"={"grupo","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"grupo"},"enable_max_depth"=true},
@@ -116,7 +116,7 @@ class Grupo implements EntityId
      * )
      * @var GrupoItem[]|ArrayCollection|null
      */
-    public $itens;
+    public ?$itens = null;
 
 
     public function __construct()
