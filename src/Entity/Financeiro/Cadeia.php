@@ -3,6 +3,7 @@
 namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
@@ -37,6 +38,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     }
  *
  * )
+ * @ApiFilter(PropertyFilter::class)
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CadeiaEntityHandler")
  *

@@ -31,6 +31,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *          "formats"={"jsonld", "csv"={"text/csv"}}
  *     }
  * )
+ * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(OrderFilter::class, properties={"id", "updated"}, arguments={"orderParameterName"="order"})
  *

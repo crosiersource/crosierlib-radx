@@ -5,6 +5,7 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Fiscal;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
@@ -32,6 +33,7 @@ use Doctrine\ORM\Mapping as ORM;
  *          "formats"={"jsonld", "csv"={"text/csv"}}
  *     }
  * )
+ * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})

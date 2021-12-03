@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
@@ -37,6 +38,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     }
  *
  * )
+ * 
+ * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "codigoBanco": "exact", "id": "exact"})
  * @ApiFilter(BooleanFilter::class, properties={"utilizado": "exact"})

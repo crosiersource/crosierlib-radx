@@ -4,10 +4,10 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Entidade Modo de Movimentação.
  *
  * Informa se a movimentação foi em 'espécie', 'cheque', 'boleto', etc.
- * 
+ *
  * @ApiResource(
  *     normalizationContext={"groups"={"modo","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"modo"},"enable_max_depth"=true},
@@ -40,6 +40,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     }
  *
  * )
+ * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(SearchFilter::class, properties={"descricao": "partial"})
  * @ApiFilter(NumericFilter::class, properties={"id","codigo"})

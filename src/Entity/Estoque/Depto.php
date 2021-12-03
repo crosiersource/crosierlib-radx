@@ -7,7 +7,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
@@ -35,6 +35,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *          "formats"={"jsonld", "csv"={"text/csv"}}
  *     }
  * )
+ * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "codigo": "exact", "id": "exact"})
  * @ApiFilter(OrderFilter::class, properties={"id", "codigo", "nome", "updated"}, arguments={"orderParameterName"="order"})

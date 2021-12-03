@@ -7,7 +7,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\ORM\Mapping as ORM;
@@ -38,6 +38,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     }
  *
  * )
+ * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(SearchFilter::class,
  *     properties={

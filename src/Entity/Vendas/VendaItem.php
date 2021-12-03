@@ -4,14 +4,14 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Vendas;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
-use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -36,6 +36,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *          "formats"={"jsonld", "csv"={"text/csv"}}
  *     }
  * )
+ * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
@@ -161,7 +162,8 @@ class VendaItem implements EntityId
     public ?array $jsonData = null;
 
 
-    public function getDescricaoMontadaResumida(int $tam = 36) {
+    public function getDescricaoMontadaResumida(int $tam = 36)
+    {
         $desc = '[';
         if (strlen($this->produto->codigo) > 6) {
             $desc .= substr($this->produto->codigo, -6);
