@@ -116,7 +116,7 @@ class Grupo implements EntityId
      * )
      * @var GrupoItem[]|ArrayCollection|null
      */
-    public ?$itens = null;
+    public $itens = null;
 
 
     public function __construct()

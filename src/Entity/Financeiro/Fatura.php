@@ -113,7 +113,7 @@ class Fatura implements EntityId
      *
      * @ORM\OneToMany(targetEntity="Movimentacao", mappedBy="fatura")
      */
-    public ?$movimentacoes = null;
+    public $movimentacoes = null;
 
 
     public function __construct()

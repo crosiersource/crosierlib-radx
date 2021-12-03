@@ -81,7 +81,7 @@ class Categoria implements EntityId
      *
      * @var Categoria[]|ArrayCollection|null
      */
-    public ?$subCategs = null;
+    public $subCategs = null;
 
     /**
      * @ORM\Column(name="descricao", type="string")

@@ -135,7 +135,7 @@ class GrupoItem implements EntityId
      *
      * @var Movimentacao[]|ArrayCollection|null
      */
-    public ?$movimentacoes = null;
+    public $movimentacoes = null;
 
 
     /**
