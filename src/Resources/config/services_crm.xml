@@ -13,7 +13,7 @@
       <tag name="doctrine.repository_service"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository"
-             alias="crosier_source.crosier_lib_radx_bundle.repository.crm.cliente_repository"/>
+             alias="crosier_source.crosier_lib_radx_bundle.repository.crm.cliente_repository"  public="true" />
     <!-- ClienteEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler"
@@ -23,7 +23,7 @@
       <argument type="service" id="parameter_bag"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler"
-             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"/>
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"  public="true" />
 
 
   </services>

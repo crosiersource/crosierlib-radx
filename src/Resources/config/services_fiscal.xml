@@ -3,7 +3,6 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         http://symfony.com/schema/dic/services/services-1.0.xsd">
-
   <services>
 
     <!-- DistDFeRepository -->
@@ -13,7 +12,7 @@
       <tag name="doctrine.repository_service"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\DistDFeRepository"
-             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.dist_dfe_repository"/>
+             public="true" alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.dist_dfe_repository"/>
     <!-- DistDFeEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\DistDFeEntityHandler"
@@ -23,6 +22,7 @@
       <argument type="service" id="parameter_bag"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\DistDFeEntityHandler"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"/>
 
 
@@ -33,7 +33,7 @@
       <tag name="doctrine.repository_service"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\MsgRetornoRFRepository"
-             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.msg_retorno_rf_repository"/>
+             public="true" alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.msg_retorno_rf_repository"/>
 
 
     <!-- NCMRepository -->
@@ -43,7 +43,7 @@
       <tag name="doctrine.repository_service"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository"
-             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.ncm_repository"/>
+             public="true" alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.ncm_repository"/>
 
 
     <!-- NotaFiscalRepository -->
@@ -53,7 +53,7 @@
       <tag name="doctrine.repository_service"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository"
-             alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_repository"/>
+             public="true" alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_repository"/>
     <!-- NotaFiscalEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler"
@@ -62,6 +62,7 @@
       <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
 
 
@@ -72,6 +73,7 @@
       <tag name="doctrine.repository_service"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalCartaCorrecaoRepository"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_carta_correcao_repository"/>
     <!-- NotaFiscalCartaCorrecaoEntityHandler -->
     <service
@@ -83,6 +85,7 @@
       <argument type="service" id="parameter_bag"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"/>
 
 
@@ -93,6 +96,7 @@
       <tag name="doctrine.repository_service"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalEventoRepository"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_evento_repository"/>
     <!-- NotaFiscalEventoEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"
@@ -103,6 +107,7 @@
       <argument type="service" id="parameter_bag"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
 
 
@@ -113,6 +118,7 @@
       <tag name="doctrine.repository_service"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalHistoricoRepository"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_historico_repository"/>
     <!-- NotaFiscalHistoricoEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"
@@ -123,6 +129,7 @@
       <argument type="service" id="parameter_bag"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"/>
 
 
@@ -133,6 +140,7 @@
       <tag name="doctrine.repository_service"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalItemRepository"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_item_repository"/>
     <!-- NotaFiscalItemEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"
@@ -142,6 +150,7 @@
                 id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"/>
 
 
@@ -154,6 +163,7 @@
       <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalVendaRepository"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.repository.fiscal.nota_fiscal_venda_repository"/>
     <!-- NotaFiscalVendaEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"
@@ -164,6 +174,7 @@
       <argument type="service" id="parameter_bag"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"/>
 
 
@@ -177,7 +188,7 @@
       <argument type="service" id="security.helper"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils"
-             alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
+             public="true" alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
 
 
     <!-- SpedNFeBusiness -->
@@ -195,7 +206,7 @@
       <argument type="service" id="parameter_bag"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\SpedNFeBusiness"
-             alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"/>
+             public="true" alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.sped_nfe_business"/>
 
 
     <!-- NotaFiscalBusiness -->
@@ -226,7 +237,8 @@
                 id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness"
-             alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business" public="true"/>
+             alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.nota_fiscal_business"
+             public="true"/>
 
 
     <!-- DistDFeBusiness -->
@@ -245,7 +257,7 @@
                 id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\DistDFeBusiness"
-             alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"/>
+             public="true" alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"/>
 
 
   </services>
