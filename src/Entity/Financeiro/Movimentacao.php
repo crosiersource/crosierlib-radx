@@ -7,6 +7,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
@@ -50,10 +51,16 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "fatura": "exact",
  *     "descricao": "partial",
  *     "categoria": "exact",
- *     "carteira.codigo": "exact"
+ *     "carteira": "exact",
+ *     "carteira.codigo": "exact",
+ *     "modo": "exact",
+ *     "status": "exact",
+ *     "centroCusto": "exact"
  * })
  * 
  * @ApiFilter(DateFilter::class, properties={"dtUtil"})
+ * 
+ * @ApiFilter(RangeFilter::class, properties={"valorTotal"})
  * 
  * @ApiFilter(OrderFilter::class, properties={
  *     "id", 

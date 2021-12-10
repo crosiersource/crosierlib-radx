@@ -1330,7 +1330,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                     $this->bus->dispatch(new IntegrarProdutoEcommerceMessage($rProduto['id']));
                     $this->syslog->info('Produto reenviado para integração (id = "' . $rProduto['id'] . '"');
                 } catch (\Throwable $e) {
-                    $this->syslog->err('reenviarParaIntegracaoProdutosAlterados() - Erro ao enviar produto (id = "' . $rProduto['id'] . '"', $e->getTraceAsString());
+                    $this->syslog->err('reenviarParaIntegracaoProdutosAlterados() - Erro ao enviar produto (id = "' . $rProduto['id'] . '"', $e->getMessage() . '\n\n' . $e->getTraceAsString());
                     try {
                         $conn->rollBack();
                     } catch (ConnectionException $e) {
@@ -1340,7 +1340,7 @@ class IntegradorWebStorm implements IntegradorECommerce
             }
             return count($rProdutos);
         } catch (\Throwable $e) {
-            $this->syslog->err('Erro ao reenviarParaIntegracaoProdutosAlterados()', $e->getTraceAsString());
+            $this->syslog->err('Erro ao reenviarParaIntegracaoProdutosAlterados()', $e->getMessage() . '\n\n' . $e->getTraceAsString());
             throw new ViewException('Erro ao reenviarParaIntegracaoProdutosAlterados()');
         }
     }
@@ -1430,7 +1430,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                 try {
                     $this->integrarVendaParaCrosier($pedido, (int)$pedido->status === 2 || $resalvar);
                 } catch (ViewException $e) {
-                    $this->syslog->err('Erro ao integrarVendaParaCrosier - pedido: ' . $pedido->idPedido->__toString(), $e->getTraceAsString());
+                    $this->syslog->err('Erro ao integrarVendaParaCrosier - pedido: ' . $pedido->idPedido->__toString(), $e->getMessage() . '\n\n' . $e->getTraceAsString());
                     continue;
                 }
                 $i++;
