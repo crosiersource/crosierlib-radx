@@ -108,7 +108,9 @@ class DistDFeBusiness
                 $resp = $tools->sefazDistDFe($nsu);
                 $xmlResp = simplexml_load_string($resp);
                 $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
-                $r = $xmlResp->xpath('//soap:Body');
+                $r = $xmlResp->xpath('//soap:Body'); // aqui tenho o ultNSU e maxNSU
+                // ultNSU: último consultado
+                // maxNSU: último na base da sefaz
 
                 if (!($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip ?? false)) {
                     if ($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo ?? false) {
@@ -122,7 +124,7 @@ class DistDFeBusiness
                 for ($i = 0; $i < $qtdeDocs; $i++) {
                     $doc = $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip[$i];
                     $nsu = (int)$doc->attributes()['NSU'];
-                    $existe = $repo->findOneBy(['nsu' => $nsu]);
+                    $existe = $repo->findOneBy(['nsu' => $nsu, 'documento' => $cnpj]);
                     if (!$existe) {
                         $xml = $doc->__toString();
                         $dfe = new DistDFe();

@@ -123,7 +123,15 @@ class NFeUtils
         } else {
             $appConfig_nfeConfigsIdEmUso_padrao = $repoAppConfig->findOneBy(['appUUID' => $_SERVER['CROSIERAPPRADX_UUID'], 'chave' => 'nfeConfigsIdEmUso_padrao']);
             if (!$appConfig_nfeConfigsIdEmUso_padrao) {
-                throw new ViewException('nfeConfigsIdEmUso_padrao N/D');
+                $appConfig_nfeConfigsIdEmUso_padrao = $repoAppConfig->findByFiltersSimpl(
+                    [
+                        ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']],
+                        ['chave', 'LIKE', 'nfeConfigs_%']
+                    ]);
+                if (!$appConfig_nfeConfigsIdEmUso_padrao) {
+                    throw new ViewException('Nenhuma nfeConfigs encontrada');
+                }
+                $appConfig_nfeConfigsIdEmUso_padrao = $appConfig_nfeConfigsIdEmUso_padrao[0];
             }
             $appConfig_nfeConfigsIdEmUso = new AppConfig();
             $appConfig_nfeConfigsIdEmUso->setChave('nfeConfigsIdEmUso_' . $username);
