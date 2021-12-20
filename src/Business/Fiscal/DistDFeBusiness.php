@@ -50,12 +50,12 @@ class DistDFeBusiness
      * @param NFeUtils $nfeUtils
      * @param NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler
      */
-    public function __construct(EntityManagerInterface $doctrine,
-                                DistDFeEntityHandler $distDFeEntityHandler,
-                                NotaFiscalEntityHandler $notaFiscalEntityHandler,
-                                NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler,
-                                LoggerInterface $logger,
-                                NFeUtils $nfeUtils,
+    public function __construct(EntityManagerInterface        $doctrine,
+                                DistDFeEntityHandler          $distDFeEntityHandler,
+                                NotaFiscalEntityHandler       $notaFiscalEntityHandler,
+                                NotaFiscalItemEntityHandler   $notaFiscalItemEntityHandler,
+                                LoggerInterface               $logger,
+                                NFeUtils                      $nfeUtils,
                                 NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler)
     {
         $this->doctrine = $doctrine;
@@ -180,7 +180,11 @@ class DistDFeBusiness
         /** @var DistDFeRepository $repo */
         $repo = $this->doctrine->getRepository(DistDFe::class);
         $cnpjEmUso = $this->nfeUtils->getNFeConfigsEmUso()['cnpj'];
-        $nsus = $repo->findAllNSUs($cnpjEmUso);
+        $rNsus = $repo->findAllNSUs($cnpjEmUso);
+        $nsus = [];
+        foreach ($rNsus as $r) {
+            $nsus[] = $r['nsu'];
+        }
         $pulados = [];
         $primeiro = $nsus[0];
         $ultimo = $nsus[count($nsus) - 1];
@@ -191,6 +195,35 @@ class DistDFeBusiness
         }
 
         return $pulados;
+    }
+
+
+    /**
+     *
+     * @param int $nsu
+     * @param string $cnpj
+     * @return bool
+     * @throws ViewException
+     */
+    public function verificarNSUsNaSefaz(string $cnpj)
+    {
+        try {
+            $tools = $this->nfeUtils->getToolsByCNPJ($cnpj);
+            $tools->model('55');
+            $tools->setEnvironment(1);
+
+            /** @var DistDFeRepository $repo */
+            $repo = $this->doctrine->getRepository(DistDFe::class);
+
+            $resp = $tools->sefazDistDFe(0, 1);
+            $xmlResp = simplexml_load_string($resp);
+            $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
+            return $xmlResp->xpath('//soap:Body');
+        } catch (\Exception $e) {
+            $this->logger->error('Erro ao obter DFe (NSU: ' . $nsu . ')');
+            $this->logger->error($e->getMessage());
+            throw new ViewException('Erro ao obter DFe (NSU: ' . $nsu . ')');
+        }
     }
 
     /**
