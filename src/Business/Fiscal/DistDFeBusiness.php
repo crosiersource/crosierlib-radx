@@ -3,6 +3,7 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Fiscal;
 
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibBaseBundle\Utils\APIUtils\CrosierApiResponse;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\DistDFe;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\FinalidadeNF;
@@ -18,6 +19,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\DistDFeRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  *
@@ -100,6 +102,10 @@ class DistDFeBusiness
             $repo = $this->doctrine->getRepository(DistDFe::class);
             $iCount = 0; //executa a busca de DFe em loop
             // $nsu--; // decrementa, pois o webservice retorna a partir do próximo
+            /**
+             * O processo de busca deve ser executado em LOOP pois cada solicitação pode retornar no máximo 50 
+             * documentos cada, até que o numero do NSU recebido seja igual ao maxNSU disponível.
+             */
             do {
                 if ($iCount === 5) { // máximo de 5 * 50 (para respeitar as regras na RF e tbm não travar o servidor)
                     break;
@@ -138,7 +144,7 @@ class DistDFeBusiness
                 if ($qtdeDocs < 50) {
                     break;
                 }
-                sleep(3);
+                sleep(5);
             } while (true);
         } catch (\Throwable $e) {
             $this->logger->error('Erro ao obter DFes (NSU: ' . $nsu . ')');
@@ -175,12 +181,11 @@ class DistDFeBusiness
      * @return array
      * @throws ViewException
      */
-    public function getNSUsPulados(): array
+    public function getNSUsPulados(string $cnpj): array
     {
         /** @var DistDFeRepository $repo */
         $repo = $this->doctrine->getRepository(DistDFe::class);
-        $cnpjEmUso = $this->nfeUtils->getNFeConfigsEmUso()['cnpj'];
-        $rNsus = $repo->findAllNSUs($cnpjEmUso);
+        $rNsus = $repo->findAllNSUs($cnpj);
         $nsus = [];
         foreach ($rNsus as $r) {
             $nsus[] = $r['nsu'];
@@ -233,7 +238,7 @@ class DistDFeBusiness
      * @return bool
      * @throws ViewException
      */
-    public function obterDistDFeByNSU(int $nsu, string $cnpj): bool
+    public function obterDistDFeByNSU(int $nsu, string $cnpj): JsonResponse
     {
         try {
             $tools = $this->nfeUtils->getToolsEmUso();
@@ -243,7 +248,7 @@ class DistDFeBusiness
             /** @var DistDFeRepository $repo */
             $repo = $this->doctrine->getRepository(DistDFe::class);
 
-            $resp = $tools->sefazDistDFe(0, $nsu);
+            $resp = $tools->sefazDistDFe($nsu); // para trazer somente 1
             $xmlResp = simplexml_load_string($resp);
             $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
             $r = $xmlResp->xpath('//soap:Body');
@@ -262,20 +267,20 @@ class DistDFeBusiness
                         $dfe->documento = $cnpj;
                         $this->distDFeEntityHandler->save($dfe);
                     } else {
-                        return false;
+                        return CrosierApiResponse::success($r, 'NSU já existente na base');
                     }
-                    return true;
+                    return CrosierApiResponse::success($r, 'NSU obtido e salvo');
                 } else {
-                    throw new ViewException('NSU difere do retornado.');
+                    return CrosierApiResponse::error(null, null, "NSU consultado difere do retornado (?)", $r);
                 }
             } else {
-                throw new ViewException('NSU não encontrado.');
+                return CrosierApiResponse::error(null, null, "NSU não encontrado (?)", $r);
             }
         } catch (\Exception $e) {
             $this->logger->error('Erro ao obter DFe (NSU: ' . $nsu . ')');
             $this->logger->error($e->getMessage());
-            throw new ViewException('Erro ao obter DFe (NSU: ' . $nsu . ')');
-        }
+            return CrosierApiResponse::error($e, true, 'Erro ao obter DFe (NSU: ' . $nsu . ')', $r ?? null);
+        } 
     }
 
     /**
