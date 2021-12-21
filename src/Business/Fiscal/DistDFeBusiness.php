@@ -103,7 +103,7 @@ class DistDFeBusiness
             $iCount = 0; //executa a busca de DFe em loop
             // $nsu--; // decrementa, pois o webservice retorna a partir do próximo
             /**
-             * O processo de busca deve ser executado em LOOP pois cada solicitação pode retornar no máximo 50 
+             * O processo de busca deve ser executado em LOOP pois cada solicitação pode retornar no máximo 50
              * documentos cada, até que o numero do NSU recebido seja igual ao maxNSU disponível.
              */
             do {
@@ -280,7 +280,7 @@ class DistDFeBusiness
             $this->logger->error('Erro ao obter DFe (NSU: ' . $nsu . ')');
             $this->logger->error($e->getMessage());
             return CrosierApiResponse::error($e, true, 'Erro ao obter DFe (NSU: ' . $nsu . ')', $r ?? null);
-        } 
+        }
     }
 
     /**
@@ -350,7 +350,11 @@ class DistDFeBusiness
             $nf->setInscricaoEstadualDestinatario($xml->NFe->infNFe->dest->IE->__toString());
         }
 
-        $nf->setNumero((int)$xml->NFe->infNFe->ide->nNF->__toString());
+        $numNf = (int)$xml->NFe->infNFe->ide->nNF->__toString();
+        if (!$numNf) {
+            throw new ViewException('numNf n/d');
+        }
+        $nf->setNumero($numNf);
         $nf->setCnf((int)$xml->NFe->infNFe->ide->cNF->__toString());
         $mod = (int)$xml->NFe->infNFe->ide->mod->__toString();
         $nf->setTipoNotaFiscal($mod === 55 ? 'NFE' : 'NFCE');
@@ -375,9 +379,9 @@ class DistDFeBusiness
         $nf->setXNomeEmitente($xml->NFe->infNFe->emit->xNome->__toString());
         $nf->setInscricaoEstadualEmitente($xml->NFe->infNFe->emit->IE->__toString()); // ????
 
-        if ($nf->getId()) {
-            $nf->deleteAllItens();
-        }
+//        if ($nf->getId()) {
+//            $nf->deleteAllItens();
+//        }
         $nf->setChaveAcesso($chaveAcesso);
 
         $nf->setProtocoloAutorizacao($xml->protNFe->infProt->nProt ?? null);
@@ -386,13 +390,25 @@ class DistDFeBusiness
         /** @var NotaFiscal $nf */
         $nf = $this->notaFiscalEntityHandler->save($nf, false);
 
+        $repoNotaFiscalItem = $this->doctrine->getRepository(NotaFiscalItem::class);
+
         foreach ($xml->NFe->infNFe->det as $iValue) {
             $item = $iValue;
 
+            $ordem = (int)$item['nItem']->__toString();
+
+            $nfItem = $repoNotaFiscalItem->findOneByFiltersSimpl([
+                ['notaFiscal', 'EQ', $nf],
+                ['ordem', 'EQ', $ordem]
+            ]);
+
+            if ($nfItem) {
+                continue;
+            }
             $nfItem = new NotaFiscalItem();
             $nfItem->setNotaFiscal($nf);
 
-            $nfItem->setOrdem($item['nItem']->__toString());
+            $nfItem->setOrdem($ordem);
             $nfItem->setCodigo($item->prod->cProd->__toString());
             $nfItem->setEan($item->prod->cEAN->__toString());
             $nfItem->setDescricao($item->prod->xProd->__toString());
@@ -409,8 +425,6 @@ class DistDFeBusiness
             $nf->addItem($nfItem);
 
             $this->notaFiscalItemEntityHandler->save($nfItem, false);
-
-
         }
 
         // FRETE
@@ -469,7 +483,6 @@ class DistDFeBusiness
             }
         }
 
-
         $valorPago = (float)($xml->NFe->infNFe->pag->detPag->vPag ?? $xml->NFe->infNFe->pag->vPag ?? 0.0);
 
         $nf->setValorTotal($valorPago);
@@ -477,7 +490,6 @@ class DistDFeBusiness
         if ($xml->NFe->infNFe->infAdic->infCpl ?? null) {
             $nf->setInfoCompl($xml->NFe->infNFe->infAdic->infCpl->__toString());
         }
-
 
         $nf->jsonData = $nf_jsonData;
 
@@ -739,10 +751,10 @@ class DistDFeBusiness
                     $distDFe->tpEvento = $tpEvento;
                     $distDFe->notaFiscalEvento = $nfEvento;
                     $distDFe->status = 'PROCESSADO';
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     throw new ViewException('Erro ao salvar fis_nf ou fis_distdfe (chave ' . $distDFe->chave . ')');
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->logger->error('Erro ao processar DistDFe: salvando evento para NFe (chave ' . $distDFe->chave . ')');
                 $this->logger->error($e->getMessage());
                 $distDFe->status = 'ERRO AO PROCESSAR';
