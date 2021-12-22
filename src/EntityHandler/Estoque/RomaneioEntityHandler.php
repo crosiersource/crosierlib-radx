@@ -51,8 +51,8 @@ class RomaneioEntityHandler extends EntityHandler
 
         $romaneio = new Romaneio();
         $romaneio->fornecedor = $this->fornecedorEntityHandler->fornecedorFromNotaFiscal($notaFiscal);
-        $romaneio->dtEmissao = $notaFiscal->getDtEmissao();
-        $romaneio->total = $notaFiscal->getValorTotal();
+        $romaneio->dtEmissao = $notaFiscal->dtEmissao;
+        $romaneio->total = $notaFiscal->valorTotal;
         $romaneio->notaFiscal = $notaFiscal;
 
         /** @var NotaFiscalItem $nfItem */
@@ -60,14 +60,14 @@ class RomaneioEntityHandler extends EntityHandler
             $romaneioItem = new RomaneioItem();
             $romaneio->addItem($romaneioItem);
             $romaneioItem->descricao = $nfItem->codigo . ' - ' . $nfItem->descricao;
-            $romaneioItem->ordem = $nfItem->getOrdem();
-            $romaneioItem->precoCusto = $nfItem->getValorUnit();
-            $romaneioItem->qtde = $nfItem->getQtde();
+            $romaneioItem->ordem = $nfItem->ordem;
+            $romaneioItem->precoCusto = $nfItem->valorUnit;
+            $romaneioItem->qtde = $nfItem->qtde;
             $romaneioItem->total = bcmul($romaneioItem->qtde, $romaneioItem->precoCusto);
             $romaneioItem->jsonData = [
-                'ncm' => $nfItem->getNcm(),
-                'unidade' => $nfItem->getUnidade(),
-                'ean' => $nfItem->getEan(),
+                'ncm' => $nfItem->ncm,
+                'unidade' => $nfItem->unidade,
+                'ean' => $nfItem->ean,
             ];
             $this->handleSavingEntityId($romaneioItem);
         }

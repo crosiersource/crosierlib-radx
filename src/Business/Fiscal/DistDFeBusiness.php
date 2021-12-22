@@ -17,6 +17,7 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEnti
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\DistDFeRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -111,7 +112,7 @@ class DistDFeBusiness
                     break;
                 }
                 $iCount++;
-                $resp = $tools->sefazDistDFe($nsu);
+                $resp = $tools->sefazDistDFe(0, $nsu);
                 $xmlResp = simplexml_load_string($resp);
                 $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
                 $r = $xmlResp->xpath('//soap:Body'); // aqui tenho o ultNSU e maxNSU
@@ -248,7 +249,7 @@ class DistDFeBusiness
             /** @var DistDFeRepository $repo */
             $repo = $this->doctrine->getRepository(DistDFe::class);
 
-            $resp = $tools->sefazDistDFe($nsu); // para trazer somente 1
+            $resp = $tools->sefazDistDFe(0, $nsu); // para trazer somente 1
             $xmlResp = simplexml_load_string($resp);
             $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
             $r = $xmlResp->xpath('//soap:Body');
@@ -259,7 +260,7 @@ class DistDFeBusiness
                 if ($nsuRetornado === $nsu) {
                     $xml = $doc->__toString();
 // gzdecode(base64_decode($xml))
-                    $existe = $repo->findOneBy(['nsu' => $nsu]);
+                    $existe = $repo->findOneBy(['nsu' => $nsu, 'documento' => $cnpj]);
                     if (!$existe) {
                         $dfe = new DistDFe();
                         $dfe->nsu = $nsu;
@@ -291,7 +292,7 @@ class DistDFeBusiness
     {
         switch ($distDFe->tipoDistDFe) {
             case 'NFEPROC':
-                $nf = $this->nfeProc2NotaFiscal($distDFe->getXMLDecoded(), $distDFe->notaFiscal);
+                $nf = $this->nfeProc2NotaFiscal($distDFe->getXMLDecoded(), $distDFe->notaFiscal, $distDFe);
                 $distDFe->notaFiscal = $nf;
                 $distDFe->status = 'PROCESSADO';
                 $this->distDFeEntityHandler->save($distDFe);
@@ -316,7 +317,7 @@ class DistDFeBusiness
      * @return NotaFiscal
      * @throws ViewException
      */
-    public function nfeProc2NotaFiscal(\SimpleXMLElement $xml, NotaFiscal $nf = null): ?NotaFiscal
+    public function nfeProc2NotaFiscal(\SimpleXMLElement $xml, NotaFiscal $nf = null, ?DistDFe $distDFe = null): ?NotaFiscal
     {
         if ($xml->getName() === 'NFe') {
             $this->logger->info('xml não é "nfeProc", e sim "NFe". Alterando apenas para poder importar...');
@@ -340,52 +341,52 @@ class DistDFeBusiness
 
         $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
         $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
-        $nf->setAmbiente($ambiente);
-        $nf->setResumo(false);
+        $nf->ambiente = $ambiente;
+        $nf->resumo = false;
         $nf->setXmlNota($xml->asXML());
 
         if ($xml->NFe->infNFe->ide->mod->__toString() !== '65') {
-            $nf->setDocumentoDestinatario($xml->NFe->infNFe->dest->CNPJ->__toString());
-            $nf->setXNomeDestinatario($xml->NFe->infNFe->dest->xNome->__toString());
-            $nf->setInscricaoEstadualDestinatario($xml->NFe->infNFe->dest->IE->__toString());
+            $nf->documentoDestinatario = $xml->NFe->infNFe->dest->CNPJ->__toString();
+            $nf->xNomeDestinatario = $xml->NFe->infNFe->dest->xNome->__toString();
+            $nf->inscricaoEstadualDestinatario = $xml->NFe->infNFe->dest->IE->__toString();
         }
 
         $numNf = (int)$xml->NFe->infNFe->ide->nNF->__toString();
         if (!$numNf) {
             throw new ViewException('numNf n/d');
         }
-        $nf->setNumero($numNf);
-        $nf->setCnf((int)$xml->NFe->infNFe->ide->cNF->__toString());
+        $nf->numero = $numNf;
+        $nf->cnf = ((int)$xml->NFe->infNFe->ide->cNF->__toString());
         $mod = (int)$xml->NFe->infNFe->ide->mod->__toString();
-        $nf->setTipoNotaFiscal($mod === 55 ? 'NFE' : 'NFCE');
+        $nf->tipoNotaFiscal = ($mod === 55 ? 'NFE' : 'NFCE');
 
-        $nf->setEntradaSaida($xml->NFe->infNFe->ide->tpNF->__toString() === 0 ? 'E' : 'S');
-        $nf->setProtocoloAutorizacao($xml->NFe->infNFe->ide->nProt->__toString());
+        $nf->entradaSaida = ($xml->NFe->infNFe->ide->tpNF->__toString() === 0 ? 'E' : 'S');
+        $nf->protocoloAutorizacao = ($xml->NFe->infNFe->ide->nProt->__toString());
 
-        $nf->setSerie((int)$xml->NFe->infNFe->ide->serie->__toString());
-        $nf->setNaturezaOperacao($xml->NFe->infNFe->ide->natOp->__toString());
-        $nf->setDtEmissao(DateTimeUtils::parseDateStr($xml->NFe->infNFe->ide->dhEmi->__toString()));
+        $nf->serie = ((int)$xml->NFe->infNFe->ide->serie->__toString());
+        $nf->naturezaOperacao = ($xml->NFe->infNFe->ide->natOp->__toString());
+        $nf->dtEmissao = (DateTimeUtils::parseDateStr($xml->NFe->infNFe->ide->dhEmi->__toString()));
 
         if ($xml->NFe->infNFe->ide->dhSaiEnt->__toString() ?: null) {
-            $nf->setDtSaiEnt(DateTimeUtils::parseDateStr($xml->NFe->infNFe->ide->dhSaiEnt->__toString()));
+            $nf->dtSaiEnt = (DateTimeUtils::parseDateStr($xml->NFe->infNFe->ide->dhSaiEnt->__toString()));
         }
-        $nf->setFinalidadeNf(FinalidadeNF::getByCodigo($xml->NFe->infNFe->ide->finNFe->__toString())['key']);
+        $nf->finalidadeNf = (FinalidadeNF::getByCodigo($xml->NFe->infNFe->ide->finNFe->__toString())['key']);
 
         if ($xml->NFe->infNFe->ide->NFref->refNFe ?? null) {
-            $nf->setA03idNfReferenciada($xml->NFe->infNFe->ide->NFref->refNFe->__toString());
+            $nf->a03idNfReferenciada = ($xml->NFe->infNFe->ide->NFref->refNFe->__toString());
         }
 
-        $nf->setDocumentoEmitente($xml->NFe->infNFe->emit->CNPJ->__toString());
-        $nf->setXNomeEmitente($xml->NFe->infNFe->emit->xNome->__toString());
-        $nf->setInscricaoEstadualEmitente($xml->NFe->infNFe->emit->IE->__toString()); // ????
+        $nf->documentoEmitente = $xml->NFe->infNFe->emit->CNPJ->__toString();
+        $nf->xNomeEmitente = $xml->NFe->infNFe->emit->xNome->__toString();
+        $nf->inscricaoEstadualEmitente = $xml->NFe->infNFe->emit->IE->__toString(); // ????
 
 //        if ($nf->getId()) {
 //            $nf->deleteAllItens();
 //        }
-        $nf->setChaveAcesso($chaveAcesso);
+        $nf->chaveAcesso = $chaveAcesso;
 
-        $nf->setProtocoloAutorizacao($xml->protNFe->infProt->nProt ?? null);
-        $nf->setDtProtocoloAutorizacao(DateTimeUtils::parseDateStr($xml->protNFe->infProt->dhRecbto ?? null));
+        $nf->protocoloAutorizacao = $xml->protNFe->infProt->nProt ?? null;
+        $nf->dtProtocoloAutorizacao = DateTimeUtils::parseDateStr($xml->protNFe->infProt->dhRecbto ?? null);
 
         /** @var NotaFiscal $nf */
         $nf = $this->notaFiscalEntityHandler->save($nf, false);
@@ -406,19 +407,19 @@ class DistDFeBusiness
                 continue;
             }
             $nfItem = new NotaFiscalItem();
-            $nfItem->setNotaFiscal($nf);
+            $nfItem->notaFiscal = $nf;
 
-            $nfItem->setOrdem($ordem);
-            $nfItem->setCodigo($item->prod->cProd->__toString());
-            $nfItem->setEan($item->prod->cEAN->__toString());
-            $nfItem->setDescricao($item->prod->xProd->__toString());
-            $nfItem->setNcm($item->prod->NCM->__toString());
-            $nfItem->setCfop($item->prod->CFOP->__toString());
-            $nfItem->setUnidade($item->prod->uCom->__toString());
-            $nfItem->setQtde((float)$item->prod->qCom->__toString());
-            $nfItem->setValorUnit((float)$item->prod->vUnCom->__toString());
-            $nfItem->setValorTotal((float)$item->prod->vProd->__toString());
-            $nfItem->setValorDesconto((float)$item->prod->vDesc->__toString());
+            $nfItem->ordem = $ordem;
+            $nfItem->codigo = $item->prod->cProd->__toString();
+            $nfItem->ean = $item->prod->cEAN->__toString();
+            $nfItem->descricao = $item->prod->xProd->__toString();
+            $nfItem->ncm = $item->prod->NCM->__toString();
+            $nfItem->cfop = $item->prod->CFOP->__toString();
+            $nfItem->unidade = $item->prod->uCom->__toString();
+            $nfItem->qtde = (float)$item->prod->qCom->__toString();
+            $nfItem->valorUnit = (float)$item->prod->vUnCom->__toString();
+            $nfItem->valorTotal = (float)$item->prod->vProd->__toString();
+            $nfItem->valorDesconto = $item->prod->vDesc->__toString();
 
             $this->notaFiscalEntityHandler->handleSavingEntityId($nfItem);
 
@@ -428,43 +429,43 @@ class DistDFeBusiness
         }
 
         // FRETE
-        $nf->setTranspModalidadeFrete(ModalidadeFrete::getByCodigo($xml->NFe->infNFe->transp->modFrete->__toString())['key'] ?? null);
+        $nf->transpModalidadeFrete = ModalidadeFrete::getByCodigo($xml->NFe->infNFe->transp->modFrete->__toString())['key'] ?? null;
 
         if ($xml->NFe->infNFe->transp->vol->qVol ?? null) {
-            $nf->setTranspQtdeVolumes((float)$xml->NFe->infNFe->transp->vol->qVol->__toString());
+            $nf->transpQtdeVolumes = (float)$xml->NFe->infNFe->transp->vol->qVol->__toString();
         }
         if ($xml->NFe->infNFe->transp->vol->esp ?? null) {
-            $nf->setTranspEspecieVolumes($xml->NFe->infNFe->transp->vol->esp->__toString());
+            $nf->transpEspecieVolumes = $xml->NFe->infNFe->transp->vol->esp->__toString();
         }
         if ($xml->NFe->infNFe->transp->vol->marca) {
-            $nf->setTranspMarcaVolumes($xml->NFe->infNFe->transp->vol->marca->__toString());
+            $nf->transpMarcaVolumes = $xml->NFe->infNFe->transp->vol->marca->__toString();
         }
         if ($xml->NFe->infNFe->transp->vol->nVol ?? null) {
-            $nf->setTranspNumeracaoVolumes($xml->NFe->infNFe->transp->vol->nVol);
+            $nf->transpNumeracaoVolumes = $xml->NFe->infNFe->transp->vol->nVol;
         }
         if ($xml->NFe->infNFe->transp->vol->pesoL ?? null) {
-            $nf->setTranspPesoLiquido((float)$xml->NFe->infNFe->transp->vol->pesoL->__toString());
+            $nf->transpPesoLiquido = (float)$xml->NFe->infNFe->transp->vol->pesoL->__toString();
         }
         if ($xml->NFe->infNFe->transp->vol->pesoB ?? null) {
-            $nf->setTranspPesoBruto((float)$xml->NFe->infNFe->transp->vol->pesoB->__toString());
+            $nf->transpPesoBruto = (float)$xml->NFe->infNFe->transp->vol->pesoB->__toString();
         }
         if ($xml->NFe->infNFe->transp->transporta->xNome ?? null) {
-            $nf->setTranspNome($xml->NFe->infNFe->transp->transporta->xNome->__toString());
+            $nf->transpNome = $xml->NFe->infNFe->transp->transporta->xNome->__toString();
         }
         if ($xml->NFe->infNFe->transp->transporta->CNPJ ?? null) {
-            $nf->setTranspDocumento($xml->NFe->infNFe->transp->transporta->CNPJ->__toString());
+            $nf->transpDocumento = $xml->NFe->infNFe->transp->transporta->CNPJ->__toString();
         }
         if ($xml->NFe->infNFe->transp->transporta->IE ?? null) {
-            $nf->setTranspInscricaoEstadual($xml->NFe->infNFe->transp->transporta->IE->__toString());
+            $nf->transpInscricaoEstadual = $xml->NFe->infNFe->transp->transporta->IE->__toString();
         }
         if ($xml->NFe->infNFe->transp->transporta->xEnder ?? null) {
-            $nf->setTranspEndereco($xml->NFe->infNFe->transp->transporta->xEnder->__toString());
+            $nf->transpEndereco = $xml->NFe->infNFe->transp->transporta->xEnder->__toString();
         }
         if ($xml->NFe->infNFe->transp->transporta->xMun ?? null) {
-            $nf->setTranspCidade($xml->NFe->infNFe->transp->transporta->xMun->__toString());
+            $nf->transpCidade = $xml->NFe->infNFe->transp->transporta->xMun->__toString();
         }
         if ($xml->NFe->infNFe->transp->transporta->xMun ?? null) {
-            $nf->setTranspEstado($xml->NFe->infNFe->transp->transporta->UF->__toString());
+            $nf->transpEstado = $xml->NFe->infNFe->transp->transporta->UF->__toString();
         }
 
         if ($xml->NFe->infNFe->cobr->fat ?? null) {
@@ -485,10 +486,15 @@ class DistDFeBusiness
 
         $valorPago = (float)($xml->NFe->infNFe->pag->detPag->vPag ?? $xml->NFe->infNFe->pag->vPag ?? 0.0);
 
-        $nf->setValorTotal($valorPago);
+        $nf->valorTotal = $valorPago;
 
         if ($xml->NFe->infNFe->infAdic->infCpl ?? null) {
-            $nf->setInfoCompl($xml->NFe->infNFe->infAdic->infCpl->__toString());
+            $nf->infoCompl = $xml->NFe->infNFe->infAdic->infCpl->__toString();
+        }
+
+        if ($distDFe) {
+            $nf_jsonData['distdfe_id'] = $distDFe->getId();
+            $nf_jsonData['distdfe_tipo'] = 'nfeProc';
         }
 
         $nf->jsonData = $nf_jsonData;
@@ -527,32 +533,32 @@ class DistDFeBusiness
                 }
             }
             $nf->setXmlNota($distDFe->xml);
-            $nf->setChaveAcesso($distDFe->chave);
+            $nf->chaveAcesso = $distDFe->chave;
             $nf->nsu = $distDFe->nsu;
-            $nf->setResumo(true);
+            $nf->resumo = true;
 
-            $nf->setDtEmissao(DateTimeUtils::parseDateStr($xml->dhEmi->__toString()));
+            $nf->dtEmissao = DateTimeUtils::parseDateStr($xml->dhEmi->__toString());
 
-            $nf->setEntradaSaida($xml->tpNF->__toString() === 0 ? 'E' : 'S');
-            $nf->setProtocoloAutorizacao($xml->nProt->__toString());
+            $nf->entradaSaida = $xml->tpNF->__toString() === 0 ? 'E' : 'S';
+            $nf->protocoloAutorizacao = $xml->nProt->__toString();
 
-            $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
-            $nf->setDocumentoDestinatario(preg_replace("/[^0-9]/", '', $nfeConfigs['cnpj']));
-            $nf->setXNomeDestinatario($nfeConfigs['razaosocial']);
-            $nf->setInscricaoEstadualDestinatario($nfeConfigs['ie']);
+            $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($distDFe->documento);
+            $nf->documentoDestinatario = (preg_replace("/[^0-9]/", '', $nfeConfigs['cnpj']));
+            $nf->xNomeDestinatario = $nfeConfigs['razaosocial'];
+            $nf->inscricaoEstadualDestinatario = $nfeConfigs['ie'];
 
             if ($xml->CNPJ ?? null) {
-                $nf->setDocumentoEmitente($xml->CNPJ->__toString());
+                $nf->documentoEmitente = $xml->CNPJ->__toString();
             }
             if ($xml->CPF ?? null) {
-                $nf->setDocumentoEmitente($xml->CPF->__toString());
+                $nf->documentoEmitente = $xml->CPF->__toString();
             }
-            $nf->setXNomeEmitente($xml->xNome->__toString());
+            $nf->xNomeEmitente = $xml->xNome->__toString();
             if ($xml->IE ?? null) {
-                $nf->setInscricaoEstadualEmitente($xml->IE->__toString());
+                $nf->inscricaoEstadualEmitente = $xml->IE->__toString();
             }
 
-            $nf->setValorTotal((float)$xml->vNF->__toString());
+            $nf->valorTotal = (float)$xml->vNF->__toString();
 
             /** @var NotaFiscal $nf */
             $nf = $this->notaFiscalEntityHandler->save($nf);
@@ -560,7 +566,7 @@ class DistDFeBusiness
             $distDFe->notaFiscal = $nf;
 
         } catch (\Throwable $e) {
-            $this->logger->error('Erro para a chave: ' . $nf->getChaveAcesso());
+            $this->logger->error('Erro para a chave: ' . $nf->chaveAcesso);
             $distDFe->status = 'ERRO AO PROCESSAR';
         }
 
@@ -613,15 +619,15 @@ class DistDFeBusiness
 
             try {
                 $nfEvento->setXml($distDFe->xml);
-                $nfEvento->setNotaFiscal($nf);
-                $nfEvento->setTpEvento($tpEvento);
-                $nfEvento->setNSeqEvento($nSeqEvento);
-                $nfEvento->setDescEvento($descEvento);
+                $nfEvento->notaFiscal = $nf;
+                $nfEvento->tpEvento = $tpEvento;
+                $nfEvento->nSeqEvento = $nSeqEvento;
+                $nfEvento->descEvento = $descEvento;
                 $this->notaFiscalEventoEntityHandler->save($nfEvento);
                 $distDFe->nSeqEvento = $nSeqEvento;
                 $distDFe->tpEvento = $tpEvento;
                 $distDFe->notaFiscalEvento = $nfEvento;
-                $distDFe->notaFiscal = $nfEvento->getNotaFiscal();
+                $distDFe->notaFiscal = $nfEvento->notaFiscal;
                 $distDFe->status = 'PROCESSADO';
             } catch (\Exception $e) {
                 throw new ViewException('Erro ao salvar fis_nf ou fis_distdfe (chave ' . $distDFe->chave . ')');
@@ -663,9 +669,10 @@ class DistDFeBusiness
             $repoDistDFe = $this->doctrine->getRepository(DistDFe::class);
             $cnpjEmUso = $this->nfeUtils->getNFeConfigsEmUso()['cnpj'];
             $distDFesAProcessar = $repoDistDFe->findDistDFeNotInNotaFiscal($cnpjEmUso);
-
-
+            $total = count($distDFesAProcessar);
+            $i = 1;
             foreach ($distDFesAProcessar as $distDFeId) {
+                $this->logger->debug("Processando " . $i++ . " de " . $total);
                 /** @var DistDFe $distDFe */
                 $distDFe = $repoDistDFe->find($distDFeId);
                 // gzdecode(base64_decode($distDFe->getXml()))
@@ -676,7 +683,7 @@ class DistDFeBusiness
                 $xmlName = $xml->getName();
 
                 if ($xmlName === 'nfeProc') {
-                    $nf = $this->nfeProc2NotaFiscal($distDFe->getXMLDecoded());
+                    $nf = $this->nfeProc2NotaFiscal($distDFe->getXMLDecoded(), null, $distDFe);
                     $distDFe->notaFiscal = $nf;
                     $this->distDFeEntityHandler->save($distDFe);
                 } elseif ($xmlName === 'resNFe') {
@@ -741,10 +748,10 @@ class DistDFeBusiness
                 try {
                     $nfEvento = new NotaFiscalEvento();
                     $nfEvento->setXml($distDFe->xml);
-                    $nfEvento->setNotaFiscal($nf);
-                    $nfEvento->setTpEvento($tpEvento);
-                    $nfEvento->setNSeqEvento($nSeqEvento);
-                    $nfEvento->setDescEvento($descEvento);
+                    $nfEvento->notaFiscal = $nf;
+                    $nfEvento->tpEvento = $tpEvento;
+                    $nfEvento->nSeqEvento = $nSeqEvento;
+                    $nfEvento->descEvento = $descEvento;
                     $this->notaFiscalEventoEntityHandler->save($nfEvento);
 
                     $distDFe->nSeqEvento = $nSeqEvento;
@@ -773,22 +780,22 @@ class DistDFeBusiness
     public function downloadNFe(NotaFiscal $notaFiscal): void
     {
         try {
-            $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->getDocumentoDestinatario());
+            $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->documentoDestinatario);
             $tools->model('55');
             $tools->setEnvironment(1);
-            $response = $tools->sefazDownload($notaFiscal->getChaveAcesso());
+            $response = $tools->sefazDownload($notaFiscal->chaveAcesso);
             $xmlDownload = simplexml_load_string($response);
             $xmlDownload->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
             $xml = $xmlDownload->xpath('//soap:Body');
 
             $cStat = $xml[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->cStat ?? null;
             if (!$cStat || !$cStat->__toString()) {
-                $this->logger->info('Erro ao obter cStat para chave: ' . $notaFiscal->getChaveAcesso() . ')');
+                $this->logger->info('Erro ao obter cStat para chave: ' . $notaFiscal->chaveAcesso . ')');
             }
             $cStat = $cStat->__toString();
 
             if ($cStat !== '138') {
-                $this->logger->info('cStat diferente de 138 para chave ' . $notaFiscal->getChaveAcesso() . ' (cStat = ' . $cStat . ')');
+                $this->logger->info('cStat diferente de 138 para chave ' . $notaFiscal->chaveAcesso . ' (cStat = ' . $cStat . ')');
                 $xMotivo = $xml[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo ?? null;
                 if ($xMotivo instanceof \SimpleXMLElement) {
                     $this->logger->info('xMotivo: ' . $xMotivo->__toString());
@@ -800,12 +807,12 @@ class DistDFeBusiness
                 $notaFiscal->setXmlNota($zip);
                 $this->nfeProc2NotaFiscal($notaFiscal->getXMLDecoded(), $notaFiscal);
             } else {
-                $this->logger->error('Erro ao obter XML (download zip) para a chave: ' . $notaFiscal->getChaveAcesso());
+                $this->logger->error('Erro ao obter XML (download zip) para a chave: ' . $notaFiscal->chaveAcesso);
             }
         } catch (\Exception $e) {
-            $this->logger->error('Erro ao fazer o download do XML (chave: ' . $notaFiscal->getChaveAcesso() . ')');
+            $this->logger->error('Erro ao fazer o download do XML (chave: ' . $notaFiscal->chaveAcesso . ')');
             $this->logger->error($e->getMessage());
-            throw new ViewException('Erro ao fazer o download do XML (chave: ' . $notaFiscal->getChaveAcesso() . ')');
+            throw new ViewException('Erro ao fazer o download do XML (chave: ' . $notaFiscal->chaveAcesso . ')');
         }
     }
 
@@ -857,6 +864,79 @@ class DistDFeBusiness
                 $this->logger->error('Erro ao extrair chave do DistDFe id=' . $distDFe->getId());
             }
         }
+    }
+
+
+    public function res2proc()
+    {
+        /** @var Connection $conn */
+        $conn = $this->doctrine->getConnection();
+
+        $sql = "
+                SELECT 
+                    n.id as notafiscal_id, d.id as distdfe_id 
+                FROM 
+                    fis_distdfe d, fis_nf n 
+                WHERE
+                     (JSON_IS_NULL_OR_EMPTY(json_data, 'distdfe_tipo') OR n.json_data->>\"$.distdfe_tipo\" NOT LIKE 'nfeProc') AND 
+                    d.nota_fiscal_id = n.id AND tipo_distdfe = 'NFEPROC' AND chnfe IN 
+                    (SELECT chnfe FROM (select count(*) as qt, chnfe FROM fis_distdfe WHERE nota_fiscal_id is not null GROUP BY documento, chnfe, nota_fiscal_id having qt > 1) duas_na_dist)
+                    ORDER BY n.id DESC LIMIT 2000 
+                    ";
+
+        /** @var NotaFiscalRepository $repoNotaFiscal */
+        $repoNotaFiscal = $this->doctrine->getRepository(NotaFiscal::class);
+
+        /** @var DistDFeRepository $repoDistDFe */
+        $repoDistDFe = $this->doctrine->getRepository(DistDFe::class);
+
+        $rs = $conn->fetchAllAssociative($sql);
+        foreach ($rs as $r) {
+            $nf = $repoNotaFiscal->find($r['notafiscal_id']);
+            $distdfe = $repoDistDFe->find(($r['distdfe_id']));
+
+            $distDfe_xmlName = $distdfe->getXMLDecoded()->getName();
+
+            if ($distDfe_xmlName !== 'nfeProc') {
+                throw new ViewException('distdfe xmlName != nfeProc');
+            }
+
+            $nf_xmlName = $nf->getXMLDecoded()->getName();
+
+            $mudouAlgo = false;
+
+            if ($nf_xmlName !== 'nfeProc') {
+                $nf->setXmlNota($distdfe->xml);
+                $nf->jsonData['distdfe_id'] = $distdfe->getId();
+                $nf->jsonData['distdfe_tipo'] = 'nfeProc';
+                $this->notaFiscalEntityHandler->save($nf);
+                $mudouAlgo = true;
+            }
+
+            if ($distdfe->getId() !== ($nf->jsonData['distdfe_id'] ?? null)) {
+                $nf->jsonData['distdfe_id'] = $distdfe->getId();
+                $mudouAlgo = true;
+            }
+
+            if (($nf->jsonData['distdfe_tipo'] ?? '') !== 'nfeProc') {
+                $nf->jsonData['distdfe_tipo'] = 'nfeProc';
+                $mudouAlgo = true;
+            }
+
+            if ($mudouAlgo) {
+                $this->notaFiscalEntityHandler->save($nf);
+            }
+
+
+            $this->notaFiscalEntityHandler->getDoctrine()->clear();
+
+//            $xmlNota = $nf->getXMLDecodedAsString();
+//            $xmlDistDFe = @gzdecode(base64_decode($distdfe->xml));
+//            
+
+        }
+
+
     }
 
 

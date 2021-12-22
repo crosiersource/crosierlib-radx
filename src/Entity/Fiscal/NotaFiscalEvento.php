@@ -97,78 +97,7 @@ class NotaFiscalEvento implements EntityId
      */
     public ?string $xml = null;
 
-    /**
-     * @return NotaFiscal|null
-     */
-    public function getNotaFiscal(): ?NotaFiscal
-    {
-        return $this->notaFiscal;
-    }
-
-    /**
-     * @param NotaFiscal|null $notaFiscal
-     * @return NotaFiscalEvento
-     */
-    public function setNotaFiscal(?NotaFiscal $notaFiscal): NotaFiscalEvento
-    {
-        $this->notaFiscal = $notaFiscal;
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getTpEvento(): ?int
-    {
-        return $this->tpEvento;
-    }
-
-    /**
-     * @param int|null $tpEvento
-     * @return NotaFiscalEvento
-     */
-    public function setTpEvento(?int $tpEvento): NotaFiscalEvento
-    {
-        $this->tpEvento = $tpEvento;
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getNSeqEvento(): ?int
-    {
-        return $this->nSeqEvento;
-    }
-
-    /**
-     * @param int|null $nSeqEvento
-     * @return NotaFiscalEvento
-     */
-    public function setNSeqEvento(?int $nSeqEvento): NotaFiscalEvento
-    {
-        $this->nSeqEvento = $nSeqEvento;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getDescEvento(): ?string
-    {
-        return $this->descEvento;
-    }
-
-    /**
-     * @param string|null $descEvento
-     * @return NotaFiscalEvento
-     */
-    public function setDescEvento(?string $descEvento): NotaFiscalEvento
-    {
-        $this->descEvento = $descEvento;
-        return $this;
-    }
-
+    
     /**
      * @return string|null
      */

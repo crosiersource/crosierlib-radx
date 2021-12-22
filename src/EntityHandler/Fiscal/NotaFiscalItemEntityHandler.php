@@ -52,22 +52,22 @@ class NotaFiscalItemEntityHandler extends EntityHandler
             throw new ViewException('Item sem valor unitário');
         }
         /** @var NotaFiscalItem $nfItem */
-        if (!$nfItem->getOrdem()) {
+        if (!$nfItem->ordem) {
             $ultimaOrdem = 0;
-            foreach ($nfItem->getNotaFiscal()->getItens() as $item) {
-                if ($item->getOrdem() > $ultimaOrdem) {
-                    $ultimaOrdem = $item->getOrdem();
+            foreach ($nfItem->notaFiscal->getItens() as $item) {
+                if ($item->ordem > $ultimaOrdem) {
+                    $ultimaOrdem = $item->ordem;
                 }
             }
-            $nfItem->setOrdem($ultimaOrdem + 1);
+            $nfItem->ordem = $ultimaOrdem + 1;
         }
 
-        if (!$nfItem->getCsosn()) {
+        if (!$nfItem->csosn) {
             $cnpjsProprios = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsCNPJs();
-            if (in_array(($nfItem->getNotaFiscal()->getDocumentoEmitente() ?? ''), $cnpjsProprios, true)) {
-                $nfeConfigs = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsByCNPJ($nfItem->getNotaFiscal()->getDocumentoEmitente());
+            if (in_array(($nfItem->notaFiscal->documentoEmitente ?? ''), $cnpjsProprios, true)) {
+                $nfeConfigs = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsByCNPJ($nfItem->notaFiscal->documentoEmitente);
                 if ($nfeConfigs['CSOSN'] ?? false) {
-                    $nfItem->setCsosn($nfeConfigs['CSOSN']);
+                    $nfItem->csosn = $nfeConfigs['CSOSN'];
                 }
             }
         }
@@ -89,9 +89,9 @@ class NotaFiscalItemEntityHandler extends EntityHandler
      */
     public function afterDelete(/** @var NotaFiscalItem $nfItem */ $nfItem)
     {
-        if ($nfItem->getNotaFiscal()) {
+        if ($nfItem->notaFiscal) {
             /** @var NotaFiscal $notaFiscal */
-            $notaFiscal = $this->getDoctrine()->getRepository(NotaFiscal::class)->findOneBy(['id' => $nfItem->getNotaFiscal()->getId()]);
+            $notaFiscal = $this->getDoctrine()->getRepository(NotaFiscal::class)->findOneBy(['id' => $nfItem->notaFiscal->getId()]);
             $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
             $this->notaFiscalEntityHandler->save($notaFiscal);
         }

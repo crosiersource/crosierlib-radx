@@ -100,7 +100,7 @@ class SpedNFeBusiness
             throw new \RuntimeException('Não foi possível obter o template XML da NFe');
         }
 
-        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
+        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
 
 
         if ($nfeConfigs['cUF'] ?? false) {
@@ -123,39 +123,39 @@ class SpedNFeBusiness
         }
 
 
-        $nfe->infNFe->ide->nNF = $notaFiscal->getNumero();
+        $nfe->infNFe->ide->nNF = $notaFiscal->numero;
 
-        $nfe->infNFe->ide->cNF = $notaFiscal->getCnf();
+        $nfe->infNFe->ide->cNF = $notaFiscal->cnf;
 
-        $nfe->infNFe->ide->mod = TipoNotaFiscal::get($notaFiscal->getTipoNotaFiscal())['codigo'];
-        $nfe->infNFe->ide->serie = $notaFiscal->getSerie();
+        $nfe->infNFe->ide->mod = TipoNotaFiscal::get($notaFiscal->tipoNotaFiscal)['codigo'];
+        $nfe->infNFe->ide->serie = $notaFiscal->serie;
 
         $tpEmis = 1;
         $nfe->infNFe->ide->tpEmis = $tpEmis;
 
-        $nfe->infNFe['Id'] = 'NFe' . $notaFiscal->getChaveAcesso();
-        $nfe->infNFe->ide->cDV = NFeKeys::verifyingDigit(substr($notaFiscal->getChaveAcesso(), 0, -1));
+        $nfe->infNFe['Id'] = 'NFe' . $notaFiscal->chaveAcesso;
+        $nfe->infNFe->ide->cDV = NFeKeys::verifyingDigit(substr($notaFiscal->chaveAcesso, 0, -1));
 
-        $nfe->infNFe->ide->natOp = $notaFiscal->getNaturezaOperacao();
+        $nfe->infNFe->ide->natOp = $notaFiscal->naturezaOperacao;
 
-        $nfe->infNFe->ide->dhEmi = $notaFiscal->getDtEmissao()->format('Y-m-d\TH:i:sP');
+        $nfe->infNFe->ide->dhEmi = $notaFiscal->dtEmissao->format('Y-m-d\TH:i:sP');
 
-        $nfe->infNFe->ide->tpNF = $notaFiscal->getEntradaSaida() === 'E' ? '0' : '1';
+        $nfe->infNFe->ide->tpNF = $notaFiscal->entradaSaida === 'E' ? '0' : '1';
 
-        $finNFe = FinalidadeNF::get($notaFiscal->getFinalidadeNf())['codigo'];
+        $finNFe = FinalidadeNF::get($notaFiscal->finalidadeNf)['codigo'];
         $nfe->infNFe->ide->finNFe = $finNFe;
 
         // Devolução
         if ($finNFe === 4) {
-            if (!$notaFiscal->getA03idNfReferenciada()) {
+            if (!$notaFiscal->a03idNfReferenciada) {
                 throw new \RuntimeException('Nota fiscal de devolução sem Id NF Referenciada.');
             }
             // else
-            $nfe->infNFe->ide->NFref->refNFe = $notaFiscal->getA03idNfReferenciada();
+            $nfe->infNFe->ide->NFref->refNFe = $notaFiscal->a03idNfReferenciada;
         }
 
-        if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
-            $nfe->infNFe->ide->dhSaiEnt = $notaFiscal->getDtSaiEnt()->format('Y-m-d\TH:i:sP');
+        if ($notaFiscal->tipoNotaFiscal === 'NFE') {
+            $nfe->infNFe->ide->dhSaiEnt = $notaFiscal->dtSaiEnt->format('Y-m-d\TH:i:sP');
         } else {
             unset($nfe->infNFe->ide->dhSaiEnt); // NFCE não possui
             $nfe->infNFe->ide->idDest = 1;
@@ -182,26 +182,26 @@ class SpedNFeBusiness
         // 1=Operação interna;
         // 2=Operação interestadual;
         // 3=Operação com exterior.
-        if ($notaFiscal->getDocumentoDestinatario()) {
+        if ($notaFiscal->documentoDestinatario) {
 
-            if (strlen($notaFiscal->getDocumentoDestinatario()) === 14) {
-                $nfe->infNFe->dest->CNPJ = preg_replace("/[^0-9]/", '', $notaFiscal->getDocumentoDestinatario());
+            if (strlen($notaFiscal->documentoDestinatario) === 14) {
+                $nfe->infNFe->dest->CNPJ = preg_replace("/[^0-9]/", '', $notaFiscal->documentoDestinatario);
             } else {
-                $nfe->infNFe->dest->CPF = preg_replace("/[^0-9]/", '', $notaFiscal->getDocumentoDestinatario());
+                $nfe->infNFe->dest->CPF = preg_replace("/[^0-9]/", '', $notaFiscal->documentoDestinatario);
             }
 
-            if ($notaFiscal->getAmbiente() === 'HOM') {
+            if ($notaFiscal->ambiente === 'HOM') {
                 $nfe->infNFe->dest->xNome = 'NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL';
             } else {
-                $nfe->infNFe->dest->xNome = trim($notaFiscal->getXNomeDestinatario());
+                $nfe->infNFe->dest->xNome = trim($notaFiscal->xNomeDestinatario);
             }
 
-            if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
+            if ($notaFiscal->tipoNotaFiscal === 'NFE') {
 
                 if ($notaFiscal->jsonData['idDest'] ?? false) {
                     $idDest = $notaFiscal->jsonData['idDest'];
                 } else {
-                    if (($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF']) || ($nfeConfigs[' t_sempre1'] ?? false)) {
+                    if (($notaFiscal->estadoDestinatario === $nfeConfigs['siglaUF']) || ($nfeConfigs[' t_sempre1'] ?? false)) {
                         $idDest = 1;
                     } else {
                         $idDest = 2;
@@ -209,12 +209,12 @@ class SpedNFeBusiness
                 }
                 $nfe->infNFe->ide->idDest = $idDest; // $nfe->infNFe->ide->idDest = 2;
 
-                $nfe->infNFe->dest->enderDest->xLgr = trim($notaFiscal->getLogradouroDestinatario());
-                $nfe->infNFe->dest->enderDest->nro = trim($notaFiscal->getNumeroDestinatario());
+                $nfe->infNFe->dest->enderDest->xLgr = trim($notaFiscal->logradouroDestinatario);
+                $nfe->infNFe->dest->enderDest->nro = trim($notaFiscal->numeroDestinatario);
                 if ($notaFiscal->complementoDestinatario) {
                     $nfe->infNFe->dest->enderDest->xCpl = trim($notaFiscal->complementoDestinatario);
                 }
-                $nfe->infNFe->dest->enderDest->xBairro = trim($notaFiscal->getBairroDestinatario());
+                $nfe->infNFe->dest->enderDest->xBairro = trim($notaFiscal->bairroDestinatario);
 
 
                 /** @var MunicipioRepository $repoMunicipio */
@@ -222,13 +222,13 @@ class SpedNFeBusiness
 
                 /** @var Municipio $r */
                 $r = $repoMunicipio->findOneByFiltersSimpl([
-                    ['municipioNome', 'EQ', $notaFiscal->getCidadeDestinatario()],
-                    ['ufSigla', 'EQ', $notaFiscal->getEstadoDestinatario()]
+                    ['municipioNome', 'EQ', $notaFiscal->cidadeDestinatario],
+                    ['ufSigla', 'EQ', $notaFiscal->estadoDestinatario]
                 ]);
 
                 if (!$r ||
-                    strtoupper(StringUtils::removerAcentos($r->getMunicipioNome())) !== strtoupper(StringUtils::removerAcentos($notaFiscal->getCidadeDestinatario()))) {
-                    throw new ViewException('Município inválido: [' . $notaFiscal->getCidadeDestinatario() . '-' . $notaFiscal->getEstadoDestinatario() . ']');
+                    strtoupper(StringUtils::removerAcentos($r->getMunicipioNome())) !== strtoupper(StringUtils::removerAcentos($notaFiscal->cidadeDestinatario))) {
+                    throw new ViewException('Município inválido: [' . $notaFiscal->cidadeDestinatario . '-' . $notaFiscal->estadoDestinatario . ']');
                 }
 
                 $nfe->infNFe->dest->enderDest->cMun = $r->getMunicipioCodigo();
@@ -236,11 +236,11 @@ class SpedNFeBusiness
                 $nfe->infNFe->dest->enderDest->UF = $r->getUfSigla();
 
 
-                $nfe->infNFe->dest->enderDest->CEP = preg_replace('/\D/', '', $notaFiscal->getCepDestinatario());
+                $nfe->infNFe->dest->enderDest->CEP = preg_replace('/\D/', '', $notaFiscal->cepDestinatario);
                 $nfe->infNFe->dest->enderDest->cPais = 1058;
                 $nfe->infNFe->dest->enderDest->xPais = 'BRASIL';
-                if (trim($notaFiscal->getFoneDestinatario())) {
-                    $nfe->infNFe->dest->enderDest->fone = preg_replace('/\D/', '', $notaFiscal->getFoneDestinatario());
+                if (trim($notaFiscal->foneDestinatario)) {
+                    $nfe->infNFe->dest->enderDest->fone = preg_replace('/\D/', '', $notaFiscal->foneDestinatario);
                 }
             }
 
@@ -252,17 +252,17 @@ class SpedNFeBusiness
             // Nota 2: No caso de operação com o Exterior informar indIEDest=9 e não informar a tag IE do destinatário;
             // Nota 3: No caso de Contribuinte Isento de Inscrição (indIEDest=2), não informar a tag IE do destinatário.
 
-            if ($notaFiscal->getTipoNotaFiscal() === 'NFCE') {
+            if ($notaFiscal->tipoNotaFiscal === 'NFCE') {
                 $nfe->infNFe->dest->indIEDest = 9;
                 unset($nfe->infNFe->transp);
                 unset($nfe->infNFe->dest->IE);
             } else {
-                if (($notaFiscal->getInscricaoEstadualDestinatario() === 'ISENTO') || !$notaFiscal->getInscricaoEstadualDestinatario()) {
+                if (($notaFiscal->inscricaoEstadualDestinatario === 'ISENTO') || !$notaFiscal->inscricaoEstadualDestinatario) {
                     unset($nfe->infNFe->dest->IE);
                     // Rejeição 805: A SEFAZ do destinatário não permite Contribuinte Isento de Inscrição Estadual
-                    if (in_array($notaFiscal->getEstadoDestinatario(), ['AM', 'BA', 'CE', 'GO', 'MG', 'MS', 'MT', 'PA', 'PE', 'RN', 'SE', 'SP'])) {
+                    if (in_array($notaFiscal->estadoDestinatario, ['AM', 'BA', 'CE', 'GO', 'MG', 'MS', 'MT', 'PA', 'PE', 'RN', 'SE', 'SP'])) {
                         $nfe->infNFe->dest->indIEDest = 9;
-                        if (strlen($notaFiscal->getDocumentoDestinatario()) === 11) {
+                        if (strlen($notaFiscal->documentoDestinatario) === 11) {
                             $nfe->infNFe->ide->indFinal = 1; // nesses casos, sendo CPF considera sempre como consumidor final
                         }
                     } else {
@@ -270,8 +270,8 @@ class SpedNFeBusiness
                     }
                 } else {
                     $nfe->infNFe->dest->indIEDest = 1;
-                    if ($notaFiscal->getInscricaoEstadualDestinatario()) {
-                        $nfe->infNFe->dest->IE = trim($notaFiscal->getInscricaoEstadualDestinatario());
+                    if ($notaFiscal->inscricaoEstadualDestinatario) {
+                        $nfe->infNFe->dest->IE = trim($notaFiscal->inscricaoEstadualDestinatario);
                     } else {
                         unset($nfe->infNFe->dest->IE);
                     }
@@ -288,7 +288,7 @@ class SpedNFeBusiness
         // 4=DANFE NFC-e;
         // 5=DANFE NFC-e em mensagem eletrônica (o envio de mensagem eletrônica pode ser feita de forma simultânea com a impressão do DANFE; usar o tpImp=5 quando esta for a única forma de disponibilização do DANFE).
 
-        if ($notaFiscal->getTipoNotaFiscal() === 'NFCE') {
+        if ($notaFiscal->tipoNotaFiscal === 'NFCE') {
             $nfe->infNFe->ide->tpImp = 4;
         } else {
             $nfe->infNFe->ide->tpImp = 1;
@@ -296,7 +296,7 @@ class SpedNFeBusiness
 
         // 1=Produção
         // 2=Homologação
-        $nfe->infNFe->ide->tpAmb = $notaFiscal->getAmbiente() === 'PROD' ? 1 : 2;
+        $nfe->infNFe->ide->tpAmb = $notaFiscal->ambiente === 'PROD' ? 1 : 2;
 
         unset($nfe->infNFe->det);
         $i = 1;
@@ -313,43 +313,43 @@ class SpedNFeBusiness
         /** @var NotaFiscalItem $nfItem */
         foreach ($notaFiscal->getItens() as $nfItem) {
             $itemXML = $nfe->infNFe->addChild('det');
-            $itemXML['nItem'] = $nfItem->getOrdem();
-            $itemXML->prod->cProd = $nfItem->getCodigo();
+            $itemXML['nItem'] = $nfItem->ordem;
+            $itemXML->prod->cProd = $nfItem->codigo;
             $itemXML->prod->cEAN = 'SEM GTIN';
 
-            if ($notaFiscal->getAmbiente() === 'HOM' && $i === 1) {
+            if ($notaFiscal->ambiente === 'HOM' && $i === 1) {
                 $xProd = 'NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL';
             } else {
-                $xProd = $nfItem->getDescricao();
+                $xProd = $nfItem->descricao;
             }
 
             $itemXML->prod->xProd = $xProd;
-            $itemXML->prod->NCM = $nfItem->getNcm();
-            if ($nfItem->getCest()) {
-                $itemXML->prod->CEST = $nfItem->getCest();
+            $itemXML->prod->NCM = $nfItem->ncm;
+            if ($nfItem->cest) {
+                $itemXML->prod->CEST = $nfItem->cest;
             }
-            $itemXML->prod->CFOP = $nfItem->getCfop();
-            $itemXML->prod->uCom = $nfItem->getUnidade();
-            $itemXML->prod->qCom = $nfItem->getQtde();
-            $itemXML->prod->vUnCom = $nfItem->getValorUnit();
-            $itemXML->prod->vProd = number_format($nfItem->getValorTotal(), 2, '.', '');
+            $itemXML->prod->CFOP = $nfItem->cfop;
+            $itemXML->prod->uCom = $nfItem->unidade;
+            $itemXML->prod->qCom = $nfItem->qtde;
+            $itemXML->prod->vUnCom = $nfItem->valorUnit;
+            $itemXML->prod->vProd = number_format($nfItem->valorTotal, 2, '.', '');
             $itemXML->prod->cEANTrib = 'SEM GTIN';
-            $itemXML->prod->uTrib = $nfItem->getUnidade();
-            $itemXML->prod->qTrib = $nfItem->getQtde();
-            $itemXML->prod->vUnTrib = number_format($nfItem->getValorUnit(), 2, '.', '');
-            if (bccomp($nfItem->getValorDesconto(), 0.00, 2)) {
-                $itemXML->prod->vDesc = number_format(abs($nfItem->getValorDesconto()), 2, '.', '');
+            $itemXML->prod->uTrib = $nfItem->unidade;
+            $itemXML->prod->qTrib = $nfItem->qtde;
+            $itemXML->prod->vUnTrib = number_format($nfItem->valorUnit, 2, '.', '');
+            if (bccomp($nfItem->valorDesconto, 0.00, 2)) {
+                $itemXML->prod->vDesc = number_format(abs($nfItem->valorDesconto), 2, '.', '');
             }
             $itemXML->prod->indTot = '1';
 
             $this->handleImpostos($nfe, $nfItem, $itemXML);
 
-            $total_bcICMS += $nfItem->getIcmsValorBc();
-            $total_vICMS += $nfItem->getIcmsValor();
+            $total_bcICMS += $nfItem->icmsValorBc;
+            $total_vICMS += $nfItem->icmsValor;
 
-            $total_vPIS += $nfItem->getPisValor();
+            $total_vPIS += $nfItem->pisValor;
 
-            $total_vCOFINS += $nfItem->getCofinsValor();
+            $total_vCOFINS += $nfItem->cofinsValor;
 
             $total_vICMSUFDest += (float)$itemXML->imposto->ICMSUFDest->vICMSUFDest ?? 0.0;
 
@@ -372,11 +372,11 @@ class SpedNFeBusiness
         $nfe->infNFe->total->ICMSTot->vST = '0.00';
         $nfe->infNFe->total->ICMSTot->vFCPST = '0.00';
         $nfe->infNFe->total->ICMSTot->vFCPSTRet = '0.00';
-        $nfe->infNFe->total->ICMSTot->vProd = number_format($notaFiscal->getSubtotal(), 2, '.', '');
-        $nfe->infNFe->total->ICMSTot->vFrete = $notaFiscal->getTranspValorTotalFrete() ?? '0.00';
+        $nfe->infNFe->total->ICMSTot->vProd = number_format($notaFiscal->subtotal, 2, '.', '');
+        $nfe->infNFe->total->ICMSTot->vFrete = $notaFiscal->transpValorTotalFrete ?? '0.00';
         $nfe->infNFe->total->ICMSTot->vSeg = '0.00';
         // if (bccomp($notaFiscal->getTotalDescontos(), 0.00, 2)) {
-        $nfe->infNFe->total->ICMSTot->vDesc = number_format(abs($notaFiscal->getTotalDescontos()), 2, '.', '');
+        $nfe->infNFe->total->ICMSTot->vDesc = number_format(abs($notaFiscal->totalDescontos), 2, '.', '');
         // }
         $nfe->infNFe->total->ICMSTot->vII = '0.00';
         $nfe->infNFe->total->ICMSTot->vIPI = '0.00';
@@ -384,26 +384,26 @@ class SpedNFeBusiness
         $nfe->infNFe->total->ICMSTot->vPIS = number_format($total_vPIS, 2, '.', '');;
         $nfe->infNFe->total->ICMSTot->vCOFINS = number_format($total_vCOFINS, 2, '.', '');;
         $nfe->infNFe->total->ICMSTot->vOutro = '0.00';
-        $nfe->infNFe->total->ICMSTot->vNF = number_format($notaFiscal->getValorTotal(), 2, '.', '');
+        $nfe->infNFe->total->ICMSTot->vNF = number_format($notaFiscal->valorTotal, 2, '.', '');
         $nfe->infNFe->total->ICMSTot->vTotTrib = '0.00';
 
-        if ($notaFiscal->getTipoNotaFiscal() === 'NFCE') {
+        if ($notaFiscal->tipoNotaFiscal === 'NFCE') {
             $nfe->infNFe->transp->modFrete = 9;
 
         } else {
-            $nfe->infNFe->transp->modFrete = ModalidadeFrete::get($notaFiscal->getTranspModalidadeFrete())['codigo'];
+            $nfe->infNFe->transp->modFrete = ModalidadeFrete::get($notaFiscal->transpModalidadeFrete)['codigo'];
 
-            if ($notaFiscal->getTranspDocumento()) {
+            if ($notaFiscal->transpDocumento()) {
 
-                $nfe->infNFe->transp->transporta->CNPJ = $notaFiscal->getTranspDocumento();
-                $nfe->infNFe->transp->transporta->xNome = trim($notaFiscal->getTranspNome());
-                if ($notaFiscal->getTranspInscricaoEstadual()) {
-                    $nfe->infNFe->transp->transporta->IE = trim($notaFiscal->getTranspInscricaoEstadual());
+                $nfe->infNFe->transp->transporta->CNPJ = $notaFiscal->transpDocumento;
+                $nfe->infNFe->transp->transporta->xNome = trim($notaFiscal->transpNome);
+                if ($notaFiscal->transpInscricaoEstadual) {
+                    $nfe->infNFe->transp->transporta->IE = trim($notaFiscal->transpInscricaoEstadual);
                 }
 
-                $nfe->infNFe->transp->transporta->xEnder = substr($notaFiscal->getTranspEndereco(), 0, 60);
+                $nfe->infNFe->transp->transporta->xEnder = substr($notaFiscal->transpEndereco, 0, 60);
 
-                if (!$notaFiscal->getTranspCidade() || !$notaFiscal->getTranspEstado()) {
+                if (!$notaFiscal->transpCidade || !$notaFiscal->transpEstado) {
                     throw new ViewException('Cidade/UF da transportadora n/d');
                 }
 
@@ -412,29 +412,29 @@ class SpedNFeBusiness
 
                 /** @var Municipio $r */
                 $r = $repoMunicipio->findOneByFiltersSimpl([
-                    ['municipioNome', 'EQ', $notaFiscal->getTranspCidade()],
-                    ['ufSigla', 'EQ', $notaFiscal->getTranspEstado()]
+                    ['municipioNome', 'EQ', $notaFiscal->transpCidade],
+                    ['ufSigla', 'EQ', $notaFiscal->transpEstado]
                 ]);
 
-                if (!$r || strtoupper(StringUtils::removerAcentos($r->getMunicipioNome())) !== strtoupper(StringUtils::removerAcentos($notaFiscal->getTranspCidade()))) {
-                    throw new ViewException('Município inválido: [' . $notaFiscal->getTranspCidade() . '-' . $notaFiscal->getTranspEstado() . ']');
+                if (!$r || strtoupper(StringUtils::removerAcentos($r->getMunicipioNome())) !== strtoupper(StringUtils::removerAcentos($notaFiscal->transpCidade))) {
+                    throw new ViewException('Município inválido: [' . $notaFiscal->transpCidade . '-' . $notaFiscal->transpEstado . ']');
                 }
 
 
                 $nfe->infNFe->transp->transporta->xMun = $r->getMunicipioNome();
                 $nfe->infNFe->transp->transporta->UF = $r->getUfSigla();
 
-                $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->getTranspQtdeVolumes(), 0);
-                $nfe->infNFe->transp->vol->esp = $notaFiscal->getTranspEspecieVolumes();
-                if ($notaFiscal->getTranspMarcaVolumes()) {
-                    $nfe->infNFe->transp->vol->marca = $notaFiscal->getTranspMarcaVolumes();
+                $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->transpQtdeVolumes, 0);
+                $nfe->infNFe->transp->vol->esp = $notaFiscal->transpEspecieVolumes;
+                if ($notaFiscal->transpMarcaVolumes) {
+                    $nfe->infNFe->transp->vol->marca = $notaFiscal->transpMarcaVolumes;
                 }
-                if ($notaFiscal->getTranspNumeracaoVolumes()) {
-                    $nfe->infNFe->transp->vol->nVol = $notaFiscal->getTranspNumeracaoVolumes();
+                if ($notaFiscal->transpNumeracaoVolumes) {
+                    $nfe->infNFe->transp->vol->nVol = $notaFiscal->transpNumeracaoVolumes;
                 }
 
-                $nfe->infNFe->transp->vol->pesoL = number_format($notaFiscal->getTranspPesoLiquido(), 3, '.', '');
-                $nfe->infNFe->transp->vol->pesoB = number_format($notaFiscal->getTranspPesoBruto(), 3, '.', '');
+                $nfe->infNFe->transp->vol->pesoL = number_format($notaFiscal->transpPesoLiquido, 3, '.', '');
+                $nfe->infNFe->transp->vol->pesoB = number_format($notaFiscal->transpPesoBruto, 3, '.', '');
 
             }
         }
@@ -444,12 +444,12 @@ class SpedNFeBusiness
             $nfe->infNFe->pag->detPag->vPag = '0.00';
         } else {
             $nfe->infNFe->pag->detPag->tPag = '01';
-            $nfe->infNFe->pag->detPag->vPag = number_format($notaFiscal->getValorTotal(), 2, '.', '');
+            $nfe->infNFe->pag->detPag->vPag = number_format($notaFiscal->valorTotal, 2, '.', '');
         }
 
 
-        if ($notaFiscal->getInfoCompl()) {
-            $infoCompl = preg_replace("/\r/", '', $notaFiscal->getInfoCompl());
+        if ($notaFiscal->infoCompl) {
+            $infoCompl = preg_replace("/\r/", '', $notaFiscal->infoCompl);
             $infoCompl = preg_replace("/\n/", ';', $infoCompl);
             $nfe->infNFe->infAdic->infCpl = trim($infoCompl);
         }
@@ -462,10 +462,10 @@ class SpedNFeBusiness
 
         // Número randômico para que não aconteça de pegar XML de retorno de tentativas de faturamento anteriores
         $rand = random_int(10000000, 99999999);
-        $notaFiscal->setRandFaturam($rand);
+        $notaFiscal->randFaturam = $rand;
 
-        $notaFiscal->setCStatLote(-100);
-        $notaFiscal->setXMotivoLote('AGUARDANDO FATURAMENTO');
+        $notaFiscal->cStatLote = -100;
+        $notaFiscal->xMotivoLote = 'AGUARDANDO FATURAMENTO';
 
         $this->notaFiscalEntityHandler->save($notaFiscal);
 
@@ -483,26 +483,26 @@ class SpedNFeBusiness
      */
     public function handleImpostos($nfe, NotaFiscalItem $nfItem, \SimpleXMLElement $itemXML): void
     {
-        $csosn = $nfItem->getCsosn();
+        $csosn = $nfItem->csosn;
 
         switch ($csosn) {
             // não contribuinte SIMPLES NACIONAL
             case null:
             {
 
-                $cst = $nfItem->getCst();
+                $cst = $nfItem->cst;
                 if (!$cst) {
-                    throw new ViewException('CST não informado para o item ' . $nfItem->getOrdem() . ' (' . $nfItem->getDescricao() . ')');
+                    throw new ViewException('CST não informado para o item ' . $nfItem->ordem . ' (' . $nfItem->descricao . ')');
                 }
                 $tagICMS = 'ICMS' . $cst;
 
-                if ($nfItem->getIcmsAliquota() > 0) {
+                if ($nfItem->icmsAliquota > 0) {
                     $itemXML->imposto->ICMS->$tagICMS->orig = '0';
                     $itemXML->imposto->ICMS->$tagICMS->CST = $cst;
-                    $itemXML->imposto->ICMS->$tagICMS->modBC = (int)$nfItem->getIcmsModBC();
-                    $itemXML->imposto->ICMS->$tagICMS->vBC = bcmul($nfItem->getIcmsValorBc(), 1, 2);
-                    $itemXML->imposto->ICMS->$tagICMS->pICMS = bcmul($nfItem->getIcmsAliquota(), 1, 2);
-                    $itemXML->imposto->ICMS->$tagICMS->vICMS = bcmul($nfItem->getIcmsValor(), 1, 2);
+                    $itemXML->imposto->ICMS->$tagICMS->modBC = (int)$nfItem->icmsModBC;
+                    $itemXML->imposto->ICMS->$tagICMS->vBC = bcmul($nfItem->icmsValorBc, 1, 2);
+                    $itemXML->imposto->ICMS->$tagICMS->pICMS = bcmul($nfItem->icmsAliquota, 1, 2);
+                    $itemXML->imposto->ICMS->$tagICMS->vICMS = bcmul($nfItem->icmsValor, 1, 2);
                 } else {
                     $itemXML->imposto->ICMS->$tagICMS->orig = '0';
                     $itemXML->imposto->ICMS->$tagICMS->CST = $cst;
@@ -511,20 +511,20 @@ class SpedNFeBusiness
                 $itemXML->imposto->IPI->cEnq = '999';
                 $itemXML->imposto->IPI->IPINT->CST = '53';
 
-                if ($nfItem->getPisAliquota() > 0) {
+                if ($nfItem->pisAliquota > 0) {
                     $itemXML->imposto->PIS->PISAliq->CST = '01';
-                    $itemXML->imposto->PIS->PISAliq->vBC = bcmul($nfItem->getPisValorBc(), 1, 2);
-                    $itemXML->imposto->PIS->PISAliq->pPIS = bcmul($nfItem->getPisAliquota(), 1, 2);
-                    $itemXML->imposto->PIS->PISAliq->vPIS = bcmul($nfItem->getPisValor(), 1, 2);
+                    $itemXML->imposto->PIS->PISAliq->vBC = bcmul($nfItem->pisValorBc, 1, 2);
+                    $itemXML->imposto->PIS->PISAliq->pPIS = bcmul($nfItem->pisAliquota, 1, 2);
+                    $itemXML->imposto->PIS->PISAliq->vPIS = bcmul($nfItem->pisValor, 1, 2);
                 } else {
                     $itemXML->imposto->PIS->PISNT->CST = '04';
                 }
 
-                if ($nfItem->getCofinsAliquota() > 0) {
+                if ($nfItem->cofinsAliquota > 0) {
                     $itemXML->imposto->COFINS->COFINSAliq->CST = '01';
-                    $itemXML->imposto->COFINS->COFINSAliq->vBC = bcmul($nfItem->getCofinsValorBc(), 1, 2);
-                    $itemXML->imposto->COFINS->COFINSAliq->pCOFINS = bcmul($nfItem->getCofinsAliquota(), 1, 2);
-                    $itemXML->imposto->COFINS->COFINSAliq->vCOFINS = bcmul($nfItem->getCofinsValor(), 1, 2);
+                    $itemXML->imposto->COFINS->COFINSAliq->vBC = bcmul($nfItem->cofinsValorBc, 1, 2);
+                    $itemXML->imposto->COFINS->COFINSAliq->pCOFINS = bcmul($nfItem->cofinsAliquota, 1, 2);
+                    $itemXML->imposto->COFINS->COFINSAliq->vCOFINS = bcmul($nfItem->cofinsValor, 1, 2);
                 } else {
                     $itemXML->imposto->COFINS->COFINSNT->CST = '04';
                 }
@@ -556,9 +556,9 @@ class SpedNFeBusiness
                 $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
                 $itemXML->imposto->ICMS->ICMSSN900->CSOSN = 900;
                 $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
-                $itemXML->imposto->ICMS->ICMSSN900->vBC = number_format(abs($nfItem->getIcmsValorBc()), 2, '.', '');
-                $itemXML->imposto->ICMS->ICMSSN900->pICMS = bcmul($nfItem->getIcmsAliquota(), 1, 2);
-                $itemXML->imposto->ICMS->ICMSSN900->vICMS = number_format(abs($nfItem->getIcmsValor()), 2, '.', '');
+                $itemXML->imposto->ICMS->ICMSSN900->vBC = number_format(abs($nfItem->icmsValorBc), 2, '.', '');
+                $itemXML->imposto->ICMS->ICMSSN900->pICMS = bcmul($nfItem->icmsAliquota, 1, 2);
+                $itemXML->imposto->ICMS->ICMSSN900->vICMS = number_format(abs($nfItem->icmsValor), 2, '.', '');
 
                 $itemXML->imposto->PIS->PISAliq->CST = '01';
                 $itemXML->imposto->PIS->PISAliq->vBC = '0.00';
@@ -576,7 +576,7 @@ class SpedNFeBusiness
             default:
             {
                 $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
-                $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();
+                $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->csosn;
                 $itemXML->imposto->PIS->PISNT->CST = '07';
                 $itemXML->imposto->COFINS->COFINSNT->CST = '07';
                 break;
@@ -594,8 +594,8 @@ class SpedNFeBusiness
     public function enviaNFe(NotaFiscal $notaFiscal): NotaFiscal
     {
         try {
-            $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->getDocumentoEmitente());
-            $tools->model($notaFiscal->getTipoNotaFiscal() === 'NFE' ? '55' : '65');
+            $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->documentoEmitente);
+            $tools->model($notaFiscal->tipoNotaFiscal === 'NFE' ? '55' : '65');
             
             if (!$notaFiscal->getXMLDecoded()) {
                 throw new ViewException('Impossível enviar NFe. XMLDecoded n/d.');
@@ -614,10 +614,10 @@ class SpedNFeBusiness
             $resp = $tools->sefazEnviaLote([$xmlAssinado], $idLote, $sincrono);
             $st = new Standardize();
             $std = $st->toStd($resp);
-            $notaFiscal->setCStatLote($std->cStat);
-            $notaFiscal->setXMotivoLote($std->xMotivo);
+            $notaFiscal->cStatLote = $std->cStat;
+            $notaFiscal->xMotivoLote = $std->xMotivo;
             if ((string)$std->cStat === '103') {
-                $notaFiscal->setNRec($std->infRec->nRec);
+                $notaFiscal->nRec = $std->infRec->nRec;
             }
             $this->notaFiscalEntityHandler->save($notaFiscal);
 
@@ -625,7 +625,7 @@ class SpedNFeBusiness
                 $tentativa = 1;
                 while (true) {
                     $this->consultaRecibo($notaFiscal);
-                    if (!$notaFiscal->getCStat() || (int)$notaFiscal->getCStat() === -100) {
+                    if (!$notaFiscal->cStat || (int)$notaFiscal->cStat === -100) {
                         sleep(1);
                         if (++$tentativa === 4) break;
                     } else {
@@ -636,8 +636,8 @@ class SpedNFeBusiness
                 try {
                     // Para notas síncronas não precisa consultar depois o protocolo, portanto a lógica é diferente
                     // da consultaRecibo()
-                    $notaFiscal->setCStat($std->protNFe->infProt->cStat);
-                    $notaFiscal->setXMotivo($std->protNFe->infProt->xMotivo);
+                    $notaFiscal->cStat = $std->protNFe->infProt->cStat;
+                    $notaFiscal->xMotivo = $std->protNFe->infProt->xMotivo;
                     
                     if ($notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
                         try {                            
@@ -649,8 +649,8 @@ class SpedNFeBusiness
                         }
                     }
                     if (in_array($std->protNFe->infProt->cStat, ['100', '302'])) { //DENEGADAS
-                        $notaFiscal->setProtocoloAutorizacao($std->protNFe->infProt->nProt);
-                        $notaFiscal->setDtProtocoloAutorizacao(DateTimeUtils::parseDateStr($std->protNFe->infProt->dhRecbto));
+                        $notaFiscal->protocoloAutorizacao = $std->protNFe->infProt->nProt;
+                        $notaFiscal->dtProtocoloAutorizacao = DateTimeUtils::parseDateStr($std->protNFe->infProt->dhRecbto);
                     }
                     $this->notaFiscalEntityHandler->save($notaFiscal);
                 } catch (\Throwable $e) {
@@ -679,25 +679,25 @@ class SpedNFeBusiness
     public function consultarStatus(NotaFiscal $notaFiscal): NotaFiscal
     {
         //$content = conteúdo do certificado PFX
-        $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->getDocumentoEmitente());
-        $tools->model($notaFiscal->getTipoNotaFiscal() === 'NFE' ? '55' : '65');
+        $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->documentoEmitente);
+        $tools->model($notaFiscal->tipoNotaFiscal === 'NFE' ? '55' : '65');
         //consulta número de recibo
         //$numeroRecibo = número do recíbo do envio do lote
-        $tpAmb = $notaFiscal->getAmbiente() === 'PROD' ? '1' : '2';
-        $xmlResp = $tools->sefazConsultaChave($notaFiscal->getChaveAcesso(), $tpAmb);
+        $tpAmb = $notaFiscal->ambiente === 'PROD' ? '1' : '2';
+        $xmlResp = $tools->sefazConsultaChave($notaFiscal->chaveAcesso, $tpAmb);
         //transforma o xml de retorno em um stdClass
         $st = new Standardize();
         $std = $st->toStd($xmlResp);
 
-        $notaFiscal->setCStatLote($std->cStat);
-        $notaFiscal->setXMotivoLote($std->xMotivo);
+        $notaFiscal->cStatLote = $std->cStat;
+        $notaFiscal->xMotivoLote = $std->xMotivo;
 
         $this->addHistorico($notaFiscal, $std->cStat ?? -1, 'sefazConsultaChave', $xmlResp);
 
         if ($std->cStat === '104' || $std->cStat === '100') { //lote processado (tudo ok)
             $cStat = $std->protNFe->infProt->cStat;
-            $notaFiscal->setCStat($cStat);
-            $notaFiscal->setXMotivo($std->protNFe->infProt->xMotivo);
+            $notaFiscal->cStat = $cStat;
+            $notaFiscal->xMotivo = $std->protNFe->infProt->xMotivo;
             if ($notaFiscal->getXmlNota() && $notaFiscal->getXMLDecoded() && $notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
                 try {
                     if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) &&
@@ -714,8 +714,8 @@ class SpedNFeBusiness
                 }
             }
             if (in_array($cStat, ['100', '302'])) { //DENEGADAS
-                $notaFiscal->setProtocoloAutorizacao($std->protNFe->infProt->nProt);
-                $notaFiscal->setDtProtocoloAutorizacao(DateTimeUtils::parseDateStr($std->protNFe->infProt->dhRecbto));
+                $notaFiscal->protocoloAutorizacao = $std->protNFe->infProt->nProt;
+                $notaFiscal->dtProtocoloAutorizacao = DateTimeUtils::parseDateStr($std->protNFe->infProt->dhRecbto);
             }
         } else if ($std->cStat === 217) {
             $this->consultaRecibo($notaFiscal);
@@ -733,21 +733,21 @@ class SpedNFeBusiness
      */
     public function cancelar(NotaFiscal $notaFiscal)
     {
-        if ($notaFiscal->getCStat() !== 100 && $notaFiscal->getCStat() !== 204) {
+        if ($notaFiscal->cStat !== 100 && $notaFiscal->cStat !== 204) {
             throw new \RuntimeException('Nota Fiscal com status diferente de \'100\' ou de \'204\' não pode ser cancelada. (id: ' . $notaFiscal->getId() . ')');
         }
 
-        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
-        if ($notaFiscal->getDocumentoEmitente() !== $nfeConfigs['cnpj']) {
+        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
+        if ($notaFiscal->documentoEmitente !== $nfeConfigs['cnpj']) {
             throw new ViewException('Documento Emitente diferente do CNPJ configurado');
         }
 
-        $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->getDocumentoEmitente());
-        $tools->model($notaFiscal->getTipoNotaFiscal() === 'NFE' ? '55' : '65');
+        $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->documentoEmitente);
+        $tools->model($notaFiscal->tipoNotaFiscal === 'NFE' ? '55' : '65');
 
-        $chaveNota = $notaFiscal->getChaveAcesso();
-        $xJust = $notaFiscal->getMotivoCancelamento();
-        $nProt = $notaFiscal->getProtocoloAutorizacao();
+        $chaveNota = $notaFiscal->chaveAcesso;
+        $xJust = $notaFiscal->motivoCancelamento;
+        $nProt = $notaFiscal->protocoloAutorizacao;
         $response = $tools->sefazCancela($chaveNota, $xJust, $nProt);
 
         $stdCl = new Standardize($response);
@@ -755,8 +755,8 @@ class SpedNFeBusiness
 
         //verifique se o evento foi processado
         if ((string)$std->cStat !== '128') {
-            $notaFiscal->setCStat($std->cStat);
-            $notaFiscal->setXMotivo($std->retEvento->infEvento->xMotivo);
+            $notaFiscal->cStat = $std->cStat;
+            $notaFiscal->xMotivo = $std->retEvento->infEvento->xMotivo;
             /** @var NotaFiscal $notaFiscal */
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
         } else {
@@ -764,21 +764,21 @@ class SpedNFeBusiness
             if ($cStat == '101' || $cStat == '155' || $cStat == '135') {
                 $xml = Complements::toAuthorize($tools->lastRequest, $response);
 
-                $notaFiscal->setCStat($cStat);
-                $notaFiscal->setXMotivo($std->retEvento->infEvento->xMotivo);
+                $notaFiscal->cStat = $cStat;
+                $notaFiscal->xMotivo = $std->retEvento->infEvento->xMotivo;
                 /** @var NotaFiscal $notaFiscal */
                 $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
 
                 $evento = new NotaFiscalEvento();
-                $evento->setNotaFiscal($notaFiscal);
+                $evento->notaFiscal = $notaFiscal;
                 $evento->setXml($xml);
-                $evento->setDescEvento('CANCELAMENTO');
-                $evento->setNSeqEvento(1);
-                $evento->setTpEvento(110111);
+                $evento->descEvento = 'CANCELAMENTO';
+                $evento->nSeqEvento = 1;
+                $evento->tpEvento = 110111;
                 $this->notaFiscalEventoEntityHandler->save($evento);
             } else {
-                $notaFiscal->setCStat($cStat);
-                $notaFiscal->setXMotivo($std->retEvento->infEvento->xMotivo);
+                $notaFiscal->cStat = $cStat;
+                $notaFiscal->xMotivo = $std->retEvento->infEvento->xMotivo;
                 /** @var NotaFiscal $notaFiscal */
                 $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
             }
@@ -795,13 +795,13 @@ class SpedNFeBusiness
      */
     public function cartaCorrecao(NotaFiscalCartaCorrecao $cartaCorrecao): NotaFiscalCartaCorrecao
     {
-        $tools = $this->nfeUtils->getToolsByCNPJ($cartaCorrecao->getNotaFiscal()->getDocumentoEmitente());
-        $tools->model($cartaCorrecao->getNotaFiscal()->getTipoNotaFiscal() === 'NFE' ? '55' : '65');
+        $tools = $this->nfeUtils->getToolsByCNPJ($cartaCorrecao->notaFiscal->documentoEmitente);
+        $tools->model($cartaCorrecao->notaFiscal->tipoNotaFiscal === 'NFE' ? '55' : '65');
 
-        $chave = $cartaCorrecao->getNotaFiscal()->getChaveAcesso();
-        $nSeqEvento = $cartaCorrecao->getSeq();
+        $chave = $cartaCorrecao->notaFiscal->chaveAcesso;
+        $nSeqEvento = $cartaCorrecao->seq;
 
-        $response = $tools->sefazCCe($chave, $cartaCorrecao->getCartaCorrecao(), $nSeqEvento);
+        $response = $tools->sefazCCe($chave, $cartaCorrecao->cartaCorrecao, $nSeqEvento);
 
         $stdCl = new Standardize($response);
         $std = $stdCl->toStd();
@@ -815,7 +815,7 @@ class SpedNFeBusiness
             if ($cStat == '135' || $cStat == '136') {
                 //SUCESSO PROTOCOLAR A SOLICITAÇÂO ANTES DE GUARDAR
                 $xml = Complements::toAuthorize($tools->lastRequest, $response);
-                $cartaCorrecao->setMsgRetorno($xml);
+                $cartaCorrecao->msgRetorno = $xml;
                 $cartaCorrecao = $this->notaFiscalCartaCorrecaoEntityHandler->save($cartaCorrecao);
             } else {
                 $this->logger->error('Erro ao enviar carta de correção');
@@ -875,12 +875,12 @@ class SpedNFeBusiness
             $xJust = ''; //a ciencia não requer justificativa
             $nSeqEvento = 1;
 
-            $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->getDocumentoDestinatario());
+            $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->documentoDestinatario);
 
-            $response = $tools->sefazManifesta($notaFiscal->getChaveAcesso(), $tpEvento, $xJust, $nSeqEvento);
+            $response = $tools->sefazManifesta($notaFiscal->chaveAcesso, $tpEvento, $xJust, $nSeqEvento);
             $st = new Standardize($response);
 
-            if ($st->simpleXml()->cStat->__toString() === '128') {
+            if ($st->simpleXml()->cStat === '128') {
                 $operacoes = 
                     [
                         210210 => '210210 - CIÊNCIA DA OPERAÇÃO',
@@ -889,16 +889,16 @@ class SpedNFeBusiness
                         210240 => '210240 - OPERAÇÃO NÃO REALIZADA',
                     ];
                 
-                $notaFiscal->setManifestDest($operacoes[$codManifest]);
+                $notaFiscal->manifestDest = $operacoes[$codManifest];
             }
-            $notaFiscal->setDtManifestDest(new \DateTime());
+            $notaFiscal->dtManifestDest = new \DateTime();
 
             $this->notaFiscalEntityHandler->save($notaFiscal);
 
         } catch (\Exception $e) {
             $this->logger->error('Erro ao processar XML');
             $this->logger->error($e->getMessage());
-            throw new ViewException('Erro ao manifestar DFe (chave: ' . $notaFiscal->getChaveAcesso() . ')');
+            throw new ViewException('Erro ao manifestar DFe (chave: ' . $notaFiscal->chaveAcesso . ')');
         }
     }
 
@@ -910,9 +910,9 @@ class SpedNFeBusiness
     public function consultaChave(NotaFiscal $notaFiscal)
     {
         try {
-            $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->getDocumentoEmitente());
-            $tools->model($notaFiscal->getTipoNotaFiscal() === 'NFE' ? '55' : '65');
-            $response = $tools->sefazConsultaChave($notaFiscal->getChaveAcesso());
+            $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->documentoEmitente);
+            $tools->model($notaFiscal->tipoNotaFiscal === 'NFE' ? '55' : '65');
+            $response = $tools->sefazConsultaChave($notaFiscal->chaveAcesso);
 
             //você pode padronizar os dados de retorno atraves da classe abaixo
             //de forma a facilitar a extração dos dados do XML
@@ -930,7 +930,7 @@ class SpedNFeBusiness
         } catch (\Exception $e) {
             $this->logger->error('Erro ao processar XML');
             $this->logger->error($e->getMessage());
-            throw new ViewException('Erro ao consultaChaveDFe (chave: ' . $notaFiscal->getChaveAcesso() . ')');
+            throw new ViewException('Erro ao consultaChaveDFe (chave: ' . $notaFiscal->chaveAcesso . ')');
         }
     }
 
@@ -968,7 +968,7 @@ class SpedNFeBusiness
 
                 throw new ViewException('XML inválido (fis_nf.id = ' . $nf->getId() . ')');
             } catch (\Exception $e) {
-                $this->logger->error('Erro ao fazer o parse do xml para NF (chave: ' . $nf->getChaveAcesso() . ')');
+                $this->logger->error('Erro ao fazer o parse do xml para NF (chave: ' . $nf->chaveAcesso . ')');
             }
         }
 
@@ -1006,23 +1006,23 @@ class SpedNFeBusiness
     public function consultaRecibo(NotaFiscal $notaFiscal)
     {
         try {
-            if (!$notaFiscal->getNRec()) {
+            if (!$notaFiscal->nRec) {
                 throw new ViewException('nRec N/D');
             }
             if (!$notaFiscal->getXMLDecoded()) {
                 throw new ViewException('Impossível consultar recibo. XMLDecoded n/d.');
             }
-            $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->getDocumentoEmitente());
-            $tools->model($notaFiscal->getTipoNotaFiscal() === 'NFE' ? '55' : '65');
-            $xmlResp = $tools->sefazConsultaRecibo($notaFiscal->getNRec());
+            $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->documentoEmitente);
+            $tools->model($notaFiscal->tipoNotaFiscal === 'NFE' ? '55' : '65');
+            $xmlResp = $tools->sefazConsultaRecibo($notaFiscal->nRec);
             $std = (new Standardize($xmlResp))->toStd();
-            $notaFiscal->setCStatLote($std->cStat);
+            $notaFiscal->cStatLote = $std->cStat;
             $this->addHistorico($notaFiscal, $std->cStat ?? -1, 'sefazConsultaRecibo', $xmlResp);
-            $notaFiscal->setXMotivoLote($std->xMotivo);
+            $notaFiscal->xMotivoLote = $std->xMotivo;
             if ((int)$std->cStat === 104 || (int)$std->cStat === 100) { //lote processado (tudo ok)
                 $cStat = $std->protNFe->infProt->cStat;
-                $notaFiscal->setCStat($cStat);
-                $notaFiscal->setXMotivo($std->protNFe->infProt->xMotivo);
+                $notaFiscal->cStat = $cStat;
+                $notaFiscal->xMotivo = $std->protNFe->infProt->xMotivo;
                 if ($notaFiscal->getXmlNota() && $notaFiscal->getXMLDecoded() && $notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
                     try {
                         if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) &&
@@ -1039,8 +1039,8 @@ class SpedNFeBusiness
                     }
                 }
                 if (in_array($cStat, ['100', '302'])) { //DENEGADAS
-                    $notaFiscal->setProtocoloAutorizacao($std->protNFe->infProt->nProt);
-                    $notaFiscal->setDtProtocoloAutorizacao(DateTimeUtils::parseDateStr($std->protNFe->infProt->dhRecbto));
+                    $notaFiscal->protocoloAutorizacao = $std->protNFe->infProt->nProt;
+                    $notaFiscal->dtProtocoloAutorizacao = DateTimeUtils::parseDateStr($std->protNFe->infProt->dhRecbto);
                 }
             }
             $this->notaFiscalEntityHandler->save($notaFiscal);

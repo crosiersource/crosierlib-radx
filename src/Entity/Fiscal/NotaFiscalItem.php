@@ -12,6 +12,9 @@ use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
@@ -122,11 +125,12 @@ class NotaFiscalItem implements EntityId
     public ?int $ordem = null;
 
     /**
-     *
-     * @ORM\Column(name="qtde", type="decimal", precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="qtde", type="decimal", nullable=false, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\NotNull()
+     * @Assert\Type(type="string")
      */
-    public ?float $qtde = null;
+    public ?string $qtde = null;
 
     /**
      *
@@ -136,39 +140,40 @@ class NotaFiscalItem implements EntityId
     public ?string $unidade = null;
 
     /**
-     *
-     * @ORM\Column(name="valor_total", type="decimal", precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="valor_total", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $valorTotal = null;
+    public ?string $valorTotal = null;
 
     /**
-     *
-     * @ORM\Column(name="valor_unit", type="decimal", precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="valor_unit", type="decimal", nullable=false, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\NotNull()
+     * @Assert\Type(type="string")
      */
-    public ?float $valorUnit = null;
+    public ?string $valorUnit = null;
 
     /**
-     *
-     * @ORM\Column(name="valor_desconto", type="decimal",  precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="valor_desconto", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $valorDesconto = null;
+    public ?string $valorDesconto = null;
 
     /**
-     *
-     * @ORM\Column(name="sub_total", type="decimal", precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="sub_total", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $subTotal = null;
+    public ?string $subTotal = null;
 
     /**
-     *
-     * @ORM\Column(name="icms_valor", type="decimal",  precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="icms_valor", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $icmsValor = null;
+    public ?string $icmsValor = null;
 
     /**
      *
@@ -178,62 +183,62 @@ class NotaFiscalItem implements EntityId
     public ?string $icmsModBC = null;
 
     /**
-     *
-     * @ORM\Column(name="icms_valor_bc", type="decimal",  precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="icms_valor_bc", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $icmsValorBc = null;
+    public ?string $icmsValorBc = null;
 
     /**
-     *
-     * @ORM\Column(name="icms", type="decimal",  precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="icms", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $icmsAliquota = null;
-
-
-    /**
-     *
-     * @ORM\Column(name="pis_valor", type="decimal",  precision=15, scale=2)
-     * @var null|float
-     */
-    public ?float $pisValor = null;
-
-    /**
-     *
-     * @ORM\Column(name="pis_valor_bc", type="decimal",  precision=15, scale=2)
-     * @var null|float
-     */
-    public ?float $pisValorBc = null;
-
-    /**
-     *
-     * @ORM\Column(name="pis", type="decimal",  precision=15, scale=2)
-     * @var null|float
-     */
-    public ?float $pisAliquota = null;
+    public ?string $icmsAliquota = null;
 
 
     /**
-     *
-     * @ORM\Column(name="cofins_valor", type="decimal",  precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="pis_valor", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $cofinsValor = null;
+    public ?string $pisValor = null;
 
     /**
-     *
-     * @ORM\Column(name="cofins_valor_bc", type="decimal",  precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="pis_valor_bc", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $cofinsValorBc = null;
+    public ?string $pisValorBc = null;
 
     /**
-     *
-     * @ORM\Column(name="cofins", type="decimal",  precision=15, scale=2)
-     * @var null|float
+     * @ORM\Column(name="pis", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $cofinsAliquota = null;
+    public ?string $pisAliquota = null;
+
+
+    /**
+     * @ORM\Column(name="cofins_valor", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
+     */
+    public ?string $cofinsValor = null;
+
+    /**
+     * @ORM\Column(name="cofins_valor_bc", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
+     */
+    public ?string $cofinsValorBc = null;
+
+    /**
+     * @ORM\Column(name="cofins", type="decimal", nullable=true, precision=15, scale=2)
+     * @Groups("N")
+     * @Assert\Type(type="string")
+     */
+    public ?string $cofinsAliquota = null;
 
     /**
      *
@@ -251,499 +256,321 @@ class NotaFiscalItem implements EntityId
     public ?array $jsonData = null;
 
     /**
-     * @return null|string
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("qtde")
+     * @return float
      */
-    public function getCfop(): ?string
+    public function getQtdeFormatted(): float
     {
-        return $this->cfop;
+        return (float)$this->qtde;
     }
 
     /**
-     * @param null|string $cfop
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("qtde")
+     * @param float $qtde
      */
-    public function setCfop(?string $cfop): NotaFiscalItem
-    {
-        $this->cfop = $cfop;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getCodigo(): ?string
-    {
-        return $this->codigo;
-    }
-
-    /**
-     * @param null|string $codigo
-     * @return NotaFiscalItem
-     */
-    public function setCodigo(?string $codigo): NotaFiscalItem
-    {
-        $this->codigo = $codigo;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getEan(): ?string
-    {
-        return $this->ean;
-    }
-
-    /**
-     * @param string|null $ean
-     * @return NotaFiscalItem
-     */
-    public function setEan(?string $ean): NotaFiscalItem
-    {
-        $this->ean = $ean;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getDescricao(): ?string
-    {
-        return $this->descricao;
-    }
-
-    /**
-     * @param null|string $descricao
-     * @return NotaFiscalItem
-     */
-    public function setDescricao(?string $descricao): NotaFiscalItem
-    {
-        $this->descricao = $descricao;
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getCsosn(): ?int
-    {
-        return $this->csosn;
-    }
-
-    /**
-     * @param int|null $csosn
-     * @return NotaFiscalItem
-     */
-    public function setCsosn(?int $csosn): NotaFiscalItem
-    {
-        $this->csosn = $csosn;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getNcm(): ?string
-    {
-        return $this->ncm;
-    }
-
-    /**
-     * @param null|string $ncm
-     * @return NotaFiscalItem
-     */
-    public function setNcm(?string $ncm): NotaFiscalItem
-    {
-        $this->ncm = $ncm;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCest(): ?string
-    {
-        return $this->cest;
-    }
-
-    /**
-     * @param string|null $cest
-     * @return NotaFiscalItem
-     */
-    public function setCest(?string $cest): NotaFiscalItem
-    {
-        $this->cest = $cest;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCst(): ?string
-    {
-        return $this->cst;
-    }
-
-    /**
-     * @param string|null $cst
-     * @return NotaFiscalItem
-     */
-    public function setCst(?string $cst): NotaFiscalItem
-    {
-        $this->cst = $cst;
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getOrdem(): ?int
-    {
-        return $this->ordem;
-    }
-
-    /**
-     * @param int|null $ordem
-     * @return NotaFiscalItem
-     */
-    public function setOrdem(?int $ordem): NotaFiscalItem
-    {
-        $this->ordem = $ordem;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getQtde(): ?float
-    {
-        return $this->qtde;
-    }
-
-    /**
-     * @param float|null $qtde
-     * @return NotaFiscalItem
-     */
-    public function setQtde(?float $qtde): NotaFiscalItem
+    public function setQtdeFormatted(float $qtde)
     {
         $this->qtde = $qtde;
-        return $this;
     }
 
+
     /**
-     * @return null|string
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("valorTotal")
+     * @return float
      */
-    public function getUnidade(): ?string
+    public function getValorTotalFormatted(): float
     {
-        return $this->unidade;
+        return (float)$this->valorTotal;
     }
 
     /**
-     * @param null|string $unidade
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("valorTotal")
+     * @param float $valorTotal
      */
-    public function setUnidade(?string $unidade): NotaFiscalItem
-    {
-        $this->unidade = $unidade;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getValorTotal(): ?float
-    {
-        return $this->valorTotal;
-    }
-
-    /**
-     * @param float|null $valorTotal
-     * @return NotaFiscalItem
-     */
-    public function setValorTotal(?float $valorTotal): NotaFiscalItem
+    public function setValorTotalFormatted(float $valorTotal)
     {
         $this->valorTotal = $valorTotal;
-        return $this;
     }
 
+
     /**
-     * @return float|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("valorUnit")
+     * @return float
      */
-    public function getValorUnit(): ?float
+    public function getValorUnitFormatted(): float
     {
-        return $this->valorUnit;
+        return (float)$this->valorUnit;
     }
 
     /**
-     * @param float|null $valorUnit
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("valorUnit")
+     * @param float $valorUnit
      */
-    public function setValorUnit(?float $valorUnit): NotaFiscalItem
+    public function setValorUnitFormatted(float $valorUnit)
     {
         $this->valorUnit = $valorUnit;
-        return $this;
     }
 
+
     /**
-     * @return NotaFiscal|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("subTotal")
+     * @return float
      */
-    public function getNotaFiscal(): ?NotaFiscal
+    public function getSubTotalFormatted(): float
     {
-        return $this->notaFiscal;
+        return (float)$this->subTotal;
     }
 
     /**
-     * @param NotaFiscal|null $notaFiscal
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("subTotal")
+     * @param float $subTotal
      */
-    public function setNotaFiscal(?NotaFiscal $notaFiscal): NotaFiscalItem
-    {
-        $this->notaFiscal = $notaFiscal;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getValorDesconto(): ?float
-    {
-        return $this->valorDesconto;
-    }
-
-    /**
-     * @param float|null $valorDesconto
-     * @return NotaFiscalItem
-     */
-    public function setValorDesconto(?float $valorDesconto): NotaFiscalItem
-    {
-        $this->valorDesconto = $valorDesconto;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getSubTotal(): ?float
-    {
-        return $this->subTotal;
-    }
-
-    /**
-     * @param float|null $subTotal
-     * @return NotaFiscalItem
-     */
-    public function setSubTotal(?float $subTotal): NotaFiscalItem
+    public function setSubTotalFormatted(float $subTotal)
     {
         $this->subTotal = $subTotal;
-        return $this;
     }
 
+
     /**
-     * @return float|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("icmsValor")
+     * @return float
      */
-    public function getIcmsValor(): ?float
+    public function getIcmsValorFormatted(): float
     {
-        return $this->icmsValor;
+        return (float)$this->icmsValor;
     }
 
     /**
-     * @param float|null $icmsValor
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("icmsValor")
+     * @param float $icmsValor
      */
-    public function setIcmsValor(?float $icmsValor): NotaFiscalItem
+    public function setIcmsValorFormatted(float $icmsValor)
     {
         $this->icmsValor = $icmsValor;
-        return $this;
     }
 
+
     /**
-     * @return string|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("icmsValorBc")
+     * @return float
      */
-    public function getIcmsModBC(): ?string
+    public function getIcmsValorBcFormatted(): float
     {
-        return $this->icmsModBC;
+        return (float)$this->icmsValorBc;
     }
 
     /**
-     * @param string|null $icmsModBC
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("icmsValorBc")
+     * @param float $icmsValorBc
      */
-    public function setIcmsModBC(?string $icmsModBC): NotaFiscalItem
-    {
-        $this->icmsModBC = $icmsModBC;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getIcmsValorBc(): ?float
-    {
-        return $this->icmsValorBc;
-    }
-
-    /**
-     * @param float|null $icmsValorBc
-     * @return NotaFiscalItem
-     */
-    public function setIcmsValorBc(?float $icmsValorBc): NotaFiscalItem
+    public function setIcmsValorBcFormatted(float $icmsValorBc)
     {
         $this->icmsValorBc = $icmsValorBc;
-        return $this;
     }
 
+
     /**
-     * @return float|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("icmsAliquota")
+     * @return float
      */
-    public function getIcmsAliquota(): ?float
+    public function getIcmsAliquotaFormatted(): float
     {
-        return $this->icmsAliquota;
+        return (float)$this->icmsAliquota;
     }
 
     /**
-     * @param float|null $icmsAliquota
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("icmsAliquota")
+     * @param float $icmsAliquota
      */
-    public function setIcmsAliquota(?float $icmsAliquota): NotaFiscalItem
+    public function setIcmsAliquotaFormatted(float $icmsAliquota)
     {
         $this->icmsAliquota = $icmsAliquota;
-        return $this;
     }
 
+
     /**
-     * @return float|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("pisValor")
+     * @return float
      */
-    public function getPisValor(): ?float
+    public function getPisValorFormatted(): float
     {
-        return $this->pisValor;
+        return (float)$this->pisValor;
     }
 
     /**
-     * @param float|null $pisValor
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("pisValor")
+     * @param float $pisValor
      */
-    public function setPisValor(?float $pisValor): NotaFiscalItem
+    public function setPisValorFormatted(float $pisValor)
     {
         $this->pisValor = $pisValor;
-        return $this;
     }
 
+
     /**
-     * @return float|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("pisValorBc")
+     * @return float
      */
-    public function getPisValorBc(): ?float
+    public function getPisValorBcFormatted(): float
     {
-        return $this->pisValorBc;
+        return (float)$this->pisValorBc;
     }
 
     /**
-     * @param float|null $pisValorBc
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("pisValorBc")
+     * @param float $pisValorBc
      */
-    public function setPisValorBc(?float $pisValorBc): NotaFiscalItem
+    public function setPisValorBcFormatted(float $pisValorBc)
     {
         $this->pisValorBc = $pisValorBc;
-        return $this;
     }
 
+
     /**
-     * @return float|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("pisAliquota")
+     * @return float
      */
-    public function getPisAliquota(): ?float
+    public function getPisAliquotaFormatted(): float
     {
-        return $this->pisAliquota;
+        return (float)$this->pisAliquota;
     }
 
     /**
-     * @param float|null $pisAliquota
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("pisAliquota")
+     * @param float $pisAliquota
      */
-    public function setPisAliquota(?float $pisAliquota): NotaFiscalItem
+    public function setPisAliquotaFormatted(float $pisAliquota)
     {
         $this->pisAliquota = $pisAliquota;
-        return $this;
     }
 
+
     /**
-     * @return float|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("cofinsValor")
+     * @return float
      */
-    public function getCofinsValor(): ?float
+    public function getCofinsValorFormatted(): float
     {
-        return $this->cofinsValor;
+        return (float)$this->cofinsValor;
     }
 
     /**
-     * @param float|null $cofinsValor
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("cofinsValor")
+     * @param float $cofinsValor
      */
-    public function setCofinsValor(?float $cofinsValor): NotaFiscalItem
+    public function setCofinsValorFormatted(float $cofinsValor)
     {
         $this->cofinsValor = $cofinsValor;
-        return $this;
     }
 
+
     /**
-     * @return float|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("cofinsValorBc")
+     * @return float
      */
-    public function getCofinsValorBc(): ?float
+    public function getCofinsValorBcFormatted(): float
     {
-        return $this->cofinsValorBc;
+        return (float)$this->cofinsValorBc;
     }
 
     /**
-     * @param float|null $cofinsValorBc
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("cofinsValorBc")
+     * @param float $cofinsValorBc
      */
-    public function setCofinsValorBc(?float $cofinsValorBc): NotaFiscalItem
+    public function setCofinsValorBcFormatted(float $cofinsValorBc)
     {
         $this->cofinsValorBc = $cofinsValorBc;
-        return $this;
     }
 
+
     /**
-     * @return float|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("cofinsAliquota")
+     * @return float
      */
-    public function getCofinsAliquota(): ?float
+    public function getCofinsAliquotaFormatted(): float
     {
-        return $this->cofinsAliquota;
+        return (float)$this->cofinsAliquota;
     }
 
     /**
-     * @param float|null $cofinsAliquota
-     * @return NotaFiscalItem
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("cofinsAliquota")
+     * @param float $cofinsAliquota
      */
-    public function setCofinsAliquota(?float $cofinsAliquota): NotaFiscalItem
+    public function setCofinsAliquotaFormatted(float $cofinsAliquota)
     {
         $this->cofinsAliquota = $cofinsAliquota;
-        return $this;
     }
 
-    /**
-     * @return bool|null
-     */
-    public function getNcmExistente(): ?bool
-    {
-        return $this->ncmExistente;
-    }
-
-    /**
-     * @param bool|null $ncmExistente
-     * @return NotaFiscalItem
-     */
-    public function setNcmExistente(?bool $ncmExistente): NotaFiscalItem
-    {
-        $this->ncmExistente = $ncmExistente;
-        return $this;
-    }
 
     public function calculaTotais(): void
     {
-        if ($this->getQtde() === null || $this->getValorUnit() === null) {
+        if ($this->qtde === null || $this->valorUnit === null) {
             return;
         }
 
-        $this->valorDesconto = $this->valorDesconto ?? 0.0;
-        $this->subTotal = $this->getQtde() * $this->getValorUnit();
-        $this->valorTotal = $this->subTotal; // - $this->valorDesconto;
+        $valorDesconto = (float)$this->valorDesconto ?? 0.0;
+        if ((float)$this->valorDesconto !== $valorDesconto) {
+            $this->valorDesconto = $valorDesconto;
+        }
+        $subTotal = (float)(bcmul($this->qtde, $this->valorUnit, 2));
+        if ((float)$this->subTotal !== $subTotal) {
+            $this->subTotal = $subTotal;
+        }
+
+        if ((float)$this->valorTotal !== (float)$this->subTotal) {
+            $this->valorTotal = $this->subTotal;
+        }
     }
 }

@@ -39,11 +39,11 @@ class NotaFiscalEntityHandler extends EntityHandler
      * @param NFeUtils $nfeUtils
      */
     public function __construct(EntityManagerInterface $doctrine,
-                                Security $security,
-                                ParameterBagInterface $parameterBag,
-                                SyslogBusiness $syslog,
-                                ContainerInterface $container,
-                                NFeUtils $nfeUtils)
+                                Security               $security,
+                                ParameterBagInterface  $parameterBag,
+                                SyslogBusiness         $syslog,
+                                ContainerInterface     $container,
+                                NFeUtils               $nfeUtils)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->container = $container;
@@ -65,7 +65,7 @@ class NotaFiscalEntityHandler extends EntityHandler
         if (!$notaFiscal->entradaSaida) {
             throw new ViewException('Entrada/Saída não informado');
         }
-        
+
         if ($notaFiscal->getItens() && $notaFiscal->getItens()->count() > 0) {
             $this->calcularTotais($notaFiscal);
         }
@@ -73,32 +73,35 @@ class NotaFiscalEntityHandler extends EntityHandler
         $i = 1;
         if ($notaFiscal->getItens()) {
             foreach ($notaFiscal->getItens() as $item) {
-                $item->setOrdem($i++);
+                if ($item->ordem !== $i) {
+                    $item->ordem = $i;
+                }
+                $i++;
             }
         }
 
-        $notaFiscal->setDocumentoEmitente(preg_replace("/[\D]/", '', $notaFiscal->getDocumentoEmitente()));
-        $notaFiscal->setDocumentoDestinatario(preg_replace("/[\D]/", '', $notaFiscal->getDocumentoDestinatario()));
-        $notaFiscal->setTranspDocumento(preg_replace("/[\D]/", '', $notaFiscal->getTranspDocumento()));
+        $notaFiscal->documentoEmitente = (preg_replace("/[\D]/", '', $notaFiscal->documentoEmitente));
+        $notaFiscal->documentoDestinatario = (preg_replace("/[\D]/", '', $notaFiscal->documentoDestinatario));
+        $notaFiscal->transpDocumento = (preg_replace("/[\D]/", '', $notaFiscal->transpDocumento));
 
-        if ($notaFiscal->getChaveAcesso() === '') {
-            $notaFiscal->setChaveAcesso(null);
+        if ($notaFiscal->chaveAcesso === '') {
+            $notaFiscal->chaveAcesso = (null);
         }
 
         $notaFiscalBusiness = $this->container->get(NotaFiscalBusiness::class);
 
-        if ($notaFiscalBusiness->isCnpjEmitente($notaFiscal->getDocumentoEmitente())) {
-            $arrEmitente = $notaFiscalBusiness->getEmitenteFromNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
+        if ($notaFiscalBusiness->isCnpjEmitente($notaFiscal->documentoEmitente)) {
+            $arrEmitente = $notaFiscalBusiness->getEmitenteFromNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
 
-            $notaFiscal->setXNomeEmitente($arrEmitente['razaosocial']);
-            $notaFiscal->setInscricaoEstadualEmitente($arrEmitente['ie']);
-            $notaFiscal->setLogradouroEmitente($arrEmitente['logradouro']);
-            $notaFiscal->setNumeroEmitente($arrEmitente['numero']);
-            $notaFiscal->setBairroEmitente($arrEmitente['bairro']);
-            $notaFiscal->setCepEmitente($arrEmitente['cep']);
-            $notaFiscal->setCidadeEmitente($arrEmitente['cidade']);
-            $notaFiscal->setEstadoEmitente($arrEmitente['estado']);
-            $notaFiscal->setFoneEmitente($arrEmitente['fone1']);
+            $notaFiscal->xNomeEmitente = ($arrEmitente['razaosocial']);
+            $notaFiscal->inscricaoEstadualEmitente = ($arrEmitente['ie']);
+            $notaFiscal->logradouroEmitente = ($arrEmitente['logradouro']);
+            $notaFiscal->numeroEmitente = ($arrEmitente['numero']);
+            $notaFiscal->bairroEmitente = ($arrEmitente['bairro']);
+            $notaFiscal->cepEmitente = ($arrEmitente['cep']);
+            $notaFiscal->cidadeEmitente = ($arrEmitente['cidade']);
+            $notaFiscal->estadoEmitente = ($arrEmitente['estado']);
+            $notaFiscal->foneEmitente = ($arrEmitente['fone1']);
         }
         $this->calcularTotais($notaFiscal);
     }
@@ -153,7 +156,7 @@ class NotaFiscalEntityHandler extends EntityHandler
                     $newItem->setId(null);
                     $newItem->setInserted(new \DateTime());
                     $newItem->setUserInsertedId($this->security->getUser()->getId());
-                    $newItem->setNotaFiscal($nova);
+                    $newItem->notaFiscal = $nova;
                     $nova->getItens()->add($newItem);
                     $notaFiscalItemEntityHandler->save($newItem, false);
                 }
@@ -183,7 +186,7 @@ class NotaFiscalEntityHandler extends EntityHandler
     public function deleteAllItens(NotaFiscal $notaFiscal)
     {
         foreach ($notaFiscal->getItens() as $item) {
-            $item->setNotaFiscal(null);
+            $item->notaFiscal = null;
         }
         $notaFiscal->getItens()->clear();
         /** @var NotaFiscal $notaFiscal */
@@ -204,13 +207,20 @@ class NotaFiscalEntityHandler extends EntityHandler
         if ($notaFiscal->getItens()) {
             foreach ($notaFiscal->getItens() as $item) {
                 $item->calculaTotais();
-                $subTotal = bcadd($subTotal, DecimalUtils::round($item->getSubTotal()), 2);
-                $descontos = bcadd($descontos, DecimalUtils::round($item->getValorDesconto() ? $item->getValorDesconto() : 0.0), 2);
+                $subTotal = bcadd($subTotal, DecimalUtils::round($item->subTotal), 2);
+                $descontos = bcadd($descontos, DecimalUtils::round($item->valorDesconto ? $item->valorDesconto : 0.0), 2);
             }
         }
-        $notaFiscal->setSubTotal($subTotal);
-        $notaFiscal->setTotalDescontos($descontos);
-        $notaFiscal->setValorTotal($subTotal - $descontos);
+        if ((float)$notaFiscal->subtotal !== (float)$subTotal) {
+            $notaFiscal->sdubTotal = ((float)$subTotal);
+        }
+        if ((float)$notaFiscal->totalDescontos !== (float)$descontos) {
+            $notaFiscal->totalDescontos = ((float)$descontos);
+        }
+        $valorTotal = (float)(bcsub($subTotal, $descontos, 2));
+        if ((float)$notaFiscal->valorTotal !== (float)$valorTotal) {
+            $notaFiscal->valorTotal = ($valorTotal);
+        }
     }
 
 }

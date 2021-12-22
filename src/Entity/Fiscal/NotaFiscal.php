@@ -18,6 +18,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use SimpleXMLElement;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 
 /**
@@ -429,27 +431,28 @@ class NotaFiscal implements EntityId
     public ?string $infoCompl = null;
 
     /**
-     *
      * @ORM\Column(name="total_descontos", type="decimal", nullable=false, precision=15, scale=2)
-     * @var null|float
+     * @Groups("N")
+     * @Assert\NotNull()
+     * @Assert\Type(type="string")
      */
-    public ?float $totalDescontos = null;
+    public ?string $totalDescontos = null;
 
     /**
-     *
      * @ORM\Column(name="subtotal", type="decimal", nullable=false, precision=15, scale=2)
-     * @var null|float
+     * @Groups("N")
+     * @Assert\NotNull()
+     * @Assert\Type(type="string")
      */
-    public ?float $subtotal = null;
+    public ?string $subtotal = null;
 
     /**
-     *
      * @ORM\Column(name="valor_total", type="decimal", nullable=false, precision=15, scale=2)
-     * @var null|float
-     *
-     * @Groups("notaFiscal")
+     * @Groups("N")
+     * @Assert\NotNull()
+     * @Assert\Type(type="string")
      */
-    public ?float $valorTotal = null;
+    public ?string $valorTotal = null;
 
 
     /**
@@ -523,32 +526,32 @@ class NotaFiscal implements EntityId
     public ?string $transpNumeracaoVolumes = null;
 
     /**
-     *
      * @ORM\Column(name="transp_peso_bruto", type="decimal", nullable=true, precision=15, scale=2)
-     * @var null|float
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $transpPesoBruto = null;
+    public ?string $transpPesoBruto = null;
 
     /**
-     *
      * @ORM\Column(name="transp_peso_liquido", type="decimal", nullable=true, precision=15, scale=2)
-     * @var null|float
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $transpPesoLiquido = null;
+    public ?string $transpPesoLiquido = null;
 
     /**
-     *
      * @ORM\Column(name="transp_qtde_volumes", type="decimal", nullable=true, precision=15, scale=2)
-     * @var null|float
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $transpQtdeVolumes = null;
+    public ?string $transpQtdeVolumes = null;
 
     /**
-     *
      * @ORM\Column(name="transp_valor_total_frete", type="decimal", nullable=true, precision=15, scale=2)
-     * @var null|float
+     * @Groups("N")
+     * @Assert\Type(type="string")
      */
-    public ?float $transpValorTotalFrete = null;
+    public ?string $transpValorTotalFrete = null;
 
     /**
      *
@@ -724,1049 +727,6 @@ class NotaFiscal implements EntityId
         $this->historicos = new ArrayCollection();
     }
 
-    /**
-     * @return null|string
-     */
-    public function getUuid(): ?string
-    {
-        return $this->uuid;
-    }
-
-    /**
-     * @param null|string $uuid
-     * @return NotaFiscal
-     */
-    public function setUuid(?string $uuid): NotaFiscal
-    {
-        $this->uuid = $uuid;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getRandFaturam(): ?string
-    {
-        return $this->randFaturam;
-    }
-
-    /**
-     * @param null|string $randFaturam
-     * @return NotaFiscal
-     */
-    public function setRandFaturam(?string $randFaturam): NotaFiscal
-    {
-        $this->randFaturam = $randFaturam;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getCnf(): ?string
-    {
-        return $this->cnf;
-    }
-
-    /**
-     * @param null|string $cnf
-     * @return NotaFiscal
-     */
-    public function setCnf(?string $cnf): NotaFiscal
-    {
-        $this->cnf = $cnf;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getChaveAcesso(): ?string
-    {
-        return $this->chaveAcesso;
-    }
-
-    /**
-     * @param null|string $chaveAcesso
-     * @return NotaFiscal
-     */
-    public function setChaveAcesso(?string $chaveAcesso): NotaFiscal
-    {
-        $this->chaveAcesso = $chaveAcesso;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getProtocoloAutorizacao(): ?string
-    {
-        return $this->protocoloAutorizacao;
-    }
-
-    /**
-     * @param null|string $protocoloAutorizacao
-     * @return NotaFiscal
-     */
-    public function setProtocoloAutorizacao(?string $protocoloAutorizacao): NotaFiscal
-    {
-        $this->protocoloAutorizacao = $protocoloAutorizacao;
-        return $this;
-    }
-
-    /**
-     * @return DateTime|null
-     */
-    public function getDtProtocoloAutorizacao(): ?DateTime
-    {
-        return $this->dtProtocoloAutorizacao;
-    }
-
-    /**
-     * @param DateTime|null $dtProtocoloAutorizacao
-     * @return NotaFiscal
-     */
-    public function setDtProtocoloAutorizacao(?DateTime $dtProtocoloAutorizacao): NotaFiscal
-    {
-        $this->dtProtocoloAutorizacao = $dtProtocoloAutorizacao;
-        return $this;
-    }
-
-    /**
-     * @return DateTime|null
-     */
-    public function getDtEmissao(): ?DateTime
-    {
-        return $this->dtEmissao;
-    }
-
-    /**
-     * @param DateTime|null $dtEmissao
-     * @return NotaFiscal
-     */
-    public function setDtEmissao(?DateTime $dtEmissao): NotaFiscal
-    {
-        $this->dtEmissao = $dtEmissao;
-        return $this;
-    }
-
-    /**
-     * @return DateTime|null
-     */
-    public function getDtSaiEnt(): ?DateTime
-    {
-        return $this->dtSaiEnt;
-    }
-
-    /**
-     * @param DateTime|null $dtSaiEnt
-     * @return NotaFiscal
-     */
-    public function setDtSaiEnt(?DateTime $dtSaiEnt): NotaFiscal
-    {
-        $this->dtSaiEnt = $dtSaiEnt;
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getNumero(): ?int
-    {
-        return $this->numero;
-    }
-
-    /**
-     * @param int|null $numero
-     * @return NotaFiscal
-     */
-    public function setNumero(?int $numero): NotaFiscal
-    {
-        $this->numero = $numero;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getValorTotal(): ?float
-    {
-        return $this->valorTotal;
-    }
-
-    /**
-     * @param float|null $valorTotal
-     * @return NotaFiscal
-     */
-    public function setValorTotal(?float $valorTotal): NotaFiscal
-    {
-        $this->valorTotal = $valorTotal;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getDocumentoEmitente(): ?string
-    {
-        return $this->documentoEmitente;
-    }
-
-    /**
-     * @param string|null $documentoEmitente
-     * @return NotaFiscal
-     */
-    public function setDocumentoEmitente(?string $documentoEmitente): NotaFiscal
-    {
-        $this->documentoEmitente = preg_replace("/[\D]/", '', $documentoEmitente);
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getXNomeEmitente(): ?string
-    {
-        return $this->xNomeEmitente;
-    }
-
-    /**
-     * @param string|null $xNomeEmitente
-     * @return NotaFiscal
-     */
-    public function setXNomeEmitente(?string $xNomeEmitente): NotaFiscal
-    {
-        $this->xNomeEmitente = $xNomeEmitente;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getInscricaoEstadualEmitente(): ?string
-    {
-        return $this->inscricaoEstadualEmitente;
-    }
-
-    /**
-     * @param string|null $inscricaoEstadualEmitente
-     * @return NotaFiscal
-     */
-    public function setInscricaoEstadualEmitente(?string $inscricaoEstadualEmitente): NotaFiscal
-    {
-        $this->inscricaoEstadualEmitente = $inscricaoEstadualEmitente;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCepEmitente(): ?string
-    {
-        return $this->cepEmitente;
-    }
-
-    /**
-     * @param string|null $cepEmitente
-     * @return NotaFiscal
-     */
-    public function setCepEmitente(?string $cepEmitente): NotaFiscal
-    {
-        $this->cepEmitente = $cepEmitente;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getLogradouroEmitente(): ?string
-    {
-        return $this->logradouroEmitente;
-    }
-
-    /**
-     * @param string|null $logradouroEmitente
-     * @return NotaFiscal
-     */
-    public function setLogradouroEmitente(?string $logradouroEmitente): NotaFiscal
-    {
-        $this->logradouroEmitente = $logradouroEmitente;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getNumeroEmitente(): ?string
-    {
-        return $this->numeroEmitente;
-    }
-
-    /**
-     * @param string|null $numeroEmitente
-     * @return NotaFiscal
-     */
-    public function setNumeroEmitente(?string $numeroEmitente): NotaFiscal
-    {
-        $this->numeroEmitente = $numeroEmitente;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getFoneEmitente(): ?string
-    {
-        return $this->foneEmitente;
-    }
-
-    /**
-     * @param string|null $foneEmitente
-     * @return NotaFiscal
-     */
-    public function setFoneEmitente(?string $foneEmitente): NotaFiscal
-    {
-        $this->foneEmitente = $foneEmitente;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getBairroEmitente(): ?string
-    {
-        return $this->bairroEmitente;
-    }
-
-    /**
-     * @param string|null $bairroEmitente
-     * @return NotaFiscal
-     */
-    public function setBairroEmitente(?string $bairroEmitente): NotaFiscal
-    {
-        $this->bairroEmitente = $bairroEmitente;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCidadeEmitente(): ?string
-    {
-        return $this->cidadeEmitente;
-    }
-
-    /**
-     * @param string|null $cidadeEmitente
-     * @return NotaFiscal
-     */
-    public function setCidadeEmitente(?string $cidadeEmitente): NotaFiscal
-    {
-        $this->cidadeEmitente = $cidadeEmitente;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getEstadoEmitente(): ?string
-    {
-        return $this->estadoEmitente;
-    }
-
-    /**
-     * @param string|null $estadoEmitente
-     * @return NotaFiscal
-     */
-    public function setEstadoEmitente(?string $estadoEmitente): NotaFiscal
-    {
-        $this->estadoEmitente = $estadoEmitente;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getTipoNotaFiscal(): ?string
-    {
-        return $this->tipoNotaFiscal;
-    }
-
-    /**
-     * @param null|string $tipoNotaFiscal
-     * @return NotaFiscal
-     */
-    public function setTipoNotaFiscal(?string $tipoNotaFiscal): NotaFiscal
-    {
-        $this->tipoNotaFiscal = $tipoNotaFiscal;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getEntradaSaida(): ?string
-    {
-        return $this->entradaSaida;
-    }
-
-    /**
-     * @param string|null $entradaSaida
-     * @return NotaFiscal
-     */
-    public function setEntradaSaida(?string $entradaSaida): NotaFiscal
-    {
-        $this->entradaSaida = $entradaSaida;
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getSerie(): ?int
-    {
-        return $this->serie;
-    }
-
-    /**
-     * @param int|null $serie
-     * @return NotaFiscal
-     */
-    public function setSerie(?int $serie): NotaFiscal
-    {
-        $this->serie = $serie;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getDocumentoDestinatario(): ?string
-    {
-        return $this->documentoDestinatario;
-    }
-
-    /**
-     * @param string|null $documentoDestinatario
-     * @return NotaFiscal
-     */
-    public function setDocumentoDestinatario(?string $documentoDestinatario): NotaFiscal
-    {
-        $this->documentoDestinatario = preg_replace("/[\D]/", '', $documentoDestinatario);
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getXNomeDestinatario(): ?string
-    {
-        return $this->xNomeDestinatario;
-    }
-
-    /**
-     * @param string|null $xNomeDestinatario
-     * @return NotaFiscal
-     */
-    public function setXNomeDestinatario(?string $xNomeDestinatario): NotaFiscal
-    {
-        $this->xNomeDestinatario = $xNomeDestinatario;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getInscricaoEstadualDestinatario(): ?string
-    {
-        return $this->inscricaoEstadualDestinatario;
-    }
-
-    /**
-     * @param string|null $inscricaoEstadualDestinatario
-     * @return NotaFiscal
-     */
-    public function setInscricaoEstadualDestinatario(?string $inscricaoEstadualDestinatario): NotaFiscal
-    {
-        $this->inscricaoEstadualDestinatario = $inscricaoEstadualDestinatario;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getLogradouroDestinatario(): ?string
-    {
-        return $this->logradouroDestinatario;
-    }
-
-    /**
-     * @param string|null $logradouroDestinatario
-     * @return NotaFiscal
-     */
-    public function setLogradouroDestinatario(?string $logradouroDestinatario): NotaFiscal
-    {
-        $this->logradouroDestinatario = $logradouroDestinatario;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getNumeroDestinatario(): ?string
-    {
-        return $this->numeroDestinatario;
-    }
-
-    /**
-     * @param string|null $numeroDestinatario
-     * @return NotaFiscal
-     */
-    public function setNumeroDestinatario(?string $numeroDestinatario): NotaFiscal
-    {
-        $this->numeroDestinatario = $numeroDestinatario;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getBairroDestinatario(): ?string
-    {
-        return $this->bairroDestinatario;
-    }
-
-    /**
-     * @param string|null $bairroDestinatario
-     * @return NotaFiscal
-     */
-    public function setBairroDestinatario(?string $bairroDestinatario): NotaFiscal
-    {
-        $this->bairroDestinatario = $bairroDestinatario;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCidadeDestinatario(): ?string
-    {
-        return $this->cidadeDestinatario;
-    }
-
-    /**
-     * @param string|null $cidadeDestinatario
-     * @return NotaFiscal
-     */
-    public function setCidadeDestinatario(?string $cidadeDestinatario): NotaFiscal
-    {
-        $this->cidadeDestinatario = $cidadeDestinatario;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getEstadoDestinatario(): ?string
-    {
-        return $this->estadoDestinatario;
-    }
-
-    /**
-     * @param string|null $estadoDestinatario
-     * @return NotaFiscal
-     */
-    public function setEstadoDestinatario(?string $estadoDestinatario): NotaFiscal
-    {
-        $this->estadoDestinatario = $estadoDestinatario;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCepDestinatario(): ?string
-    {
-        return $this->cepDestinatario;
-    }
-
-    /**
-     * @param string|null $cepDestinatario
-     * @return NotaFiscal
-     */
-    public function setCepDestinatario(?string $cepDestinatario): NotaFiscal
-    {
-        $this->cepDestinatario = $cepDestinatario;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getFoneDestinatario(): ?string
-    {
-        return $this->foneDestinatario;
-    }
-
-    /**
-     * @param string|null $foneDestinatario
-     * @return NotaFiscal
-     */
-    public function setFoneDestinatario(?string $foneDestinatario): NotaFiscal
-    {
-        $this->foneDestinatario = $foneDestinatario;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getEmailDestinatario(): ?string
-    {
-        return $this->emailDestinatario;
-    }
-
-    /**
-     * @param string|null $emailDestinatario
-     * @return NotaFiscal
-     */
-    public function setEmailDestinatario(?string $emailDestinatario): NotaFiscal
-    {
-        $this->emailDestinatario = $emailDestinatario;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getMotivoCancelamento(): ?string
-    {
-        return $this->motivoCancelamento;
-    }
-
-    /**
-     * @param null|string $motivoCancelamento
-     * @return NotaFiscal
-     */
-    public function setMotivoCancelamento(?string $motivoCancelamento): NotaFiscal
-    {
-        $this->motivoCancelamento = $motivoCancelamento;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getAmbiente(): ?string
-    {
-        return $this->ambiente;
-    }
-
-    /**
-     * @param null|string $ambiente
-     * @return NotaFiscal
-     */
-    public function setAmbiente(?string $ambiente): NotaFiscal
-    {
-        $this->ambiente = $ambiente;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getInfoCompl(): ?string
-    {
-        return $this->infoCompl;
-    }
-
-    /**
-     * @param null|string $infoCompl
-     * @return NotaFiscal
-     */
-    public function setInfoCompl(?string $infoCompl): NotaFiscal
-    {
-        $this->infoCompl = $infoCompl;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getTotalDescontos(): ?float
-    {
-        return $this->totalDescontos;
-    }
-
-    /**
-     * @param float|null $totalDescontos
-     * @return NotaFiscal
-     */
-    public function setTotalDescontos(?float $totalDescontos): NotaFiscal
-    {
-        $this->totalDescontos = $totalDescontos;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getSubtotal(): ?float
-    {
-        return $this->subtotal;
-    }
-
-    /**
-     * @param float|null $subtotal
-     * @return NotaFiscal
-     */
-    public function setSubtotal(?float $subtotal): NotaFiscal
-    {
-        $this->subtotal = $subtotal;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTranspDocumento(): ?string
-    {
-        return $this->transpDocumento;
-    }
-
-    /**
-     * @param string|null $transpDocumento
-     * @return NotaFiscal
-     */
-    public function setTranspDocumento(?string $transpDocumento): NotaFiscal
-    {
-        $this->transpDocumento = $transpDocumento;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTranspNome(): ?string
-    {
-        return $this->transpNome;
-    }
-
-    /**
-     * @param string|null $transpNome
-     * @return NotaFiscal
-     */
-    public function setTranspNome(?string $transpNome): NotaFiscal
-    {
-        $this->transpNome = $transpNome;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTranspInscricaoEstadual(): ?string
-    {
-        return $this->transpInscricaoEstadual;
-    }
-
-    /**
-     * @param string|null $transpInscricaoEstadual
-     * @return NotaFiscal
-     */
-    public function setTranspInscricaoEstadual(?string $transpInscricaoEstadual): NotaFiscal
-    {
-        $this->transpInscricaoEstadual = $transpInscricaoEstadual;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTranspEndereco(): ?string
-    {
-        return $this->transpEndereco;
-    }
-
-    /**
-     * @param string|null $transpEndereco
-     * @return NotaFiscal
-     */
-    public function setTranspEndereco(?string $transpEndereco): NotaFiscal
-    {
-        $this->transpEndereco = $transpEndereco;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTranspCidade(): ?string
-    {
-        return $this->transpCidade;
-    }
-
-    /**
-     * @param string|null $transpCidade
-     * @return NotaFiscal
-     */
-    public function setTranspCidade(?string $transpCidade): NotaFiscal
-    {
-        $this->transpCidade = $transpCidade;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTranspEstado(): ?string
-    {
-        return $this->transpEstado;
-    }
-
-    /**
-     * @param string|null $transpEstado
-     * @return NotaFiscal
-     */
-    public function setTranspEstado(?string $transpEstado): NotaFiscal
-    {
-        $this->transpEstado = $transpEstado;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getTranspEspecieVolumes(): ?string
-    {
-        return $this->transpEspecieVolumes;
-    }
-
-    /**
-     * @param null|string $transpEspecieVolumes
-     * @return NotaFiscal
-     */
-    public function setTranspEspecieVolumes(?string $transpEspecieVolumes): NotaFiscal
-    {
-        $this->transpEspecieVolumes = $transpEspecieVolumes;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getTranspMarcaVolumes(): ?string
-    {
-        return $this->transpMarcaVolumes;
-    }
-
-    /**
-     * @param null|string $transpMarcaVolumes
-     * @return NotaFiscal
-     */
-    public function setTranspMarcaVolumes(?string $transpMarcaVolumes): NotaFiscal
-    {
-        $this->transpMarcaVolumes = $transpMarcaVolumes;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getTranspModalidadeFrete(): ?string
-    {
-        return $this->transpModalidadeFrete;
-    }
-
-    /**
-     * @param null|string $transpModalidadeFrete
-     * @return NotaFiscal
-     */
-    public function setTranspModalidadeFrete(?string $transpModalidadeFrete): NotaFiscal
-    {
-        $this->transpModalidadeFrete = $transpModalidadeFrete;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getTranspNumeracaoVolumes(): ?string
-    {
-        return $this->transpNumeracaoVolumes;
-    }
-
-    /**
-     * @param null|string $transpNumeracaoVolumes
-     * @return NotaFiscal
-     */
-    public function setTranspNumeracaoVolumes(?string $transpNumeracaoVolumes): NotaFiscal
-    {
-        $this->transpNumeracaoVolumes = $transpNumeracaoVolumes;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getTranspPesoBruto(): ?float
-    {
-        return $this->transpPesoBruto;
-    }
-
-    /**
-     * @param float|null $transpPesoBruto
-     * @return NotaFiscal
-     */
-    public function setTranspPesoBruto(?float $transpPesoBruto): NotaFiscal
-    {
-        $this->transpPesoBruto = $transpPesoBruto;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getTranspPesoLiquido(): ?float
-    {
-        return $this->transpPesoLiquido;
-    }
-
-    /**
-     * @param float|null $transpPesoLiquido
-     * @return NotaFiscal
-     */
-    public function setTranspPesoLiquido(?float $transpPesoLiquido): NotaFiscal
-    {
-        $this->transpPesoLiquido = $transpPesoLiquido;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getTranspQtdeVolumes(): ?float
-    {
-        return $this->transpQtdeVolumes;
-    }
-
-    /**
-     * @param float|null $transpQtdeVolumes
-     * @return NotaFiscal
-     */
-    public function setTranspQtdeVolumes(?float $transpQtdeVolumes): NotaFiscal
-    {
-        $this->transpQtdeVolumes = $transpQtdeVolumes;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getIndicadorFormaPagto(): ?string
-    {
-        return $this->indicadorFormaPagto;
-    }
-
-    /**
-     * @param null|string $indicadorFormaPagto
-     * @return NotaFiscal
-     */
-    public function setIndicadorFormaPagto(?string $indicadorFormaPagto): NotaFiscal
-    {
-        $this->indicadorFormaPagto = $indicadorFormaPagto;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getNaturezaOperacao(): ?string
-    {
-        return $this->naturezaOperacao;
-    }
-
-    /**
-     * @param null|string $naturezaOperacao
-     * @return NotaFiscal
-     */
-    public function setNaturezaOperacao(?string $naturezaOperacao): NotaFiscal
-    {
-        $this->naturezaOperacao = $naturezaOperacao;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getA03idNfReferenciada(): ?string
-    {
-        return $this->a03idNfReferenciada;
-    }
-
-    /**
-     * @param null|string $a03idNfReferenciada
-     * @return NotaFiscal
-     */
-    public function setA03idNfReferenciada(?string $a03idNfReferenciada): NotaFiscal
-    {
-        $this->a03idNfReferenciada = $a03idNfReferenciada;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getFinalidadeNf(): ?string
-    {
-        return $this->finalidadeNf;
-    }
-
-    /**
-     * @param null|string $finalidadeNf
-     * @return NotaFiscal
-     */
-    public function setFinalidadeNf(?string $finalidadeNf): NotaFiscal
-    {
-        $this->finalidadeNf = $finalidadeNf;
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getTranspValorTotalFrete(): ?float
-    {
-        return $this->transpValorTotalFrete;
-    }
-
-    /**
-     * @param float|null $transpValorTotalFrete
-     * @return NotaFiscal
-     */
-    public function setTranspValorTotalFrete(?float $transpValorTotalFrete): NotaFiscal
-    {
-        $this->transpValorTotalFrete = $transpValorTotalFrete;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getNRec(): ?string
-    {
-        return $this->nRec;
-    }
-
-    /**
-     * @param string|null $nRec
-     * @return NotaFiscal
-     */
-    public function setNRec(?string $nRec): NotaFiscal
-    {
-        $this->nRec = $nRec;
-        return $this;
-    }
 
     /**
      * @return NotaFiscalItem[]|ArrayCollection
@@ -1775,6 +735,7 @@ class NotaFiscal implements EntityId
     {
         return $this->itens;
     }
+
 
     /**
      * @param NotaFiscalItem[]|ArrayCollection $itens
@@ -1786,16 +747,18 @@ class NotaFiscal implements EntityId
         return $this;
     }
 
+
     public function deleteAllItens(): NotaFiscal
     {
         if ($this->itens) {
             foreach ($this->itens as $item) {
-                $item->setNotaFiscal(null);
+                $item->notaFiscal = null;
             }
             $this->itens->clear();
         }
         return $this;
     }
+
 
     /**
      * @return NotaFiscalEvento[]|ArrayCollection
@@ -1804,6 +767,7 @@ class NotaFiscal implements EntityId
     {
         return $this->eventos;
     }
+
 
     /**
      * @param NotaFiscalEvento[]|ArrayCollection $eventos
@@ -1814,6 +778,7 @@ class NotaFiscal implements EntityId
         $this->eventos = $eventos;
         return $this;
     }
+
 
     /**
      * @param NotaFiscalItem $item
@@ -1826,6 +791,7 @@ class NotaFiscal implements EntityId
         }
     }
 
+
     /**
      * @return NotaFiscalCartaCorrecao[]|ArrayCollection
      */
@@ -1833,6 +799,7 @@ class NotaFiscal implements EntityId
     {
         return $this->cartasCorrecao;
     }
+
 
     /**
      * @param NotaFiscalCartaCorrecao[]|ArrayCollection $cartaCorrecaos
@@ -1844,6 +811,7 @@ class NotaFiscal implements EntityId
         return $this;
     }
 
+
     /**
      * @param NotaFiscalCartaCorrecao $cartaCorrecao
      */
@@ -1854,6 +822,7 @@ class NotaFiscal implements EntityId
         }
     }
 
+
     /**
      * @return NotaFiscalHistorico[]|ArrayCollection
      */
@@ -1861,6 +830,7 @@ class NotaFiscal implements EntityId
     {
         return $this->historicos;
     }
+
 
     /**
      * @param NotaFiscalHistorico[]|ArrayCollection $historicos
@@ -1872,6 +842,7 @@ class NotaFiscal implements EntityId
         return $this;
     }
 
+
     /**
      * @param NotaFiscalHistorico $historico
      */
@@ -1882,6 +853,7 @@ class NotaFiscal implements EntityId
         }
     }
 
+
     /**
      * @return string
      *
@@ -1890,124 +862,16 @@ class NotaFiscal implements EntityId
     public function getInfoStatus(): string
     {
         $infoStatus = '';
-        if ($this->getCStat()) {
-            $infoStatus .= $this->getCStat() . ' - ' . $this->getXMotivo();
+        if ($this->cStat) {
+            $infoStatus .= $this->cStat . ' - ' . $this->xMotivo;
         }
-        if ($this->getCStatLote()) {
-            $infoStatus .= ' (' . $this->getCStatLote() . ' - ' . $this->getXMotivoLote() . ')';
+        if ($this->cStatLote) {
+            $infoStatus .= ' (' . $this->cStatLote . ' - ' . $this->xMotivoLote . ')';
         }
-        if ($this->getAmbiente() === 'HOM') {
+        if ($this->ambiente === 'HOM') {
             $infoStatus .= ' *** EMITIDA EM HOMOLOGAÇÃO';
         }
         return $infoStatus;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getCStat(): ?int
-    {
-        return $this->cStat;
-    }
-
-    /**
-     * @param int|null $cStat
-     * @return NotaFiscal
-     */
-    public function setCStat(?int $cStat): NotaFiscal
-    {
-        $this->cStat = $cStat;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getXMotivo(): ?string
-    {
-        return $this->xMotivo;
-    }
-
-    /**
-     * @param string|null $xMotivo
-     * @return NotaFiscal
-     */
-    public function setXMotivo(?string $xMotivo): NotaFiscal
-    {
-        $this->xMotivo = $xMotivo;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCStatLote(): ?string
-    {
-        return $this->cStatLote;
-    }
-
-    /**
-     * @param string|null $cStatLote
-     * @return NotaFiscal
-     */
-    public function setCStatLote(?string $cStatLote): NotaFiscal
-    {
-        $this->cStatLote = $cStatLote;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getXMotivoLote(): ?string
-    {
-        return $this->xMotivoLote;
-    }
-
-    /**
-     * @param string|null $xMotivoLote
-     * @return NotaFiscal
-     */
-    public function setXMotivoLote(?string $xMotivoLote): NotaFiscal
-    {
-        $this->xMotivoLote = $xMotivoLote;
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getManifestDest(): ?string
-    {
-        return $this->manifestDest;
-    }
-
-    /**
-     * @param string|null $manifestDest
-     * @return NotaFiscal
-     */
-    public function setManifestDest(?string $manifestDest): NotaFiscal
-    {
-        $this->manifestDest = $manifestDest;
-        return $this;
-    }
-
-    /**
-     * @return DateTime|null
-     */
-    public function getDtManifestDest(): ?DateTime
-    {
-        return $this->dtManifestDest;
-    }
-
-    /**
-     * @param DateTime|null $dtManifestDest
-     * @return NotaFiscal
-     */
-    public function setDtManifestDest(?DateTime $dtManifestDest): NotaFiscal
-    {
-        $this->dtManifestDest = $dtManifestDest;
-        return $this;
     }
 
 
@@ -2072,22 +936,163 @@ class NotaFiscal implements EntityId
 
 
     /**
-     * @return bool|null
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("totalDescontos")
+     * @return float
      */
-    public function getResumo(): ?bool
+    public function getTotalDescontosFormatted(): float
     {
-        return $this->resumo;
+        return (float)$this->totalDescontos;
+    }
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("totalDescontos")
+     * @param float $totalDescontos
+     */
+    public function setTotalDescontosFormatted(float $totalDescontos)
+    {
+        $this->totalDescontos = $totalDescontos;
     }
 
 
     /**
-     * @param bool|null $resumo
-     * @return NotaFiscal
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("subtotal")
+     * @return float
      */
-    public function setResumo(?bool $resumo): NotaFiscal
+    public function getSubtotalFormatted(): float
     {
-        $this->resumo = $resumo;
-        return $this;
+        return (float)$this->subtotal;
+    }
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("subtotal")
+     * @param float $subtotal
+     */
+    public function setSubtotalFormatted(float $subtotal)
+    {
+        $this->subtotal = $subtotal;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("valorTotal")
+     * @return float
+     */
+    public function getValorTotalFormatted(): float
+    {
+        return (float)$this->valorTotal;
+    }
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("valorTotal")
+     * @param float $valorTotal
+     */
+    public function setValorTotalFormatted(float $valorTotal)
+    {
+        $this->valorTotal = $valorTotal;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("transpPesoBruto")
+     * @return float
+     */
+    public function getTranspPesoBrutoFormatted(): float
+    {
+        return (float)$this->transpPesoBruto;
+    }
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("transpPesoBruto")
+     * @param float $transpPesoBruto
+     */
+    public function setTranspPesoBrutoFormatted(float $transpPesoBruto)
+    {
+        $this->transpPesoBruto = $transpPesoBruto;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("transpPesoLiquido")
+     * @return float
+     */
+    public function getTranspPesoLiquidoFormatted(): float
+    {
+        return (float)$this->transpPesoLiquido;
+    }
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("transpPesoLiquido")
+     * @param float $transpPesoLiquido
+     */
+    public function setTranspPesoLiquidoFormatted(float $transpPesoLiquido)
+    {
+        $this->transpPesoLiquido = $transpPesoLiquido;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("transpQtdeVolumes")
+     * @return float
+     */
+    public function getTranspQtdeVolumesFormatted(): float
+    {
+        return (float)$this->transpQtdeVolumes;
+    }
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("transpQtdeVolumes")
+     * @param float $transpQtdeVolumes
+     */
+    public function setTranspQtdeVolumesFormatted(float $transpQtdeVolumes)
+    {
+        $this->transpQtdeVolumes = $transpQtdeVolumes;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("transpValorTotalFrete")
+     * @return float
+     */
+    public function getTranspValorTotalFreteFormatted(): float
+    {
+        return (float)$this->transpValorTotalFrete;
+    }
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscal")
+     * @SerializedName("transpValorTotalFrete")
+     * @param float $transpValorTotalFrete
+     */
+    public function setTranspValorTotalFreteFormatted(float $transpValorTotalFrete)
+    {
+        $this->transpValorTotalFrete = $transpValorTotalFrete;
     }
 
 

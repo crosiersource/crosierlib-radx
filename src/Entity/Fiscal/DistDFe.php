@@ -158,6 +158,15 @@ class DistDFe implements EntityId
         return null;
     }
 
+    
+    public function getXMLDecodedAsString(): ?string
+    {
+        if ($this->xml && $this->xml !== 'Nenhum documento localizado') {
+            return gzdecode(base64_decode($this->xml));
+        }
+        return null;
+    }
+
     /**
      * Transient.
      * Para não precisar retornar toda a notaFiscal como JSON para o list.

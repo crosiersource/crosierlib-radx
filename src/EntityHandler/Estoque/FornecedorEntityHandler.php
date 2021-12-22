@@ -34,28 +34,28 @@ class FornecedorEntityHandler extends EntityHandler
      */
     public function fornecedorFromNotaFiscal(NotaFiscal $notaFiscal): Fornecedor
     {
-        $fornecedor = $this->getDoctrine()->getRepository(Fornecedor::class)->findOneBy(['documento' => $notaFiscal->getDocumentoEmitente()]);
+        $fornecedor = $this->getDoctrine()->getRepository(Fornecedor::class)->findOneBy(['documento' => $notaFiscal->documentoEmitente]);
         if (!$fornecedor) {
             $fornecedor = new Fornecedor();
 
-            $fornecedor->nome = $notaFiscal->getXNomeEmitente();
-            $fornecedor->nomeFantasia = $notaFiscal->getXNomeEmitente();
-            $fornecedor->documento = $notaFiscal->getDocumentoEmitente();
-            $fornecedor->inscricaoEstadual = $notaFiscal->getInscricaoEstadualEmitente();
+            $fornecedor->nome = $notaFiscal->xNomeEmitente;
+            $fornecedor->nomeFantasia = $notaFiscal->xNomeEmitente;
+            $fornecedor->documento = $notaFiscal->documentoEmitente;
+            $fornecedor->inscricaoEstadual = $notaFiscal->inscricaoEstadualEmitente;
             $fornecedor->jsonData = [
                 'enderecos' => [
                     [
-                        'logradouro' => $notaFiscal->getLogradouroEmitente(),
-                        'numero' => $notaFiscal->getNumeroEmitente(),
-                        'cep' => $notaFiscal->getCepEmitente(),
-                        'bairro' => $notaFiscal->getBairroEmitente(),
-                        'cidade' => $notaFiscal->getCidadeEmitente(),
-                        'estado' => $notaFiscal->getEstadoEmitente()
+                        'logradouro' => $notaFiscal->logradouroEmitente,
+                        'numero' => $notaFiscal->numeroEmitente,
+                        'cep' => $notaFiscal->cepEmitente,
+                        'bairro' => $notaFiscal->bairroEmitente,
+                        'cidade' => $notaFiscal->cidadeEmitente,
+                        'estado' => $notaFiscal->estadoEmitente
                     ],
                 ],
                 'fones' => [
                     [
-                        'fone' => $notaFiscal->getFoneEmitente(),
+                        'fone' => $notaFiscal->foneEmitente,
                         'tipo' => 'COMERCIAL'
                     ]
                 ]

@@ -187,27 +187,27 @@ class NotaFiscalBusiness
             $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
 
 
-            $notaFiscal->setEntradaSaida('S');
+            $notaFiscal->entradaSaida = 'S';
             $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
-            $notaFiscal->setAmbiente($ambiente);
+            $notaFiscal->ambiente = $ambiente;
 
-            if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
+            if ($notaFiscal->tipoNotaFiscal === 'NFE') {
                 if ($venda->cliente) {
 
-                    if (!$notaFiscal->getDocumentoDestinatario()) {
-                        $notaFiscal->setDocumentoDestinatario($venda->cliente->documento);
+                    if (!$notaFiscal->documentoDestinatario) {
+                        $notaFiscal->documentoDestinatario = $venda->cliente->documento;
                     }
-                    if (!$notaFiscal->getXNomeDestinatario()) {
-                        $notaFiscal->setXNomeDestinatario($venda->cliente->nome);
+                    if (!$notaFiscal->xNomeDestinatario) {
+                        $notaFiscal->xNomeDestinatario = $venda->cliente->nome;
                     }
-                    if (!$notaFiscal->getFoneDestinatario()) {
-                        $notaFiscal->setFoneDestinatario($venda->cliente->jsonData['fone1'] ?? '');
+                    if (!$notaFiscal->foneDestinatario) {
+                        $notaFiscal->foneDestinatario = $venda->cliente->jsonData['fone1'] ?? '';
                     }
-                    if (!$notaFiscal->getEmailDestinatario()) {
-                        $notaFiscal->setEmailDestinatario($venda->cliente->jsonData['email'] ?? '');
+                    if (!$notaFiscal->emailDestinatario) {
+                        $notaFiscal->emailDestinatario = $venda->cliente->jsonData['email'] ?? '';
                     }
 
-                    if (!$notaFiscal->getLogradouroDestinatario()) {
+                    if (!$notaFiscal->logradouroDestinatario) {
                         // Se a venda é do ecommerce, então utiliza os dados da entrega para o endereço
                         if ($venda->jsonData['ecommerce_entrega_logradouro'] ?? false) {
                             $endereco_faturamento['logradouro'] = $venda->jsonData['ecommerce_entrega_logradouro'];
@@ -222,13 +222,13 @@ class NotaFiscalBusiness
                             $endereco_faturamento = $venda->cliente->getEnderecoByTipo('FATURAMENTO');
                         }
                     } else {
-                        $endereco_faturamento['logradouro'] = $notaFiscal->getLogradouroDestinatario();
-                        $endereco_faturamento['numero'] = $notaFiscal->getNumeroDestinatario();
+                        $endereco_faturamento['logradouro'] = $notaFiscal->logradouroDestinatario;
+                        $endereco_faturamento['numero'] = $notaFiscal->numeroDestinatario;
                         $endereco_faturamento['complemento'] = $notaFiscal->complementoDestinatario;
-                        $endereco_faturamento['bairro'] = $notaFiscal->getBairroDestinatario();
-                        $endereco_faturamento['cidade'] = $notaFiscal->getCidadeDestinatario();
-                        $endereco_faturamento['estado'] = $notaFiscal->getEstadoDestinatario();
-                        $endereco_faturamento['cep'] = $notaFiscal->getCepDestinatario();
+                        $endereco_faturamento['bairro'] = $notaFiscal->bairroDestinatario;
+                        $endereco_faturamento['cidade'] = $notaFiscal->cidadeDestinatario;
+                        $endereco_faturamento['estado'] = $notaFiscal->estadoDestinatario;
+                        $endereco_faturamento['cep'] = $notaFiscal->cepDestinatario;
                     }
 
                     if (!$endereco_faturamento) {
@@ -239,16 +239,16 @@ class NotaFiscalBusiness
                         }
 
                         // Primeiro já preenche com os dados já obtidos para, logo depois, fazer a consulta na receita (caso dê algum problema nela, já estará com o endereço preenchido)
-                        $notaFiscal->setLogradouroDestinatario($endereco_faturamento['logradouro'] ?? '');
-                        $notaFiscal->setNumeroDestinatario($endereco_faturamento['numero'] ?? '');
+                        $notaFiscal->logradouroDestinatario = $endereco_faturamento['logradouro'] ?? '';
+                        $notaFiscal->numeroDestinatario = $endereco_faturamento['numero'] ?? '';
                         $notaFiscal->complementoDestinatario = ($endereco_faturamento['complemento'] ?? '');
-                        $notaFiscal->setBairroDestinatario($endereco_faturamento['bairro'] ?? '');
-                        $notaFiscal->setCepDestinatario($endereco_faturamento['cep'] ?? '');
-                        $notaFiscal->setCidadeDestinatario($endereco_faturamento['cidade'] ?? '');
-                        $notaFiscal->setEstadoDestinatario($endereco_faturamento['estado']);
+                        $notaFiscal->bairroDestinatario = $endereco_faturamento['bairro'] ?? '';
+                        $notaFiscal->cepDestinatario = $endereco_faturamento['cep'] ?? '';
+                        $notaFiscal->cidadeDestinatario = $endereco_faturamento['cidade'] ?? '';
+                        $notaFiscal->estadoDestinatario = $endereco_faturamento['estado'];
 
 
-                        if (strlen($notaFiscal->getDocumentoDestinatario()) === 14 &&
+                        if (strlen($notaFiscal->documentoDestinatario) === 14 &&
                             (!($endereco_faturamento['logradouro'] ?? false) ||
                                 !($endereco_faturamento['complemento'] ?? false) ||
                                 !($endereco_faturamento['bairro'] ?? false) ||
@@ -256,23 +256,23 @@ class NotaFiscalBusiness
                                 !($endereco_faturamento['cidade'] ?? false) ||
                                 !($endereco_faturamento['estado'] ?? false))) {
 
-                            $endereco_consultado = $this->consultarCNPJ($notaFiscal->getDocumentoDestinatario(), $endereco_faturamento['estado']);
+                            $endereco_consultado = $this->consultarCNPJ($notaFiscal->documentoDestinatario, $endereco_faturamento['estado']);
 
                             if (!isset($endereco_consultado['dados'])) {
                                 $this->syslog->info('Nenhum dado retornado para endereço consultado (venda = ' . $venda->getId() . ')');
                             } else {
 
-                                if (!$notaFiscal->getInscricaoEstadualDestinatario()) {
+                                if (!$notaFiscal->inscricaoEstadualDestinatario) {
                                     $ie = preg_replace("/[^0-9]/", "", $endereco_consultado['dados']['IE'] ?? '');
-                                    $notaFiscal->setInscricaoEstadualDestinatario($ie);
+                                    $notaFiscal->inscricaoEstadualDestinatario = $ie;
                                 }
-                                $notaFiscal->setLogradouroDestinatario($endereco_consultado['dados']['logradouro'] ?? '');
-                                $notaFiscal->setNumeroDestinatario($endereco_consultado['dados']['numero'] ?? '');
+                                $notaFiscal->logradouroDestinatario = $endereco_consultado['dados']['logradouro'] ?? '';
+                                $notaFiscal->numeroDestinatario = $endereco_consultado['dados']['numero'] ?? '';
                                 $notaFiscal->complementoDestinatario = ($endereco_consultado['dados']['complemento'] ?? '');
-                                $notaFiscal->setBairroDestinatario($endereco_consultado['dados']['bairro'] ?? '');
-                                $notaFiscal->setCepDestinatario($endereco_consultado['dados']['CEP'] ?? '');
-                                $notaFiscal->setCidadeDestinatario($endereco_consultado['dados']['cidade'] ?? '');
-                                $notaFiscal->setEstadoDestinatario($endereco_consultado['dados']['UF']);
+                                $notaFiscal->bairroDestinatario = $endereco_consultado['dados']['bairro'] ?? '';
+                                $notaFiscal->cepDestinatario = $endereco_consultado['dados']['CEP'] ?? '';
+                                $notaFiscal->cidadeDestinatario = $endereco_consultado['dados']['cidade'] ?? '';
+                                $notaFiscal->estadoDestinatario = $endereco_consultado['dados']['UF'];
                             }
                         }
                     }
@@ -281,8 +281,8 @@ class NotaFiscalBusiness
                 }
             }
 
-            if ($notaFiscal->getTipoNotaFiscal() === 'NFCE' ||
-                ($nfeConfigs['idDest_sempre1'] ?? false) || ($notaFiscal->getEstadoDestinatario() === $nfeConfigs['siglaUF'])) {
+            if ($notaFiscal->tipoNotaFiscal === 'NFCE' ||
+                ($nfeConfigs['idDest_sempre1'] ?? false) || ($notaFiscal->estadoDestinatario === $nfeConfigs['siglaUF'])) {
                 $dentro_ou_fora = 'dentro';
             } else {
                 $dentro_ou_fora = 'fora';
@@ -293,32 +293,32 @@ class NotaFiscalBusiness
             $cfop_padrao_fora_do_estado = $this->conn->fetchAllAssociative('SELECT valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'fiscal.cfop_padrao_fora_do_estado']);
             $cfop_padrao_fora_do_estado = $cfop_padrao_fora_do_estado[0]['valor'] ?? '6102';
 
-            $notaFiscal->setDocumentoEmitente($nfeConfigs['cnpj']);
-            $notaFiscal->setXNomeEmitente($nfeConfigs['razaosocial']);
-            $notaFiscal->setInscricaoEstadualEmitente($nfeConfigs['ie']);
+            $notaFiscal->documentoEmitente = $nfeConfigs['cnpj'];
+            $notaFiscal->xNomeEmitente = $nfeConfigs['razaosocial'];
+            $notaFiscal->inscricaoEstadualEmitente = $nfeConfigs['ie'];
 
-            $notaFiscal->setNaturezaOperacao('VENDA');
+            $notaFiscal->naturezaOperacao = 'VENDA';
 
             $dtEmissao = new \DateTime();
             $dtEmissao->modify(' - 4 minutes');
-            $notaFiscal->setDtEmissao($dtEmissao);
-            $notaFiscal->setDtSaiEnt($dtEmissao);
+            $notaFiscal->dtEmissao = $dtEmissao;
+            $notaFiscal->dtSaiEnt = $dtEmissao;
 
             $notaFiscal->setFinalidadeNf(FinalidadeNF::NORMAL['key']);
 
             if ($alterouTipo) {
-                $notaFiscal->setDtEmissao(null);
-                $notaFiscal->setNumero(null);
-                $notaFiscal->setCnf(null);
-                $notaFiscal->setChaveAcesso(null);
+                $notaFiscal->dtEmissao = null;
+                $notaFiscal->numero = null;
+                $notaFiscal->cnf = null;
+                $notaFiscal->chaveAcesso = null;
             }
 
-            $notaFiscal->setTranspModalidadeFrete('SEM_FRETE');
+            $notaFiscal->transpModalidadeFrete = 'SEM_FRETE';
 
             // $notaFiscal->setTranspValorTotalFrete($venda->jsonData['ecommerce_entrega_frete_calculado'] ?? null);
             // $valoresFreteItens = DecimalUtils::gerarParcelas($notaFiscal->getTranspValorTotalFrete() ?? 0, $venda->itens->count());
 
-            $notaFiscal->setIndicadorFormaPagto(IndicadorFormaPagto::VISTA['codigo']);
+            $notaFiscal->indicadorFormaPagto = IndicadorFormaPagto::VISTA['codigo'];
 
             $ordem = 1;
 
@@ -386,45 +386,45 @@ class NotaFiscalBusiness
             foreach ($itensNaNota as $vendaItem) {
 
                 $nfItem = new NotaFiscalItem();
-                $nfItem->setNotaFiscal($notaFiscal);
+                $nfItem->notaFiscal = $notaFiscal;
 
                 $ncm = $vendaItem->jsonData['ncm'] ?? $vendaItem->produto->jsonData['ncm'] ?? $ncmPadrao ?? '00000000';
 
-                $nfItem->setNcm($ncm);
+                $nfItem->ncm = $ncm;
 
                 // $nfItem->jsonData['valor_frete_item'] = $valoresFreteItens[$ordem - 1] ?? 0.00;
 
-                $nfItem->setOrdem($ordem++);
+                $nfItem->ordem = $ordem++;
 
-                $nfItem->setQtde($vendaItem->qtde);
-                $nfItem->setValorUnit($vendaItem->precoVenda);
+                $nfItem->qtde = $vendaItem->qtde;
+                $nfItem->valorUnit = $vendaItem->precoVenda;
                 $valorTotalItem = bcmul($vendaItem->qtde, $vendaItem->precoVenda, 2);
-                $nfItem->setValorTotal($valorTotalItem);
+                $nfItem->valorTotal = $valorTotalItem;
 
                 if (!$algumItemTemDesconto) {
                     $vDesconto = round(bcmul($valorTotalItem, $fatorDesconto, 4), 2);
                 } else {
-                    $vDesconto = $vendaItem->desconto;
+                    $vDesconto = bcmul($vendaItem->desconto, 1, 2); // joga p/ string certo
                 }
 
-                $nfItem->setValorDesconto($vDesconto);
+                $nfItem->valorDesconto = $vDesconto;
 
                 // Somando aqui pra verificar depois se o total dos descontos dos itens bate com o desconto global da nota.
                 $somaDescontosItens += $vDesconto;
 
-                $nfItem->setSubTotal($valorTotalItem);
+                $nfItem->subTotal = $valorTotalItem;
 
 
                 $cfop = $vendaItem->produto->jsonData['cfop_' . $dentro_ou_fora] ?? ($dentro_ou_fora === 'dentro' ? $cfop_padrao_dentro_do_estado : $cfop_padrao_fora_do_estado);
-                $nfItem->setCfop($cfop);
+                $nfItem->cfop = $cfop;
 
 
                 if ($vendaItem->unidade) {
-                    $nfItem->setUnidade($vendaItem->unidade->label);
+                    $nfItem->unidade = $vendaItem->unidade->label;
                 } else if ($vendaItem->unidadeproduto->jsonData['unidade_produto'] ?? null) {
-                    $nfItem->setUnidade($vendaItem->produto->jsonData['unidade_produto']);
+                    $nfItem->unidade = $vendaItem->produto->jsonData['unidade_produto'];
                 } else {
-                    $nfItem->setUnidade('PC');
+                    $nfItem->unidade = 'UN';
                 }
 
 
@@ -453,8 +453,8 @@ class NotaFiscalBusiness
                     }
                 }
 
-                $nfItem->setCodigo($codigoDoItemNaNota);
-                $nfItem->setDescricao($descricaoDoItemNaNota);
+                $nfItem->codigo = $codigoDoItemNaNota;
+                $nfItem->descricao = $descricaoDoItemNaNota;
 
                 $csosn = null;
                 if ($vendaItem->produto->jsonData['csosn'] ?? false) {
@@ -462,31 +462,31 @@ class NotaFiscalBusiness
                 } elseif ($nfeConfigs['CSOSN_padrao'] ?? false) {
                     $csosn = $nfeConfigs['CSOSN_padrao'];
                 }
-                $nfItem->setCsosn($csosn);
-                $nfItem->setCst($vendaItem->produto->jsonData['cst_icms'] ?? null);
-                $nfItem->setCest($vendaItem->produto->jsonData['cest'] ?? null);
+                $nfItem->csosn = $csosn;
+                $nfItem->cst = $vendaItem->produto->jsonData['cst_icms'] ?? null;
+                $nfItem->cest = $vendaItem->produto->jsonData['cest'] ?? null;
 
 
                 if (isset($vendaItem->produto->jsonData['aliquota_icms']) && ($vendaItem->produto->jsonData['aliquota_icms'] > 0)) {
-                    $nfItem->setIcmsAliquota($vendaItem->produto->jsonData['aliquota_icms']);
-                    $icmsValor = DecimalUtils::round(bcmul(bcdiv($vendaItem->produto->jsonData['aliquota_icms'], 100.0, 6), $nfItem->getSubTotal(), 4));
-                    $nfItem->setIcmsValor($icmsValor);
-                    $nfItem->setIcmsValorBc($nfItem->getSubTotal());
-                    $nfItem->setIcmsModBC($vendaItem->produto->jsonData['modalidade_icms'] ?? null);
+                    $nfItem->icmsAliquota = $vendaItem->produto->jsonData['aliquota_icms'];
+                    $icmsValor = DecimalUtils::round(bcmul(bcdiv($vendaItem->produto->jsonData['aliquota_icms'], 100.0, 6), $nfItem->subTotal, 4));
+                    $nfItem->icmsValor = $icmsValor;
+                    $nfItem->icmsValorBc = $nfItem->subTotal;
+                    $nfItem->icmsModBC = $vendaItem->produto->jsonData['modalidade_icms'] ?? null;
                 }
 
                 if ($vendaItem->produto->jsonData['pis'] ?? false) {
-                    $nfItem->setPisAliquota($vendaItem->produto->jsonData['pis']);
-                    $pisValor = DecimalUtils::round(bcmul(bcdiv($vendaItem->produto->jsonData['pis'], 100.0, 6), $nfItem->getSubTotal(), 4));
-                    $nfItem->setPisValor($pisValor);
-                    $nfItem->setPisValorBc($nfItem->getSubTotal());
+                    $nfItem->pisAliquota = $vendaItem->produto->jsonData['pis'];
+                    $pisValor = DecimalUtils::round(bcmul(bcdiv($vendaItem->produto->jsonData['pis'], 100.0, 6), $nfItem->subTotal, 4));
+                    $nfItem->pisValor = $pisValor;
+                    $nfItem->pisValorBc = $nfItem->subTotal;
                 }
 
                 if ($vendaItem->produto->jsonData['cofins'] ?? false) {
-                    $nfItem->setCofinsAliquota($vendaItem->produto->jsonData['cofins']);
-                    $cofinsValor = DecimalUtils::round(bcmul(bcdiv($vendaItem->produto->jsonData['cofins'], 100.0, 6), $nfItem->getSubTotal(), 4));
-                    $nfItem->setCofinsValor($cofinsValor);
-                    $nfItem->setCofinsValorBc($nfItem->getSubTotal());
+                    $nfItem->cofinsAliquota = $vendaItem->produto->jsonData['cofins'];
+                    $cofinsValor = DecimalUtils::round(bcmul(bcdiv($vendaItem->produto->jsonData['cofins'], 100.0, 6), $nfItem->subTotal, 4));
+                    $nfItem->cofinsValor = $cofinsValor;
+                    $nfItem->cofinsValorBc = $nfItem->subTotal;
                 }
 
                 $notaFiscal->addItem($nfItem);
@@ -494,15 +494,16 @@ class NotaFiscalBusiness
             }
 
             $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
-            $totalDescontos = bcsub($notaFiscal->getSubTotal(), $notaFiscal->getValorTotal(), 2);
+            $totalDescontos = bcsub($notaFiscal->subTotal, $notaFiscal->valorTotal, 2);
 
             if ((float)bcsub(abs($totalDescontos), abs($somaDescontosItens), 2) !== 0.0) {
                 $diferenca = $totalDescontos - $somaDescontosItens;
+                $valorDesconto = bcadd($notaFiscal->getItens()
+                    ->get(0)
+                    ->valorDesconto, $diferenca, 2);
                 $notaFiscal->getItens()
                     ->get(0)
-                    ->setValorDesconto($notaFiscal->getItens()
-                            ->get(0)
-                            ->getValorDesconto() + $diferenca);
+                    ->valorDesconto = $valorDesconto;
                 $notaFiscal->getItens()
                     ->get(0)
                     ->calculaTotais();
@@ -515,8 +516,8 @@ class NotaFiscalBusiness
 
             if ($novaNota) {
                 $notaFiscalVenda = new NotaFiscalVenda();
-                $notaFiscalVenda->setNotaFiscal($notaFiscal);
-                $notaFiscalVenda->setVenda($venda);
+                $notaFiscalVenda->notaFiscal = $notaFiscal;
+                $notaFiscalVenda->venda = $venda;
                 $this->notaFiscalVendaEntityHandler->save($notaFiscalVenda);
             }
 
@@ -544,43 +545,43 @@ class NotaFiscalBusiness
     {
         try {
             $mudou = false;
-            if (!$notaFiscal->getUuid()) {
-                $notaFiscal->setUuid(md5(uniqid(mt_rand(), true)));
+            if (!$notaFiscal->uuid) {
+                $notaFiscal->uuid = md5(uniqid(mt_rand(), true));
                 $mudou = true;
             }
-            if (!$notaFiscal->getCnf()) {
+            if (!$notaFiscal->cnf) {
                 $cNF = random_int(10000000, 99999999);
-                $notaFiscal->setCnf($cNF);
+                $notaFiscal->cnf = $cNF;
                 $mudou = true;
             }
             // Rejeição 539: Duplicidade de NF-e, com diferença na Chave de Acesso
             // Rejeição 266: 266 - SERIE UTILIZADA FORA DA FAIXA PERMITIDA NO WEB SERVICE (0-889).
-            if (!$notaFiscal->getNumero() || in_array($notaFiscal->getCStat(), [539, 266], true)) {
-                $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
+            if (!$notaFiscal->numero || in_array($notaFiscal->cStat, [539, 266], true)) {
+                $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
 
                 $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
-                $notaFiscal->setAmbiente($ambiente);
+                $notaFiscal->ambiente = $ambiente;
 
-                if (!$notaFiscal->getTipoNotaFiscal()) {
+                if (!$notaFiscal->tipoNotaFiscal) {
                     throw new \Exception('Impossível gerar número sem saber o tipo da nota fiscal.');
                 }
-                $chaveSerie = 'serie_' . $notaFiscal->getTipoNotaFiscal() . '_' . $ambiente;
+                $chaveSerie = 'serie_' . $notaFiscal->tipoNotaFiscal . '_' . $ambiente;
                 $serie = $nfeConfigs[$chaveSerie];
                 if (!$serie) {
                     throw new ViewException('Série não encontrada para ' . $chaveSerie);
                 }
-                $notaFiscal->setSerie($serie);
+                $notaFiscal->serie = $serie;
 
-                $nnf = $this->findProxNumFiscal($notaFiscal->getDocumentoEmitente(), $ambiente, $notaFiscal->getSerie(), $notaFiscal->getTipoNotaFiscal());
-                $notaFiscal->setNumero($nnf);
+                $nnf = $this->findProxNumFiscal($notaFiscal->documentoEmitente, $ambiente, $notaFiscal->serie, $notaFiscal->tipoNotaFiscal);
+                $notaFiscal->numero = $nnf;
                 $mudou = true;
             }
-            if (!$notaFiscal->getDtEmissao()) {
-                $notaFiscal->setDtEmissao(new \DateTime());
+            if (!$notaFiscal->dtEmissao) {
+                $notaFiscal->dtEmissao = new \DateTime();
                 $mudou = true;
             }
-            if ($mudou || !$notaFiscal->getChaveAcesso() || !preg_match('/[0-9]{44}/', $notaFiscal->getChaveAcesso())) {
-                $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
+            if ($mudou || !$notaFiscal->chaveAcesso || !preg_match('/[0-9]{44}/', $notaFiscal->chaveAcesso)) {
+                $notaFiscal->chaveAcesso = $this->buildChaveAcesso($notaFiscal);
                 $mudou = true;
             }
             if ($mudou) {
@@ -601,19 +602,19 @@ class NotaFiscalBusiness
      */
     public function buildChaveAcesso(NotaFiscal $notaFiscal)
     {
-        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
+        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
         $cUF = '41';
 
         $cnpj = $nfeConfigs['cnpj'];
-        $ano = $notaFiscal->getDtEmissao()->format('y');
-        $mes = $notaFiscal->getDtEmissao()->format('m');
-        $mod = TipoNotaFiscal::get($notaFiscal->getTipoNotaFiscal())['codigo'];
-        $serie = $notaFiscal->getSerie();
+        $ano = $notaFiscal->dtEmissao->format('y');
+        $mes = $notaFiscal->dtEmissao->format('m');
+        $mod = TipoNotaFiscal::get($notaFiscal->tipoNotaFiscal)['codigo'];
+        $serie = $notaFiscal->serie;
         if (strlen($serie) > 3) {
             throw new ViewException('Série deve ter no máximo 3 dígitos');
         }
-        $nNF = $notaFiscal->getNumero();
-        $cNF = $notaFiscal->getCnf();
+        $nNF = $notaFiscal->numero;
+        $cNF = $notaFiscal->cnf;
 
         // Campo tpEmis
         // 1-Emissão Normal
@@ -639,28 +640,28 @@ class NotaFiscalBusiness
     public function saveNotaFiscal(NotaFiscal $notaFiscal): ?NotaFiscal
     {
         try {
-            if (!$notaFiscal->getTipoNotaFiscal()) {
+            if (!$notaFiscal->tipoNotaFiscal) {
                 throw new ViewException('Tipo da Nota não informado');
             }
             $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
 
-            $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
+            $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
 
-            $notaFiscal->setXNomeEmitente($nfeConfigs['razaosocial']);
-            $notaFiscal->setInscricaoEstadualEmitente($nfeConfigs['ie']);
+            $notaFiscal->xNomeEmitente = $nfeConfigs['razaosocial'];
+            $notaFiscal->inscricaoEstadualEmitente = $nfeConfigs['ie'];
 
-            if (!$notaFiscal->getUuid()) {
-                $notaFiscal->setUuid(md5(uniqid(mt_rand(), true)));
+            if (!$notaFiscal->uuid) {
+                $notaFiscal->uuid = md5(uniqid(mt_rand(), true));
             }
 
-            if (!$notaFiscal->getSerie()) {
+            if (!$notaFiscal->serie) {
                 $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
-                $notaFiscal->setSerie($notaFiscal->getTipoNotaFiscal() === 'NFE' ? $nfeConfigs['serie_NFE_' . $ambiente] : $nfeConfigs['serie_NFCE_' . $ambiente]);
+                $notaFiscal->serie = $notaFiscal->tipoNotaFiscal === 'NFE' ? $nfeConfigs['serie_NFE_' . $ambiente] : $nfeConfigs['serie_NFCE_' . $ambiente];
             }
 
-            if (!$notaFiscal->getCnf()) {
+            if (!$notaFiscal->cnf) {
                 $cNF = random_int(10000000, 99999999);
-                $notaFiscal->setCnf($cNF);
+                $notaFiscal->cnf = $cNF;
             }
 
             $this->notaFiscalEntityHandler->save($notaFiscal, false);
@@ -696,11 +697,11 @@ class NotaFiscalBusiness
             foreach ($notaFiscal->getItens() as $item) {
                 /** @var NCMRepository $repoNCM */
                 $repoNCM = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NCM::class);
-                $existe = $repoNCM->findByNCM($item->getNcm());
+                $existe = $repoNCM->findByNCM($item->ncm);
                 if (!$existe) {
                     $rNcmPadrao = $this->notaFiscalEntityHandler->getDoctrine()->getConnection()->fetchAllAssociative('SELECT valor FROM cfg_app_config WHERE chave = \'ncm_padrao\'');
                     $ncmPadrao = $rNcmPadrao[0]['valor'] ?? null;
-                    $item->setNcm($ncmPadrao);
+                    $item->ncm = $ncmPadrao;
                 }
             }
         }
@@ -722,10 +723,10 @@ class NotaFiscalBusiness
         if ($this->permiteFaturamento($notaFiscal)) {
 
             try {
-                if ($notaFiscal->getNRec()) {
+                if ($notaFiscal->nRec) {
                     $this->spedNFeBusiness->consultaRecibo($notaFiscal);
-                    if ($notaFiscal->getCStat() === 502) {
-                        $notaFiscal->setChaveAcesso(null); // será regerada no handleIdeFields()
+                    if ($notaFiscal->cStat === 502) {
+                        $notaFiscal->chaveAcesso = null; // será regerada no handleIdeFields()
                     }
                 }
                 $this->handleIdeFields($notaFiscal);
@@ -733,9 +734,9 @@ class NotaFiscalBusiness
                     $notaFiscal = $this->spedNFeBusiness->gerarXML($notaFiscal);
                 }
                 $notaFiscal = $this->spedNFeBusiness->enviaNFe($notaFiscal);
-                $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, 'XML enviado', $notaFiscal->getXmlNota());
+                $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->cStat ?: -1, 'XML enviado', $notaFiscal->getXmlNota());
                 if ($notaFiscal) {
-                    $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'FATURAMENTO PROCESSADO');
+                    $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->cStat ?: -1, $notaFiscal->xMotivo, 'FATURAMENTO PROCESSADO');
                 } else {
                     $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO FATURAR');
                 }
@@ -745,7 +746,7 @@ class NotaFiscalBusiness
             }
 
         } else {
-            $this->spedNFeBusiness->addHistorico($notaFiscal, 0, 'NOTA FISCAL NÃO FATURÁVEL. STATUS = [' . $notaFiscal->getCStat() . ']');
+            $this->spedNFeBusiness->addHistorico($notaFiscal, 0, 'NOTA FISCAL NÃO FATURÁVEL. STATUS = [' . $notaFiscal->cStat . ']');
         }
 
         return $notaFiscal;
@@ -761,28 +762,28 @@ class NotaFiscalBusiness
         if (!$notaFiscal) {
             throw new \RuntimeException('Nota Fiscal null');
         }
-        if ($notaFiscal->getCidadeDestinatario()) {
+        if ($notaFiscal->cidadeDestinatario) {
 
             /** @var MunicipioRepository $repoMunicipio */
             $repoMunicipio = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(Municipio::class);
 
             /** @var Municipio $r */
             $r = $repoMunicipio->findOneByFiltersSimpl([
-                ['municipioNome', 'EQ', $notaFiscal->getCidadeDestinatario()],
-                ['ufSigla', 'EQ', $notaFiscal->getEstadoDestinatario()]
+                ['municipioNome', 'EQ', $notaFiscal->cidadeDestinatario],
+                ['ufSigla', 'EQ', $notaFiscal->estadoDestinatario]
             ]);
 
 
-            if (!$r || strtoupper(StringUtils::removerAcentos($r->getMunicipioNome())) !== strtoupper(StringUtils::removerAcentos($notaFiscal->getCidadeDestinatario()))) {
-                throw new ViewException('Município inválido: [' . $notaFiscal->getCidadeDestinatario() . '-' . $notaFiscal->getEstadoDestinatario() . ']');
+            if (!$r || strtoupper(StringUtils::removerAcentos($r->getMunicipioNome())) !== strtoupper(StringUtils::removerAcentos($notaFiscal->cidadeDestinatario))) {
+                throw new ViewException('Município inválido: [' . $notaFiscal->cidadeDestinatario . '-' . $notaFiscal->estadoDestinatario . ']');
             }
         } else {
-            if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
+            if ($notaFiscal->tipoNotaFiscal === 'NFE') {
                 throw new ViewException('Município do destinatário n/d');
             }
         }
 
-        if ($notaFiscal->getDtEmissao() > $notaFiscal->getDtSaiEnt()) {
+        if ($notaFiscal->dtEmissao > $notaFiscal->dtSaiEnt) {
             throw new ViewException('Dt Emissão maior que Dt Saída/Entrada. Não é possível faturar.');
         }
 
@@ -798,7 +799,7 @@ class NotaFiscalBusiness
      */
     public function permiteFaturamento(NotaFiscal $notaFiscal, ?bool $retornaMotivo = false): bool
     {
-        if ($notaFiscal && $notaFiscal->getId() && in_array($notaFiscal->getCStat(), [-100, 100, 101, 204, 135], false)) {
+        if ($notaFiscal && $notaFiscal->getId() && in_array($notaFiscal->cStat, [-100, 100, 101, 204, 135], false)) {
             return false;
         }
         if ($notaFiscal && !$notaFiscal->getId()) {
@@ -834,7 +835,7 @@ class NotaFiscalBusiness
             return true;
         }
 
-        if (substr($notaFiscal->getCStat(), 0, 1) !== '1') {
+        if (substr($notaFiscal->cStat, 0, 1) !== '1') {
             return true;
         }
 
@@ -850,7 +851,7 @@ class NotaFiscalBusiness
      */
     public function permiteCancelamento(NotaFiscal $notaFiscal): ?bool
     {
-        return (int)$notaFiscal->getCStat() === 100;
+        return (int)$notaFiscal->cStat === 100;
     }
 
     /**
@@ -862,11 +863,11 @@ class NotaFiscalBusiness
     public function permiteReimpressao(NotaFiscal $notaFiscal)
     {
         if ($notaFiscal->getId()) {
-            if ($notaFiscal->getCStat() == 100 || $notaFiscal->getCStat() == 204 || $notaFiscal->getCStat() == 135) {
+            if ($notaFiscal->cStat == 100 || $notaFiscal->cStat == 204 || $notaFiscal->cStat == 135) {
                 return true;
             }
             // else
-            if ($notaFiscal->getCStat() == 0 && strpos($notaFiscal->getXMotivo(), 'DUPLICIDADE DE NF') !== FALSE) {
+            if ($notaFiscal->cStat == 0 && strpos($notaFiscal->xMotivo, 'DUPLICIDADE DE NF') !== FALSE) {
                 return true;
             }
 
@@ -886,7 +887,7 @@ class NotaFiscalBusiness
     public function permiteReimpressaoCancelamento(NotaFiscal $notaFiscal)
     {
         if ($notaFiscal->getId()) {
-            if ($notaFiscal->getCStatLote() == 101) {
+            if ($notaFiscal->cStatLote == 101) {
                 return true;
             }
         }
@@ -902,7 +903,7 @@ class NotaFiscalBusiness
     public function permiteCartaCorrecao(NotaFiscal $notaFiscal)
     {
         if ($notaFiscal->getId()) {
-            if ($notaFiscal->getCStat() == 100) {
+            if ($notaFiscal->cStat == 100) {
                 return true;
             }
         }
@@ -922,7 +923,7 @@ class NotaFiscalBusiness
             $notaFiscalR = $this->spedNFeBusiness->cancelar($notaFiscal);
             if ($notaFiscalR) {
                 $notaFiscal = $notaFiscalR;
-                $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'CANCELAMENTO PROCESSADO');
+                $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->cStat ?: -1, $notaFiscal->xMotivo, 'CANCELAMENTO PROCESSADO');
                 $notaFiscal = $this->consultarStatus($notaFiscal);
             } else {
                 $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO CANCELAR');
@@ -943,8 +944,8 @@ class NotaFiscalBusiness
      */
     public function checkChaveAcesso(NotaFiscal $notaFiscal)
     {
-        if (!$notaFiscal->getChaveAcesso()) {
-            $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
+        if (!$notaFiscal->chaveAcesso) {
+            $notaFiscal->chaveAcesso = $this->buildChaveAcesso($notaFiscal);
 
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
             $this->notaFiscalEntityHandler->getDoctrine()->flush();
@@ -963,7 +964,7 @@ class NotaFiscalBusiness
         try {
             $notaFiscal = $this->spedNFeBusiness->consultarStatus($notaFiscal);
             if ($notaFiscal) {
-                $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->getCStat() ?: -1, $notaFiscal->getXMotivo(), 'CONSULTA DE STATUS PROCESSADA');
+                $this->spedNFeBusiness->addHistorico($notaFiscal, $notaFiscal->cStat ?: -1, $notaFiscal->xMotivo, 'CONSULTA DE STATUS PROCESSADA');
             } else {
                 $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO CONSULTAR STATUS');
             }
@@ -980,23 +981,23 @@ class NotaFiscalBusiness
      */
     public function cartaCorrecao(NotaFiscalCartaCorrecao $cartaCorrecao)
     {
-        $this->spedNFeBusiness->addHistorico($cartaCorrecao->getNotaFiscal(), -1, 'INICIANDO ENVIO DA CARTA DE CORREÇÃO');
+        $this->spedNFeBusiness->addHistorico($cartaCorrecao->notaFiscal, -1, 'INICIANDO ENVIO DA CARTA DE CORREÇÃO');
         try {
             $cartaCorrecao = $this->spedNFeBusiness->cartaCorrecao($cartaCorrecao);
             if ($cartaCorrecao) {
                 $this->spedNFeBusiness->addHistorico(
-                    $cartaCorrecao->getNotaFiscal(),
-                    $cartaCorrecao->getNotaFiscal()->getCStat(),
-                    $cartaCorrecao->getNotaFiscal()->getXMotivo(),
+                    $cartaCorrecao->notaFiscal,
+                    $cartaCorrecao->notaFiscal->cStat,
+                    $cartaCorrecao->notaFiscal->xMotivo,
                     'ENVIO DA CARTA DE CORREÇÃO PROCESSADO');
-                $this->consultarStatus($cartaCorrecao->getNotaFiscal());
+                $this->consultarStatus($cartaCorrecao->notaFiscal);
             } else {
-                $this->spedNFeBusiness->addHistorico($cartaCorrecao->getNotaFiscal(), -2, 'PROBLEMA AO ENVIAR CARTA DE CORREÇÃO');
+                $this->spedNFeBusiness->addHistorico($cartaCorrecao->notaFiscal, -2, 'PROBLEMA AO ENVIAR CARTA DE CORREÇÃO');
             }
         } catch (\Exception $e) {
-            $this->spedNFeBusiness->addHistorico($cartaCorrecao->getNotaFiscal(), -2, 'PROBLEMA AO ENVIAR CARTA DE CORREÇÃO: [' . $e->getMessage() . ']');
+            $this->spedNFeBusiness->addHistorico($cartaCorrecao->notaFiscal, -2, 'PROBLEMA AO ENVIAR CARTA DE CORREÇÃO: [' . $e->getMessage() . ']');
         }
-        return $cartaCorrecao->getNotaFiscal();
+        return $cartaCorrecao->notaFiscal;
     }
 
     /**
@@ -1099,9 +1100,9 @@ class NotaFiscalBusiness
         /** @var NotaFiscalItem $novoItem */
         $novoItem = clone $notaFiscalItem;
         $novoItem->setId(null);
-        $novoItem->setNotaFiscal($notaFiscal);
-        $novoItem->setCodigo('?????');
-        $novoItem->setOrdem(null);
+        $novoItem->notaFiscal = $notaFiscal;
+        $novoItem->codigo = '?????';
+        $novoItem->ordem = null;
         $this->notaFiscalItemEntityHandler->save($novoItem);
     }
 
@@ -1331,7 +1332,7 @@ class NotaFiscalBusiness
                 $fatura['json_data']['notaFiscal_id'] = $notaFiscal->getId();
                 $fatura['json_data']['notaFiscal_nFat'] = $notaFiscal->jsonData['fatura']['nFat'];
                 $fatura['json_data'] = json_encode($fatura['json_data']);
-                $fatura['dt_fatura'] = $notaFiscal->getDtEmissao()->format('Y-m-d');
+                $fatura['dt_fatura'] = $notaFiscal->dtEmissao->format('Y-m-d');
                 $fatura['quitada'] = 0;
                 $fatura['fechada'] = 1;
                 $fatura['transacional'] = 0;
@@ -1387,7 +1388,7 @@ class NotaFiscalBusiness
                     $movimentacao->centroCusto = ($centroCusto);
                     $movimentacao->status = ('ABERTA');
 
-                    $movimentacao->dtMoviment = ($notaFiscal->getDtEmissao());
+                    $movimentacao->dtMoviment = ($notaFiscal->dtEmissao);
                     $movimentacao->dtVencto = (DateTimeUtils::parseDateStr($duplicada['dVenc']));
                     $movimentacao->valor = ($duplicada['vDup']);
                     $movimentacao->parcelamento = (true);
@@ -1396,7 +1397,7 @@ class NotaFiscalBusiness
 
                     $movimentacao->jsonData['notafiscal_id'] = $notaFiscal->getId();
 
-                    $movimentacao->descricao = ('DUPLICATA ' . $duplicada['nDup'] . ' DE ' . $notaFiscal->getXNomeEmitente() . ' ' . StringUtils::strpad($i, 2) . '/' . StringUtils::strpad($qtdeTotal, 2));
+                    $movimentacao->descricao = ('DUPLICATA ' . $duplicada['nDup'] . ' DE ' . $notaFiscal->xNomeEmitente . ' ' . StringUtils::strpad($i, 2) . '/' . StringUtils::strpad($qtdeTotal, 2));
 
                     $movimentacao->quitado = (false);
                     $this->movimentacaoEntityHandler->save($movimentacao);
@@ -1426,26 +1427,26 @@ class NotaFiscalBusiness
     public function handleClienteNotaFiscalVenda(NotaFiscal $notaFiscal, Venda $venda)
     {
         if (trim($venda->jsonData['cliente_nome'] ?? '') === '') {
-            if ($notaFiscal->getDocumentoDestinatario()) {
-                $rsClienteId = $this->conn->fetchAssociative('SELECT id FROM crm_cliente WHERE documento = :documento', ['documento' => $notaFiscal->getDocumentoDestinatario()]);
+            if ($notaFiscal->documentoDestinatario) {
+                $rsClienteId = $this->conn->fetchAssociative('SELECT id FROM crm_cliente WHERE documento = :documento', ['documento' => $notaFiscal->documentoDestinatario]);
                 if ($rsClienteId) {
                     $repoCliente = $this->clienteEntityHandler->getDoctrine()->getRepository(Cliente::class);
                     $cliente = $repoCliente->find($rsClienteId['id']);
                 } else {
                     $cliente = new Cliente();
-                    $cliente->documento = $notaFiscal->getDocumentoDestinatario();
-                    $cliente->nome = $notaFiscal->getXNomeDestinatario();
+                    $cliente->documento = $notaFiscal->documentoDestinatario;
+                    $cliente->nome = $notaFiscal->xNomeDestinatario;
                     $this->clienteEntityHandler->save($cliente);
                 }
-                if ($notaFiscal->getTipoNotaFiscal() === 'NFE') {
+                if ($notaFiscal->tipoNotaFiscal === 'NFE') {
                     $endereco = [
                         'tipo' => 'FATURAMENTO',
-                        'cep' => $notaFiscal->getCepDestinatario(),
-                        'logradouro' => $notaFiscal->getLogradouroDestinatario(),
-                        'numero' => $notaFiscal->getNumeroDestinatario(),
-                        'bairro' => $notaFiscal->getBairroDestinatario(),
-                        'cidade' => $notaFiscal->getCidadeDestinatario(),
-                        'estado' => $notaFiscal->getEstadoDestinatario(),
+                        'cep' => $notaFiscal->cepDestinatario,
+                        'logradouro' => $notaFiscal->logradouroDestinatario,
+                        'numero' => $notaFiscal->numeroDestinatario,
+                        'bairro' => $notaFiscal->bairroDestinatario,
+                        'cidade' => $notaFiscal->cidadeDestinatario,
+                        'estado' => $notaFiscal->estadoDestinatario,
                     ];
                     $cliente->inserirNovoEndereco($endereco);
                     $this->clienteEntityHandler->save($cliente);
@@ -1465,7 +1466,7 @@ class NotaFiscalBusiness
             if ($this->permiteFaturamento($notaFiscal)){
                 $notaFiscal = $this->spedNFeBusiness->gerarXML($notaFiscal);
             }
-            $xml = $notaFiscal->getXmlNota();
+            $xml = $notaFiscal->getXMLDecodedAsString();
             $danfe = new Danfe($xml);
             $danfe->debugMode(false);
             $danfe->creditsIntegratorFooter('EKT Plus');
@@ -1480,8 +1481,8 @@ class NotaFiscalBusiness
 
             $logo = null;
             $nfeConfigsEmUso = null;
-            if ($notaFiscal->getDocumentoEmitente() && in_array($notaFiscal->getDocumentoEmitente(), $this->nfeUtils->getNFeConfigsCNPJs(), true)) {
-                $nfeConfigsEmUso = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->getDocumentoEmitente());
+            if ($notaFiscal->documentoEmitente && in_array($notaFiscal->documentoEmitente, $this->nfeUtils->getNFeConfigsCNPJs(), true)) {
+                $nfeConfigsEmUso = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
 
                 $response = file_get_contents($nfeConfigsEmUso['logo_fiscal'] ?? $_SERVER['CROSIER_LOGO'], false, stream_context_create($arrContextOptions));
                 $logo = 'data://text/plain;base64,' . base64_encode($response);

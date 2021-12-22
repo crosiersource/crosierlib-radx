@@ -74,11 +74,19 @@ class DistDFeRepository extends FilterRepository
         // 3-Manifestar ciência/confirmação do DISTDFE.
         // 4-Baixar a distDFe com o NFEPROC da nota completa.
         // 5-Revincular a fis_nf ao distDFe completo)
+//        return $conn->fetchAllAssociative('SELECT id FROM fis_distdfe 
+//            WHERE documento = :documento AND 
+//                  tipo_distdfe IN (\'NFEPROC\',\'RESNFE\') AND 
+//                  (nota_fiscal_id IS NULL OR 
+//                    (tipo_distdfe = \'RESNFE\' AND chnfe IN (SELECT chnfe FROM fis_distdfe WHERE tipo_distdfe = \'NFEPROC\' AND nota_fiscal_id IS NULL)))', 
+//            ['documento' => $documento]);
+        
         return $conn->fetchAllAssociative('SELECT id FROM fis_distdfe 
             WHERE documento = :documento AND 
                   tipo_distdfe IN (\'NFEPROC\',\'RESNFE\') AND 
-                  (nota_fiscal_id IS NULL OR 
-                    (tipo_distdfe = \'RESNFE\' AND chnfe IN (SELECT chnfe FROM fis_distdfe WHERE tipo_distdfe = \'NFEPROC\' AND nota_fiscal_id IS NULL)))', ['documento' => $documento]);
+                  nota_fiscal_id IS NULL', 
+            ['documento' => $documento]);
+        
     }
 
     /**
