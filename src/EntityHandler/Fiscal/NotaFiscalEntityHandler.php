@@ -103,6 +103,13 @@ class NotaFiscalEntityHandler extends EntityHandler
             $notaFiscal->estadoEmitente = ($arrEmitente['estado']);
             $notaFiscal->foneEmitente = ($arrEmitente['fone1']);
         }
+
+        if ($notaFiscal->getXMLDecoded() && 
+            $notaFiscal->getXMLDecoded()->getName() === 'nfeProc' && 
+            $notaFiscal->resumo) {
+            $notaFiscal->resumo = false;
+        } 
+        
         $this->calcularTotais($notaFiscal);
     }
 
