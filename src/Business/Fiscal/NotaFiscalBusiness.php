@@ -304,7 +304,7 @@ class NotaFiscalBusiness
             $notaFiscal->dtEmissao = $dtEmissao;
             $notaFiscal->dtSaiEnt = $dtEmissao;
 
-            $notaFiscal->setFinalidadeNf(FinalidadeNF::NORMAL['key']);
+            $notaFiscal->finalidadeNf = FinalidadeNF::NORMAL['key'];
 
             if ($alterouTipo) {
                 $notaFiscal->dtEmissao = null;
@@ -494,7 +494,7 @@ class NotaFiscalBusiness
             }
 
             $this->notaFiscalEntityHandler->calcularTotais($notaFiscal);
-            $totalDescontos = bcsub($notaFiscal->subTotal, $notaFiscal->valorTotal, 2);
+            $totalDescontos = bcsub($notaFiscal->subtotal, $notaFiscal->valorTotal, 2);
 
             if ((float)bcsub(abs($totalDescontos), abs($somaDescontosItens), 2) !== 0.0) {
                 $diferenca = $totalDescontos - $somaDescontosItens;

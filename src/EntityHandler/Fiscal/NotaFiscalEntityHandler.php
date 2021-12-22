@@ -127,27 +127,27 @@ class NotaFiscalEntityHandler extends EntityHandler
             $nova->setUserInsertedId(null);
             $nova->setUserUpdatedId(null);
             $nova->setEstabelecimentoId(null);
-            $nova->setUuid(null);
-            $nova->setNumero(null);
-            $nova->setSerie(null);
-            $nova->setRandFaturam(null);
-            $nova->setChaveAcesso(null);
-            $nova->setDtEmissao(new \DateTime());
-            $nova->setDtSaiEnt(null);
-            $nova->setCStat(null);
-            $nova->setCStatLote(null);
-            $nova->setXMotivo(null);
-            $nova->setXMotivoLote(null);
-            $nova->setCnf(null);
-            $nova->setMotivoCancelamento(null);
-            $nova->setProtocoloAutorizacao(null);
-            $nova->setNRec(null);
-            $nova->setProtocoloAutorizacao(null);
-            $nova->setDtProtocoloAutorizacao(null);
+            $nova->uuid = null;
+            $nova->numero = null;
+            $nova->serie = null;
+            $nova->randFaturam = null;
+            $nova->chaveAcesso = null;
+            $nova->dtEmissao = new \DateTime();
+            $nova->dtSaiEnt = null;
+            $nova->cStat = null;
+            $nova->cStatLote = null;
+            $nova->xMotivo = null;
+            $nova->xMotivoLote = null;
+            $nova->cnf = null;
+            $nova->motivoCancelamento = null;
+            $nova->protocoloAutorizacao = null;
+            $nova->nRec = null;
+            $nova->protocoloAutorizacao = null;
+            $nova->dtProtocoloAutorizacao = null;
             $nova->setXmlNota(null);
-            $nova->setResumo(null);
-            $nova->setItens(new ArrayCollection());
-            $nova->setHistoricos(new ArrayCollection());
+            $nova->resumo = null;
+            $nova->itens = new ArrayCollection();
+            $nova->historicos = new ArrayCollection();
             $this->save($nova, false);
             if ($antiga->getItens()) {
                 foreach ($antiga->getItens() as $oldItem) {
@@ -207,12 +207,12 @@ class NotaFiscalEntityHandler extends EntityHandler
         if ($notaFiscal->getItens()) {
             foreach ($notaFiscal->getItens() as $item) {
                 $item->calculaTotais();
-                $subTotal = bcadd($subTotal, DecimalUtils::round($item->subTotal), 2);
+                $subTotal = bcadd($subTotal, DecimalUtils::round($item->subtotal), 2);
                 $descontos = bcadd($descontos, DecimalUtils::round($item->valorDesconto ? $item->valorDesconto : 0.0), 2);
             }
         }
         if ((float)$notaFiscal->subtotal !== (float)$subTotal) {
-            $notaFiscal->sdubTotal = ((float)$subTotal);
+            $notaFiscal->subtotal = ((float)$subTotal);
         }
         if ((float)$notaFiscal->totalDescontos !== (float)$descontos) {
             $notaFiscal->totalDescontos = ((float)$descontos);

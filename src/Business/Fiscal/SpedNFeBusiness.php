@@ -393,7 +393,7 @@ class SpedNFeBusiness
         } else {
             $nfe->infNFe->transp->modFrete = ModalidadeFrete::get($notaFiscal->transpModalidadeFrete)['codigo'];
 
-            if ($notaFiscal->transpDocumento()) {
+            if ($notaFiscal->transpDocumento) {
 
                 $nfe->infNFe->transp->transporta->CNPJ = $notaFiscal->transpDocumento;
                 $nfe->infNFe->transp->transporta->xNome = trim($notaFiscal->transpNome);

@@ -166,7 +166,7 @@ class NotaFiscalItem implements EntityId
      * @Groups("N")
      * @Assert\Type(type="string")
      */
-    public ?string $subTotal = null;
+    public ?string $subtotal = null;
 
     /**
      * @ORM\Column(name="icms_valor", type="decimal", nullable=true, precision=15, scale=2)
@@ -565,12 +565,12 @@ class NotaFiscalItem implements EntityId
             $this->valorDesconto = $valorDesconto;
         }
         $subTotal = (float)(bcmul($this->qtde, $this->valorUnit, 2));
-        if ((float)$this->subTotal !== $subTotal) {
-            $this->subTotal = $subTotal;
+        if ((float)$this->subtotal !== $subTotal) {
+            $this->subtotal = $subTotal;
         }
 
-        if ((float)$this->valorTotal !== (float)$this->subTotal) {
-            $this->valorTotal = $this->subTotal;
+        if ((float)$this->valorTotal !== (float)$this->subtotal) {
+            $this->valorTotal = $this->subtotal;
         }
     }
 }
