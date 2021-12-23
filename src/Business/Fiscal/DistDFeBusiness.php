@@ -112,7 +112,7 @@ class DistDFeBusiness
                     break;
                 }
                 $iCount++;
-                $resp = $tools->sefazDistDFe(0, $nsu);
+                $resp = $tools->sefazDistDFe($nsu);
                 $xmlResp = simplexml_load_string($resp);
                 $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
                 $r = $xmlResp->xpath('//soap:Body'); // aqui tenho o ultNSU e maxNSU
@@ -131,7 +131,10 @@ class DistDFeBusiness
                 for ($i = 0; $i < $qtdeDocs; $i++) {
                     $doc = $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip[$i];
                     $nsu = (int)$doc->attributes()['NSU'];
-                    $existe = $repo->findOneBy(['nsu' => $nsu, 'documento' => $cnpj]);
+                    $existe = $repo->findOneByFiltersSimpl([
+                        ['nsu', 'EQ', $nsu],
+                        ['documento', 'EQ', $cnpj],
+                    ]);
                     if (!$existe) {
                         $xml = $doc->__toString();
                         $dfe = new DistDFe();
@@ -648,11 +651,12 @@ class DistDFeBusiness
      *
      * @throws ViewException
      */
-    public function processarDistDFesObtidos(): void
+    public function processarDistDFesObtidos(?string $cnpj = null): void
     {
-        $this->extrairChaveETipoDosDistDFes();
+        $cnpjEmUso = $cnpj ?? $this->nfeUtils->getNFeConfigsEmUso()['cnpj'];
+        $this->extrairChaveETipoDosDistDFes($cnpjEmUso);
         // Primeiro processa os DistDFes dos tipos NFEPROC e RESNFE
-        $this->processarDistDFesParaNFes();
+        $this->processarDistDFesParaNFes($cnpjEmUso);
         // Depois processa os DistDFes dos tipos PROCEVENTONFE e RESEVENTO
         $this->processarDistDFesParaEventos();
     }
@@ -662,12 +666,11 @@ class DistDFeBusiness
      *
      * @throws ViewException
      */
-    public function processarDistDFesParaNFes(): void
+    public function processarDistDFesParaNFes(string $cnpjEmUso): void
     {
         try {
             /** @var DistDFeRepository $repoDistDFe */
             $repoDistDFe = $this->doctrine->getRepository(DistDFe::class);
-            $cnpjEmUso = $this->nfeUtils->getNFeConfigsEmUso()['cnpj'];
             $distDFesAProcessar = $repoDistDFe->findDistDFeNotInNotaFiscal($cnpjEmUso);
             $total = count($distDFesAProcessar);
             $i = 1;
@@ -702,12 +705,11 @@ class DistDFeBusiness
     /**
      *
      */
-    public function processarDistDFesParaEventos(): void
+    public function processarDistDFesParaEventos(string $cnpjEmUso): void
     {
         /** @var DistDFeRepository $repoDistDFe */
         $repoDistDFe = $this->doctrine->getRepository(DistDFe::class);
-
-        $cnpjEmUso = $this->nfeUtils->getNFeConfigsEmUso()['cnpj'];
+        
         $distDFesAProcessar = $repoDistDFe->findDistDFeNotInNotaFiscalEvento($cnpjEmUso);
 
         /** @var NotaFiscalRepository $repoNotaFiscal */
@@ -821,12 +823,12 @@ class DistDFeBusiness
      *
      * @throws ViewException
      */
-    public function extrairChaveETipoDosDistDFes(): void
+    public function extrairChaveETipoDosDistDFes(string $cnpjEmUso): void
     {
         /** @var DistDFeRepository $repo */
         $repo = $this->doctrine->getRepository(DistDFe::class);
         $distDFesSemChave = $repo->findByFiltersSimpl([['chave', 'IS_EMPTY'], ['xml', 'NOT_LIKE', 'Nenhum documento localizado']], null, 0, -1);
-        $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
+        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($cnpjEmUso);
         /** @var DistDFe $distDFe */
         foreach ($distDFesSemChave as $distDFe) {
             try {
