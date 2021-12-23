@@ -856,7 +856,7 @@ class NotaFiscal implements EntityId
 
     /**
      * @return string
-     *
+     * @SerializedName("infoStatus")
      * @Groups("notaFiscal")
      */
     public function getInfoStatus(): string
@@ -871,7 +871,7 @@ class NotaFiscal implements EntityId
         if ($this->ambiente === 'HOM') {
             $infoStatus .= ' *** EMITIDA EM HOMOLOGAÇÃO';
         }
-        return $infoStatus;
+        return $infoStatus ?: 'SEM STATUS';
     }
 
 
