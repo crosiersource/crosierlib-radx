@@ -96,7 +96,7 @@ class DistDFeBusiness
         $qtdeObtida = 0;
 
         try {
-            $tools = $this->nfeUtils->getToolsEmUso();
+            $tools = $this->nfeUtils->getToolsByCNPJ($cnpj);
             $tools->model('55');
             $tools->setEnvironment(1);
             /** @var DistDFeRepository $repo */
@@ -242,7 +242,7 @@ class DistDFeBusiness
     public function obterDistDFeByNSU(int $nsu, string $cnpj): JsonResponse
     {
         try {
-            $tools = $this->nfeUtils->getToolsEmUso();
+            $tools = $this->nfeUtils->getToolsByCNPJ($cnpj);
             $tools->model('55');
             $tools->setEnvironment(1);
 
