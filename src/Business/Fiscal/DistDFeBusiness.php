@@ -658,7 +658,7 @@ class DistDFeBusiness
         // Primeiro processa os DistDFes dos tipos NFEPROC e RESNFE
         $this->processarDistDFesParaNFes($cnpjEmUso);
         // Depois processa os DistDFes dos tipos PROCEVENTONFE e RESEVENTO
-        $this->processarDistDFesParaEventos();
+        $this->processarDistDFesParaEventos($cnpjEmUso);
     }
 
     /**
