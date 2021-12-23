@@ -422,7 +422,7 @@ class DistDFeBusiness
             $nfItem->qtde = (float)$item->prod->qCom->__toString();
             $nfItem->valorUnit = (float)$item->prod->vUnCom->__toString();
             $nfItem->valorTotal = (float)$item->prod->vProd->__toString();
-            $nfItem->valorDesconto = $item->prod->vDesc->__toString();
+            $nfItem->valorDesconto = (float)$item->prod->vDesc->__toString();
 
             $this->notaFiscalEntityHandler->handleSavingEntityId($nfItem);
 
