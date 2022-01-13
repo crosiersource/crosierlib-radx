@@ -308,7 +308,7 @@ class SpedNFeBusiness
 
         $total_vCOFINS = 0;
 
-        $total_vICMSUFDest = 0.0;
+        $total_vICMSUFDest = 0.00;
         
         /** @var NotaFiscalItem $nfItem */
         foreach ($notaFiscal->getItens() as $nfItem) {
@@ -364,7 +364,7 @@ class SpedNFeBusiness
 
         if ($nfe->infNFe->dest->indIEDest == 9 && $nfe->infNFe->ide->indFinal == 1 && $nfe->infNFe->ide->idDest == 2) {
             $nfe->infNFe->total->ICMSTot->vFCPUFDest = '0.00';
-            $nfe->infNFe->total->ICMSTot->vICMSUFDest = $total_vICMSUFDest;
+            $nfe->infNFe->total->ICMSTot->vICMSUFDest = number_format($total_vICMSUFDest, 2, '.', '');
         }
 
         $nfe->infNFe->total->ICMSTot->vFCP = '0.00';
@@ -542,7 +542,7 @@ class SpedNFeBusiness
                         $itemXML->imposto->ICMSUFDest->vFCPUFDest = 0.00;
 
                         $calcICMS = bcdiv(bcsub($icmsUFDest, $itemXML->imposto->ICMS->$tagICMS->pICMS, 2), 100, 2);
-                        $vICMS = bcmul($itemXML->imposto->ICMS->$tagICMS->vBC, $calcICMS, 2);
+                        $vICMS = number_format(bcmul($itemXML->imposto->ICMS->$tagICMS->vBC, $calcICMS, 2), 2, '.', '');
 
                         $itemXML->imposto->ICMSUFDest->vICMSUFDest = $vICMS;
                         $itemXML->imposto->ICMSUFDest->vICMSUFRemet = 0.00;
