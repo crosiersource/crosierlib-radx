@@ -147,6 +147,67 @@ class IntegradorMercadoLivre implements IntegradorECommerce
     }
 
 
+    /**
+     * https://developers.mercadolivre.com.br/en_us/products-receive-notifications#questions
+     */
+    public function getQuestion(string $accessToken, string $resourceId): array
+    {
+        $url = 'https://api.mercadolibre.com' . $resourceId;
+        try {
+            $response = $this->client->request('GET', $url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                ],
+            ]);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            return $json;
+        } catch (GuzzleException $e) {
+            throw new ViewException('Erro - getQuestion (accessToken: ' . $accessToken . ') (resourceId: ' . $resourceId . ')', 0, $e);
+        }
+    }
+
+    /**
+     * https://developers.mercadolivre.com.br/en_us/products-receive-notifications#messages
+     */
+    public function getMessage(string $accessToken, string $resourceId): array
+    {
+        $url = 'https://api.mercadolibre.com/messages/' . $resourceId;
+        try {
+            $response = $this->client->request('GET', $url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                ],
+            ]);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            return $json;
+        } catch (GuzzleException $e) {
+            throw new ViewException('Erro - getMessage (accessToken: ' . $accessToken . ') (resourceId: ' . $resourceId . ')', 0, $e);
+        }
+    }
+
+    /**
+     * https://developers.mercadolivre.com.br/en_us/products-receive-notifications#claims
+     */
+    public function getClaim(string $accessToken, string $resourceId): array
+    {
+        $url = 'https://api.mercadolibre.com/' . $resourceId;
+        try {
+            $response = $this->client->request('GET', $url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                ],
+            ]);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            return $json;
+        } catch (GuzzleException $e) {
+            throw new ViewException('Erro - getMessage (accessToken: ' . $accessToken . ') (resourceId: ' . $resourceId . ')', 0, $e);
+        }
+    }
+
+
     public function responder(string $accessToken, string $questionId, string $text): array
     {
         try {
@@ -200,6 +261,21 @@ class IntegradorMercadoLivre implements IntegradorECommerce
         $bodyContents = $response->getBody()->getContents();
         $json = json_decode($bodyContents, true);
         return $json[0]['body'] ?? [];
+    }
+
+
+    public function getMe(string $accessToken): array
+    {
+        $url = 'https://api.mercadolibre.com/users/me';
+        $response = $this->client->request('GET', $url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $accessToken,
+            ],
+        ]);
+
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        return $json ?? [];
     }
 
     public function obterVendas(\DateTime $dtVenda, ?bool $resalvar = false): int
