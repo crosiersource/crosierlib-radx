@@ -41,10 +41,10 @@ class VendaBusiness
 
     private VendaEntityHandler $vendaEntityHandler;
 
-    public function __construct(EntityManagerInterface $doctrine,
+    public function __construct(EntityManagerInterface    $doctrine,
                                 MovimentacaoEntityHandler $movimentacaoEntityHandler,
-                                FaturaEntityHandler $faturaEntityHandler,
-                                VendaEntityHandler $vendaEntityHandler)
+                                FaturaEntityHandler       $faturaEntityHandler,
+                                VendaEntityHandler        $vendaEntityHandler)
     {
         $this->doctrine = $doctrine;
         $this->movimentacaoEntityHandler = $movimentacaoEntityHandler;
@@ -157,7 +157,9 @@ class VendaBusiness
                 $formaPagamento = $pagto->jsonData['nomeFormaPagamento'] ?? '';
                 if ($integrador === 'Mercado Pago') {
                     $fatura = $this->finalizarPVComPagtoPeloMercadoPago($pagto);
-                } elseif (in_array($formaPagamento, ['Depósito Bancário', 'Pix'], true)) {
+                } elseif (strpos($formaPagamento, 'YAPAY') !== FALSE) {
+                    $fatura = $this->finalizarPVComPagtoPelaYapay($pagto);
+                } elseif (in_array(mb_strtoupper($formaPagamento), ['DEPÓSITO BANCÁRIO', 'PIX'], true)) {
                     // Pagamentos que precisarão de conferência se 'caíram' na conta
                     $fatura = $this->finalizarPVComPagtoPorDepositoEmAberto($pagto);
                 } else {
@@ -186,7 +188,7 @@ class VendaBusiness
             $fatura->dtFatura = clone $pagto->venda->dtVenda;
             /** @var Fatura $fatura */
             $fatura = $this->faturaEntityHandler->save($fatura);
-            
+
             $venda = $pagto->venda;
             $repoCategoria = $this->doctrine->getRepository(Categoria::class);
             $categoria101 = $repoCategoria->findOneBy(['codigo' => 101]);
@@ -209,15 +211,15 @@ class VendaBusiness
             // A data em que o mercadopago realmente pagou
             // em alguns casos pode não ser, é necessário verificar aqui um dia...
             if ($pagto->jsonData['mercadopago_retorno']['date_approved'] ?? false) {
-                $movimentacao->dtPagto = DateTimeUtils::parseDateStr($pagto->jsonData['mercadopago_retorno']['date_approved']);    
+                $movimentacao->dtPagto = DateTimeUtils::parseDateStr($pagto->jsonData['mercadopago_retorno']['date_approved']);
             } else {
                 $movimentacao->dtPagto = $venda->dtVenda;
             }
-            
+
             $movimentacao->valor = $pagto->valorPagto;
             $movimentacao->categoria = $categoria101;
             $movimentacao->modo = $modo7;
-            
+
             $movimentacao->descricao = 'RECEB VENDA MERCADOPAGO ' .
                 str_pad($venda->jsonData['ecommerce_numeroPedido'] ?? '0', 9, 0, STR_PAD_LEFT) . ' - Id: ' .
                 str_pad($venda->getId(), 9, 0, STR_PAD_LEFT) . ' (' . $venda->jsonData['infoPagtos'] . ')';
@@ -231,7 +233,7 @@ class VendaBusiness
             $movimentacao = $this->movimentacaoEntityHandler->save($movimentacao);
 
             $fatura->addMovimentacao($movimentacao);
-            
+
             $paymentMethodId = ($pagto->jsonData['mercadopago_retorno']['payment_method_id'] ?? '');
 
             $taxas = [];
@@ -267,7 +269,86 @@ class VendaBusiness
                 $fatura->addMovimentacao($mov_taxa);
             }
             $fatura = $this->faturaEntityHandler->save($fatura);
-                        
+
+            return $fatura;
+        } catch (\Throwable $e) {
+            throw new ViewException('Erro ao finalizarPVComPagtoPeloMercadoPago', 0, $e);
+        }
+    }
+
+    /**
+     * @param VendaPagto $pagto
+     * @throws ViewException
+     */
+    private function finalizarPVComPagtoPelaYapay(VendaPagto $pagto): Fatura
+    {
+        try {
+            $fatura = new Fatura();
+            $fatura->jsonData['venda_id'] = $pagto->venda->getId();
+            $fatura->dtFatura = clone $pagto->venda->dtVenda;
+            /** @var Fatura $fatura */
+            $fatura = $this->faturaEntityHandler->save($fatura);
+
+            $venda = $pagto->venda;
+            $repoCategoria = $this->doctrine->getRepository(Categoria::class);
+            $categoria101 = $repoCategoria->findOneBy(['codigo' => 101]);
+            $repoModo = $this->doctrine->getRepository(Modo::class);
+            $modo7 = $repoModo->findOneBy(['codigo' => 9]);
+            $repoCarteira = $this->doctrine->getRepository(Carteira::class);
+
+            $carteiraYapay = $repoCarteira->find($pagto->jsonData['carteira_id']);
+
+            $movimentacao = new Movimentacao();
+            $movimentacao->carteira = $carteiraYapay;
+            $movimentacao->dtMoviment = $venda->dtVenda;
+            $movimentacao->dtVencto = $venda->dtVenda;
+            // A data em que o mercadopago realmente pagou
+            // em alguns casos pode não ser, é necessário verificar aqui um dia...
+            if ($pagto->venda->jsonData['dados_completos_ecommerce']['Order']['Payment'][0]['Payment']['date'] ?? false) {
+                $movimentacao->dtPagto = DateTimeUtils::parseDateStr(
+                    $pagto->venda->jsonData['dados_completos_ecommerce']['Order']['Payment'][0]['Payment']['date']);
+            } else {
+                $movimentacao->dtPagto = $venda->dtVenda;
+            }
+
+            $movimentacao->valor = $pagto->valorPagto;
+            $movimentacao->categoria = $categoria101;
+            $movimentacao->modo = $modo7;
+
+            $movimentacao->descricao = 'RECEB VENDA YAPAY ' .
+                str_pad($venda->jsonData['ecommerce_numeroPedido'] ?? '0', 9, 0, STR_PAD_LEFT) . ' - Id: ' .
+                str_pad($venda->getId(), 9, 0, STR_PAD_LEFT) . ' (' . $venda->jsonData['infoPagtos'] . ')';
+            $sacado = '';
+            if (($venda->cliente->documento ?? false) && ($venda->cliente->nome ?? false)) {
+                $sacado .= StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' . mb_strtoupper($venda->cliente->nome);
+            }
+            $movimentacao->sacado = $sacado;
+            $movimentacao->jsonData['venda_id'] = $pagto->venda->getId();
+
+            $movimentacao = $this->movimentacaoEntityHandler->save($movimentacao);
+
+            $fatura->addMovimentacao($movimentacao);
+
+            $valorLiquido = $pagto->venda->jsonData['dados_completos_ecommerce']['Order']['Payment'][0]['Payment']['value'] ?? 0;
+            $taxa = bcsub($pagto->valorPagto, $valorLiquido, 2);
+
+            /** @var Movimentacao $mov_taxa */
+            $mov_taxa = $this->movimentacaoEntityHandler->cloneEntityId($movimentacao);
+            $categ_taxa = $repoCategoria->findOneBy(['codigo' => '202005001']);
+            $mov_taxa->carteiraDestino = null;
+            $mov_taxa->sacado = null;
+            $mov_taxa->cedente = null;
+            $mov_taxa->categoria = $categ_taxa;
+            $mov_taxa->valor = $taxa;
+            $mov_taxa->descontos = null;
+            $mov_taxa->acrescimos = null;
+            $mov_taxa->valorTotal = null;
+            $mov_taxa->descricao = 'TAXA YAPAY';
+            $this->movimentacaoEntityHandler->save($mov_taxa);
+            $fatura->addMovimentacao($mov_taxa);
+
+            $fatura = $this->faturaEntityHandler->save($fatura);
+
             return $fatura;
         } catch (\Throwable $e) {
             throw new ViewException('Erro ao finalizarPVComPagtoPeloMercadoPago', 0, $e);
@@ -288,7 +369,7 @@ class VendaBusiness
         $fatura->dtFatura = clone $pagto->venda->dtVenda;
         /** @var Fatura $fatura */
         $fatura = $this->faturaEntityHandler->save($fatura);
-        
+
         $repoCategoria = $this->doctrine->getRepository(Categoria::class);
         $categoria101 = $repoCategoria->findOneBy(['codigo' => 101]);
 
@@ -307,7 +388,7 @@ class VendaBusiness
         $movimentacao->valor = $pagto->valorPagto;
         $movimentacao->categoria = $categoria101;
         $movimentacao->modo = $modo;
-        
+
         $movimentacao->descricao = 'RECEB VENDA MERCADOPAGO ' .
             str_pad($venda->jsonData['ecommerce_numeroPedido'] ?? '0', 9, 0, STR_PAD_LEFT) . ' - Id: ' .
             str_pad($venda->getId(), 9, 0, STR_PAD_LEFT) . ' (' . $venda->jsonData['infoPagtos'] . ')';
@@ -319,7 +400,7 @@ class VendaBusiness
         $movimentacao->jsonData['venda_id'] = $pagto->venda->getId();
 
         $fatura->addMovimentacao($movimentacao);
-        
+
         $this->movimentacaoEntityHandler->save($movimentacao);
 
         return $movimentacao->fatura;

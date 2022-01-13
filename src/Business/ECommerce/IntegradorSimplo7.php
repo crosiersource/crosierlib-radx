@@ -71,7 +71,6 @@ class IntegradorSimplo7 implements IntegradorECommerce
     private Depto $deptoIndefinido;
     private Grupo $grupoIndefinido;
     private Subgrupo $subgrupoIndefinido;
-
     private Fornecedor $fornecedorDefamilia;
 
     private Security $security;
@@ -91,6 +90,8 @@ class IntegradorSimplo7 implements IntegradorECommerce
     private MessageBusInterface $bus;
 
     private SyslogBusiness $syslog;
+    
+    private VendaBusiness $vendaBusiness;
 
     private IntegradorMercadoPago $integradorMercadoPago;
 
@@ -236,7 +237,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
                 $repoCarteira = $this->appConfigEntityHandler->getDoctrine()->getRepository(Carteira::class);
                 $this->carteiraIndefinidaId = $repoCarteira->findOneBy(['codigo' => 99])->getId();
             } catch (\Throwable $e) {
-                throw new \RuntimeException('Erro ao pesquisar appConfig ecomm_info_caixa_site_carteira_id');
+                throw new \RuntimeException('Erro ao pesquisar - getCarteiraIndefinidaId');
             }
         }
         return $this->carteiraIndefinidaId;
