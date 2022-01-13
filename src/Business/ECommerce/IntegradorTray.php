@@ -87,7 +87,7 @@ class IntegradorTray implements IntegradorECommerce
     private Depto $deptoIndefinido;
     private Grupo $grupoIndefinido;
     private Subgrupo $subgrupoIndefinido;
-    private Fornecedor $fornecedorDefamilia;
+    private ?Fornecedor $fornecedorDefamilia = null;
 
     private ?int $carteiraIndefinidaId = null;
 
