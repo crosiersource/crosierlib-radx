@@ -35,7 +35,12 @@ class RegistroConferenciaBusiness
     public function gerarProximo(RegistroConferencia $registroConferencia)
     {
         $proxMes = DateTimeUtils::incMes($registroConferencia->dtRegistro);
-        $existeProximo = $this->registroConferenciaEntityHandler->getDoctrine()->getRepository(RegistroConferencia::class)->findBy(['dtRegistro' => $proxMes, 'descricao' => $registroConferencia->descricao]);
+        $repo = $this->registroConferenciaEntityHandler->getDoctrine()->getRepository(RegistroConferencia::class);
+        $existeProximo = $repo->findBy([
+            'dtRegistro' => $proxMes, 
+            'descricao' => $registroConferencia->descricao,
+            'carteira' => $registroConferencia->carteira,
+        ]);
         if ($existeProximo) {
             throw new ViewException('Próximo registro já existe');
         } else {

@@ -295,7 +295,7 @@ class DistDFeBusiness
     {
         switch ($distDFe->tipoDistDFe) {
             case 'NFEPROC':
-                $nf = $this->nfeProc2NotaFiscal($distDFe->getXMLDecoded(), $distDFe->notaFiscal, $distDFe);
+                $nf = $this->nfeProc2NotaFiscal($distDFe->documento, $distDFe->getXMLDecoded(), $distDFe->notaFiscal, $distDFe);
                 $distDFe->notaFiscal = $nf;
                 $distDFe->status = 'PROCESSADO';
                 $this->distDFeEntityHandler->save($distDFe);
@@ -320,7 +320,7 @@ class DistDFeBusiness
      * @return NotaFiscal
      * @throws ViewException
      */
-    public function nfeProc2NotaFiscal(\SimpleXMLElement $xml, NotaFiscal $nf = null, ?DistDFe $distDFe = null): ?NotaFiscal
+    public function nfeProc2NotaFiscal(string $cnpjEmUso, \SimpleXMLElement $xml, NotaFiscal $nf = null, ?DistDFe $distDFe = null): ?NotaFiscal
     {
         if ($xml->getName() === 'NFe') {
             $this->logger->info('xml não é "nfeProc", e sim "NFe". Alterando apenas para poder importar...');
@@ -342,7 +342,7 @@ class DistDFeBusiness
 
         $nf_jsonData = $nf->jsonData ?? [];
 
-        $nfeConfigs = $this->nfeUtils->getNFeConfigsEmUso();
+        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($cnpjEmUso);
         $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
         $nf->ambiente = $ambiente;
         $nf->resumo = false;
@@ -401,10 +401,13 @@ class DistDFeBusiness
 
             $ordem = (int)$item['nItem']->__toString();
 
-            $nfItem = $repoNotaFiscalItem->findOneByFiltersSimpl([
-                ['notaFiscal', 'EQ', $nf],
-                ['ordem', 'EQ', $ordem]
-            ]);
+            $nfItem = null;
+            if ($nf->getId()) {
+                $nfItem = $repoNotaFiscalItem->findOneByFiltersSimpl([
+                    ['notaFiscal', 'EQ', $nf],
+                    ['ordem', 'EQ', $ordem]
+                ]);
+            }
 
             if ($nfItem) {
                 continue;
@@ -686,7 +689,7 @@ class DistDFeBusiness
                 $xmlName = $xml->getName();
 
                 if ($xmlName === 'nfeProc') {
-                    $nf = $this->nfeProc2NotaFiscal($distDFe->getXMLDecoded(), null, $distDFe);
+                    $nf = $this->nfeProc2NotaFiscal($cnpjEmUso, $distDFe->getXMLDecoded(), null, $distDFe);
                     $distDFe->notaFiscal = $nf;
                     $this->distDFeEntityHandler->save($distDFe);
                 } elseif ($xmlName === 'resNFe') {
@@ -807,7 +810,7 @@ class DistDFeBusiness
             $zip = $xml[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip->__toString() ?? null;
             if ($zip) {
                 $notaFiscal->setXmlNota($zip);
-                $this->nfeProc2NotaFiscal($notaFiscal->getXMLDecoded(), $notaFiscal);
+                $this->nfeProc2NotaFiscal($notaFiscal->documentoDestinatario, $notaFiscal->getXMLDecoded(), $notaFiscal);
             } else {
                 $this->logger->error('Erro ao obter XML (download zip) para a chave: ' . $notaFiscal->chaveAcesso);
             }

@@ -6,19 +6,22 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Datetime;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Entidade para manter registros de conferências mensais.
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"registroConferencia","entityId"},"enable_max_depth"=true},
+*     normalizationContext={"groups"={"registroConferencia","carteira","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"registroConferencia"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -38,11 +41,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  * )
  * @ApiFilter(PropertyFilter::class)
+ * 
+ * @ApiFilter(DateFilter::class, properties={"dtRegistro"})
+ * 
+ * @ApiFilter(RangeFilter::class, properties={"valor"})
  *
  * @ApiFilter(SearchFilter::class,
  *     properties={
  *     "id": "exact",
- *     "descricao": "partial"
+ *     "descricao": "partial",
+ *     "carteira": "exact"
  * })
  * @ApiFilter(OrderFilter::class, properties={"id", "descricao", "dtVencto", "updated"}, arguments={"orderParameterName"="order"})
  *
@@ -79,7 +87,7 @@ class RegistroConferencia implements EntityId
 
     /**
      * @ORM\Column(name="valor", type="decimal")
-     * @Groups("registroConferencia")
+     * @Groups("n")
      */
     public ?float $valor = null;
 
@@ -88,6 +96,31 @@ class RegistroConferencia implements EntityId
      * @Groups("registroConferencia")
      */
     public ?string $obs = null;
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("registroConferencia")
+     * @SerializedName("valor")
+     * @return float
+     */
+    public function getValorFormatted(): float
+    {
+        return (float)$this->valor;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("registroConferencia")
+     * @SerializedName("valor")
+     * @param float $valor
+     */
+    public function setValorFormatted(float $valor)
+    {
+        $this->valor = $valor;
+    }
+
 
 
 }

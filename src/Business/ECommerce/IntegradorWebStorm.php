@@ -1461,6 +1461,9 @@ class IntegradorWebStorm implements IntegradorECommerce
                         <status></status>
                     </filtro>
                     </ws_integracao>]]>';
+        
+        $this->syslog->info('CHAMADA: Obtendo vendas entre ' . $dtIni->format('d/m/Y H:i:s') . ' e ' . $dtFim->format('d/m/Y H:i:s'), $xml);
+        
 
         $client = $this->getNusoapClientExportacaoInstance();
 
@@ -1475,6 +1478,8 @@ class IntegradorWebStorm implements IntegradorECommerce
             throw new \RuntimeException($client->getError());
         }
 
+        $this->syslog->info('RETORNO: Obtendo vendas entre ' . $dtIni->format('d/m/Y H:i:s') . ' e ' . $dtFim->format('d/m/Y H:i:s'), $arResultado);
+        
         $xmlResult = simplexml_load_string($arResultado);
 
         if ($xmlResult->erros ?? false) {
