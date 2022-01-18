@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\LikeFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
@@ -42,12 +43,13 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * @ApiFilter(SearchFilter::class, properties={
  *     "id": "exact",
  *     "status": "exact",
- *     "nome": "partial",
  *     "codigo": "partial",
  *     "depto": "exact",
  *     "grupo": "exact",
  *     "subgrupo": "exact"
  * })
+ * 
+ * @ApiFilter(LikeFilter::class, properties={"nome"})
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler")
