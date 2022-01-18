@@ -119,6 +119,11 @@ class DistDFeBusiness
                 // ultNSU: último consultado
                 // maxNSU: último na base da sefaz
 
+                if ($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->cStat->__toString() === '137') {
+                    // xMotivo: Nenhum documento localizado
+                    return 0;
+                }
+
                 if (!($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip ?? false)) {
                     if ($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo ?? false) {
                         throw new ViewException($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo);
@@ -712,7 +717,7 @@ class DistDFeBusiness
     {
         /** @var DistDFeRepository $repoDistDFe */
         $repoDistDFe = $this->doctrine->getRepository(DistDFe::class);
-        
+
         $distDFesAProcessar = $repoDistDFe->findDistDFeNotInNotaFiscalEvento($cnpjEmUso);
 
         /** @var NotaFiscalRepository $repoNotaFiscal */
