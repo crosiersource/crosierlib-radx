@@ -3,6 +3,7 @@
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque;
 
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 
@@ -19,6 +20,10 @@ class FornecedorEntityHandler extends EntityHandler
 
     public function beforeSave(/** @var Fornecedor $fornecedor */ $fornecedor)
     {
+        if (!$fornecedor->codigo) {
+            $fornecedor->codigo = StringUtils::guidv4();
+        }
+        
         $fornecedor->documento = preg_replace("/[^0-9]/", "", $fornecedor->documento);
         if (strlen($fornecedor->documento) === 14) {
             $fornecedor->jsonData['tipo_pessoa'] = 'PJ';
