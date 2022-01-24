@@ -150,7 +150,7 @@ class IntegradorTray implements IntegradorECommerce
             $achou = false;
             foreach ($stores as $k => $v) {
                 if ($v['store_id'] === $store['store_id']) {
-                    $stores[$k] = array_merge($stores[$k], $store);
+                    $stores[$k] = array_merge($v, $store);
                     $achou = true;
                     break;
                 }

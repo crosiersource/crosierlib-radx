@@ -200,6 +200,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $modo50 = $this->doctrine->getRepository(Modo::class)->findOneBy(['codigo' => 50]);
             $movimentacao->modo = $modo50;
         } else if ($movimentacao->modo->getCodigo() === 50) { // 50,'MOVIMENTAÇÃO AGRUPADA'
+            $repoTipoLancto = $this->getDoctrine()->getRepository(TipoLancto::class);
             /** @var TipoLancto $tipoLancto70 */
             $tipoLancto70 = $repoTipoLancto->findOneBy(['codigo' => 70]);
             $movimentacao->tipoLancto = $tipoLancto70;
@@ -643,7 +644,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                     $mov->dtVencto = clone($movimentacao->dtVencto);
                     $mov->dtVenctoEfetiva = clone($movimentacao->dtVenctoEfetiva);
                     $mov->dtPagto = clone($movimentacao->dtPagto);
-                    $mov->cadeiaQtde = $cadeiaQtde;
+                    $mov->cadeiaQtde = 3;
                     $mov->jsonData = $movimentacao->jsonData;
                     parent::save($mov);
                 }

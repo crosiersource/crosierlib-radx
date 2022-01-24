@@ -1,8 +1,5 @@
 <?php
 
-/** @noinspection XmlUnusedNamespaceDeclaration */
-
-/** @noinspection PhpUndefinedFieldInspection */
 
 
 namespace CrosierSource\CrosierLibRadxBundle\Business\ECommerce;

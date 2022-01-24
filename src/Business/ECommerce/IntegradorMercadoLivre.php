@@ -281,6 +281,7 @@ class IntegradorMercadoLivre implements IntegradorECommerce
     public function obterVendas(\DateTime $dtVenda, ?bool $resalvar = false): int
     {
         // TODO: Implement obterVendas() method.
+        return 0;
     }
 
     public function obterVendasPorData(\DateTime $dtVenda)

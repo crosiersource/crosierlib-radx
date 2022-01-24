@@ -327,23 +327,23 @@ class NotaFiscalItem implements EntityId
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
-     * @SerializedName("subTotal")
+     * @SerializedName("subtotal")
      * @return float
      */
     public function getSubTotalFormatted(): float
     {
-        return (float)$this->subTotal;
+        return $this->subtotal;
     }
 
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
-     * @SerializedName("subTotal")
-     * @param float $subTotal
+     * @SerializedName("subtotal")
+     * @param float $subtotal
      */
-    public function setSubTotalFormatted(float $subTotal)
+    public function setSubTotalFormatted(float $subtotal)
     {
-        $this->subTotal = $subTotal;
+        $this->subtotal = $subtotal;
     }
 
 
@@ -564,9 +564,9 @@ class NotaFiscalItem implements EntityId
         if ((float)$this->valorDesconto !== $valorDesconto) {
             $this->valorDesconto = $valorDesconto;
         }
-        $subTotal = (float)(bcmul($this->qtde, $this->valorUnit, 2));
-        if ((float)$this->subtotal !== $subTotal) {
-            $this->subtotal = $subTotal;
+        $subtotal = (float)(bcmul($this->qtde, $this->valorUnit, 2));
+        if ((float)$this->subtotal !== $subtotal) {
+            $this->subtotal = $subtotal;
         }
 
         if ((float)$this->valorTotal !== (float)$this->subtotal) {

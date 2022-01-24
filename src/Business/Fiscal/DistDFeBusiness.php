@@ -234,9 +234,9 @@ class DistDFeBusiness
             $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
             return $xmlResp->xpath('//soap:Body');
         } catch (\Exception $e) {
-            $this->logger->error('Erro ao obter DFe (NSU: ' . $nsu . ')');
+            $this->logger->error('Erro ao verificarNSUsNaSefaz (CNPJ: ' . $cnpj . ')');
             $this->logger->error($e->getMessage());
-            throw new ViewException('Erro ao obter DFe (NSU: ' . $nsu . ')');
+            throw new ViewException('Erro ao verificarNSUsNaSefaz (CNPJ: ' . $cnpj . ')');
         }
     }
 
@@ -577,7 +577,7 @@ class DistDFeBusiness
             $distDFe->notaFiscal = $nf;
 
         } catch (\Throwable $e) {
-            $this->logger->error('Erro para a chave: ' . $nf->chaveAcesso);
+            $this->logger->error('Erro - resNfe2NotaFiscal - distDFe->id: ' . $distDFe->getId());
             $distDFe->status = 'ERRO AO PROCESSAR';
         }
 
