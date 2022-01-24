@@ -58,7 +58,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "centroCusto": "exact"
  * })
  * 
- * @ApiFilter(DateFilter::class, properties={"dtUtil"})
+ * @ApiFilter(DateFilter::class, properties={"dtUtil", "dtVenctoEfetiva"})
  * 
  * @ApiFilter(RangeFilter::class, properties={"valorTotal"})
  * 
@@ -67,8 +67,12 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "descricao", 
  *     "dtUtil", 
  *     "dtVencto", 
+ *     "dtVenctoEfetiva", 
+ *     "valor", 
  *     "valorTotal", 
  *     "carteira.codigo", 
+ *     "categoria.codigo", 
+ *     "categoria.codigoSuper", 
  *     "updated"
  * }, arguments={"orderParameterName"="order"})
  *

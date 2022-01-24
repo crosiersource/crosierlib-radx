@@ -1174,7 +1174,7 @@ class IntegradorWebStorm implements IntegradorECommerce
 
         /** @var User $user */
         $user = $this->security->getUser();
-        $produto->jsonData['ecommerce_integr_por'] = $user ? $user->getNome() : 'n/d';
+        $produto->jsonData['ecommerce_integr_por'] = $user ? $user->nome : 'n/d';
 
 
         $this->syslog->info('integraProduto - save', $syslog_obs);

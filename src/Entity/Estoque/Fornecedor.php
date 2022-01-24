@@ -55,6 +55,15 @@ class Fornecedor implements EntityId
 
     /**
      *
+     * @ORM\Column(name="codigo", type="string")
+     * @var null|string
+     *
+     * @Groups("fornecedor")
+     */
+    public ?string $codigo = null;
+    
+    /**
+     *
      * @ORM\Column(name="nome", type="string")
      * @var null|string
      *
@@ -90,6 +99,15 @@ class Fornecedor implements EntityId
      */
     public ?string $inscricaoEstadual = null;
 
+
+    /**
+     * @ORM\Column(name="utilizado", type="boolean")
+     * @var null|bool
+     *
+     * @Groups("fornecedor")
+     */
+    public ?bool $utilizado = null;
+    
     /**
      *
      * @ORM\Column(name="json_data", type="json")
@@ -98,6 +116,8 @@ class Fornecedor implements EntityId
      * @Groups("fornecedor")
      */
     public ?array $jsonData = null;
+    
+    
 
 
     /**
