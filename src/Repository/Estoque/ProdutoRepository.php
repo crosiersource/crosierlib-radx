@@ -34,7 +34,7 @@ class ProdutoRepository extends FilterRepository
                 'appUUID' => $_SERVER['CROSIERAPPRADX_UUID'],
                 'chave' => 'est_produto_json_metadata'
             ]
-        )->getValor();
+        )->valor;
     }
 
     public function getUnidadesSelect2js()

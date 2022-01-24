@@ -200,7 +200,7 @@ class VendaBusiness
             } else {
                 $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
                 $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'ecomm_info_mercadopago_site_carteira_id'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
-                $ecomm_info_mercadopago_site_carteira_id = $rs->getValor();
+                $ecomm_info_mercadopago_site_carteira_id = $rs->valor;
                 $carteiraMercadoPago = $repoCarteira->find($ecomm_info_mercadopago_site_carteira_id);
             }
 

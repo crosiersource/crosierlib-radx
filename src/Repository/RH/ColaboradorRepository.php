@@ -31,7 +31,7 @@ class ColaboradorRepository extends FilterRepository
                 'appUUID' => $_SERVER['CROSIERAPP_UUID'],
                 'chave' => 'rh_colaborador_json_metadata'
             ]
-        )->getValor();
+        )->valor;
     }
 
     public function getVendedores(?bool $atuais = null)

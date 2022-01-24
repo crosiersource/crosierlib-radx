@@ -94,17 +94,18 @@ class ConferenciaFinanceiroBusiness
     {
         $totalComparado = $totalComparado ? $totalComparado : 0.0;
         $dt->setTime(0, 0, 0, 0);
+        /** @var RegistroConferencia $registroConferencia */
         $registroConferencia = $this->doctrine->getRepository(RegistroConferencia::class)->findOneBy(['descricao' => $rcDescricao, 'dtRegistro' => $dt]);
 
-        if (!$registroConferencia or $registroConferencia->getValor() <= 0.00) { // is_nan($registroConferencia->getValor())) {
+        if (!$registroConferencia or $registroConferencia->valor <= 0.00) {
             return null;
 //            return ['titulo' => '*** ' . $rcDescricao . ' (INFORMADO)',
 //                'valor' => 0,
 //                'icon' => $this->chooseIcon($totalComparado, null)];
         } else {
-            $dif = number_format($registroConferencia->getValor() - $totalComparado, 2, ',', '.');
+            $dif = number_format($registroConferencia->valor - $totalComparado, 2, ',', '.');
             return ['titulo' => $rcDescricao . ' (INFORMADO)',
-                'valor' => $registroConferencia->getValor(),
+                'valor' => $registroConferencia->valor,
                 'icon' => $this->chooseIcon($totalComparado, $registroConferencia),
                 'obs' => '(DIF: ' . $dif . ')'];
         }

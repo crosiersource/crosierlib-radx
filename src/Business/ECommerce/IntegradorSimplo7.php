@@ -164,8 +164,9 @@ class IntegradorSimplo7 implements IntegradorECommerce
         if (!$this->chave) {
             try {
                 $repoAppConfig = $this->appConfigEntityHandler->getDoctrine()->getRepository(AppConfig::class);
+                /** @var AppConfig $rs */
                 $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'ecomm_info_integra_SIMPLO7_chave'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
-                $this->chave = $rs->getValor();
+                $this->chave = $rs->valor;
             } catch (\Throwable $e) {
                 throw new \RuntimeException('Erro ao instanciar IntegradorSimplo7 (chave ecomm_info_integra_SIMPLO7_chave ?)');
             }
@@ -181,8 +182,9 @@ class IntegradorSimplo7 implements IntegradorECommerce
         if (!$this->endpoint) {
             try {
                 $repoAppConfig = $this->appConfigEntityHandler->getDoctrine()->getRepository(AppConfig::class);
+                /** @var AppConfig $rs */
                 $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'ecomm_info_integra_SIMPLO7_endpoint'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
-                $this->endpoint = $rs->getValor();
+                $this->endpoint = $rs->valor;
             } catch (\Throwable $e) {
                 throw new \RuntimeException('Erro ao pesquisar appConfig ecomm_info_integra_SIMPLO7_endpoint');
             }
@@ -198,8 +200,9 @@ class IntegradorSimplo7 implements IntegradorECommerce
         if (!$this->caixaSiteCarteiraId) {
             try {
                 $repoAppConfig = $this->appConfigEntityHandler->getDoctrine()->getRepository(AppConfig::class);
+                /** @var AppConfig $rs */
                 $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'ecomm_info_caixa_site_carteira_id'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
-                $this->caixaSiteCarteiraId = (int)$rs->getValor();
+                $this->caixaSiteCarteiraId = (int)$rs->valor;
             } catch (\Throwable $e) {
                 throw new \RuntimeException('Erro ao pesquisar appConfig ecomm_info_caixa_site_carteira_id');
             }
@@ -217,8 +220,9 @@ class IntegradorSimplo7 implements IntegradorECommerce
         if (!$this->carteiraMercadoPagoSiteId) {
             try {
                 $repoAppConfig = $this->appConfigEntityHandler->getDoctrine()->getRepository(AppConfig::class);
+                /** @var AppConfig $rs */
                 $rs = $repoAppConfig->findOneByFiltersSimpl([['chave', 'EQ', 'ecomm_info_mercadopago_site_carteira_id'], ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']]]);
-                $this->carteiraMercadoPagoSiteId = (int)$rs->getValor();
+                $this->carteiraMercadoPagoSiteId = (int)$rs->valor;
             } catch (\Throwable $e) {
                 throw new \RuntimeException('Erro ao pesquisar appConfig ecomm_info_caixa_site_carteira_id');
             }

@@ -89,7 +89,7 @@ class NFeUtils
         /** @var AppConfig $appConfig */
         $appConfig = $repoAppConfig->find($idNfeConfigsEmUso);
 
-        $configsSaved = json_decode($appConfig->getValor(), true);
+        $configsSaved = json_decode($appConfig->valor, true);
         $configs['certificado'] = $configs['certificado'] ?? $configsSaved['certificado'];
         $configs['certificadoPwd'] = $configs['certificadoPwd'] ?? $configsSaved['certificadoPwd'];
         $configs['atualizacao'] = $configs['atualizacao']->format('Y-m-d H:i:s.u');
@@ -119,7 +119,7 @@ class NFeUtils
         /** @var AppConfig $appConfig_nfeConfigsIdEmUso */
         $appConfig_nfeConfigsIdEmUso = $repoAppConfig->findOneBy(['appUUID' => $_SERVER['CROSIERAPPRADX_UUID'], 'chave' => 'nfeConfigsIdEmUso_' . $username]);
         if ($appConfig_nfeConfigsIdEmUso) {
-            return (int)$appConfig_nfeConfigsIdEmUso->getValor();
+            return (int)$appConfig_nfeConfigsIdEmUso->valor;
         } else {
             $appConfig_nfeConfigsIdEmUso_padrao = $repoAppConfig->findOneBy(['appUUID' => $_SERVER['CROSIERAPPRADX_UUID'], 'chave' => 'nfeConfigsIdEmUso_padrao']);
             if (!$appConfig_nfeConfigsIdEmUso_padrao) {
@@ -136,10 +136,10 @@ class NFeUtils
             $appConfig_nfeConfigsIdEmUso = new AppConfig();
             $appConfig_nfeConfigsIdEmUso->setChave('nfeConfigsIdEmUso_' . $username);
             $appConfig_nfeConfigsIdEmUso->setAppUUID($_SERVER['CROSIERAPPRADX_UUID']);
-            $appConfig_nfeConfigsIdEmUso->setValor($appConfig_nfeConfigsIdEmUso_padrao->getValor());
+            $appConfig_nfeConfigsIdEmUso->setValor($appConfig_nfeConfigsIdEmUso_padrao->valor);
             $this->appConfigEntityHandler->save($appConfig_nfeConfigsIdEmUso);
         }
-        return (int)$appConfig_nfeConfigsIdEmUso->getValor();
+        return (int)$appConfig_nfeConfigsIdEmUso->valor;
     }
 
 
@@ -214,7 +214,7 @@ class NFeUtils
         /** @var AppConfig $appConfig */
         $appConfig = $repoAppConfig->find($idNfeConfigs);
 
-        $configs = json_decode($appConfig->getValor(), true);
+        $configs = json_decode($appConfig->valor, true);
         if ($configs['tpAmb'] === 1) {
             $configs['CSC'] = $configs['CSC_prod'];
             $configs['CSCid'] = $configs['CSCid_prod'];

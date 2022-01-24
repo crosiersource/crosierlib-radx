@@ -31,7 +31,7 @@ class FornecedorRepository extends FilterRepository
                 'appUUID' => $_SERVER['CROSIERAPP_UUID'],
                 'chave' => 'est_fornecedor_json_metadata'
             ]
-        )->getValor();
+        )->valor;
     }
 
     /**

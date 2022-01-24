@@ -280,7 +280,7 @@ class ProdutoEntityHandler extends EntityHandler
             /** @var AppConfig $cfgQtdeFotosMinima */
             $cfgQtdeFotosMinima = $repoAppConfig->findOneBy(['appUUID' => $_SERVER['CROSIERAPP_UUID'], 'chave' => 'qtdeFotosMinima']);
             if ($cfgQtdeFotosMinima) {
-                $qtdeFotosMinima = (int)$cfgQtdeFotosMinima->getValor();
+                $qtdeFotosMinima = (int)$cfgQtdeFotosMinima->valor;
             }
         } catch (\Exception $e) {
             $this->logger->error('Erro ao pesquisar AppConfig para "qtdeFotosMinima"');

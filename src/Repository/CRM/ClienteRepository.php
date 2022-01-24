@@ -34,7 +34,7 @@ class ClienteRepository extends FilterRepository
                 'appUUID' => $_SERVER['CROSIERAPP_UUID'],
                 'chave' => 'crm_cliente_json_metadata'
             ]
-        )->getValor();
+        )->valor;
     }
 
     /**
