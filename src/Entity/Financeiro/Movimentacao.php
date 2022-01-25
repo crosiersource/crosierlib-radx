@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
@@ -58,9 +59,11 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "centroCusto": "exact"
  * })
  * 
- * @ApiFilter(DateFilter::class, properties={"dtUtil", "dtVenctoEfetiva"})
+ * @ApiFilter(DateFilter::class, properties={"dtUtil", "dtVenctoEfetiva", "dtVencto"})
  * 
  * @ApiFilter(RangeFilter::class, properties={"valorTotal"})
+ * 
+ * @ApiFilter(BooleanFilter::class, properties={"recorrente": "exact"})
  * 
  * @ApiFilter(OrderFilter::class, properties={
  *     "id", 
