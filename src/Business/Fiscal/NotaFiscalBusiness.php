@@ -1381,6 +1381,8 @@ class NotaFiscalBusiness
                     $movimentacao = new Movimentacao();
 
                     $movimentacao->fatura = ($fatura);
+                    $movimentacao->cedente = StringUtils::mascararCnpjCpf($notaFiscal->documentoEmitente) . ' - ' .
+                        $notaFiscal->xNomeEmitente;
                     $movimentacao->tipoLancto = ($tipoLancto);
                     $movimentacao->modo = ($modo_boleto);
                     $movimentacao->carteira = ($carteira_indefinida);
