@@ -23,6 +23,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Modo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\OperadoraCartao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
+use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\ModoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\TipoLanctoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -383,6 +384,13 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
         $this->getDoctrine()->beginTransaction();
 
+        if (!$movimentacao->modo) {
+            /** @var ModoRepository $repoModo */
+            $repoModo = $this->doctrine->getRepository(Modo::class);
+            $modo = $repoModo->findOneByCodigo(11);
+            $movimentacao->modo = $modo;
+        }
+        
         /** @var TipoLanctoRepository $repoTipoLancto */
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
         $tipoLancto_transferenciaEntreCarteiras = $repoTipoLancto->findOneBy(['codigo' => 60]);
