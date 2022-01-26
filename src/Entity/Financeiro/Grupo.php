@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Para movimentações que são agrupadas e pagas através de outra movimentação (como Cartão de Crédito, conta em postos, etc).
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"grupo","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"grupo", "grupoItem", "carteira", "entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"grupo"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -114,6 +114,7 @@ class Grupo implements EntityId
      *      mappedBy="pai",
      *      orphanRemoval=true
      * )
+     * @Groups("grupo")
      * @var GrupoItem[]|ArrayCollection|null
      */
     public $itens = null;
