@@ -699,21 +699,23 @@ class MovimentacaoBusiness
      * @param \DateTime $data
      * @param Carteira $carteira
      * @return array
-     * @throws \Exception
      */
     public function calcularSaldos(\DateTime $data, Carteira $carteira): array
     {
-        $saldos = array();
 
-        /** @var MovimentacaoRepository $movimentacaoRepo */
-        $movimentacaoRepo = $this->doctrine->getRepository(Movimentacao::class);
-        $saldoPosterior = $movimentacaoRepo->findSaldo($data, $carteira->getId(), 'SALDO_POSTERIOR_REALIZADAS');
-        $saldoPosteriorComCheques = $movimentacaoRepo->findSaldo($data, $carteira->getId(), 'SALDO_POSTERIOR_COM_CHEQUES');
-        $saldos['SALDO_POSTERIOR_REALIZADAS'] = $saldoPosterior;
-        $saldos['SALDO_POSTERIOR_COM_CHEQUES'] = $saldoPosteriorComCheques;
-        $saldos['TOTAL_CHEQUES'] = $saldoPosterior - $saldoPosteriorComCheques;
-
-        return $saldos;
+        try {
+            $saldos = [];
+            /** @var MovimentacaoRepository $movimentacaoRepo */
+            $movimentacaoRepo = $this->doctrine->getRepository(Movimentacao::class);
+            $saldoPosterior = $movimentacaoRepo->findSaldo($data, $carteira->getId(), 'SALDO_POSTERIOR_REALIZADAS');
+            $saldoPosteriorComCheques = $movimentacaoRepo->findSaldo($data, $carteira->getId(), 'SALDO_POSTERIOR_COM_CHEQUES');
+            $saldos['SALDO_POSTERIOR_REALIZADAS'] = $saldoPosterior;
+            $saldos['SALDO_POSTERIOR_COM_CHEQUES'] = $saldoPosteriorComCheques;
+            $saldos['TOTAL_CHEQUES'] = $saldoPosterior - $saldoPosteriorComCheques;
+            return $saldos;
+        } catch (\Exception $e) {
+            throw new ViewException('Erro ao calcular saldos', 0, $e);
+        }
     }
 
     /**
