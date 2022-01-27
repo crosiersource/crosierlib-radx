@@ -44,7 +44,7 @@ use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\JsonFilter;
  * @ApiFilter(SearchFilter::class, properties={
  *     "id": "exact",
  *     "status": "exact",
- *     "codigo": "partial",
+ *     "codigo": "exact",
  *     "depto": "exact",
  *     "grupo": "exact",
  *     "subgrupo": "exact"
