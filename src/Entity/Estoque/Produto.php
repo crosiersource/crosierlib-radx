@@ -17,6 +17,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
+use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\JsonFilter;
 
 /**
  * @ApiResource(
@@ -51,6 +52,10 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * 
  * @ApiFilter(LikeFilter::class, properties={"nome"})
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ * 
+ * @ApiFilter(JsonFilter::class, properties={
+ *     "jsonData.referencias_extras"={ "type": "string", "strategy": "partial" }
+ * })
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler")
  *
