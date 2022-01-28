@@ -233,7 +233,7 @@ class SpedNFeBusiness
 
                 $nfe->infNFe->dest->enderDest->cMun = $r->municipioCodigo;
                 $nfe->infNFe->dest->enderDest->xMun = $r->municipioNome;
-                $nfe->infNFe->dest->enderDest->UF = $r->getUfSigla();
+                $nfe->infNFe->dest->enderDest->UF = $r->ufSigla;
 
 
                 $nfe->infNFe->dest->enderDest->CEP = preg_replace('/\D/', '', $notaFiscal->cepDestinatario);
@@ -422,7 +422,7 @@ class SpedNFeBusiness
 
 
                 $nfe->infNFe->transp->transporta->xMun = $r->municipioNome;
-                $nfe->infNFe->transp->transporta->UF = $r->getUfSigla();
+                $nfe->infNFe->transp->transporta->UF = $r->ufSigla;
 
                 $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->transpQtdeVolumes, 0);
                 $nfe->infNFe->transp->vol->esp = $notaFiscal->transpEspecieVolumes;

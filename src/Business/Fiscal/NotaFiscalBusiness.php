@@ -1012,20 +1012,20 @@ class NotaFiscalBusiness
         $infCons = $this->spedNFeBusiness->consultarCNPJ($cnpj, $uf);
         $cstat = (int)((string)($infCons->cStat ?? '0'))[0];
         if ($cstat !== 1) {
-            $r['xMotivo'] = $infCons->xMotivo->__toString();
+            $r['xMotivo'] = $infCons->xMotivo;
         } else {
             $r['dados'] = [
-                'CNPJ' => $infCons->infCad->CNPJ->__toString(),
-                'IE' => $infCons->infCad->IE->__toString(),
-                'razaoSocial' => $infCons->infCad->xNome->__toString(),
-                'CNAE' => $infCons->infCad->CNAE->__toString(),
-                'logradouro' => $infCons->infCad->ender->xLgr->__toString(),
-                'numero' => $infCons->infCad->ender->nro->__toString(),
-                'complemento' => $infCons->infCad->ender->xCpl->__toString(),
-                'bairro' => $infCons->infCad->ender->xBairro->__toString(),
-                'cidade' => $infCons->infCad->ender->xMun->__toString(),
-                'UF' => $infCons->infCad->UF->__toString(),
-                'CEP' => $infCons->infCad->ender->CEP->__toString(),
+                'CNPJ' => $infCons->infCad->CNPJ ?? '',
+                'IE' => $infCons->infCad->IE ?? '',
+                'razaoSocial' => $infCons->infCad->xNome ?? '',
+                'CNAE' => $infCons->infCad->CNAE ?? '',
+                'logradouro' => $infCons->infCad->ender->xLgr ?? '',
+                'numero' => $infCons->infCad->ender->nro ?? '',
+                'complemento' => $infCons->infCad->ender->xCpl ?? '',
+                'bairro' => $infCons->infCad->ender->xBairro ?? '',
+                'cidade' => $infCons->infCad->ender->xMun ?? '',
+                'UF' => $infCons->infCad->UF ?? '',
+                'CEP' => $infCons->infCad->ender->CEP ?? '',
             ];
         }
         return $r;
