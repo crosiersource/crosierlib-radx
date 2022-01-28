@@ -450,6 +450,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
      */
     private function integrarVendaParaCrosier(array $wsPedido, ?bool $resalvar = false): void
     {
+        $pedido = null;
         try {
             $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
 
@@ -803,7 +804,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
             }
 
         } catch (\Throwable $e) {
-            $this->syslog->err('Erro ao integrarVendaParaCrosier', $pedido['id']);
+            $this->syslog->err('Erro ao integrarVendaParaCrosier', $pedido['id'] ?? null);
             throw new ViewException('Erro ao integrarVendaParaCrosier', 0, $e);
         }
     }

@@ -173,6 +173,7 @@ class ProdutoEntityHandler extends EntityHandler
      */
     public function gerarThumbnail(Produto $produto, string $img = null)
     {
+        $url = '';
         try {
             $url = $_SERVER['CROSIERAPP_URL'] . '/images/produtos/' . $produto->depto->getId() . '/' . $produto->grupo->getId() . '/' . $produto->subgrupo->getId() . '/' . $img;
             $imgUtils = new ImageUtils();

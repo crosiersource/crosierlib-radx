@@ -28,6 +28,7 @@ class ModoRepository extends FilterRepository
         if (!is_array($sel)) {
             $sel = [$sel];
         }
+        $r = [];
         foreach ($rs as $e) {
             $r[] = [
                 'id' => $e['id'],

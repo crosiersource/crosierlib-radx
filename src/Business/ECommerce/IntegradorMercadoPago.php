@@ -28,6 +28,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
@@ -257,15 +258,17 @@ class IntegradorMercadoPago
     }
 
 
+    /**
+     * @throws ViewException
+     */
     private function integrarVendaParaCrosier(array $mlOrder, ?bool $resalvar = false): void
     {
+        $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
         try {
             if (($mlOrder['status'] ?? '') !== 'paid') {
                 $this->syslog->info('Venda não importada (status != paid): ' . ($mlOrder['status'] ?? ''));
                 return;
             }
-
-            $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
 
             $itens = $mlOrder['order_items'];
 
@@ -469,7 +472,13 @@ class IntegradorMercadoPago
 
             $conn->commit();
         } catch (\Throwable $e) {
-            $conn->rollBack();
+            if ($conn->isTransactionActive()) {
+                try {
+                    $conn->rollBack();
+                } catch (Exception $e) {
+                    throw new ViewException("Erro ao efetuar o rollback - integrarVendaParaCrosier", 0, $e);
+                }
+            }
             $this->syslog->err('Erro ao integrarVendaParaCrosier', $mlOrder['id']);
             throw new ViewException('Erro ao integrarVendaParaCrosier', 0, $e);
         }

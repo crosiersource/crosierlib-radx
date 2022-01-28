@@ -39,6 +39,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\PlanoPagtoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\ConnectionException;
+use Doctrine\DBAL\Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Security;
@@ -1580,13 +1581,13 @@ class IntegradorWebStorm implements IntegradorECommerce
      */
     private function integrarVendaParaCrosier(\SimpleXMLElement $pedido, ?bool $resalvar = false): void
     {
+        $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
+        
         try {
             $dtPedido = DateTimeUtils::parseDateStr($pedido->dataPedido->__toString());
 
             $this->syslog->info('Integrando pedido ' . $pedido->idPedido->__toString() . ' de ' .
                 $dtPedido->format('d/m/Y H:i:s') . ' Cliente: ' . $pedido->cliente->nome->__toString());
-
-            $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
 
             $venda = $conn->fetchAllAssociative('SELECT * FROM ven_venda WHERE json_data->>"$.ecommerce_idPedido" = :ecommerce_idPedido',
                 ['ecommerce_idPedido' => $pedido->idPedido]);
@@ -1892,7 +1893,11 @@ class IntegradorWebStorm implements IntegradorECommerce
             $conn->commit();
         } catch (\Throwable $e) {
             if ($conn->isTransactionActive()) {
-                $conn->rollBack();
+                try {
+                    $conn->rollBack();
+                } catch (Exception $e) {
+                    throw new ViewException("Erro ao efetuar o rollback - integrarVendaParaCrosier", 0, $e);
+                }
             }
             $this->syslog->err('Erro ao integrarVendaParaCrosier', $pedido->asXML());
             throw new ViewException('Erro ao integrarVendaParaCrosier', 0, $e);

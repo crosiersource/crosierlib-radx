@@ -33,13 +33,16 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandl
 use CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DeptoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\FornecedorRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\GrupoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\SubgrupoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\PlanoPagtoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ConnectionException;
+use Doctrine\DBAL\Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -137,14 +140,19 @@ class IntegradorTray implements IntegradorECommerce
 
     /**
      * @param array $store
+     * @return array
      * @throws ViewException
      */
-    public function saveStoreConfig(array $store)
+    public function saveStoreConfig(array $store): array
     {
         if (!$store['store_id']) {
             throw new ViewException('chave "store_id" n/d no array');
         }
-        $rs = $this->conn->fetchAssociative('SELECT id, valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'tray.configs.json']);
+        try {
+            $rs = $this->conn->fetchAssociative('SELECT id, valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'tray.configs.json']);
+        } catch (Exception $e) {
+            throw new ViewException("Erro ao pesquisar 'tray.configs.json'", 0, $e);
+        }
         if ($rs['valor'] ?? false) {
             $stores = json_decode($rs['valor'], true);
             $achou = false;
@@ -158,19 +166,27 @@ class IntegradorTray implements IntegradorECommerce
             if (!$achou) {
                 $stores[] = $store;
             }
-            $this->conn->update('cfg_app_config', ['valor' => json_encode($stores)], ['id' => $rs['id']]);
-            return $store;
-            if (!$store) {
-                throw new ViewException('storeId n/d em cfg_app_config.tray.configs.json');
+            try {
+                $this->conn->update('cfg_app_config', ['valor' => json_encode($stores)], ['id' => $rs['id']]);
+            } catch (Exception $e) {
+                throw new ViewException("Erro ao atualizar cfg_app_config (saveStoreConfig)", 0, $e);
             }
+            return $store;
         } else {
             throw new ViewException('cfg_app_config.tray.configs.json n/d');
         }
     }
 
+    /**
+     * @throws ViewException
+     */
     public function getStores()
     {
-        $rs = $this->conn->fetchAssociative('SELECT id, valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'tray.configs.json']);
+        try {
+            $rs = $this->conn->fetchAssociative('SELECT id, valor FROM cfg_app_config WHERE chave = :chave', ['chave' => 'tray.configs.json']);
+        } catch (Exception $e) {
+            throw new ViewException("Erro ao pesquisar 'tray.configs.json'", 0, $e);
+        }
         if ($rs['valor'] ?? false) {
             $stores = json_decode($rs['valor'], true);
             foreach ($stores as $store) {
@@ -187,6 +203,9 @@ class IntegradorTray implements IntegradorECommerce
     }
 
 
+    /**
+     * @throws ViewException
+     */
     public function getStore(?string $storeId = null)
     {
         $stores = $this->getStores();
@@ -382,6 +401,7 @@ class IntegradorTray implements IntegradorECommerce
                 ],
             ];
             $jsonRequest = json_encode($arrProduct, JSON_UNESCAPED_SLASHES);
+            $store = $this->getStore();
             $url = $this->getEndpoint() . 'web_api/products?access_token=' . $this->handleAccessToken($store);
             $method = 'POST';
             if ($produto->jsonData['ecommerce_id'] ?? false) {
@@ -435,6 +455,7 @@ class IntegradorTray implements IntegradorECommerce
                 ],
             ];
             $jsonRequest = json_encode($arrVariant, JSON_UNESCAPED_SLASHES);
+            $store = $this->getStore();
             $url = $this->getEndpoint() . 'web_api/products/variants?access_token=' . $this->handleAccessToken($store);
             $method = 'POST';
             if ($produto->jsonData['ecommerce_item_id'] ?? false) {
@@ -538,12 +559,13 @@ class IntegradorTray implements IntegradorECommerce
 
 
     /**
-     * @param array $pedido
+     * @param array $jsonPedido
      * @param bool|null $resalvar
      * @throws ViewException
      */
     private function integrarVendaParaCrosier(array $jsonPedido, ?bool $resalvar = false): void
     {
+        $pedido = null;
         try {
             $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
 
@@ -908,7 +930,7 @@ class IntegradorTray implements IntegradorECommerce
             $venda = $this->vendaEntityHandler->save($venda);
 
         } catch (\Throwable $e) {
-            $this->syslog->err('Erro ao integrarVendaParaCrosier', $pedido['id']);
+            $this->syslog->err('Erro ao integrarVendaParaCrosier', $pedido['id'] ?? null);
             throw new ViewException('Erro ao integrarVendaParaCrosier', 0, $e);
         }
     }
@@ -955,7 +977,7 @@ class IntegradorTray implements IntegradorECommerce
 
             $this->produtoEntityHandler->save($produto);
             return ['id' => $produto->getId()];
-        } catch (GuzzleException $e) {
+        } catch (\Exception $e) {
             throw new ViewException('Erro ao obterProduto');
         }
     }
@@ -1014,6 +1036,8 @@ class IntegradorTray implements IntegradorECommerce
     public function atualizaDadosEnvio(int $numPedido)
     {
         try {
+            $store = $this->getStore();
+            
             $url = $this->getEndpoint() . 'web_api/orders/' . $numPedido . '?access_token=' . $this->handleAccessToken($store);
             $arr = [
                 'Order' => [
@@ -1041,6 +1065,8 @@ class IntegradorTray implements IntegradorECommerce
     public function cancelarPedido(int $numPedido)
     {
         try {
+            $store = $this->getStore();
+            
             $url = $this->getEndpoint() . 'web_api/orders/cancel/' . $numPedido . '?access_token=' . $this->handleAccessToken($store);
             $method = 'PUT';
             $response = $this->client->request($method, $url);

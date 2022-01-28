@@ -52,6 +52,7 @@ class CategoriaRepository extends FilterRepository
         if (!is_array($sel)) {
             $sel = [$sel];
         }
+        $r = [];
         foreach ($rsCategorias as $categoria) {
             $r[] = [
                 'id' => $categoria->getId(),

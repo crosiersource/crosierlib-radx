@@ -106,6 +106,7 @@ class PlanoPagtoRepository extends FilterRepository
     {
         $sql = 'SELECT * FROM ven_plano_pagto WHERE ativo IS TRUE ORDER BY codigo';
         $rs = $this->getEntityManager()->getConnection()->fetchAllAssociative($sql);
+        $results = [];
         foreach ($rs as $r) {
             $results[$r['codigo']] = $r;
         }

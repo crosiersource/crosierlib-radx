@@ -23,8 +23,9 @@ class CentroCustoRepository extends FilterRepository
      * @return false|string|void
      * @throws \Exception
      */
-    public function getSelect2js($sel = [])
+    public function getSelect2js(array $sel = [])
     {
+        $r = [];
         $rs = $this->getEntityManager()->getConnection()->fetchAllAssociative('SELECT id, codigo, descricao FROM fin_centrocusto ORDER BY codigo');
         if (!is_array($sel)) {
             $sel = [$sel];

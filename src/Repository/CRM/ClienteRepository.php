@@ -29,12 +29,14 @@ class ClienteRepository extends FilterRepository
     {
         /** @var AppConfigRepository $repoAppConfig */
         $repoAppConfig = $this->getEntityManager()->getRepository(AppConfig::class);
-        return $repoAppConfig->findOneBy(
+        /** @var AppConfig $appConfig */
+        $appConfig = $repoAppConfig->findOneBy(
             [
                 'appUUID' => $_SERVER['CROSIERAPP_UUID'],
                 'chave' => 'crm_cliente_json_metadata'
             ]
-        )->valor;
+        );
+        return $appConfig->valor;
     }
 
     /**

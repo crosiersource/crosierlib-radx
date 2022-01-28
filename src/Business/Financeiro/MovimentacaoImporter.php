@@ -615,6 +615,7 @@ class MovimentacaoImporter
             }
         }
 
+        $movsAbertasDiasAnteriores = [];
 
         // Se é uma linha de cheque
         if ($numCheque) {
