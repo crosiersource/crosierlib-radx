@@ -774,7 +774,7 @@ class NotaFiscalBusiness
             ]);
 
 
-            if (!$r || strtoupper(StringUtils::removerAcentos($r->getMunicipioNome())) !== strtoupper(StringUtils::removerAcentos($notaFiscal->cidadeDestinatario))) {
+            if (!$r || strtoupper(StringUtils::removerAcentos($r->municipioNome)) !== strtoupper(StringUtils::removerAcentos($notaFiscal->cidadeDestinatario))) {
                 throw new ViewException('Município inválido: [' . $notaFiscal->cidadeDestinatario . '-' . $notaFiscal->estadoDestinatario . ']');
             }
         } else {

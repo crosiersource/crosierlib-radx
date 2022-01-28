@@ -227,12 +227,12 @@ class SpedNFeBusiness
                 ]);
 
                 if (!$r ||
-                    strtoupper(StringUtils::removerAcentos($r->getMunicipioNome())) !== strtoupper(StringUtils::removerAcentos($notaFiscal->cidadeDestinatario))) {
+                    strtoupper(StringUtils::removerAcentos($r->municipioNome)) !== strtoupper(StringUtils::removerAcentos($notaFiscal->cidadeDestinatario))) {
                     throw new ViewException('Município inválido: [' . $notaFiscal->cidadeDestinatario . '-' . $notaFiscal->estadoDestinatario . ']');
                 }
 
-                $nfe->infNFe->dest->enderDest->cMun = $r->getMunicipioCodigo();
-                $nfe->infNFe->dest->enderDest->xMun = $r->getMunicipioNome();
+                $nfe->infNFe->dest->enderDest->cMun = $r->municipioCodigo;
+                $nfe->infNFe->dest->enderDest->xMun = $r->municipioNome;
                 $nfe->infNFe->dest->enderDest->UF = $r->getUfSigla();
 
 
@@ -416,12 +416,12 @@ class SpedNFeBusiness
                     ['ufSigla', 'EQ', $notaFiscal->transpEstado]
                 ]);
 
-                if (!$r || strtoupper(StringUtils::removerAcentos($r->getMunicipioNome())) !== strtoupper(StringUtils::removerAcentos($notaFiscal->transpCidade))) {
+                if (!$r || strtoupper(StringUtils::removerAcentos($r->municipioNome)) !== strtoupper(StringUtils::removerAcentos($notaFiscal->transpCidade))) {
                     throw new ViewException('Município inválido: [' . $notaFiscal->transpCidade . '-' . $notaFiscal->transpEstado . ']');
                 }
 
 
-                $nfe->infNFe->transp->transporta->xMun = $r->getMunicipioNome();
+                $nfe->infNFe->transp->transporta->xMun = $r->municipioNome;
                 $nfe->infNFe->transp->transporta->UF = $r->getUfSigla();
 
                 $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->transpQtdeVolumes, 0);
