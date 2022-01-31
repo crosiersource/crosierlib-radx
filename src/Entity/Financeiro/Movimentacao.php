@@ -418,8 +418,7 @@ class Movimentacao implements EntityId
     public ?int $cadeiaOrdem = null;
 
     /**
-     * Informa o total de movimentações na cadeia. Campo apenas auxiliar.
-     * Obs.: não pode nunca ser 1.
+     * Informa o total de movimentações na cadeia. 
      *
      * @ORM\Column(name="cadeia_qtde", type="integer", nullable=true)
      * @Groups("movimentacao")

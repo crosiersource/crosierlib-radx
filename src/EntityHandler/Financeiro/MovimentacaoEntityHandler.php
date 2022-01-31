@@ -8,6 +8,7 @@ use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\DiaUtilRepository;
+use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
@@ -364,6 +365,10 @@ class MovimentacaoEntityHandler extends EntityHandler
         // 64 - ENTRADA DE CAIXA POR TRANSF. BANCÁRIA
         if ($movimentacao->tipoLancto->getCodigo() === 64 && !$movimentacao->getId()) {
             return $this->saveEntradaDeCaixaPorTransfBancaria($movimentacao);
+        }
+        
+        if ($movimentacao->jsonData['dadosParcelamento'] ?? false) {
+            return $this->saveParcelamento($movimentacao);
         }
 
         // else
@@ -1062,6 +1067,53 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
         }
         $this->getDoctrine()->flush();
+    }
+
+    /**
+     * @param Movimentacao $movimentacao
+     * @throws ViewException
+     */
+    private function saveParcelamento(Movimentacao $movimentacao) {
+        try {
+            $this->doctrine->beginTransaction();
+            $dadosParcelamento = $movimentacao->jsonData['dadosParcelamento'];
+            unset($movimentacao->jsonData['dadosParcelamento']);
+            $parcelamento = new Cadeia();
+            $movimentacao->parcelamento = true;
+            $movimentacao->cadeiaQtde = count($dadosParcelamento);
+            $movimentacao->cadeiaOrdem = 1;
+            $parcelamento->movimentacoes->add($movimentacao);
+            parent::save($movimentacao, false);
+            for ($i = 1; $i < count($dadosParcelamento); $i++) {
+                /** @var Movimentacao $parcela */
+                $parcela = $this->cloneEntityId($movimentacao);
+                $parcela->parcelamento = true;
+                $parcela->cadeia = $parcelamento;
+                $parcela->cadeiaQtde = count($dadosParcelamento);
+                $parcela->cadeiaOrdem = $i;
+                $parcela->dtVencto = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVencto']);
+                $parcela->dtVenctoEfetiva = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVenctoEfetiva']);
+                $parcela->valor = $dadosParcelamento[$i]['valor'];
+                $parcela->documentoNum = $dadosParcelamento[$i]['documentoNum'] ?? null;
+                $parcela->chequeNumCheque = $dadosParcelamento[$i]['chequeNumCheque'] ?? null;
+                $parcelamento->movimentacoes->add($parcela);
+
+                parent::save($parcela, false);
+            }
+            $parcelamento = $this->faturaEntityHandler->cadeiaEntityHandler->save($parcelamento);
+            $this->doctrine->commit();
+        } catch (ViewException $e) {
+            if ($this->doctrine->getConnection()->isTransactionActive()) {
+                try {
+                    $this->doctrine->rollback();
+                } catch (\Exception $e) {
+                    throw new ViewException('Erro no rollback - ');
+                }
+            }
+            throw new ViewException('Erro ao salvar o parcelamento', 0, $e);
+        }
+
+
     }
 
 
