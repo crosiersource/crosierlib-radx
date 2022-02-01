@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Movimentações podem ser dependentes umas das outras, formando uma cadeia de entradas e saídas entre carteiras.
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"cadeia","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"cadeia","movimentacao","modo","carteira","categoria","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"cadeia"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -77,7 +77,7 @@ class Cadeia implements EntityId
      *      mappedBy="cadeia",
      *      orphanRemoval=true
      * )
-     *
+     * @Groups("cadeia")
      * @var Movimentacao[]|ArrayCollection|null
      */
     public $movimentacoes;

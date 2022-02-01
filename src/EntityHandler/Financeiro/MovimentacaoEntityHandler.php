@@ -247,9 +247,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->chequeAgencia = null;
             $movimentacao->chequeBanco = null;
             $movimentacao->chequeConta = null;
-        }
-
-        if (in_array($movimentacao->tipoLancto->getCodigo(), [40, 41], true)) {
+        } elseif ($movimentacao->modo->codigo === 3) {
             $movimentacao->chequeAgencia = $movimentacao->carteira->agencia;
             $movimentacao->chequeBanco = $movimentacao->carteira->banco;
             $movimentacao->chequeConta = $movimentacao->carteira->conta;
@@ -906,7 +904,8 @@ class MovimentacaoEntityHandler extends EntityHandler
         if ($movimentacao->cadeia &&
             $movimentacao->cadeia->vinculante &&
             $movimentacao->cadeia->movimentacoes) {
-            foreach ($cadeia->movimentacoes as $m) {
+            $movimentacoes = $movimentacao->cadeia->movimentacoes;
+            foreach ($movimentacoes as $m) {
                 parent::delete($m);
             }
         } else {
@@ -1075,23 +1074,29 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
         try {
             $this->doctrine->beginTransaction();
+            
             $dadosParcelamento = $movimentacao->jsonData['dadosParcelamento'];
+            
             unset($movimentacao->jsonData['dadosParcelamento']);
-            $parcelamento = new Cadeia();
-            $parcelamento->vinculante = true;
-            $parcelamento->fechada = true;
+            
+            $cadeia = new Cadeia();
+            $cadeia->vinculante = true;
+            $cadeia->fechada = true;
             
             $movimentacao->parcelamento = true;
-            
+            $movimentacao->cadeia = $cadeia;
             $movimentacao->cadeiaQtde = count($dadosParcelamento);
             $movimentacao->cadeiaOrdem = 1;
-            $parcelamento->movimentacoes->add($movimentacao);
+            
+            $cadeia->movimentacoes->add($movimentacao);
+            
             parent::save($movimentacao, false);
+            
             for ($i = 1; $i < count($dadosParcelamento); $i++) {
                 /** @var Movimentacao $parcela */
                 $parcela = $this->cloneEntityId($movimentacao);
                 $parcela->parcelamento = true;
-                $parcela->cadeia = $parcelamento;
+                $parcela->cadeia = $cadeia;
                 $parcela->cadeiaQtde = count($dadosParcelamento);
                 $parcela->cadeiaOrdem = $i + 1;
                 $parcela->dtVencto = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVencto']);
@@ -1099,11 +1104,11 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $parcela->valor = $dadosParcelamento[$i]['valor'];
                 $parcela->documentoNum = $dadosParcelamento[$i]['documentoNum'] ?? null;
                 $parcela->chequeNumCheque = $dadosParcelamento[$i]['chequeNumCheque'] ?? null;
-                $parcelamento->movimentacoes->add($parcela);
+                $cadeia->movimentacoes->add($parcela);
 
                 parent::save($parcela, false);
             }
-            $parcelamento = $this->faturaEntityHandler->cadeiaEntityHandler->save($parcelamento);
+            $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
             $this->doctrine->commit();
         } catch (ViewException $e) {
             if ($this->doctrine->getConnection()->isTransactionActive()) {
