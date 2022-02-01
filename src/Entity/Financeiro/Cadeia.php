@@ -60,7 +60,7 @@ class Cadeia implements EntityId
      * @Assert\NotNull()
      * @Groups("cadeia")
      */
-    public ?bool $vinculate = false;
+    public ?bool $vinculante = false;
 
     /**
      * Se for fechada, não é possível incluir outras movimentações na cadeia.

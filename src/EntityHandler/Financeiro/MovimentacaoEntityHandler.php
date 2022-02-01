@@ -366,7 +366,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         if ($movimentacao->tipoLancto->getCodigo() === 64 && !$movimentacao->getId()) {
             return $this->saveEntradaDeCaixaPorTransfBancaria($movimentacao);
         }
-        
+
         if ($movimentacao->jsonData['dadosParcelamento'] ?? false) {
             return $this->saveParcelamento($movimentacao);
         }
@@ -395,7 +395,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $modo = $repoModo->findOneByCodigo(11);
             $movimentacao->modo = $modo;
         }
-        
+
         /** @var TipoLanctoRepository $repoTipoLancto */
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
         $tipoLancto_transferenciaEntreCarteiras = $repoTipoLancto->findOneBy(['codigo' => 60]);
@@ -457,6 +457,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $cadeia = new Cadeia();
         $cadeia->fechada = true;
+        $cadeia->vinculante = true;
         /** @var Cadeia $cadeia */
         $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
 
@@ -551,6 +552,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $cadeia = new Cadeia();
         $cadeia->fechada = true;
+        $cadeia->vinculante = true;
         /** @var Cadeia $cadeia */
         $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
 
@@ -677,6 +679,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $cadeia = new Cadeia();
         $cadeia->fechada = true;
+        $cadeia->vinculante = true;
         /** @var Cadeia $cadeia */
         $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
 
@@ -896,24 +899,19 @@ class MovimentacaoEntityHandler extends EntityHandler
      */
     public function delete($movimentacao)
     {
+        /**
+         * Para movimentações de uma cadeia vinculante, todas devem ser deletadas.
+         */
         /** @var Movimentacao $movimentacao */
-
-        if ($movimentacao->cadeia && $movimentacao->cadeia->movimentacoes) {
-            if ($movimentacao->cadeia->movimentacoes->count() === 2 || $movimentacao->cadeia->movimentacoes->count() === 3) {
-                /** @var Movimentacao $movimentacao0 */
-                $movimentacao0 = $movimentacao->cadeia->movimentacoes->current();
-                if (in_array($movimentacao0->tipoLancto->getCodigo(), [60, 61], true)) {
-                    $cadeia = $movimentacao->cadeia;
-                    foreach ($cadeia->movimentacoes as $m) {
-                        parent::delete($m);
-                    }
-                    return;
-                }
+        if ($movimentacao->cadeia &&
+            $movimentacao->cadeia->vinculante &&
+            $movimentacao->cadeia->movimentacoes) {
+            foreach ($cadeia->movimentacoes as $m) {
+                parent::delete($m);
             }
+        } else {
+            parent::delete($movimentacao);
         }
-        // else
-        parent::delete($movimentacao);
-
     }
 
 
@@ -1073,13 +1071,18 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @param Movimentacao $movimentacao
      * @throws ViewException
      */
-    private function saveParcelamento(Movimentacao $movimentacao) {
+    private function saveParcelamento(Movimentacao $movimentacao)
+    {
         try {
             $this->doctrine->beginTransaction();
             $dadosParcelamento = $movimentacao->jsonData['dadosParcelamento'];
             unset($movimentacao->jsonData['dadosParcelamento']);
             $parcelamento = new Cadeia();
+            $parcelamento->vinculante = true;
+            $parcelamento->fechada = true;
+            
             $movimentacao->parcelamento = true;
+            
             $movimentacao->cadeiaQtde = count($dadosParcelamento);
             $movimentacao->cadeiaOrdem = 1;
             $parcelamento->movimentacoes->add($movimentacao);
@@ -1090,7 +1093,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $parcela->parcelamento = true;
                 $parcela->cadeia = $parcelamento;
                 $parcela->cadeiaQtde = count($dadosParcelamento);
-                $parcela->cadeiaOrdem = $i;
+                $parcela->cadeiaOrdem = $i + 1;
                 $parcela->dtVencto = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVencto']);
                 $parcela->dtVenctoEfetiva = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVenctoEfetiva']);
                 $parcela->valor = $dadosParcelamento[$i]['valor'];
