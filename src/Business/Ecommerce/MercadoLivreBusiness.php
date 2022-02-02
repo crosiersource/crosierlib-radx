@@ -7,7 +7,9 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\PushMessageEntityHan
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
-use CrosierSource\CrosierLibRadxBundle\Business\Ecommerce\IntegradorMercadoLivre;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\ClienteConfigEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\MercadoLivreItemEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\MercadoLivrePerguntaEntityHandler;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
