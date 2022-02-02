@@ -73,6 +73,9 @@ class IntegradorMercadoLivre implements IntegradorEcommerce
                     'appUUID' => $_SERVER['CROSIERAPP_UUID'],
                     'chave' => 'mercadolivre.configs.json'
                 ]);
+        if (!($r['valor'] ?? false)) {
+            throw new ViewException('mercadolivre.configs.json n/d');
+        }
         $this->configsMercadoLivre = json_decode($r['valor'], true);
     }
 

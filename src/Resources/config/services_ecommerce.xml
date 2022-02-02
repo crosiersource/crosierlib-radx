@@ -200,6 +200,12 @@
     <!-- MercadoLivreBusiness -->
     <service id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.mercado_livre_business"
              class="CrosierSource\CrosierLibRadxBundle\Business\Ecommerce\MercadoLivreBusiness">
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.ecommerce.cliente_config_entity_handler"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.ecommerce.mercado_livre_pergunta_entity_handler"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.ecommerce.mercado_livre_item_entity_handler"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_mercado_livre"/>
+      <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
+      <argument type="service" id="crosier_source.crosier_lib_base_bundle.entity_handler.config.push_message_entity_handler"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Business\Ecommerce\MercadoLivreBusiness"
              alias="crosier_source.crosier_lib_radx_bundle.business.ecommerce.mercado_livre_business"/>
