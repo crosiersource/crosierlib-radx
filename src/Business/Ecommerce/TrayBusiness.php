@@ -7,6 +7,8 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\PushMessageEntityHan
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\ClienteConfigEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\TrayVendaEntityHandler;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
