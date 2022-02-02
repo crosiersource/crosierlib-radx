@@ -55,8 +55,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     "updated", 
  *     "cliente.nome", 
  *     "ativo",
- *     "trayDtExpRefreshToken",
- *     "mercadolivreExpiraEm"
+ *     "trayDtExpRefreshToken"
  * }, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\ClienteConfigEntityHandler")
@@ -119,12 +118,7 @@ class ClienteConfig implements EntityId
     public ?\DateTime $trayDtExpAccessToken = null;
 
     
-    /**
-     * @ORM\Column(name="mercadolivre_expira_em", type="datetime")
-     * @Groups("clienteConfig")
-     * @var null|\DateTime
-     */
-    public ?\DateTime $mercadolivreExpiraEm = null;
+    
 
 
 }

@@ -61,8 +61,6 @@ class MercadoLivreBusiness
             $clienteConfig->jsonData['mercadolivre'][$i]['expires_in'] = $authInfo['expires_in'];
             $clienteConfig->jsonData['mercadolivre'][$i]['autorizado_em'] =
                 (new \DateTime())->format('Y-m-d H:i:s');
-            $clienteConfig->mercadolivreExpiraEm =
-                (new \DateTime())->add(new \DateInterval('PT' . $authInfo['expires_in'] . 'S'));
             $clienteConfig->jsonData['mercadolivre'][$i]['scope'] = $authInfo['scope'];
             $clienteConfig->jsonData['mercadolivre'][$i]['refresh_token'] = $authInfo['refresh_token'];
             $this->clienteConfigEntityHandler->save($clienteConfig);
@@ -95,16 +93,10 @@ class MercadoLivreBusiness
             return null;
         }
 
-        // Aqui seria mais fácil pegar direto do $clienteConfig->mercadolivreExpiraEm, mas por algum
-        // motivo ele não está ficando atualizado corretamente. 
         $autorizadoEm = DateTimeUtils::parseDateStr($clienteConfig->jsonData['mercadolivre'][$i]['autorizado_em']);
         $expiraEm =
             ($autorizadoEm)->add(new \DateInterval('PT' . $clienteConfig->jsonData['mercadolivre'][$i]['expires_in'] . 'S'));
 
-        if ($expiraEm->format('YmdHis') !== $clienteConfig->mercadolivreExpiraEm->format('YmdHis')) {
-            $clienteConfig->mercadolivreExpiraEm = $expiraEm;
-            $this->clienteConfigEntityHandler->save($clienteConfig);
-        }
         if (DateTimeUtils::diffInMinutes($expiraEm, new \DateTime()) < 60) {
             $this->syslog->info('MercadoLivre.renewAccessToken', $clienteConfig->jsonData['url_loja']);
             if (!($clienteConfig->jsonData['mercadolivre'][$i]['refresh_token'] ?? null)) {
@@ -120,6 +112,22 @@ class MercadoLivreBusiness
             $this->clienteConfigEntityHandler->save($clienteConfig);
         }
         return $clienteConfig->jsonData['mercadolivre'][$i]['access_token'];
+    }
+
+
+    /**
+     * @throws ViewException
+     */
+    public function renewAccessToken(ClienteConfig $clienteConfig, int $i): void
+    {
+        if (!($clienteConfig->jsonData['mercadolivre'][$i]['refresh_token'] ?? false)) {
+            $this->syslog->info('refresh_token n/d', json_encode($clienteConfig));
+            throw new ViewException('refresh_token n/d');
+        }
+        
+        $r = $this->integradorMercadoLivre->renewAccessToken(
+            $clienteConfig->jsonData['mercadolivre'][$i]['refresh_token']);
+        $this->saveAuthInfo($clienteConfig, $i, $r);
     }
 
 
