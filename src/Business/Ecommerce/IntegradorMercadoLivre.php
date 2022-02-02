@@ -1,7 +1,7 @@
 <?php
 
 
-namespace CrosierSource\CrosierLibRadxBundle\Business\ECommerce;
+namespace CrosierSource\CrosierLibRadxBundle\Business\Ecommerce;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
@@ -21,7 +21,7 @@ use Symfony\Component\Security\Core\Security;
  *
  * @author Carlos Eduardo Pauluk
  */
-class IntegradorMercadoLivre implements IntegradorECommerce
+class IntegradorMercadoLivre implements IntegradorEcommerce
 {
 
     private Client $client;
@@ -289,7 +289,7 @@ class IntegradorMercadoLivre implements IntegradorECommerce
         // TODO: Implement obterVendasPorData() method.
     }
 
-    public function obterCliente($idClienteECommerce)
+    public function obterCliente($idClienteEcommerce)
     {
         // TODO: Implement obterCliente() method.
     }
@@ -299,9 +299,9 @@ class IntegradorMercadoLivre implements IntegradorECommerce
         // TODO: Implement reintegrarVendaParaCrosier() method.
     }
 
-    public function integrarVendaParaECommerce(Venda $venda)
+    public function integrarVendaParaEcommerce(Venda $venda)
     {
-        // TODO: Implement integrarVendaParaECommerce() method.
+        // TODO: Implement integrarVendaParaEcommerce() method.
     }
 
 

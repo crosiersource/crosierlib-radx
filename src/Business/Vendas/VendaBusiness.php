@@ -103,7 +103,7 @@ class VendaBusiness
         }
         try {
             if (in_array($venda->jsonData['canal'], ['ECOMMERCE', 'MERCADOLIVRE'], true)) {
-                $this->finalizarPVECommerce($venda);
+                $this->finalizarPVEcommerce($venda);
             } else {
                 $this->finalizarPVSimples($venda);
             }
@@ -145,7 +145,7 @@ class VendaBusiness
      * @param Venda $venda
      * @throws ViewException
      */
-    private function finalizarPVECommerce(Venda $venda)
+    private function finalizarPVEcommerce(Venda $venda)
     {
         try {
             $fatura = null;

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace CrosierSource\CrosierLibRadxBundle\Business\ECommerce;
+namespace CrosierSource\CrosierLibRadxBundle\Business\Ecommerce;
 
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;

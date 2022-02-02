@@ -2,7 +2,7 @@
 
 
 
-namespace CrosierSource\CrosierLibRadxBundle\Business\ECommerce;
+namespace CrosierSource\CrosierLibRadxBundle\Business\Ecommerce;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
@@ -29,7 +29,7 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandle
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\SubgrupoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler;
-use CrosierSource\CrosierLibRadxBundle\Messenger\ECommerce\Message\IntegrarProdutoEcommerceMessage;
+use CrosierSource\CrosierLibRadxBundle\Messenger\Ecommerce\Message\IntegrarProdutoEcommerceMessage;
 use CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DeptoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\GrupoRepository;
@@ -50,7 +50,7 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
  *
  * @author Carlos Eduardo Pauluk
  */
-class IntegradorWebStorm implements IntegradorECommerce
+class IntegradorWebStorm implements IntegradorEcommerce
 {
 
     private AppConfigEntityHandler $appConfigEntityHandler;
@@ -1535,10 +1535,10 @@ class IntegradorWebStorm implements IntegradorECommerce
 
 
     /**
-     * @param int $idClienteECommerce
+     * @param int $idClienteEcommerce
      * @return \SimpleXMLElement|null
      */
-    public function obterCliente($idClienteECommerce)
+    public function obterCliente($idClienteEcommerce)
     {
         $xml = '<![CDATA[<?xml version="1.0" encoding="ISO-8859-1"?>    
                     <ws_integracao xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -1546,7 +1546,7 @@ class IntegradorWebStorm implements IntegradorECommerce
                     <acao>select</acao>
                     <modulo>cliente</modulo>    
                     <filtro>
-                            <idCliente>' . $idClienteECommerce . '</idCliente>   	 
+                            <idCliente>' . $idClienteEcommerce . '</idCliente>   	 
                     </filtro>
                 </ws_integracao>]]>';
 
@@ -1651,34 +1651,34 @@ class IntegradorWebStorm implements IntegradorECommerce
 
             if (!$cliente || $resalvar) {
 
-                $clienteECommerce = $this->obterCliente((int)$pedido->cliente->idCliente);
+                $clienteEcommerce = $this->obterCliente((int)$pedido->cliente->idCliente);
 
                 $cliente = $cliente ?? new Cliente();
-                if ($clienteECommerce->cpf->__toString()) {
-                    $cliente->documento = $clienteECommerce->cpf->__toString();
-                    $cliente->nome = $clienteECommerce->nome->__toString();
+                if ($clienteEcommerce->cpf->__toString()) {
+                    $cliente->documento = $clienteEcommerce->cpf->__toString();
+                    $cliente->nome = $clienteEcommerce->nome->__toString();
                     $cliente->jsonData['tipo_pessoa'] = 'PF';
-                    $cliente->jsonData['rg'] = $clienteECommerce->rg->__toString();
-                    $cliente->jsonData['dtNascimento'] = $clienteECommerce->dataNascimento_dataCriacao->__toString();
-                    $cliente->jsonData['sexo'] = $clienteECommerce->sexo->__toString();
+                    $cliente->jsonData['rg'] = $clienteEcommerce->rg->__toString();
+                    $cliente->jsonData['dtNascimento'] = $clienteEcommerce->dataNascimento_dataCriacao->__toString();
+                    $cliente->jsonData['sexo'] = $clienteEcommerce->sexo->__toString();
                 } else {
-                    $cliente->documento = $clienteECommerce->cnpj->__toString();
-                    $cliente->nome = $clienteECommerce->razaoSocial->__toString();
+                    $cliente->documento = $clienteEcommerce->cnpj->__toString();
+                    $cliente->nome = $clienteEcommerce->razaoSocial->__toString();
                     $cliente->jsonData['tipo_pessoa'] = 'PJ';
-                    $cliente->jsonData['nome_fantasia'] = $clienteECommerce->nomeFantasia->__toString();
-                    $cliente->jsonData['inscricao_estadual'] = preg_replace("/[^0-9]/", "", $clienteECommerce->inscricaoEstadual->__toString());
+                    $cliente->jsonData['nome_fantasia'] = $clienteEcommerce->nomeFantasia->__toString();
+                    $cliente->jsonData['inscricao_estadual'] = preg_replace("/[^0-9]/", "", $clienteEcommerce->inscricaoEstadual->__toString());
                 }
 
-                $cliente->jsonData['fone1'] = $clienteECommerce->telefone1->__toString();
-                $cliente->jsonData['fone2'] = $clienteECommerce->telefone2->__toString();
+                $cliente->jsonData['fone1'] = $clienteEcommerce->telefone1->__toString();
+                $cliente->jsonData['fone2'] = $clienteEcommerce->telefone2->__toString();
 
-                $cliente->jsonData['email'] = $clienteECommerce->email->__toString();
+                $cliente->jsonData['email'] = $clienteEcommerce->email->__toString();
                 $cliente->jsonData['canal'] = 'ECOMMERCE';
-                $cliente->jsonData['ecommerce_id'] = $clienteECommerce->idCliente->__toString();
+                $cliente->jsonData['ecommerce_id'] = $clienteEcommerce->idCliente->__toString();
 
-                $cliente->jsonData['montadora'] = $clienteECommerce->montadora->__toString();
-                $cliente->jsonData['modelo'] = $clienteECommerce->modelo->__toString();
-                $cliente->jsonData['ano'] = $clienteECommerce->ano->__toString();
+                $cliente->jsonData['montadora'] = $clienteEcommerce->montadora->__toString();
+                $cliente->jsonData['modelo'] = $clienteEcommerce->modelo->__toString();
+                $cliente->jsonData['ano'] = $clienteEcommerce->ano->__toString();
 
                 $cliente = $this->clienteEntityHandler->save($cliente);
             }
@@ -1963,7 +1963,7 @@ class IntegradorWebStorm implements IntegradorECommerce
      * @return \SimpleXMLElement|null
      * @throws ViewException
      */
-    public function integrarVendaParaECommerce(Venda $venda)
+    public function integrarVendaParaEcommerce(Venda $venda)
     {
 
         try {
@@ -2009,7 +2009,7 @@ class IntegradorWebStorm implements IntegradorECommerce
             }
             return $xmlResult->resultado->filtro ?? null;
         } catch (\Throwable $e) {
-            $errMsg = 'integrarVendaParaECommerce() - ERRO (venda.id = "' . $venda->getId() . '")';
+            $errMsg = 'integrarVendaParaEcommerce() - ERRO (venda.id = "' . $venda->getId() . '")';
             if ($e instanceof ViewException) {
                 $errMsg .= ' - ' . $e->getMessage();
             }

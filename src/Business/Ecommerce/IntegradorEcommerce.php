@@ -1,6 +1,6 @@
 <?php
 
-namespace CrosierSource\CrosierLibRadxBundle\Business\ECommerce;
+namespace CrosierSource\CrosierLibRadxBundle\Business\Ecommerce;
 
 
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
@@ -10,7 +10,7 @@ use Doctrine\DBAL\ConnectionException;
 /**
  * @author Carlos Eduardo Pauluk
  */
-interface IntegradorECommerce
+interface IntegradorEcommerce
 {
 
     /**
@@ -28,9 +28,9 @@ interface IntegradorECommerce
     public function obterVendasPorData(\DateTime $dtVenda);
 
     /**
-     * @param $idClienteECommerce
+     * @param $idClienteEcommerce
      */
-    public function obterCliente($idClienteECommerce);
+    public function obterCliente($idClienteEcommerce);
 
     /**
      * @param Venda $venda
@@ -41,6 +41,6 @@ interface IntegradorECommerce
      * @param Venda $venda
      * @return \SimpleXMLElement|null
      */
-    public function integrarVendaParaECommerce(Venda $venda);
+    public function integrarVendaParaEcommerce(Venda $venda);
 
 }

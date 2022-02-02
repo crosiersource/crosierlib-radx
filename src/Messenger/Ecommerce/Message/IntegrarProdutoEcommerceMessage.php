@@ -1,7 +1,7 @@
 <?php
 
 
-namespace CrosierSource\CrosierLibRadxBundle\Messenger\ECommerce\Message;
+namespace CrosierSource\CrosierLibRadxBundle\Messenger\Ecommerce\Message;
 
 
 /**

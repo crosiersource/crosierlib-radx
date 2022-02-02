@@ -1,6 +1,6 @@
 <?php
 
-namespace CrosierSource\CrosierLibRadxBundle\Messenger\ECommerce\Message;
+namespace CrosierSource\CrosierLibRadxBundle\Messenger\Ecommerce\Message;
 
 /**
  * Mensagem utilizada pelo symfony/messenger que contém os dados de uma notificação enviada pelo ML.

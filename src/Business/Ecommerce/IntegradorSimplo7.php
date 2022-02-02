@@ -1,7 +1,7 @@
 <?php
 
 
-namespace CrosierSource\CrosierLibRadxBundle\Business\ECommerce;
+namespace CrosierSource\CrosierLibRadxBundle\Business\Ecommerce;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
@@ -51,7 +51,7 @@ use Symfony\Contracts\Cache\ItemInterface;
  *
  * @author Carlos Eduardo Pauluk
  */
-class IntegradorSimplo7 implements IntegradorECommerce
+class IntegradorSimplo7 implements IntegradorEcommerce
 {
 
     private Client $client;
@@ -842,7 +842,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
      * @param Venda $venda
      * @return null
      */
-    public function integrarVendaParaECommerce(Venda $venda)
+    public function integrarVendaParaEcommerce(Venda $venda)
     {
         return null;
     }
@@ -1011,7 +1011,7 @@ class IntegradorSimplo7 implements IntegradorECommerce
         return $return;
     }
 
-    public function obterCliente($idClienteECommerce)
+    public function obterCliente($idClienteEcommerce)
     {
         // TODO: Implement obterCliente() method.
     }
