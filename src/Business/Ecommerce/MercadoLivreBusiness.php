@@ -7,6 +7,7 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\PushMessageEntityHan
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
+use CrosierSource\CrosierLibRadxBundle\Entity\Ecommerce\ClienteConfig;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\ClienteConfigEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\MercadoLivreItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\MercadoLivrePerguntaEntityHandler;
@@ -55,15 +56,15 @@ class MercadoLivreBusiness
     private function saveAuthInfo(ClienteConfig $clienteConfig, int $i, array $authInfo)
     {
         try {
-            $clienteConfig->jsonData['mercadolivre']['access_token'] = $authInfo['access_token'];
-            $clienteConfig->jsonData['mercadolivre']['token_type'] = $authInfo['token_type'];
-            $clienteConfig->jsonData['mercadolivre']['expires_in'] = $authInfo['expires_in'];
-            $clienteConfig->jsonData['mercadolivre']['autorizado_em'] =
+            $clienteConfig->jsonData['mercadolivre'][$i]['access_token'] = $authInfo['access_token'];
+            $clienteConfig->jsonData['mercadolivre'][$i]['token_type'] = $authInfo['token_type'];
+            $clienteConfig->jsonData['mercadolivre'][$i]['expires_in'] = $authInfo['expires_in'];
+            $clienteConfig->jsonData['mercadolivre'][$i]['autorizado_em'] =
                 (new \DateTime())->format('Y-m-d H:i:s');
             $clienteConfig->mercadolivreExpiraEm =
                 (new \DateTime())->add(new \DateInterval('PT' . $authInfo['expires_in'] . 'S'));
-            $clienteConfig->jsonData['mercadolivre']['scope'] = $authInfo['scope'];
-            $clienteConfig->jsonData['mercadolivre']['refresh_token'] = $authInfo['refresh_token'];
+            $clienteConfig->jsonData['mercadolivre'][$i]['scope'] = $authInfo['scope'];
+            $clienteConfig->jsonData['mercadolivre'][$i]['refresh_token'] = $authInfo['refresh_token'];
             $this->clienteConfigEntityHandler->save($clienteConfig);
         } catch (\Exception $e) {
             $msg = ExceptionUtils::treatException($e);
@@ -89,16 +90,16 @@ class MercadoLivreBusiness
      */
     public function handleAccessToken(ClienteConfig $clienteConfig, int $i): ?string
     {
-        if (!($clienteConfig->jsonData['mercadolivre']['token_tg'] ?? false)) {
+        if (!($clienteConfig->jsonData['mercadolivre'][$i]['token_tg'] ?? false)) {
             $this->syslog->info('Cliente não está vinculado ao ML (sem mercadolivre.token_tg)', json_encode($clienteConfig));
             return null;
         }
 
         // Aqui seria mais fácil pegar direto do $clienteConfig->mercadolivreExpiraEm, mas por algum
         // motivo ele não está ficando atualizado corretamente. 
-        $autorizadoEm = DateTimeUtils::parseDateStr($clienteConfig->jsonData['mercadolivre']['autorizado_em']);
+        $autorizadoEm = DateTimeUtils::parseDateStr($clienteConfig->jsonData['mercadolivre'][$i]['autorizado_em']);
         $expiraEm =
-            ($autorizadoEm)->add(new \DateInterval('PT' . $clienteConfig->jsonData['mercadolivre']['expires_in'] . 'S'));
+            ($autorizadoEm)->add(new \DateInterval('PT' . $clienteConfig->jsonData['mercadolivre'][$i]['expires_in'] . 'S'));
 
         if ($expiraEm->format('YmdHis') !== $clienteConfig->mercadolivreExpiraEm->format('YmdHis')) {
             $clienteConfig->mercadolivreExpiraEm = $expiraEm;
@@ -106,19 +107,19 @@ class MercadoLivreBusiness
         }
         if (DateTimeUtils::diffInMinutes($expiraEm, new \DateTime()) < 60) {
             $this->syslog->info('MercadoLivre.renewAccessToken', $clienteConfig->jsonData['url_loja']);
-            if (!($clienteConfig->jsonData['mercadolivre']['refresh_token'] ?? null)) {
+            if (!($clienteConfig->jsonData['mercadolivre'][$i]['refresh_token'] ?? null)) {
                 throw new ViewException('Impossível renovar sem mercadolivre.refresh_token');
             }
             $r = $this->integradorMercadoLivre->renewAccessToken(
-                $clienteConfig->jsonData['mercadolivre']['refresh_token']);
+                $clienteConfig->jsonData['mercadolivre'][$i]['refresh_token']);
             $this->saveAuthInfo($clienteConfig, $r);
         }
-        if (!($clienteConfig->jsonData['mercadolivre']['me']['id'] ?? null)) {
-            $rMe = $this->integradorMercadoLivre->getMe($clienteConfig->jsonData['mercadolivre']['access_token']);
-            $clienteConfig->jsonData['mercadolivre']['me'] = $rMe;
+        if (!($clienteConfig->jsonData['mercadolivre'][$i]['me']['id'] ?? null)) {
+            $rMe = $this->integradorMercadoLivre->getMe($clienteConfig->jsonData['mercadolivre'][$i]['access_token']);
+            $clienteConfig->jsonData['mercadolivre'][$i]['me'] = $rMe;
             $this->clienteConfigEntityHandler->save($clienteConfig);
         }
-        return $clienteConfig->jsonData['mercadolivre']['access_token'];
+        return $clienteConfig->jsonData['mercadolivre'][$i]['access_token'];
     }
 
 
@@ -136,17 +137,17 @@ class MercadoLivreBusiness
 
         /** @var ClienteConfig $clienteConfig */
         foreach ($clienteConfigs as $clienteConfig) {
-            if ($clienteConfig->jsonData['mercadolivre']['access_token'] ?? false) {
+            if ($clienteConfig->jsonData['mercadolivre'][$i]['access_token'] ?? false) {
                 $q = 0;
                 try {
                     $this->handleAccessToken($clienteConfig);
-                    $offset = $clienteConfig->jsonData['mercadolivre']['questions_offset'] ?? 0;
+                    $offset = $clienteConfig->jsonData['mercadolivre'][$i]['questions_offset'] ?? 0;
                     $rs = $this->integradorMercadoLivre->getQuestions(
-                        $clienteConfig->jsonData['mercadolivre']['access_token'],
+                        $clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
                         $offset);
                     $this->syslog->info('MercadoLivre.getQuestionsGlobal - total de perguntas: ' . count($rs), $clienteConfig->jsonData['url_loja']);
                     $offset += count($rs);
-                    $clienteConfig->jsonData['mercadolivre']['questions_offset'] = $offset;
+                    $clienteConfig->jsonData['mercadolivre'][$i]['questions_offset'] = $offset;
                     $this->clienteConfigEntityHandler->save($clienteConfig);
                     foreach ($rs as $r) {
                         $pergunta = $repoMlPergunta->findOneByMercadolivreId($r['id']);
@@ -218,7 +219,7 @@ class MercadoLivreBusiness
     {
         $clienteConfig = $this->getClienteConfigByUserId($userId);
         $rs = $this->integradorMercadoLivre->getMessage(
-            $clienteConfig->jsonData['mercadolivre']['access_token'],
+            $clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $resourceId
         );
     }
@@ -233,7 +234,7 @@ class MercadoLivreBusiness
         $clienteConfig = $this->getClienteConfigByUserId($userId);
         $this->handleAccessToken($clienteConfig);
         $r = $this->integradorMercadoLivre->getQuestion(
-            $clienteConfig->jsonData['mercadolivre']['access_token'],
+            $clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $resourceId
         );
 
@@ -269,7 +270,7 @@ class MercadoLivreBusiness
     {
         $clienteConfig = $this->getClienteConfigByUserId($userId);
         $rs = $this->integradorMercadoLivre->getClaim(
-            $clienteConfig->jsonData['mercadolivre']['access_token'],
+            $clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $resourceId
         );
     }
@@ -282,7 +283,7 @@ class MercadoLivreBusiness
     {
         $this->handleAccessToken($pergunta->mercadoLivreItem->clienteConfig);
         $rs = $this->integradorMercadoLivre->responder(
-            $pergunta->mercadoLivreItem->clienteConfig->jsonData['mercadolivre']['access_token'],
+            $pergunta->mercadoLivreItem->clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $pergunta->mercadolivreId,
             $resposta);
         if ($rs['status'] !== 'ANSWERED') {
@@ -298,7 +299,7 @@ class MercadoLivreBusiness
     {
         $this->handleAccessToken($pergunta->mercadoLivreItem->clienteConfig);
         $rs = $this->integradorMercadoLivre->atualizarPergunta(
-            $pergunta->mercadoLivreItem->clienteConfig->jsonData['mercadolivre']['access_token'],
+            $pergunta->mercadoLivreItem->clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $pergunta->mercadolivreId);
         $pergunta->jsonData['r'] = $rs;
         $pergunta->status = $rs['status'];
@@ -312,7 +313,7 @@ class MercadoLivreBusiness
      */
     public function getItem(ClienteConfig $clienteConfig, string $id): MercadoLivreItem
     {
-        $rs = $this->integradorMercadoLivre->getItem($clienteConfig->jsonData['mercadolivre']['access_token'], $id);
+        $rs = $this->integradorMercadoLivre->getItem($clienteConfig->jsonData['mercadolivre'][$i]['access_token'], $id);
 
         if (($rs['error'] ?? '') === 'not_found') {
             $rs['title'] = 'NÃO ENCONTRADO';
