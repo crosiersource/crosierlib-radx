@@ -84,7 +84,7 @@ class MercadoLivreItem implements EntityId
 
     
     /**
-     * 
+     * id do item no ML.
      * 
      * @ORM\Column(name="mercadolivre_id", type="string", nullable=false)
      * @Groups("mercadoLivreItem")
@@ -122,6 +122,17 @@ class MercadoLivreItem implements EntityId
      * @var null|ClienteConfig
      */
     public ?ClienteConfig $clienteConfig = null;
+
+    
+    /**
+     * id do usuário no ML. Fica em ecomm_cliente_config.jsonData.mercadolivre.$i.me.id.
+     *
+     * @ORM\Column(name="mercadolivre_user_id", type="string", nullable=false)
+     * @Groups("mercadoLivreItem")
+     *
+     * @var null|string
+     */
+    public ?string $mercadolivreUserId = null;
 
 
     /**

@@ -65,11 +65,11 @@ class MercadoLivreBusiness
                 (new \DateTime())->format('Y-m-d H:i:s');
             $clienteConfig->jsonData['mercadolivre'][$i]['scope'] = $authInfo['scope'];
             $clienteConfig->jsonData['mercadolivre'][$i]['refresh_token'] = $authInfo['refresh_token'];
-            
+
             if (!($clienteConfig->jsonData['mercadolivre'][$i]['me'] ?? false)) {
                 $me = $this->integradorMercadoLivre->getMe($authInfo['access_token']);
             }
-            
+
             return $this->clienteConfigEntityHandler->save($clienteConfig);
         } catch (\Exception $e) {
             $msg = ExceptionUtils::treatException($e);
@@ -84,10 +84,10 @@ class MercadoLivreBusiness
     public function autorizarApp(ClienteConfig $clienteConfig, int $i): void
     {
         $this->syslog->info('MercadoLivre.autorizarApp', $clienteConfig->jsonData['url_loja']);
-        
+
         $r = $this->integradorMercadoLivre->autorizarApp(
             $clienteConfig->jsonData['mercadolivre'][$i]['token_tg']);
-        
+
         $clienteConfig = $this->saveAuthInfo($clienteConfig, $i, $r);
 
         if (!($clienteConfig->jsonData['mercadolivre'][$i]['me']['id'] ?? null)) {
@@ -180,7 +180,7 @@ class MercadoLivreBusiness
                                 if ($pergunta) continue;
                                 $item = $repoMlItem->findOneByMercadolivreId($r['item_id']);
                                 if (!$item) {
-                                    $item = $this->getItem($clienteConfig, $r['item_id']);
+                                    $item = $this->getItem($clienteConfig, $i, $r['item_id']);
                                 }
                                 $pergunta = new MercadoLivrePergunta();
                                 $pergunta->mercadoLivreItem = $item;
@@ -193,7 +193,7 @@ class MercadoLivreBusiness
                             }
                         } catch (ViewException $e) {
                             $this->syslog->err('Erro na iteração do MercadoLivreBusiness::atualizar para ' .
-                                $clienteConfig->cliente->nome . ' [' . $i . ']' . 
+                                $clienteConfig->cliente->nome . ' [' . $i . ']' .
                                 ' (' . $e->getMessage() . ')', $e->getTraceAsString());
                         }
                         if ($q) {
@@ -249,6 +249,7 @@ class MercadoLivreBusiness
     public function handleMessage(string $resourceId, string $userId): void
     {
         $clienteConfig = $this->getClienteConfigByUserId($userId);
+        $i = $this->getConfigsIndexByUserId($clienteConfig, $userId);
         $rs = $this->integradorMercadoLivre->getMessage(
             $clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $resourceId
@@ -263,6 +264,7 @@ class MercadoLivreBusiness
     public function handleQuestion(string $resourceId, string $userId): void
     {
         $clienteConfig = $this->getClienteConfigByUserId($userId);
+        $i = $this->getConfigsIndexByUserId($clienteConfig, $userId);
         $this->handleAccessToken($clienteConfig);
         $r = $this->integradorMercadoLivre->getQuestion(
             $clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
@@ -280,7 +282,7 @@ class MercadoLivreBusiness
         if ($pergunta) return;
         $item = $repoMlItem->findOneByMercadolivreId($r['item_id']);
         if (!$item) {
-            $item = $this->getItem($clienteConfig, $r['item_id']);
+            $item = $this->getItem($clienteConfig, $i, $r['item_id']);
         }
         $pergunta = new MercadoLivrePergunta();
         $pergunta->mercadoLivreItem = $item;
@@ -300,6 +302,7 @@ class MercadoLivreBusiness
     public function handleClaim(string $resourceId, string $userId): void
     {
         $clienteConfig = $this->getClienteConfigByUserId($userId);
+        $i = $this->getConfigsIndexByUserId($clienteConfig, $userId);
         $rs = $this->integradorMercadoLivre->getClaim(
             $clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $resourceId
@@ -312,7 +315,9 @@ class MercadoLivreBusiness
      */
     public function responder(MercadoLivrePergunta $pergunta, string $resposta)
     {
-        $this->handleAccessToken($pergunta->mercadoLivreItem->clienteConfig);
+        $userId = $pergunta->mercadoLivreItem->mercadolivreUserId;
+        $i = $this->getConfigsIndexByUserId($pergunta->mercadoLivreItem->clienteConfig, $userId);
+        $this->handleAccessToken($pergunta->mercadoLivreItem->clienteConfig, $i);
         $rs = $this->integradorMercadoLivre->responder(
             $pergunta->mercadoLivreItem->clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $pergunta->mercadolivreId,
@@ -329,6 +334,7 @@ class MercadoLivreBusiness
     public function atualizarPergunta(MercadoLivrePergunta $pergunta)
     {
         $this->handleAccessToken($pergunta->mercadoLivreItem->clienteConfig);
+        $i = $this->getConfigsIndexByUserId($clienteConfig, $userId);
         $rs = $this->integradorMercadoLivre->atualizarPergunta(
             $pergunta->mercadoLivreItem->clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $pergunta->mercadolivreId);
@@ -342,7 +348,7 @@ class MercadoLivreBusiness
     /**
      * @throws ViewException
      */
-    public function getItem(ClienteConfig $clienteConfig, string $id): MercadoLivreItem
+    public function getItem(ClienteConfig $clienteConfig, int $i, string $id): MercadoLivreItem
     {
         $rs = $this->integradorMercadoLivre->getItem($clienteConfig->jsonData['mercadolivre'][$i]['access_token'], $id);
 
@@ -358,6 +364,25 @@ class MercadoLivreBusiness
         $item->jsonData['r'] = $rs;
 
         return $this->mercadoLivreItemEntityHandler->save($item);
+    }
+
+
+    public function getConfigsIndexByUserId(ClienteConfig $clienteConfig, string $userId): int
+    {
+        if (!($clienteConfig->jsonData['mercadolivre'] ?? false)) {
+            throw new ViewException('clienteConfig sem "mercadolivre"');
+        }
+
+        if (!is_array($clienteConfig->jsonData['mercadolivre'])) {
+            throw new ViewException('clienteConfig.mercadolivre não é array');
+        }
+
+        foreach ($clienteConfig->jsonData['mercadolivre'] as $i => $mlConfigs) {
+            if (($mlConfigs['me']['id'] ?? null) === $userId) {
+                return $i;
+            }
+        }
+        throw new ViewException('Nenhuma configuração do mercadolivre para o userId: ' . $userId);
     }
 
 }
