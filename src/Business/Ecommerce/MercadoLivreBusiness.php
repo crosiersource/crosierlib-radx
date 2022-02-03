@@ -228,7 +228,7 @@ class MercadoLivreBusiness
     {
         try {
             $conn = $this->clienteConfigEntityHandler->getDoctrine()->getConnection();
-            $r = $conn->fetchAssociative('SELECT id FROM cnct_cliente_config WHERE json_data->>"$.mercadolivre.me.id" = :userId', ['userId' => $userId]);
+            $r = $conn->fetchAssociative('SELECT id FROM ecomm_cliente_config WHERE json_data->>"$.mercadolivre.me.id" = :userId', ['userId' => $userId]);
             if ($r['id'] ?? null) {
                 return $this->clienteConfigEntityHandler->getDoctrine()->getRepository(ClienteConfig::class)->find($r['id']);
             }
