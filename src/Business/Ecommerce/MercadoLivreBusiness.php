@@ -124,7 +124,7 @@ class MercadoLivreBusiness
             $this->syslog->info('refresh_token n/d', json_encode($clienteConfig));
             throw new ViewException('refresh_token n/d');
         }
-        
+
         $r = $this->integradorMercadoLivre->renewAccessToken(
             $clienteConfig->jsonData['mercadolivre'][$i]['refresh_token']);
         $this->saveAuthInfo($clienteConfig, $i, $r);
@@ -145,49 +145,57 @@ class MercadoLivreBusiness
 
         /** @var ClienteConfig $clienteConfig */
         foreach ($clienteConfigs as $clienteConfig) {
-            if ($clienteConfig->jsonData['mercadolivre'][$i]['access_token'] ?? false) {
-                $q = 0;
-                try {
-                    $this->handleAccessToken($clienteConfig);
-                    $offset = $clienteConfig->jsonData['mercadolivre'][$i]['questions_offset'] ?? 0;
-                    $rs = $this->integradorMercadoLivre->getQuestions(
-                        $clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
-                        $offset);
-                    $this->syslog->info('MercadoLivre.getQuestionsGlobal - total de perguntas: ' . count($rs), $clienteConfig->jsonData['url_loja']);
-                    $offset += count($rs);
-                    $clienteConfig->jsonData['mercadolivre'][$i]['questions_offset'] = $offset;
-                    $this->clienteConfigEntityHandler->save($clienteConfig);
-                    foreach ($rs as $r) {
-                        $pergunta = $repoMlPergunta->findOneByMercadolivreId($r['id']);
-                        if ($pergunta) continue;
-                        $item = $repoMlItem->findOneByMercadolivreId($r['item_id']);
-                        if (!$item) {
-                            $item = $this->getItem($clienteConfig, $r['item_id']);
+            $mls = $clienteConfig->jsonData['mercadolivre'];
+            if (is_array($mls)) {
+                foreach ($mls as $i => $ml) {
+                    if ($ml['access_token'] ?? false) {
+                        $q = 0;
+                        try {
+                            $this->handleAccessToken($clienteConfig);
+                            $offset = $ml['questions_offset'] ?? 0;
+                            $rs = $this->integradorMercadoLivre->getQuestions(
+                                $ml['access_token'],
+                                $offset);
+                            $this->syslog->info('MercadoLivre.getQuestionsGlobal - total de perguntas: ' . count($rs), $clienteConfig->jsonData['url_loja']);
+                            $offset += count($rs);
+                            $ml['questions_offset'] = $offset;
+                            $this->clienteConfigEntityHandler->save($clienteConfig);
+                            foreach ($rs as $r) {
+                                $pergunta = $repoMlPergunta->findOneByMercadolivreId($r['id']);
+                                if ($pergunta) continue;
+                                $item = $repoMlItem->findOneByMercadolivreId($r['item_id']);
+                                if (!$item) {
+                                    $item = $this->getItem($clienteConfig, $r['item_id']);
+                                }
+                                $pergunta = new MercadoLivrePergunta();
+                                $pergunta->mercadoLivreItem = $item;
+                                $pergunta->mercadolivreId = $r['id'];
+                                $pergunta->jsonData['r'] = $r;
+                                $pergunta->status = $r['status'];
+                                $pergunta->dtPergunta = DateTimeUtils::parseDateStr($r['date_created']);
+                                $this->mercadoLivrePerguntaEntityHandler->save($pergunta);
+                                $q++;
+                            }
+                        } catch (ViewException $e) {
+                            $this->syslog->err('Erro na iteração do MercadoLivreBusiness::atualizar para ' .
+                                $clienteConfig->cliente->nome . ' [' . $i . ']' . 
+                                ' (' . $e->getMessage() . ')', $e->getTraceAsString());
                         }
-                        $pergunta = new MercadoLivrePergunta();
-                        $pergunta->mercadoLivreItem = $item;
-                        $pergunta->mercadolivreId = $r['id'];
-                        $pergunta->jsonData['r'] = $r;
-                        $pergunta->status = $r['status'];
-                        $pergunta->dtPergunta = DateTimeUtils::parseDateStr($r['date_created']);
-                        $this->mercadoLivrePerguntaEntityHandler->save($pergunta);
-                        $q++;
+                        if ($q) {
+                            $this->pushMessageEntityHandler
+                                ->enviarMensagemParaLista(
+                                    $q . " nova(s) pergunta(s) para " .
+                                    $clienteConfig->cliente->nome,
+                                    "MSGS_ML");
+                        }
+                    } else {
+                        $this->syslog->info('MercadoLivre.getQuestionsGlobal - access_token n/d', $clienteConfig->jsonData['url_loja']);
                     }
-                } catch (ViewException $e) {
-                    $this->syslog->err('Erro na iteração do MercadoLivreBusiness::atualizar para ' .
-                        $clienteConfig->cliente->nome .
-                        ' (' . $e->getMessage() . ')', $e->getTraceAsString());
-                }
-                if ($q) {
-                    $this->pushMessageEntityHandler
-                        ->enviarMensagemParaLista(
-                            $q . " nova(s) pergunta(s) para " .
-                            $clienteConfig->cliente->nome,
-                            "MSGS_ML");
                 }
             } else {
-                $this->syslog->info('MercadoLivre.getQuestionsGlobal - access_token n/d', $clienteConfig->jsonData['url_loja']);
+                $this->syslog->info($clienteConfig->cliente->nome . ' não possui array em jsonData.mercadolivre', $clienteConfig->jsonData['url_loja']);
             }
+
         }
 
         return new JsonResponse(
