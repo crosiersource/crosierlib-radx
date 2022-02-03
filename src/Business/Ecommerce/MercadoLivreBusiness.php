@@ -53,7 +53,7 @@ class MercadoLivreBusiness
     /**
      * @throws ViewException
      */
-    private function saveAuthInfo(ClienteConfig $clienteConfig, int $i, array $authInfo)
+    private function saveAuthInfo(ClienteConfig $clienteConfig, int $i, array $authInfo): ClienteConfig
     {
         try {
             $clienteConfig->jsonData['mercadolivre'][$i]['access_token'] = $authInfo['access_token'];
@@ -63,7 +63,12 @@ class MercadoLivreBusiness
                 (new \DateTime())->format('Y-m-d H:i:s');
             $clienteConfig->jsonData['mercadolivre'][$i]['scope'] = $authInfo['scope'];
             $clienteConfig->jsonData['mercadolivre'][$i]['refresh_token'] = $authInfo['refresh_token'];
-            $this->clienteConfigEntityHandler->save($clienteConfig);
+            
+            if (!($clienteConfig->jsonData['mercadolivre'][$i]['me'] ?? false)) {
+                $me = $this->integradorMercadoLivre->getMe($authInfo['access_token']);
+            }
+            
+            return $this->clienteConfigEntityHandler->save($clienteConfig);
         } catch (\Exception $e) {
             $msg = ExceptionUtils::treatException($e);
             throw new ViewException($msg, 0, $e);
@@ -77,9 +82,17 @@ class MercadoLivreBusiness
     public function autorizarApp(ClienteConfig $clienteConfig, int $i): void
     {
         $this->syslog->info('MercadoLivre.autorizarApp', $clienteConfig->jsonData['url_loja']);
+        
         $r = $this->integradorMercadoLivre->autorizarApp(
             $clienteConfig->jsonData['mercadolivre'][$i]['token_tg']);
-        $this->saveAuthInfo($clienteConfig, $i, $r);
+        
+        $clienteConfig = $this->saveAuthInfo($clienteConfig, $i, $r);
+
+        if (!($clienteConfig->jsonData['mercadolivre'][$i]['me']['id'] ?? null)) {
+            $rMe = $this->integradorMercadoLivre->getMe($clienteConfig->jsonData['mercadolivre'][$i]['access_token']);
+            $clienteConfig->jsonData['mercadolivre'][$i]['me'] = $rMe;
+            $this->clienteConfigEntityHandler->save($clienteConfig);
+        }
     }
 
 
@@ -104,7 +117,7 @@ class MercadoLivreBusiness
             }
             $r = $this->integradorMercadoLivre->renewAccessToken(
                 $clienteConfig->jsonData['mercadolivre'][$i]['refresh_token']);
-            $this->saveAuthInfo($clienteConfig, $r);
+            $clienteConfig = $this->saveAuthInfo($clienteConfig, $r);
         }
         if (!($clienteConfig->jsonData['mercadolivre'][$i]['me']['id'] ?? null)) {
             $rMe = $this->integradorMercadoLivre->getMe($clienteConfig->jsonData['mercadolivre'][$i]['access_token']);
