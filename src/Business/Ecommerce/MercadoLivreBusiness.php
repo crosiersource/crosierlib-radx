@@ -166,7 +166,7 @@ class MercadoLivreBusiness
                     if ($ml['access_token'] ?? false) {
                         $q = 0;
                         try {
-                            $this->handleAccessToken($clienteConfig);
+                            $this->handleAccessToken($clienteConfig, $i);
                             $offset = $ml['questions_offset'] ?? 0;
                             $rs = $this->integradorMercadoLivre->getQuestions(
                                 $ml['access_token'],
@@ -265,7 +265,7 @@ class MercadoLivreBusiness
     {
         $clienteConfig = $this->getClienteConfigByUserId($userId);
         $i = $this->getConfigsIndexByUserId($clienteConfig, $userId);
-        $this->handleAccessToken($clienteConfig);
+        $this->handleAccessToken($clienteConfig, $i);
         $r = $this->integradorMercadoLivre->getQuestion(
             $clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $resourceId
@@ -333,7 +333,10 @@ class MercadoLivreBusiness
      */
     public function atualizarPergunta(MercadoLivrePergunta $pergunta)
     {
-        $this->handleAccessToken($pergunta->mercadoLivreItem->clienteConfig);
+        $userId = $pergunta->mercadoLivreItem->mercadolivreUserId;
+        $i = $this->getConfigsIndexByUserId($pergunta->mercadoLivreItem->clienteConfig, $userId);
+        
+        $this->handleAccessToken($pergunta->mercadoLivreItem->clienteConfig, $i);
         $i = $this->getConfigsIndexByUserId($clienteConfig, $userId);
         $rs = $this->integradorMercadoLivre->atualizarPergunta(
             $pergunta->mercadoLivreItem->clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
