@@ -117,14 +117,26 @@ class MercadoLivreBusiness
             if (!($clienteConfig->jsonData['mercadolivre'][$i]['refresh_token'] ?? null)) {
                 throw new ViewException('Impossível renovar sem mercadolivre.refresh_token');
             }
-            $r = $this->integradorMercadoLivre->renewAccessToken(
-                $clienteConfig->jsonData['mercadolivre'][$i]['refresh_token']);
-            $clienteConfig = $this->saveAuthInfo($clienteConfig, $r);
+            try {
+                $r = $this->integradorMercadoLivre->renewAccessToken(
+                    $clienteConfig->jsonData['mercadolivre'][$i]['refresh_token']);
+            } catch (\Exception $e) {
+                $errMsg = 'Erro ao renewAccessToken para ' . $clienteConfig->cliente->nome . '. Talvez reautorizar?';
+                $this->syslog->err($errMsg);
+                throw new ViewException($errMsg);
+            }
+            $clienteConfig = $this->saveAuthInfo($clienteConfig, $i, $r);
         }
         if (!($clienteConfig->jsonData['mercadolivre'][$i]['me']['id'] ?? null)) {
-            $rMe = $this->integradorMercadoLivre->getMe($clienteConfig->jsonData['mercadolivre'][$i]['access_token']);
-            $clienteConfig->jsonData['mercadolivre'][$i]['me'] = $rMe;
-            $this->clienteConfigEntityHandler->save($clienteConfig);
+            try {
+                $rMe = $this->integradorMercadoLivre->getMe($clienteConfig->jsonData['mercadolivre'][$i]['access_token']);
+                $clienteConfig->jsonData['mercadolivre'][$i]['me'] = $rMe;
+                $this->clienteConfigEntityHandler->save($clienteConfig);
+            } catch (ViewException $e) {
+                $errMsg = 'Erro ao getMe para ' . $clienteConfig->cliente->nome . '.';
+                $this->syslog->err($errMsg);
+                throw new ViewException($errMsg);
+            }
         }
         return $clienteConfig->jsonData['mercadolivre'][$i]['access_token'];
     }
@@ -161,7 +173,7 @@ class MercadoLivreBusiness
         /** @var ClienteConfig $clienteConfig */
         foreach ($clienteConfigs as $clienteConfig) {
             $mls = $clienteConfig->jsonData['mercadolivre'];
-            if (is_array($mls)) {
+            if (is_array($mls) && count($mls) > 0 && array_keys($mls)[0] === 0) {
                 foreach ($mls as $i => $ml) {
                     if ($ml['access_token'] ?? false) {
                         $q = 0;
