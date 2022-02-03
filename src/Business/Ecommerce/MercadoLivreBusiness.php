@@ -350,7 +350,7 @@ class MercadoLivreBusiness
         $i = $this->getConfigsIndexByUserId($pergunta->mercadoLivreItem->clienteConfig, $userId);
         
         $this->handleAccessToken($pergunta->mercadoLivreItem->clienteConfig, $i);
-        $i = $this->getConfigsIndexByUserId($clienteConfig, $userId);
+        $i = $this->getConfigsIndexByUserId($pergunta->mercadoLivreItem->clienteConfig, $userId);
         $rs = $this->integradorMercadoLivre->atualizarPergunta(
             $pergunta->mercadoLivreItem->clienteConfig->jsonData['mercadolivre'][$i]['access_token'],
             $pergunta->mercadolivreId);
@@ -396,7 +396,7 @@ class MercadoLivreBusiness
         }
 
         foreach ($clienteConfig->jsonData['mercadolivre'] as $i => $mlConfigs) {
-            if (($mlConfigs['me']['id'] ?? null) === $userId) {
+            if ((string)($mlConfigs['me']['id'] ?? '') === $userId) {
                 return $i;
             }
         }
