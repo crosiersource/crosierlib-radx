@@ -69,6 +69,7 @@ class MercadoLivreBusiness
             if (!($clienteConfig->jsonData['mercadolivre'][$i]['me'] ?? false)) {
                 $me = $this->integradorMercadoLivre->getMe($authInfo['access_token']);
             }
+            $clienteConfig->jsonData['mercadolivre'][$i]['me'] = $me;
 
             return $this->clienteConfigEntityHandler->save($clienteConfig);
         } catch (\Exception $e) {
@@ -373,6 +374,8 @@ class MercadoLivreBusiness
         }
         $item = new MercadoLivreItem();
         $item->clienteConfig = $clienteConfig;
+        $userId = $this->getConfigsIndexByUserId($clienteConfig, $i);
+        $item->mercadolivreUserId = $userId;
         $item->descricao = $rs['title'];
         $item->precoVenda = $rs['price'];
         $item->mercadolivreId = $id;
