@@ -8,6 +8,8 @@ use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Ecommerce\ClienteConfig;
+use CrosierSource\CrosierLibRadxBundle\Entity\Ecommerce\MercadoLivreItem;
+use CrosierSource\CrosierLibRadxBundle\Entity\Ecommerce\MercadoLivrePergunta;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\ClienteConfigEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\MercadoLivreItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\MercadoLivrePerguntaEntityHandler;
