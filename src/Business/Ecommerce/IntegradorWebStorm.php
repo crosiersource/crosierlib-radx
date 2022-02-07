@@ -1774,9 +1774,32 @@ class IntegradorWebStorm implements IntegradorEcommerce
                 $produto = null;
                 try {
                     // verifica se já existe uma ven_venda com o json_data.ecommerce_idPedido
-                    $sProduto = $conn->fetchAssociative('SELECT id FROM est_produto WHERE json_data->>"$.ecommerce_id" = :idProduto', ['idProduto' => $produtoWebStorm->idProduto->__toString()]);
+                    $sProduto = $conn->fetchAssociative(
+                        'SELECT id FROM est_produto 
+                                    WHERE 
+                                    json_data->>"$.ecommerce_id" = :idProduto AND 
+                                    json_data->>"$.ecommerce_item_venda_id" = :idItemVenda', 
+                            [
+                                'idProduto' => $produtoWebStorm->idProduto->__toString(),
+                                'idItemVenda' => $produtoWebStorm->idItemVenda->__toString(),
+                            ]
+                    );
+                    
                     if (!isset($sProduto['id'])) {
-                        throw new \RuntimeException();
+                        // Tenta achar apenas pelo nosso id
+                        // (e na sequência já corrige os json_data->>"$.ecommerce_id" e json_data->>"$.ecommerce_item_venda_id"
+                        // pois estava dando muito erro de integração, como se a WebStorm integrasse o produto mas não
+                        // retornasse os ids corretos. 
+                        $sProduto = $conn->fetchAssociative('SELECT id, json_data FROM est_produto WHERE id = :codigo', 
+                            ['codigo' => $produtoWebStorm->codigo->__toString()]);
+                        if ($sProduto) {
+                            $jsonData = json_decode($sProduto['json_data'], true);
+                            $jsonData['ecommerce_id'] = $produtoWebStorm->idProduto->__toString();
+                            $jsonData['ecommerce_item_venda_id'] = $produtoWebStorm->idItemVenda->__toString();
+                            $conn->update('est_produto', ['json_data' => json_encode($jsonData)], ['id' => $sProduto['id']]);
+                        } else {
+                            throw new \RuntimeException();
+                        }
                     }
                     $produto = $repoProduto->find($sProduto['id']);
                 } catch (\Throwable $e) {
