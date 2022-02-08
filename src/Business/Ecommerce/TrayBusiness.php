@@ -66,7 +66,7 @@ class TrayBusiness
         if (!$clienteConfig->trayDtExpAccessToken || DateTimeUtils::diffInMinutes($clienteConfig->trayDtExpAccessToken, new \DateTime()) < 60) {
             try {
                 $this->integradorTray->endpoint = $clienteConfig->jsonData['url_loja'];
-                $this->syslog->info('Tray.renewAccessToken', $clienteConfig->jsonData['url_loja']);
+                $this->syslog->info('Tray.handleAccessToken', $clienteConfig->jsonData['url_loja']);
                 $rs = $this->integradorTray->renewAccessToken($clienteConfig->jsonData['tray']['refresh_token']);
                 $this->saveAuthInfo($clienteConfig, $rs);
             } catch (ViewException $e) {
@@ -76,6 +76,18 @@ class TrayBusiness
                     $this->desativandoCliente($clienteConfig);
                 }
             }
+        }
+    }
+
+    public function renewAccessToken(ClienteConfig $clienteConfig): void
+    {
+        try {
+            $this->integradorTray->endpoint = $clienteConfig->jsonData['url_loja'];
+            $this->syslog->info('Tray.renewAccessToken', $clienteConfig->jsonData['url_loja']);
+            $rs = $this->integradorTray->renewAccessToken($clienteConfig->jsonData['tray']['refresh_token']);
+            $this->saveAuthInfo($clienteConfig, $rs);
+        } catch (ViewException $e) {
+            $this->syslog->err('Erro no renewAccessToken', $e->getMessage());
         }
     }
 
@@ -97,7 +109,7 @@ class TrayBusiness
         $clienteConfig->ativo = true;
         $clienteConfig->jsonData['dt_desativado'] = null;
         $clienteConfig->jsonData['tentativas_antes_de_desativar'] = 0;
-        
+
         $this->clienteConfigEntityHandler->save($clienteConfig);
     }
 
