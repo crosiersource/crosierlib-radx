@@ -88,6 +88,7 @@ class TrayBusiness
             $this->saveAuthInfo($clienteConfig, $rs);
         } catch (ViewException $e) {
             $this->syslog->err('Erro no renewAccessToken', $e->getMessage());
+            throw $e;
         }
     }
 
