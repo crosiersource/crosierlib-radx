@@ -72,7 +72,6 @@ class TrayBusiness
             } catch (ViewException $e) {
                 $this->syslog->err('Erro no handleAccessToken', $e->getMessage());
                 if ($e->getPrevious() instanceof ClientException && $e->getPrevious()->getResponse()->getStatusCode() === 401) {
-                    $this->syslog->err('Tray.handleAccessToken - desativando (401) ', $clienteConfig->jsonData['url_loja']);
                     $this->desativandoCliente($clienteConfig);
                 }
             }
@@ -171,6 +170,7 @@ class TrayBusiness
         if ($clienteConfig->jsonData['tentativas_antes_de_desativar'] ?? false) {
             $tentativas = $clienteConfig->jsonData['tentativas_antes_de_desativar'];
             if ($tentativas > 3) {
+                $this->syslog->err('Desativando cliente na tray: ' . $clienteConfig->jsonData['url_loja']);
                 $clienteConfig->ativo = false;
                 $clienteConfig->jsonData['dt_desativado'] = (new \DateTime())->format('d/m/Y H:i');
                 $this->pushMessageEntityHandler
