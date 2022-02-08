@@ -142,12 +142,12 @@ class TrayBusiness
             if (strpos($e->getHandlerContext()['error'] ?? '', 'Could not resolve host') !== FALSE) {
                 $this->syslog->err('Tray.obterVendasPorClienteConfig - (Could not resolve host) ', $clienteConfig->jsonData['url_loja']);
                 // $this->desativandoCliente($clienteConfig);
-                return null;
             } else {
                 $msg = ExceptionUtils::treatException($e);
                 $this->syslog->err('Tray.obterVendasPorClienteConfig - Erro para ' . $clienteConfig->jsonData['url_loja'], $msg);
             }
         }
+        return null;
     }
 
     /**
