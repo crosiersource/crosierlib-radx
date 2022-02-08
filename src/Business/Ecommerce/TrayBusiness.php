@@ -145,7 +145,7 @@ class TrayBusiness
                 return null;
             } else {
                 $msg = ExceptionUtils::treatException($e);
-                throw new ViewException($msg, 0, $e);
+                $this->syslog->err('Tray.obterVendasPorClienteConfig - Erro para ' . $clienteConfig->jsonData['url_loja'], $msg);
             }
         }
     }
