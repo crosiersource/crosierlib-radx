@@ -70,7 +70,9 @@ class TrayBusiness
                 $rs = $this->integradorTray->renewAccessToken($clienteConfig->jsonData['tray']['refresh_token']);
                 $this->saveAuthInfo($clienteConfig, $rs);
             } catch (ViewException $e) {
+                $this->syslog->err('Erro no handleAccessToken', $e->getMessage());
                 if ($e->getPrevious() instanceof ClientException && $e->getPrevious()->getResponse()->getStatusCode() === 401) {
+                    $this->syslog->err('Tray.handleAccessToken - desativando (401) ', $clienteConfig->jsonData['url_loja']);
                     $this->desativandoCliente($clienteConfig);
                 }
             }
@@ -91,6 +93,11 @@ class TrayBusiness
         $clienteConfig->trayDtExpAccessToken = DateTimeUtils::parseDateStr($authInfo['date_expiration_access_token']);
         $clienteConfig->jsonData['tray']['dt_exp_refresh_token'] = $authInfo['date_expiration_refresh_token'];
         $clienteConfig->jsonData['tray']['date_activated'] = $authInfo['date_activated'];
+
+        $clienteConfig->ativo = true;
+        $clienteConfig->jsonData['dt_desativado'] = null;
+        $clienteConfig->jsonData['tentativas_antes_de_desativar'] = 0;
+        
         $this->clienteConfigEntityHandler->save($clienteConfig);
     }
 
@@ -133,8 +140,8 @@ class TrayBusiness
             return $rs;
         } catch (GuzzleException $e) {
             if (strpos($e->getHandlerContext()['error'] ?? '', 'Could not resolve host') !== FALSE) {
-                $this->syslog->err('Tray.obterVendasPorClienteConfig - desativando (Could not resolve host) ', $clienteConfig->jsonData['url_loja']);
-                $this->desativandoCliente($clienteConfig);
+                $this->syslog->err('Tray.obterVendasPorClienteConfig - (Could not resolve host) ', $clienteConfig->jsonData['url_loja']);
+                // $this->desativandoCliente($clienteConfig);
                 return null;
             } else {
                 $msg = ExceptionUtils::treatException($e);
@@ -148,14 +155,21 @@ class TrayBusiness
      */
     private function desativandoCliente(ClienteConfig $clienteConfig)
     {
-        $clienteConfig->ativo = false;
-        $clienteConfig->jsonData['dt_desativado'] = (new \DateTime())->format('d/m/Y H:i');
-        $this->pushMessageEntityHandler
-            ->enviarMensagemParaLista(
-                "Atenção! " .
-                $clienteConfig->cliente->nome .
-                " foi desconectado por falta de acesso a Tray.",
-                "CLIENTES_DESCONECTADOS");
+        if ($clienteConfig->jsonData['tentativas_antes_de_desativar'] ?? false) {
+            $tentativas = $clienteConfig->jsonData['tentativas_antes_de_desativar'];
+            if ($tentativas > 3) {
+                $clienteConfig->ativo = false;
+                $clienteConfig->jsonData['dt_desativado'] = (new \DateTime())->format('d/m/Y H:i');
+                $this->pushMessageEntityHandler
+                    ->enviarMensagemParaLista(
+                        "Atenção! " .
+                        $clienteConfig->cliente->nome .
+                        " foi desconectado por falta de acesso a Tray.",
+                        "CLIENTES_DESCONECTADOS");
+            }
+        }
+        $tentativas = ($clienteConfig->jsonData['tentativas_antes_de_desativar'] ?? 0) + 1;
+        $clienteConfig->jsonData['tentativas_antes_de_desativar'] = $tentativas;
         $this->clienteConfigEntityHandler->save($clienteConfig);
     }
 
