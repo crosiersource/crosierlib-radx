@@ -68,6 +68,8 @@ class MercadoLivreBusiness
 
             if (!($clienteConfig->jsonData['mercadolivre'][$i]['me'] ?? false)) {
                 $me = $this->integradorMercadoLivre->getMe($authInfo['access_token']);
+            } else {
+                $me = $clienteConfig->jsonData['mercadolivre'][$i]['me'];
             }
             $clienteConfig->jsonData['mercadolivre'][$i]['me'] = $me;
 
