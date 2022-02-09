@@ -54,9 +54,7 @@ class TrayBusiness
     public function autorizarApp(ClienteConfig $clienteConfig): void
     {
         $this->syslog->info('Tray.autorizarApp', $clienteConfig->jsonData['url_loja']);
-        $this->integradorTray->endpoint = $clienteConfig->jsonData['url_loja'];
-        $r = $this->integradorTray->autorizarApp(
-            $clienteConfig->jsonData['tray']['code']);
+        $r = $this->integradorTray->autorizarApp($clienteConfig->jsonData['tray']['code'], $clienteConfig);
         $this->saveAuthInfo($clienteConfig, $r);
     }
 

@@ -5,6 +5,7 @@ namespace CrosierSource\CrosierLibRadxBundle\Business\Ecommerce;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibRadxBundle\Entity\Ecommerce\ClienteConfig;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
@@ -19,7 +20,7 @@ use Symfony\Component\Security\Core\Security;
 
 /**
  * Regras de negócio para a integração com a Tray.
- * 
+ *
  * (como está classe ficou muito específica para a Conecta, foi movida do crosierlib-radx para cá).
  *
  * @author Carlos Eduardo Pauluk
@@ -71,8 +72,10 @@ class IntegradorTray
         return $this->endpoint;
     }
 
-    public function autorizarApp(string $code): array
+    public function autorizarApp(string $code, ?ClienteConfig $clienteConfig): array
     {
+        $urlLoja = null;
+        
         $r = $this->deptoEntityHandler->getDoctrine()->getConnection()
             ->fetchAssociative('SELECT valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave = :chave',
                 [
@@ -80,7 +83,17 @@ class IntegradorTray
                     'chave' => 'tray.configs.json'
                 ]);
         $rs = json_decode($r['valor'], true);
-        $url = $this->endpoint . 'web_api/auth';
+        $urlLoja = $rs['url_loja'] ?? null;
+        $consumerKey = $rs['consumer_key'];
+        $consumerSecret = $rs['consumer_secret'];
+
+        // Como a ativação aqui tbm serve para a arquitetura da Conecta, a url loja nesses casos é específica
+        // por ClienteConfig
+        if ($clienteConfig) {
+            $urlLoja = $clienteConfig->jsonData['url_loja'];
+        }
+
+        $url = $urlLoja . 'web_api/auth';
         $response = $this->client->request('POST', $url, [
             'form_params' => [
                 'consumer_key' => $rs['consumer_key'],
