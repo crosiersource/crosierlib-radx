@@ -19,7 +19,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Configura uma regra para setar corretamente a Movimentação ao importar uma linha de extrato.
  *
  * @ApiResource(
- *     normalizationContext={"groups"={"regraImportacaoLinha","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"regraImportacaoLinha","tipoLancto","carteira","centroCusto","modo","categoria","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"regraImportacaoLinha"},"enable_max_depth"=true},
  *
  *     itemOperations={

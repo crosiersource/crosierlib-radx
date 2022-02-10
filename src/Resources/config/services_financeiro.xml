@@ -158,7 +158,8 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_item_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_item_entity_handler"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoEntityHandler" public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_entity_handler"/>
@@ -216,7 +217,8 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.fatura_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.fatura_entity_handler"/>
       <argument type="service" id="monolog.logger"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler" public="true"
@@ -235,7 +237,8 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.fatura_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.cadeia_entity_handler"/>
+      <argument type="service"
+                id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.cadeia_entity_handler"/>
       <argument type="service" id="monolog.logger"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler" public="true"
@@ -279,7 +282,8 @@
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
-    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegistroConferenciaEntityHandler" public="true"
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegistroConferenciaEntityHandler"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.registro_conferencia_entity_handler"/>
 
 
@@ -300,7 +304,8 @@
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
-    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegraImportacaoLinhaEntityHandler" public="true"
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegraImportacaoLinhaEntityHandler"
+             public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.regra_importacao_linha_entity_handler"/>
 
 
@@ -361,6 +366,38 @@
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Business\Financeiro\RegistroConferenciaBusiness"
              alias="crosier_source.crosier_lib_radx_bundle.business.financeiro.registro_conferencia_business"/>
+
+
+    <!-- SaldoRepository -->
+    <service id="crosier_source.crosier_lib_radx_bundle.repository.financeiro.saldo_repository"
+             class="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\SaldoRepository"
+             parent="CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository">
+      <tag name="doctrine.repository_service"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\SaldoRepository"
+             alias="crosier_source.crosier_lib_radx_bundle.repository.financeiro.saldo_repository"/>
+    <!-- SaldoEntityHandler -->
+    <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.saldo_entity_handler"
+             class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\SaldoEntityHandler"
+             parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.helper"/>
+      <argument type="service" id="parameter_bag"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\SaldoEntityHandler" public="true"
+             alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.saldo_entity_handler"/>
+
+
+    <!-- SaldoDataProvider -->
+    <service
+      id="crosier_source.crosier_lib_radx_bundle.api_platform.data_provider.financeiro.saldo_data_provider"
+      class="CrosierSource\CrosierLibRadxBundle\ApiPlatform\DataProvider\Financeiro\SaldoDataProvider">
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.saldo_entity_handler"/>
+      <tag name="api_platform.collection_data_provider" />
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\ApiPlatform\DataProvider\Financeiro\SaldoDataProvider"
+             alias="crosier_source.crosier_lib_radx_bundle.api_platform.data_provider.financeiro.saldo_data_provider"
+             public="true"/>
 
 
   </services>

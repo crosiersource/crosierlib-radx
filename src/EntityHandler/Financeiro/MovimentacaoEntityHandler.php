@@ -414,8 +414,9 @@ class MovimentacaoEntityHandler extends EntityHandler
         if ($movimentacao->getId()) {
 
             if ($movimentacao->cadeia && $movimentacao->cadeia->movimentacoes &&
+                $movimentacao->cadeia->movimentacoes->count() !== 0 &&
                 $movimentacao->cadeia->movimentacoes->count() !== 2) {
-                throw new ViewException('Apenas cadeias com 2 odem ser editadas ("TRANSFERÊNCIA ENTRE CARTEIRAS")');
+                throw new ViewException('Apenas cadeias com 2 podem ser editadas ("TRANSFERÊNCIA ENTRE CARTEIRAS")');
             }
             /** @var Movimentacao $movimentOposta */
             $movimentOposta = $this->getDoctrine()->getRepository(Movimentacao::class)

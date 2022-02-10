@@ -26,10 +26,18 @@ class CarteiraEntityHandler extends EntityHandler
      */
     public function beforeSave($carteira)
     {
-        
         if (!$carteira->dtConsolidado) {
             $carteira->dtConsolidado = DateTimeUtils::parseDateStr('1900-01-01');
         }
+    }
+
+    /**
+     * @param Carteira $carteira
+     * @return mixed|void
+     */
+    public function afterSave($carteira)
+    {
+        $this->getDoctrine()->getConnection()->executeStatement('DELETE FROM fin_saldo WHERE carteira_id = :carteiraId', ['carteiraId' => $carteira->getId()]);
     }
 
 
