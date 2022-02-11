@@ -5,14 +5,38 @@ namespace CrosierSource\CrosierLibRadxBundle\Business\Ecommerce;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
+use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
+use CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness;
+use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 use CrosierSource\CrosierLibRadxBundle\Entity\Ecommerce\ClienteConfig;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
+use CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador;
+use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\PlanoPagto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
+use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
+use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaPagto;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DeptoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\DeptoRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\FornecedorRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\PlanoPagtoRepository;
+use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
+use Doctrine\DBAL\Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -25,14 +49,14 @@ use Symfony\Component\Security\Core\Security;
  *
  * @author Carlos Eduardo Pauluk
  */
-class IntegradorTray
+class IntegradorTray implements IntegradorEcommerce
 {
 
-    private Client $client;
+    private ?Client $client = null;
 
-    public string $endpoint;
+    public ?string $endpoint = null;
 
-    public string $accessToken;
+    public ?array $trayConfigs = null;
 
     private Security $security;
 
@@ -42,7 +66,22 @@ class IntegradorTray
 
     private ProdutoEntityHandler $produtoEntityHandler;
 
+    private NotaFiscalBusiness $notaFiscalBusiness;
+
     private ?array $deptosNaTray = null;
+
+    private VendaBusiness $vendaBusiness;
+
+    private ClienteEntityHandler $clienteEntityHandler;
+
+    private Depto $deptoIndefinido;
+    private Grupo $grupoIndefinido;
+    private Subgrupo $subgrupoIndefinido;
+    private ?Fornecedor $fornecedorDefamilia = null;
+
+    private ?int $carteiraIndefinidaId = null;
+
+    private ?int $carteiraYapayId = null;
 
 
     public function __construct(Security               $security,
@@ -51,69 +90,132 @@ class IntegradorTray
                                 DeptoEntityHandler     $deptoEntityHandler,
                                 ProdutoEntityHandler   $produtoEntityHandler,
                                 VendaEntityHandler     $vendaEntityHandler,
-                                VendaItemEntityHandler $vendaItemEntityHandler
+                                VendaItemEntityHandler $vendaItemEntityHandler,
+                                NotaFiscalBusiness     $notaFiscalBusiness,
+                                ClienteEntityHandler   $clienteEntityHandler,
+                                VendaBusiness          $vendaBusiness
     )
     {
         $this->security = $security;
         $this->params = $params;
         $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
         $this->deptoEntityHandler = $deptoEntityHandler;
+        $this->conn = $deptoEntityHandler->getDoctrine()->getConnection();
         $this->produtoEntityHandler = $produtoEntityHandler;
         $this->vendaEntityHandler = $vendaEntityHandler;
+        $this->clienteEntityHandler = $clienteEntityHandler;
         $this->vendaItemEntityHandler = $vendaItemEntityHandler;
+        $this->notaFiscalBusiness = $notaFiscalBusiness;
+        $this->vendaBusiness = $vendaBusiness;
         $this->client = new Client();
+
+        /** @var DeptoRepository $repoDepto */
+        $repoDepto = $this->produtoEntityHandler->getDoctrine()->getRepository(Depto::class);
+        $this->deptoIndefinido = $repoDepto->findOneBy(['codigo' => '00']);
+
+        /** @var GrupoRepository $repoGrupo */
+        $repoGrupo = $this->produtoEntityHandler->getDoctrine()->getRepository(Grupo::class);
+        $this->grupoIndefinido = $repoGrupo->findOneBy(['codigo' => '00']);
+
+        /** @var SubgrupoRepository $repoSubgrupo */
+        $repoSubgrupo = $this->produtoEntityHandler->getDoctrine()->getRepository(Subgrupo::class);
+        $this->subgrupoIndefinido = $repoSubgrupo->findOneBy(['codigo' => '00']);
+
+        /** @var FornecedorRepository $repoFornecedor */
+        $repoFornecedor = $this->produtoEntityHandler->getDoctrine()->getRepository(Fornecedor::class);
+        $this->fornecedorDefamilia = $repoFornecedor->findOneBy(['nome' => 'DEFAMILIA']);
+
+        $this->loadConfigs();
     }
 
     /**
-     * @return string
+     * Carrega as configurações para os casos onde a integração é 1x1 (diferente da Conecta).
      */
-    public function getEndpoint(): string
+    private function loadConfigs(): void
     {
-        return $this->endpoint;
+        try {
+            $r = $this->deptoEntityHandler->getDoctrine()->getConnection()
+                ->fetchAssociative('SELECT id, valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave = :chave',
+                    [
+                        'appUUID' => $_SERVER['CROSIERAPP_UUID'],
+                        'chave' => 'tray.configs.json'
+                    ]);
+            $rs = json_decode($r['valor'] ?? '{}', true);
+            $this->trayConfigs = $rs;
+            $this->trayConfigs['cfg_app_config.id'] = $r['id'];
+        } catch (Exception $e) {
+            throw new ViewException('Erro ao carregar as configurações de tray.configs.json');
+        }
     }
 
-    public function autorizarApp(string $code, ?ClienteConfig $clienteConfig): array
-    {
-        $urlLoja = null;
-        
-        $r = $this->deptoEntityHandler->getDoctrine()->getConnection()
-            ->fetchAssociative('SELECT valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave = :chave',
-                [
-                    'appUUID' => $_SERVER['CROSIERAPP_UUID'],
-                    'chave' => 'tray.configs.json'
-                ]);
-        $rs = json_decode($r['valor'], true);
-        $urlLoja = $rs['url_loja'] ?? null;
-        $consumerKey = $rs['consumer_key'];
-        $consumerSecret = $rs['consumer_secret'];
 
+    public function autorizarApp(?string $code = null, ?ClienteConfig $clienteConfig = null): array
+    {
+        $urlLoja = $this->trayConfigs['url_loja'] ?? null;
         // Como a ativação aqui tbm serve para a arquitetura da Conecta, a url loja nesses casos é específica
         // por ClienteConfig
         if ($clienteConfig) {
             $urlLoja = $clienteConfig->jsonData['url_loja'];
         }
 
+        $consumerKey = $this->trayConfigs['consumer_key'];
+        $consumerSecret = $this->trayConfigs['consumer_secret'];
+        $code = $code ?? $this->trayConfigs['code'];
+
+
         $url = $urlLoja . 'web_api/auth';
         $response = $this->client->request('POST', $url, [
             'form_params' => [
-                'consumer_key' => $rs['consumer_key'],
-                'consumer_secret' => $rs['consumer_secret'],
+                'consumer_key' => $consumerKey,
+                'consumer_secret' => $consumerSecret,
                 'code' => $code,
             ]
         ]);
 
         $bodyContents = $response->getBody()->getContents();
         $json = json_decode($bodyContents, true);
+
+        if ($urlLoja) {
+            if (in_array($json['code'] ?? 0, [200, 201], true)) {
+                $this->trayConfigs['ativa'] = true;
+                $this->atualizarTrayConfigs($json);
+            }
+        }
+
         return $json;
     }
 
-
-    public function renewAccessToken(string $refreshToken): array
+    private function atualizarTrayConfigs(array $json)
     {
         try {
+            $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
+
+            $this->trayConfigs['access_token'] = $json['access_token'];
+            $this->trayConfigs['refresh_token'] = $json['refresh_token'];
+            $this->trayConfigs['date_expiration_access_token'] = $json['date_expiration_access_token'];
+            $this->trayConfigs['date_expiration_refresh_token'] = $json['date_expiration_refresh_token'];
+            $this->trayConfigs['date_activated'] = $json['date_activated'];
+
+            $conn->update('cfg_app_config',
+                ['valor' => json_encode($this->trayConfigs)],
+                ['id' => $this->trayConfigs['cfg_app_config.id']],
+            );
+        } catch (Exception $e) {
+            throw new ViewException('Erro ao atualizarTrayConfigs (appConfigId = ' . $appConfigId . ')');
+        }
+    }
+
+    public function renewAccessToken(?string $refreshToken = null): array
+    {
+        try {
+            $refreshToken = $refreshToken ?? $this->trayConfigs['refresh_token'];
             $response = $this->client->request('GET', $this->getEndpoint() . 'web_api/auth?refresh_token=' . $refreshToken);
             $bodyContents = $response->getBody()->getContents();
             $json = json_decode($bodyContents, true);
+            // se estiver na arquitetura 1x1, já atualiza o tray.configs.json
+            if ($this->trayConfigs['url_loja']) {
+                $this->atualizarTrayConfigs($json);
+            }
             return $json;
         } catch (GuzzleException $e) {
             throw new ViewException('Erro - renewAccessToken', 0, $e);
@@ -126,11 +228,12 @@ class IntegradorTray
      */
     public function integraCategoria(Depto $depto): int
     {
+        // Ainda só funciona para a arquitetura 1x1
         $syslog_obs = 'depto = ' . $depto->nome . ' (' . $depto->getId() . ')';
         $this->syslog->debug('integraDepto - ini', $syslog_obs);
         $idDeptoTray = null;
 
-        $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->accessToken . '&name=' . $depto->nome;
+        $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->getAccessToken() . '&name=' . $depto->nome;
         $response = $this->client->request('GET',
             $url);
         $bodyContents = $response->getBody()->getContents();
@@ -141,7 +244,7 @@ class IntegradorTray
         if (!$idDeptoTray) {
             $this->syslog->info('integraDepto - não existe, enviando...', $syslog_obs);
 
-            $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->accessToken;
+            $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->getAccessToken();
             $response = $this->client->request('POST', $url, [
                 'form_params' => [
                     'Category' => [
@@ -174,6 +277,7 @@ class IntegradorTray
      */
     public function integraProduto(Produto $produto): int
     {
+        // Ainda só funciona para a arquitetura 1x1
         try {
             $syslog_obs = 'produto = ' . $produto->nome . ' (' . $produto->getId() . ')';
             $this->syslog->debug('integraProduto - ini', $syslog_obs);
@@ -197,11 +301,11 @@ class IntegradorTray
                 ],
             ];
             $jsonRequest = json_encode($arrProduct, JSON_UNESCAPED_SLASHES);
-            $url = $this->getEndpoint() . 'web_api/products?access_token=' . $this->accessToken;
+            $url = $this->getEndpoint() . 'web_api/products?access_token=' . $this->getAccessToken();
             $method = 'POST';
             if ($produto->jsonData['ecommerce_id'] ?? false) {
                 //$arrProduto['id'] = $produto->jsonData['ecommerce_id'];
-                $url = $this->getEndpoint() . 'web_api/products/' . $produto->jsonData['ecommerce_id'] . '?access_token=' . $this->accessToken;
+                $url = $this->getEndpoint() . 'web_api/products/' . $produto->jsonData['ecommerce_id'] . '?access_token=' . $this->getAccessToken();
                 $method = 'PUT';
             }
             $response = $this->client->request($method, $url, [
@@ -227,10 +331,55 @@ class IntegradorTray
     }
 
     /**
+     * @param array $item
+     * @throws ViewException
+     */
+    public function obterProduto(array $item)
+    {
+        // Ainda só funciona para a arquitetura 1x1
+        try {
+            try {
+                $url = $this->getEndpoint() . 'web_api/products/' . $item['product_id'] . '?access_token=' . $this->getAccessToken();
+                $response = $this->client->request('GET', $url);
+                $bodyContents = $response->getBody()->getContents();
+                $jsonProduto = json_decode($bodyContents, true);
+                $product = $jsonProduto['Product'];
+            } catch (GuzzleException $e) {
+                // Pode estar importando venda que tenha um produto já excluído
+                if ($e->getCode() === 404) {
+                    $this->syslog->info('Produto não encontrado (id: ' . $item['product_id'] . '). Continuando mesmo sem...');
+                }
+            }
+
+            $produto = new Produto();
+            $produto->nome = $item['name'];
+            $produto->jsonData['dados_ecommerce'] = $product ?? null;
+            $produto->jsonData['ecommerce_id'] = $item['product_id'];
+            $produto->jsonData['ecommerce_loja'] = $item['codigo_loja_tray'];
+            // nos casos onde tem variação, a referência vem com o prefixo no produto e o sufixo na variação
+            // o mais certo seria ir buscar em https://{api_address}/products/variants/
+            // mas como o item já manda a correta, pego de lá
+            $produto->codigo = $item['reference'] ?? '';
+            $produto->status = ($product['available'] ?? false) ? 'ATIVO' : 'INATIVO';
+            // TODO: corrigir para colocar no depto/grupo/subgrupo correto
+            $produto->depto = $this->deptoIndefinido;
+            $produto->grupo = $this->grupoIndefinido;
+            $produto->subgrupo = $this->subgrupoIndefinido;
+            $produto->fornecedor = $this->fornecedorDefamilia;
+
+            $this->produtoEntityHandler->save($produto);
+            return ['id' => $produto->getId()];
+        } catch (GuzzleException $e) {
+            throw new ViewException('Erro ao obterProduto');
+        }
+    }
+
+    /**
      * @throws ViewException
      */
     public function integraVariacaoProduto(Produto $produto): int
     {
+        // Ainda só funciona para a arquitetura 1x1
         try {
             $syslog_obs = 'produto = ' . $produto->nome . ' (' . $produto->getId() . ')';
             $this->syslog->debug('integraProduto - ini', $syslog_obs);
@@ -250,11 +399,11 @@ class IntegradorTray
                 ],
             ];
             $jsonRequest = json_encode($arrVariant, JSON_UNESCAPED_SLASHES);
-            $url = $this->getEndpoint() . 'web_api/products/variants?access_token=' . $this->accessToken;
+            $url = $this->getEndpoint() . 'web_api/products/variants?access_token=' . $this->getAccessToken();
             $method = 'POST';
             if ($produto->jsonData['ecommerce_item_id'] ?? false) {
                 //$arrProduto['id'] = $produto->jsonData['ecommerce_id'];
-                $url = $this->getEndpoint() . 'web_api/products/variants/' . $produto->jsonData['ecommerce_item_id'] . '?access_token=' . $this->accessToken;
+                $url = $this->getEndpoint() . 'web_api/products/variants/' . $produto->jsonData['ecommerce_item_id'] . '?access_token=' . $this->getAccessToken();
                 $method = 'PUT';
             }
             $response = $this->client->request($method, $url, [
@@ -279,16 +428,6 @@ class IntegradorTray
         }
     }
 
-    public function obterPedido(int $numPedido): array
-    {
-//        $url = $this->getEndpoint() . '/web_api/orders/' . $numPedido . '?refresh_token=' . $refreshToken;
-//        $response = $this->client->request('GET', $url);
-//        $bodyContents = $response->getBody()->getContents();
-//        $json = json_decode($bodyContents, true);
-//        return $json;
-        return [];
-    }
-
 
     public function obterVendas(\DateTime $dtVenda, ?bool $resalvar = false): int
     {
@@ -310,43 +449,21 @@ class IntegradorTray
         // TODO: Implement reintegrarVendaParaCrosier() method.
     }
 
-    public function integrarVendaParaEcommerce(Venda $venda)
-    {
-        // TODO: Implement integrarVendaParaEcommerce() method.
-    }
 
-    public function integrarVendaParaEcommerce2(int $numPedido)
+    public function obterPedidoDoEcommerce(int $numPedido)
     {
-        try {//https://{api_address}/orders/:id/invoices
-            $url = $this->getEndpoint() . 'web_api/orders/' . $numPedido . '/invoices?access_token=' . $this->accessToken;
-            $arr = [
-                'issue_date' => '2021-08-25',
-                'number' => 3,
-                'serie' => 99,
-                'value' => 10,
-                'key' => '41210834411048000104550990000000031135566010',
-                'xml_danfe' => '<?xml version="1.0" encoding="UTF-8"?><nfeProc versao="4.00" xmlns="http://www.portalfiscal.inf.br/nfe"><NFe xmlns="http://www.portalfiscal.inf.br/nfe"><infNFe Id="NFe41210834411048000104550990000000031135566010" versao="4.00"><ide><cUF>41</cUF><cNF>13556601</cNF><natOp>VENDA</natOp><mod>55</mod><serie>99</serie><nNF>3</nNF><dhEmi>2021-08-25T11:19:24-03:00</dhEmi><dhSaiEnt>2021-08-25T11:19:29-03:00</dhSaiEnt><tpNF>1</tpNF><idDest>1</idDest><cMunFG>4119905</cMunFG><tpImp>1</tpImp><tpEmis>1</tpEmis><cDV>0</cDV><tpAmb>2</tpAmb><finNFe>1</finNFe><indFinal>1</indFinal><indPres>1</indPres><procEmi>0</procEmi><verProc>02014-6</verProc></ide><emit><CNPJ>34411048000104</CNPJ><xNome>IPE UNIFORMES LTDA</xNome><xFant>IPE UNIFORMES LTDA</xFant><enderEmit><xLgr>RUA BITTENCOURT SAMPAIO</xLgr><nro>598</nro><xBairro>NOVA RUSSIA</xBairro><cMun>4119905</cMun><xMun>PONTA GROSSA</xMun><UF>PR</UF><CEP>84053030</CEP><cPais>1058</cPais><xPais>BRASIL</xPais><fone>4230271793</fone></enderEmit><IE>9082234117</IE><CRT>1</CRT></emit><dest><CPF>40080286097</CPF><xNome>NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL</xNome><enderDest><xLgr>AV DOM PEDRO II</xLgr><nro>337</nro><xBairro>NOVA RUSSIA</xBairro><cMun>4119905</cMun><xMun>Ponta Grossa</xMun><UF>PR</UF><CEP>84053000</CEP><cPais>1058</cPais><xPais>BRASIL</xPais><fone>42999888777</fone></enderDest><indIEDest>2</indIEDest></dest><det nItem="1"><prod><cProd>1266051301</cProd><cEAN>SEM GTIN</cEAN><xProd>NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL</xProd><NCM>63052000</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1</qCom><vUnCom>10</vUnCom><vProd>10.00</vProd><cEANTrib>SEM GTIN</cEANTrib><uTrib>UN</uTrib><qTrib>1</qTrib><vUnTrib>10.00</vUnTrib><indTot>1</indTot></prod><imposto><ICMS><ICMSSN102><orig>0</orig><CSOSN>103</CSOSN></ICMSSN102></ICMS><PIS><PISNT><CST>07</CST></PISNT></PIS><COFINS><COFINSNT><CST>07</CST></COFINSNT></COFINS></imposto></det><total><ICMSTot><vBC>0.00</vBC><vICMS>0.00</vICMS><vICMSDeson>0.00</vICMSDeson><vFCP>0.00</vFCP><vBCST>0.00</vBCST><vST>0.00</vST><vFCPST>0.00</vFCPST><vFCPSTRet>0.00</vFCPSTRet><vProd>10.00</vProd><vFrete>0.00</vFrete><vSeg>0.00</vSeg><vDesc>0.00</vDesc><vII>0.00</vII><vIPI>0.00</vIPI><vIPIDevol>0.00</vIPIDevol><vPIS>0.00</vPIS><vCOFINS>0.00</vCOFINS><vOutro>0.00</vOutro><vNF>10.00</vNF><vTotTrib>0.00</vTotTrib></ICMSTot></total><transp><modFrete>9</modFrete></transp><pag><detPag><tPag>01</tPag><vPag>10.00</vPag></detPag></pag><infRespTec><CNPJ>34411048000104</CNPJ><xContato>CARLOS EDUARDO PAULUK</xContato><email>carlospauluk@gmail.com</email><fone>4230271793</fone></infRespTec></infNFe><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI="#NFe41210834411048000104550990000000031135566010"><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/><Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><DigestValue>a4fy5L+vCAZAc02hHRbpDPBJRtQ=</DigestValue></Reference></SignedInfo><SignatureValue>pnsTUShOGjBBrmSt/XYZlkGUbg50mVtdrQEkJq6ZO8NWuQtuZ3TQV8uR5YxudU6w8T9kNQz1Mwv6loNgcAMU3fQ0iNmVYTGuV7LUyjSYFJqKvaREomQwUua9wUi4cg9ajriz3Kv4xpJf7rXg5idL3f79x9t95hwBN21vIazYEY8aIe/8IscPII4iJUvvLSm7e2aGe74hfBivLb98b2APG8yLdUxzIt4Pd1NL2scZ09XG9aIJIotL+Q4u3vM1XEjEkghtG7a3ifCdqVbAQ5DjvVodOWsZVdJAZaFSxt7SCfKF+fn7o389iyAUZ4amHiArLOxuHRW7wEtvW9knY92k5A==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIHMjCCBRqgAwIBAgIILCkhCAle2EgwDQYJKoZIhvcNAQELBQAwWTELMAkGA1UEBhMCQlIxEzARBgNVBAoTCklDUC1CcmFzaWwxFTATBgNVBAsTDEFDIFNPTFVUSSB2NTEeMBwGA1UEAxMVQUMgU09MVVRJIE11bHRpcGxhIHY1MB4XDTIxMDgwOTE4MzcwMFoXDTIyMDgwOTE4MzcwMFowgdwxCzAJBgNVBAYTAkJSMRMwEQYDVQQKEwpJQ1AtQnJhc2lsMQswCQYDVQQIEwJQUjEVMBMGA1UEBxMMUG9udGEgR3Jvc3NhMR4wHAYDVQQLExVBQyBTT0xVVEkgTXVsdGlwbGEgdjUxFzAVBgNVBAsTDjI5Mjg0MjMxMDAwMTU2MRMwEQYDVQQLEwpQcmVzZW5jaWFsMRowGAYDVQQLExFDZXJ0aWZpY2FkbyBQSiBBMTEqMCgGA1UEAxMhSVBFIFVOSUZPUk1FUyBMVERBOjM0NDExMDQ4MDAwMTA0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsckl/3PyQCsmkE8sj7LnxQ7xOUaCq95vRq+zm8Q8spkSKlIweZj+W1PRGO6vnxoDWZYLpM3tFGZX5wIXJmiKE+tfGTxcrZ4ZGRiNRLSdNVRCkEPBNUae9vT1ToxiMH8iDmlxnynJKYUmQ+qL0wjb//ADL1bRiwB3ccjgU/3X9Bn67yHwg/BmOAer3+IIkOO+PyjR2HxrwLfW7RZoRvU9dt9WeYzecAhyO9JmEgP/39qgpjd+0QSXvLZlY7/Fq7TqV9LEjOZD/Vw5PELs/s0pmtl456IvUksSS0mkjgZT0cve1vZanlD/7VYUCRIcd4Oe/Y6ClvgEQJm7WC774gpzdQIDAQABo4ICeDCCAnQwCQYDVR0TBAIwADAfBgNVHSMEGDAWgBTFUu0lgAnfnILIn0fG3bRfMd25sTBUBggrBgEFBQcBAQRIMEYwRAYIKwYBBQUHMAKGOGh0dHA6Ly9jY2QuYWNzb2x1dGkuY29tLmJyL2xjci9hYy1zb2x1dGktbXVsdGlwbGEtdjUucDdiMIGzBgNVHREEgaswgaiBFGphbmFwYXVsdWtAZ21haWwuY29toCIGBWBMAQMCoBkTF0pBTkFJIEVMT0laQSBERSBBTkRSQURFoBkGBWBMAQMDoBATDjM0NDExMDQ4MDAwMTA0oDgGBWBMAQMEoC8TLTE2MDgxOTg1MDUzNDEzNTg5NzAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMKAXBgVgTAEDB6AOEwwwMDAwMDAwMDAwMDAwXQYDVR0gBFYwVDBSBgZgTAECASYwSDBGBggrBgEFBQcCARY6aHR0cDovL2NjZC5hY3NvbHV0aS5jb20uYnIvZG9jcy9kcGMtYWMtc29sdXRpLW11bHRpcGxhLnBkZjAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwgYwGA1UdHwSBhDCBgTA+oDygOoY4aHR0cDovL2NjZC5hY3NvbHV0aS5jb20uYnIvbGNyL2FjLXNvbHV0aS1tdWx0aXBsYS12NS5jcmwwP6A9oDuGOWh0dHA6Ly9jY2QyLmFjc29sdXRpLmNvbS5ici9sY3IvYWMtc29sdXRpLW11bHRpcGxhLXY1LmNybDAdBgNVHQ4EFgQUgk2yFd5VTq/gCACppE9ncdByhGYwDgYDVR0PAQH/BAQDAgXgMA0GCSqGSIb3DQEBCwUAA4ICAQARucIyVxtasbzeEpoHERz8P7xj47sxQ5VRDdZJl7sjR2cbCZaQmOTw51hzCiYnTRKo9jSC9eIseN1tRTSlPcqbQaHICS8lRajm5ioiPzc5XfScta1c23go+eNTS7PTgtccbJFkppw1HC+MgJIynIwI4vmGiID/nyre4BF0bqWDc+aSjt69mUSLnCplhomH2N5x2hc0TJLxp/EsQNw8FrtJUhA+wOAZTaMke34bkfHOVgSaGPAPuYxUHZN0umhOeaxhYiXx8bA2YbdVSyisPWjDSdvXDNPMc4Gn9fhH9UmU/oU8JCxJpk7RlBWSOywjV4kb9B5U1Fag+g6PaOqaO6Zl60F5ihdO86nkkFMGLB4DvFsdSR28TKkY6v/GMkh9Vehja4ePmvgy5fUjoIvxmIdumobtTYeCnm18mU/7bttzFeEfWR1XoiJgWA1vjInh2pZvm033TD0GueNLdJaWsviY8kAIRk7KCjgF5Gmqvcokgum83poUY9lDIuEsH2RRW+G9FGUgSjeILkvk2jrIugeZShwDcNNG/FVMe3Z5lgV5TP0prpu8wvqZvzIqgpld7Ie9viJTBWwM0hEaTE5XJflZWvqEXdArvIpO2vPLfoWlN6narTppjDG/onA2cSst+q6LuF7JtdwVyeCiZgSaZCu+MudK4SvHPbIQ3Uwu7wmoZw==</X509Certificate></X509Data></KeyInfo></Signature></NFe><protNFe versao="4.00"><infProt><tpAmb>2</tpAmb><verAplic>PR-v4_7_35</verAplic><chNFe>41210834411048000104550990000000031135566010</chNFe><dhRecbto>2021-08-25T11:19:46-03:00</dhRecbto><nProt>141210000719025</nProt><digVal>a4fy5L+vCAZAc02hHRbpDPBJRtQ=</digVal><cStat>100</cStat><xMotivo>Autorizado o uso da NF-e</xMotivo></infProt></protNFe></nfeProc>'
-            ];
-            $jsonRequest = json_encode($arr, JSON_UNESCAPED_SLASHES);
-            $method = 'POST';
-            $response = $this->client->request($method, $url, [
-                'form_params' => $arr
-            ]);
-            $bodyContents = $response->getBody()->getContents();
-            $json = json_decode($bodyContents, true);
-            if (!in_array($json['message'], ['Created', 'Saved'], true)) {
-                throw new ViewException('Erro ao criar produto');
-            }
-        } catch (GuzzleException $e) {
-            dd($e->getResponse()->getBody()->getContents());
-        }
+        $url = $this->getEndpoint() . 'web_api/orders/' . $numPedido . '/complete?access_token=' . $this->getAccessToken();
+        $response = $this->client->request('GET', $url);
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        return $json;
     }
 
 
     public function atualizaDadosEnvio(int $numPedido)
     {
         try {
-            $url = $this->getEndpoint() . 'web_api/orders/' . $numPedido . '?access_token=' . $this->accessToken;
+            $url = $this->getEndpoint() . 'web_api/orders/' . $numPedido . '?access_token=' . $this->getAccessToken();
             $arr = [
                 'Order' => [
                     'status_id' => 124141,
@@ -373,7 +490,7 @@ class IntegradorTray
     public function cancelarPedido(int $numPedido)
     {
         try {
-            $url = $this->getEndpoint() . 'web_api/orders/cancel/' . $numPedido . '?access_token=' . $this->accessToken;
+            $url = $this->getEndpoint() . 'web_api/orders/cancel/' . $numPedido . '?access_token=' . $this->getAccessToken();
             $method = 'PUT';
             $response = $this->client->request($method, $url);
             $bodyContents = $response->getBody()->getContents();
@@ -384,6 +501,502 @@ class IntegradorTray
         } catch (GuzzleException $e) {
             dd($e->getResponse()->getBody()->getContents());
         }
+    }
+
+
+    /**
+     * @param int $numPedido
+     * @return int|null
+     * @throws ViewException
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function gerarNFeParaVenda(string $numPedido): ?int
+    {
+        $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
+        $existe = $conn->fetchAssociative('SELECT id FROM fis_nf WHERE json_data->>"$.num_pedido_tray" = :numPedido', ['numPedido' => $numPedido]);
+        if ($existe) {
+            return $existe['id'];
+        }
+
+        $arrPedido = $this->obterPedidoDoEcommerce($numPedido);
+
+        $notaFiscal = new NotaFiscal();
+
+        $notaFiscal->jsonData['num_pedido_tray'] = $numPedido;
+        $notaFiscal->documentoEmitente = '34411048000104';
+        $notaFiscal->tipoNotaFiscal = 'NFE';
+        $notaFiscal->naturezaOperacao = 'VENDA';
+        $notaFiscal->entradaSaida = 'S';
+        $notaFiscal->dtEmissao = new \DateTime();
+        $notaFiscal->dtSaiEnt = new \DateTime();
+        $notaFiscal->transpModalidadeFrete = 'EMITENTE';
+        $notaFiscal->documentoDestinatario = $arrPedido['Order']['Customer']['cpf'] ?? $arrPedido['Order']['Customer']['cnpj'];
+        $notaFiscal->xNomeDestinatario = $arrPedido['Order']['Customer']['name'];
+        $endereco = $arrPedido['Order']['Customer']['CustomerAddresses'][0]['CustomerAddress'];
+        $notaFiscal->logradouroDestinatario = $endereco['address'];
+        $notaFiscal->numeroDestinatario = $endereco['number'];
+        $notaFiscal->complementoDestinatario = $endereco['complement'] ?? '';
+        $notaFiscal->bairroDestinatario = $endereco['neighborhood'] ?? '';
+        $notaFiscal->cidadeDestinatario = $endereco['city'];
+        $notaFiscal->estadoDestinatario = $endereco['state'];
+        $notaFiscal->cepDestinatario = $endereco['zip_code'];
+        $notaFiscal->foneDestinatario = $arrPedido['Order']['Customer']['cellphone'] ?? $arrPedido['Order']['Customer']['phone'] ?? '';
+        $notaFiscal->emailDestinatario = $arrPedido['Order']['Customer']['email'] ?? '';
+
+        $notaFiscal->infoCompl = 'Envio: ' . $arrPedido['Order']['shipment_integrator'];
+        $notaFiscal->infoCompl .= PHP_EOL . 'Pedido: ' . $numPedido;
+
+
+        foreach ($arrPedido['Order']['ProductsSold'] as $rItem) {
+            $item = $rItem['ProductsSold'];
+            $notaFiscalItem = new NotaFiscalItem();
+            $notaFiscalItem->codigo = $item['reference'];
+            $notaFiscalItem->descricao = $item['original_name'];
+            $notaFiscalItem->qtde = $item['quantity'];
+            $notaFiscalItem->cfop = $endereco['state'] === 'PR' ? '5102' : '6102';
+            $notaFiscalItem->csosn = 103;
+            $notaFiscalItem->ncm = '63052000';
+            $notaFiscalItem->unidade = 'UN';
+            $notaFiscalItem->valorUnit = $item['price'];
+
+            $notaFiscal->addItem($notaFiscalItem);
+        }
+
+        $this->notaFiscalBusiness->saveNotaFiscal($notaFiscal);
+
+        return $notaFiscal->getId();
+    }
+
+
+    public function integrarDadosFiscaisNoPedido(int $numPedido)
+    {
+        try {
+            $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
+            $existe = $conn->fetchAssociative('SELECT nf.id FROM fis_nf nf WHERE nf.json_data->>"$.num_pedido_tray" = :numPedido', ['numPedido' => $numPedido]);
+            if (!$existe) {
+                throw new ViewException('Nota Fiscal não encontrada para este pedido');
+            }
+
+            /** @var NotaFiscalRepository $repoNotaFiscal */
+            $repoNotaFiscal = $this->vendaEntityHandler->getDoctrine()->getRepository(NotaFiscal::class);
+            /** @var NotaFiscal $notaFiscal */
+            $notaFiscal = $repoNotaFiscal->find($existe['id']);
+
+            $url = $this->getEndpoint() . 'web_api/orders/' . $numPedido . '/invoices?access_token=' . $this->getAccessToken();
+            $arr = [
+                'issue_date' => $notaFiscal->dtEmissao->format('Y-m-d'),
+                'number' => $notaFiscal->numero,
+                'serie' => $notaFiscal->serie,
+                'value' => $notaFiscal->valorTotal,
+                'key' => $notaFiscal->chaveAcesso,
+                'xml_danfe' => $notaFiscal->getXMLDecodedAsString()
+            ];
+            $jsonRequest = json_encode($arr, JSON_UNESCAPED_SLASHES);
+            $method = 'POST';
+            $response = $this->client->request($method, $url, [
+                'form_params' => $arr
+            ]);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            if (!in_array($json['message'], ['Created', 'Saved'], true)) {
+                throw new ViewException('Erro - integrarVendaParaECommerce2');
+            }
+            return $json;
+        } catch (GuzzleException $e) {
+            dd($e->getResponse()->getBody()->getContents());
+        }
+    }
+
+    /**
+     * @param Venda $venda
+     * @return \SimpleXMLElement|null
+     */
+    public function integrarVendaParaEcommerce(Venda $venda)
+    {
+
+        try {
+            $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
+
+            $pedido = $jsonPedido['Order'];
+            $customer = $pedido['Customer'];
+            $statuss = $pedido['OrderStatus'];
+            $itens = $pedido['ProductsSold'];
+
+
+            $dtPedido = DateTimeUtils::parseDateStr($pedido['date'] . ' ' . $pedido['hour']);
+
+            $this->syslog->info('Integrando pedido ' . $pedido['id'] . ' de ' .
+                $dtPedido->format('d/m/Y H:i:s') . ' Cliente: ' . $customer['name']);
+
+
+            $venda = $conn->fetchAllAssociative('SELECT * FROM ven_venda WHERE json_data->>"$.ecommerce_loja" = :ecommerce_loja AND json_data->>"$.ecommerce_idPedido" = :ecommerce_idPedido',
+                [
+                    'ecommerce_loja' => $jsonPedido['codigo_loja_tray'],
+                    'ecommerce_idPedido' => $pedido['id'],
+                ]);
+            $venda = $venda[0] ?? null;
+            if ($venda) {
+                // se já existe, só confere o status
+                // O único status que pode ser alterado no sentido Simplo7 -> Crosier é quando está em 'Aguardando Pagamento'
+                $vendaJsonData = json_decode($venda['json_data'], true);
+                if (($vendaJsonData['ecommerce_status_descricao'] === 'Criado') &&
+                    (($vendaJsonData['ecommerce_status'] ?? null) != $statuss['id'])) {
+
+                    $vendaJsonData['ecommerce_status'] = $statuss['id'];
+                    $vendaJsonData['ecommerce_status_descricao'] = $statuss['status'];
+                    $venda_['json_data'] = json_encode($vendaJsonData);
+                    try {
+                        $conn->update('ven_venda', $venda_, ['id' => $venda['id']]);
+                    } catch (\Exception $e) {
+                        throw new ViewException('Erro ao alterar status da venda. (ecommerce_idPedido = ' . $pedido['id'] . ')');
+                    }
+                }
+
+                // Se não estiver pedindo para resalvar as informações novamente (o que irá sobreescrever quaisquer alterações), já retorna...
+                if (!$resalvar) {
+                    return;
+                }
+
+                try {
+                    $conn->delete('ven_venda_item', ['venda_id' => $venda['id']]);
+                } catch (\Throwable $e) {
+                    $erro = 'Erro ao deletar itens da venda (id = "' . $venda['id'] . ')';
+                    $this->syslog->err($erro);
+                    throw new \RuntimeException($erro);
+                }
+
+                try {
+                    $conn->executeQuery('DELETE FROM fin_fatura WHERE json_data->>"$.venda_id" = :venda_id', ['venda_id' => $venda['id']]);
+                } catch (\Throwable $e) {
+                    $erro = 'Erro ao deletar itens da venda (id = "' . $venda['id'] . ')';
+                    $this->syslog->err($erro);
+                    throw new \RuntimeException($erro);
+                }
+
+                /** @var VendaRepository $repoVenda */
+                $repoVenda = $this->vendaEntityHandler->getDoctrine()->getRepository(Venda::class);
+                $venda = $repoVenda->find($venda['id']);
+
+            } else {
+                $venda = new Venda();
+            }
+
+            $venda->dtVenda = $dtPedido;
+
+            /** @var ColaboradorRepository $repoColaborador */
+            $repoColaborador = $this->vendaEntityHandler->getDoctrine()->getRepository(Colaborador::class);
+            $vendedorNaoIdentificado = $repoColaborador->findOneBy(['cpf' => '99999999999']);
+            $venda->vendedor = $vendedorNaoIdentificado;
+
+            $venda->status = 'PV ABERTO';
+
+            $cliente = $conn->fetchAllAssociative('SELECT id FROM crm_cliente WHERE documento = :documento',
+                ['documento' => $customer['cpf']]);
+            /** @var ClienteRepository $repoCliente */
+            $repoCliente = $this->vendaEntityHandler->getDoctrine()->getRepository(Cliente::class);
+            if ($cliente[0]['id'] ?? false) {
+                $cliente = $repoCliente->find($cliente[0]['id']);
+            } else {
+                $cliente = null;
+            }
+
+            if (!$cliente || $resalvar) {
+
+                $cliente = $cliente ?? new Cliente();
+
+                $cliente->documento = $customer['cpf'];
+                $cliente->nome = $customer['name'];
+                $cliente->jsonData['tipo_pessoa'] = strlen($customer['cpf']) === 11 ? 'PF' : 'PJ';
+                $cliente->jsonData['rg'] = '';
+                $cliente->jsonData['dtNascimento'] = $customer['birth_date'];
+                $cliente->jsonData['sexo'] = $customer['gender'] === '0' ? 'M' : 'F';
+                $cliente->jsonData['nome_fantasia'] = '';
+                $cliente->jsonData['inscricao_estadual'] = $customer['state_inscription'] ?? '';
+
+                $cliente->jsonData['fone1'] = $customer['phone'] ?? '';
+                $cliente->jsonData['fone2'] = $customer['cellphone'] ?? '';
+
+                $cliente->jsonData['email'] = $customer['email'];
+                $cliente->jsonData['canal'] = 'ECOMMERCE';
+                $cliente->jsonData['ecommerce_id'] = $customer['id'];
+
+                $cliente = $this->clienteEntityHandler->save($cliente);
+            }
+
+            // Verifica os endereços do cliente
+            $enderecoJaSalvo = false;
+            if (($cliente->jsonData['enderecos'] ?? false) && count($cliente->jsonData['enderecos']) > 0) {
+                foreach ($cliente->jsonData['enderecos'] as $endereco) {
+                    if ((($endereco['tipo'] ?? '') === 'ENTREGA,FATURAMENTO') &&
+                        (($endereco['logradouro'] ?? '') === $customer['address']) &&
+                        (($endereco['numero'] ?? '') === $customer['number']) &&
+                        (($endereco['complemento'] ?? '') === $customer['complement']) &&
+                        (($endereco['bairro'] ?? '') === $customer['neighborhood']) &&
+                        (($endereco['cep'] ?? '') === $customer['zip_code']) &&
+                        (($endereco['cidade'] ?? '') === $customer['city']) &&
+                        (($endereco['estado'] ?? '') === $customer['state'])) {
+                        $enderecoJaSalvo = true;
+                    }
+                }
+            }
+            if (!$enderecoJaSalvo) {
+                $cliente->jsonData['enderecos'][] = [
+                    'tipo' => 'ENTREGA,FATURAMENTO',
+                    'logradouro' => $customer['address'],
+                    'numero' => $customer['number'],
+                    'complemento' => $customer['complement'],
+                    'bairro' => $customer['neighborhood'],
+                    'cep' => $customer['zip_code'],
+                    'cidade' => $customer['city'],
+                    'estado' => $customer['state'],
+                ];
+                $cliente = $this->clienteEntityHandler->save($cliente);
+            }
+
+            $venda->cliente = $cliente;
+
+            $venda->jsonData['canal'] = 'ECOMMERCE';
+            $venda->jsonData['ecommerce_loja'] = $jsonPedido['codigo_loja_tray'];
+            $venda->jsonData['ecommerce_idPedido'] = $pedido['id'];
+            $venda->jsonData['ecommerce_numeroPedido'] = $pedido['id'] ?? 'n/d';
+            $venda->jsonData['ecommerce_status'] = $statuss['id'];
+            $venda->jsonData['ecommerce_status_descricao'] = $statuss['status'];
+
+            $obs = [];
+
+            $venda->jsonData['ecommerce_entrega_tipo'] = $pedido['shipment'] ?? '';
+            $venda->jsonData['ecommerce_entrega_integrador'] = $pedido['shipment_integrator'] ?? '';
+            $venda->jsonData['ecommerce_entrega_retirarNaLoja'] = '';
+            $venda->jsonData['ecommerce_entrega_frete_calculado'] = $pedido['shipment_value'] ?? '0.00';
+            $venda->jsonData['ecommerce_entrega_frete_real'] = 0.00;
+
+            $enderecosDoCliente = $customer['CustomerAddresses'] ?? [];
+            foreach ($enderecosDoCliente as $enderecoDoCliente) {
+                if ($enderecoDoCliente['CustomerAddress']['type_delivery'] ?? '0' === '1') {
+                    $enderecoDoCliente = $enderecoDoCliente['CustomerAddress'];
+                    $venda->jsonData['ecommerce_entrega_logradouro'] = $enderecoDoCliente['address'] ?? '';
+                    $venda->jsonData['ecommerce_entrega_numero'] = $enderecoDoCliente['number'] ?? '';
+                    $venda->jsonData['ecommerce_entrega_complemento'] = $enderecoDoCliente['complement'] ?? '';
+                    $venda->jsonData['ecommerce_entrega_bairro'] = $enderecoDoCliente['neighborhood'] ?? '';
+                    $venda->jsonData['ecommerce_entrega_cidade'] = $enderecoDoCliente['city'] ?? '';
+                    $venda->jsonData['ecommerce_entrega_uf'] = $enderecoDoCliente['state'] ?? '';
+                    $venda->jsonData['ecommerce_entrega_cep'] = $enderecoDoCliente['zip_code'] ?? '';
+                }
+            }
+
+
+            $obs[] = 'IP: ';
+            $obs[] = 'Pagamento: ' . $pedido['payment_method'] ?? '';
+            $obs[] = 'Envio: ' . $pedido['shipment'];
+            if ($pedido['sending_code'] ?? false) {
+                $obs[] = 'Rastreio: ' . $pedido['sending_code'];
+            }
+
+            $venda->jsonData['obs'] = implode(PHP_EOL, $obs);
+
+            $venda->subtotal = 0.0;// a ser recalculado posteriormente
+            $venda->desconto = 0.0;// a ser recalculado posteriormente
+            $venda->valorTotal = 0.0;// a ser recalculado posteriormente
+
+            $valorSemFrete = bcsub($pedido['total'], $pedido['shipment_value'], 2);
+            $totalProdutos = $pedido['partial_total'];
+            $descontoCupom = bcsub($totalProdutos, $valorSemFrete, 2);
+
+            $descontoTotal = bcadd($descontoCupom, bcadd(($pedido['discount'] ?? 0), ($pedido['cart_additional_values_discount'] ?? 0), 2), 2);
+            $totalProdutos = 0.0;
+            foreach ($itens as $item) {
+                $item = $item['ProductsSold'];
+                $totalProdutos = bcadd($totalProdutos, $item['price'], 2);
+            }
+            $pDesconto = bcdiv($descontoTotal, $totalProdutos, 8);
+
+            // Salvo aqui para poder pegar o id
+            $this->vendaEntityHandler->save($venda);
+
+            /** @var ProdutoRepository $repoProduto */
+            $repoProduto = $this->produtoEntityHandler->getDoctrine()->getRepository(Produto::class);
+            $ordem = 1;
+            $i = 0;
+            $descontoAcum = 0.0;
+            $vendaItem = null;
+            foreach ($itens as $item) {
+                $item = $item['ProductsSold'];
+                /** @var Produto $produto */
+                $produto = null;
+                try {
+                    $sProduto = $conn->fetchAssociative(
+                        'SELECT id FROM est_produto WHERE codigo = :codigo',
+                        [
+                            'codigo' => $item['reference'],
+                        ]);
+                    $item['codigo_loja_tray'] = $jsonPedido['codigo_loja_tray'];
+                    if (!isset($sProduto['id'])) {
+                        $sProduto = $this->obterProduto($item);
+                    }
+                    $produto = $repoProduto->find($sProduto['id']);
+                } catch (\Throwable $e) {
+                    throw new ViewException('Erro ao integrar venda. Erro ao pesquisar produto (idProduto = ' . $item['product_id'] . ')');
+                }
+
+                $vendaItem = new VendaItem();
+                $venda->addItem($vendaItem);
+                $vendaItem->descricao = $produto->nome;
+                $vendaItem->ordem = $ordem++;
+                $vendaItem->devolucao = false;
+
+                $vendaItem->unidade = $produto->unidadePadrao;
+
+                $vendaItem->precoVenda = $item['original_price'];
+                $vendaItem->qtde = $item['quantity'];
+                $vendaItem->subtotal = bcmul($vendaItem->precoVenda, $vendaItem->qtde, 2);
+                // Para arredondar para cima
+                $vendaItem->desconto = DecimalUtils::round(bcmul($pDesconto, $vendaItem->subtotal, 3));
+                $descontoAcum = (float)bcadd($descontoAcum, $vendaItem->desconto, 2);
+                $vendaItem->produto = $produto;
+
+                $vendaItem->jsonData['ecommerce_idItemVenda'] = $item['id'];
+                $vendaItem->jsonData['ecommerce_codigo'] = $produto->codigo;
+
+                $this->vendaItemEntityHandler->save($vendaItem);
+                $i++;
+            }
+            if ((float)$descontoTotal !== (float)$descontoAcum) {
+                $diff = $descontoTotal - $descontoAcum;
+                $vendaItem->desconto = bcadd($vendaItem->desconto, $diff, 2);
+                $this->vendaItemEntityHandler->save($vendaItem);
+            }
+            $venda->recalcularTotais();
+            // aqui é onde entram descontos de cupons (que é um desconto aplicado globalmente na venda)
+            // TODO: verificar na tray como está funcionando isto...
+            if ($pedido['total_descontos'] ?? false) {
+                $venda->desconto = bcadd($venda->desconto, $pedido['total_descontos'], 2);
+                $venda->valorTotal = bcsub($venda->subtotal, $venda->desconto, 2);
+            }
+
+
+            try {
+                $conn->delete('ven_venda_pagto', ['venda_id' => $venda->getId()]);
+            } catch (\Throwable $e) {
+                $erro = 'Erro ao deletar pagtos da venda (id = "' . $venda['id'] . ')';
+                $this->syslog->err($erro);
+                throw new \RuntimeException($erro);
+            }
+
+
+            /** @var PlanoPagtoRepository $repoPlanoPagto */
+            $repoPlanoPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(PlanoPagto::class);
+            $arrPlanosPagtosByCodigo = $repoPlanoPagto->arrayByCodigo();
+
+            // Pega a $venda->valorTotal pois ali já constará os possíveis descontos
+            $totalPedido = bcadd($venda->valorTotal, $pedido['shipment_value'], 2);
+
+            // O total_pedido pode conter os acréscimos no caso de parcelamentos com qtde de parcelas acima do limite de parcelas sem juros.
+            $venda->jsonData['total_pagtos'] = $totalPedido;
+
+
+            if (!(in_array($venda->jsonData['ecommerce_status_descricao'], ['?????', 'CANCELADO AUT', 'CANCELADO'], true))) {
+
+                $tipoFormaPagamento = mb_strtoupper($pedido['payment_method']);
+
+                $carteiraId = null;
+
+                if (strpos($tipoFormaPagamento, 'YAPAY') !== FALSE) {
+                    $carteiraId = $this->getCarteiraYapay($jsonPedido['codigo_loja_tray']);
+                    $integrador = 'YAPAY';
+                } elseif ($tipoFormaPagamento === 'PIX') {
+                    $carteiraId = $this->getCarteiraIndefinidaId();
+                    $integrador = $tipoFormaPagamento;
+                } else {
+                    throw new ViewException('Integrador não configurado: ' . $tipoFormaPagamento . ' (Venda: ' . $pedido['id'] . ')');
+                }
+
+                // Não seta o pagamento para pedidos ainda não pagos ou cancelados
+
+                $modoId = null;
+                $descricaoPlanoPagto = null;
+                $planoPagto = null;
+                if (strpos($tipoFormaPagamento, 'CARTÃO') !== FALSE) {
+                    $planoPagto = $arrPlanosPagtosByCodigo['010'];
+                } elseif ($tipoFormaPagamento === 'PIX') {
+                    $planoPagto = $arrPlanosPagtosByCodigo['040'];
+                } elseif (strpos($tipoFormaPagamento, 'BOLETO') !== FALSE) {
+                    $planoPagto = $arrPlanosPagtosByCodigo['030'];
+                } else {
+                    $planoPagto = $arrPlanosPagtosByCodigo['999'];
+                }
+                $descricaoPlanoPagto = $planoPagto['descricao'];
+                $modoId = json_decode($planoPagto['json_data'], true)['modo_id'] ?? null;
+
+                $vendaPagto = [
+                    'plano_pagto_id' => $planoPagto['id'],
+                    'venda_id' => $venda->getId(),
+                    'valor_pagto' => $totalPedido,
+                    'json_data' => [
+                        'nomeFormaPagamento' => $tipoFormaPagamento ?? 'n/d',
+                        'integrador' => $integrador,
+                        'codigo_transacao' => $pedido['OrderTransactions'][0]['transaction_id'] ?? 'n/d',
+                        'carteira_id' => $carteiraId,
+                        'modo_id' => $modoId,
+                    ],
+                    'inserted' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'updated' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'version' => 0,
+                    'user_inserted_id' => 1,
+                    'user_updated_id' => 1,
+                    'estabelecimento_id' => 1
+                ];
+
+
+                $vendaPagto['json_data'] = json_encode($vendaPagto['json_data']);
+
+                try {
+                    $conn->insert('ven_venda_pagto', $vendaPagto);
+                    $vendaPagtoId = $conn->lastInsertId();
+                    $eVendaPagto = $this->vendaEntityHandler->getDoctrine()->getRepository(VendaPagto::class)->find($vendaPagtoId);
+                    $venda->addPagto($eVendaPagto);
+                    if ($integrador === 'Mercado Pago') { // na tray não está configurado
+                        // no caso de pagamento via 'Mercado Pago', já busca as informações lá na API
+                        $this->integradorMercadoPago->mlUser = 'defamiliapg@gmail.com';
+                        $this->integradorMercadoPago->handleTransacaoParaVendaPagto($eVendaPagto);
+                    }
+                } catch (\Throwable $e) {
+                    throw new ViewException('Erro ao salvar dados do pagamento');
+                }
+
+
+                $venda->jsonData['infoPagtos'] = $descricaoPlanoPagto .
+                    ': R$ ' . number_format($pedido['total'], 2, ',', '.');
+                if ($eVendaPagto->jsonData['codigo_transacao'] ?? false) {
+                    $venda->jsonData['infoPagtos'] .= ' (Transação: ' . $eVendaPagto->jsonData['codigo_transacao'] . ')';
+                }
+                $venda->jsonData['forma_pagamento'] = $tipoFormaPagamento;
+                $venda = $this->vendaEntityHandler->save($venda);
+                $this->vendaBusiness->finalizarPV($venda);
+            }
+
+            $venda->jsonData['dados_completos_ecommerce'] = $jsonPedido;
+            $venda = $this->vendaEntityHandler->save($venda);
+
+        } catch (\Throwable $e) {
+            $this->syslog->err('Erro ao integrarVendaParaCrosier', $pedido['id']);
+            throw new ViewException('Erro ao integrarVendaParaCrosier', 0, $e);
+        }
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEndpoint(): ?string
+    {
+        return $this->endpoint ?? $this->trayConfigs['url_loja'];
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAccessToken(): ?string
+    {
+        return $this->accessToken ?? $this->trayConfigs['access_token'];
     }
 
 
