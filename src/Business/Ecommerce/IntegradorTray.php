@@ -141,8 +141,10 @@ class IntegradorTray implements IntegradorEcommerce
                         'chave' => 'tray.configs.json'
                     ]);
             $rs = json_decode($r['valor'] ?? '{}', true);
-            $this->trayConfigs = $rs;
-            $this->trayConfigs['cfg_app_config.id'] = $r['id'];
+            if ($rs) {
+                $this->trayConfigs = $rs;
+                $this->trayConfigs['cfg_app_config.id'] = $r['id'];
+            }
         } catch (Exception $e) {
             throw new ViewException('Erro ao carregar as configurações de tray.configs.json');
         }

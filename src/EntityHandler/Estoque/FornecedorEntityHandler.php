@@ -23,6 +23,7 @@ class FornecedorEntityHandler extends EntityHandler
         if (!$fornecedor->codigo) {
             $fornecedor->codigo = StringUtils::guidv4();
         }
+        $fornecedor->utilizado = $fornecedor->utilizado ?? true;
         
         $fornecedor->documento = preg_replace("/[^0-9]/", "", $fornecedor->documento);
         if (strlen($fornecedor->documento) === 14) {
