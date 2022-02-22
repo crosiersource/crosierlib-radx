@@ -179,8 +179,10 @@ class IntegradorTray implements IntegradorEcommerce
 
         if ($urlLoja) {
             if (in_array($json['code'] ?? 0, [200, 201], true)) {
-                $this->trayConfigs['ativa'] = true;
-                $this->atualizarTrayConfigs($json);
+                if (!$clienteConfig) {
+                    $this->trayConfigs['ativa'] = true;
+                    $this->atualizarTrayConfigs($json);
+                }
             }
         }
 
@@ -215,7 +217,7 @@ class IntegradorTray implements IntegradorEcommerce
             $bodyContents = $response->getBody()->getContents();
             $json = json_decode($bodyContents, true);
             // se estiver na arquitetura 1x1, já atualiza o tray.configs.json
-            if ($this->trayConfigs['url_loja']) {
+            if ($this->trayConfigs['url_loja'] ?? null) {
                 $this->atualizarTrayConfigs($json);
             }
             return $json;
