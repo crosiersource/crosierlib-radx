@@ -69,12 +69,21 @@ class MovimentacaoEntityHandler extends EntityHandler
      * Descrição das regras em http://docs.crosier.com.br/books/finan/page/regras-para-movimenta%C3%A7%C3%B5es/edit
      *
      *
-     * @param $movimentacao
+     * @param Movimentacao $movimentacao
      * @return Movimentacao
      * @throws ViewException
      */
     public function beforeSave($movimentacao)
     {
+        $repoCarteira = $this->doctrine->getRepository(Carteira::class);
+        $repoModo = $this->doctrine->getRepository(Modo::class);
+        
+        if ($movimentacao->grupoItem) {
+            $movimentacao->carteira = $repoCarteira->findOneByCodigo(50);
+            $movimentacao->modo = $repoModo->findOneByCodigo(50);
+            $movimentacao->valor = $movimentacao->valorTotal;
+        }
+
         if (!$movimentacao->carteira) {
             throw new ViewException('Campo "Carteira" precisa ser informado');
         }
@@ -116,10 +125,6 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->dtVencto = clone($movimentacao->grupoItem->dtVencto);
             $movimentacao->dtVenctoEfetiva = clone($movimentacao->grupoItem->dtVencto);
             $movimentacao->dtPagto = clone($movimentacao->grupoItem->dtVencto);
-
-            /** @var Carteira $carteiraMovsAgrupadas */
-            $carteiraMovsAgrupadas = $this->doctrine->getRepository(Carteira::class)->findOneBy(['codigo' => 7]); // 7 ('MOVIMENTAÇÕES AGRUPADAS')
-            $movimentacao->carteira = $carteiraMovsAgrupadas;
         }
 
 
@@ -192,20 +197,6 @@ class MovimentacaoEntityHandler extends EntityHandler
             if (!$movimentacao->carteira->abertas) {
                 throw new ViewException('Esta carteira não pode conter movimentações com status "ABERTA".');
             }
-        }
-
-
-        // FIXME: verificar os tipos de lançamentos existentes atualmente
-        // Regras para Movimentações de Grupos
-        if (in_array($movimentacao->tipoLancto->getCodigo(), [70, 71], true)) { // 70,'MOVIMENTAÇÃO DE GRUPO'
-            /** @var Modo $modo50 */
-            $modo50 = $this->doctrine->getRepository(Modo::class)->findOneBy(['codigo' => 50]);
-            $movimentacao->modo = $modo50;
-        } else if ($movimentacao->modo->getCodigo() === 50) { // 50,'MOVIMENTAÇÃO AGRUPADA'
-            $repoTipoLancto = $this->getDoctrine()->getRepository(TipoLancto::class);
-            /** @var TipoLancto $tipoLancto70 */
-            $tipoLancto70 = $repoTipoLancto->findOneBy(['codigo' => 70]);
-            $movimentacao->tipoLancto = $tipoLancto70;
         }
 
         // Regras para movimentações de cartões
@@ -1075,24 +1066,24 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
         try {
             $this->doctrine->beginTransaction();
-            
+
             $dadosParcelamento = $movimentacao->jsonData['dadosParcelamento'];
-            
+
             unset($movimentacao->jsonData['dadosParcelamento']);
-            
+
             $cadeia = new Cadeia();
             $cadeia->vinculante = true;
             $cadeia->fechada = true;
-            
+
             $movimentacao->parcelamento = true;
             $movimentacao->cadeia = $cadeia;
             $movimentacao->cadeiaQtde = count($dadosParcelamento);
             $movimentacao->cadeiaOrdem = 1;
-            
+
             $cadeia->movimentacoes->add($movimentacao);
-            
+
             parent::save($movimentacao, false);
-            
+
             for ($i = 1; $i < count($dadosParcelamento); $i++) {
                 /** @var Movimentacao $parcela */
                 $parcela = $this->cloneEntityId($movimentacao);

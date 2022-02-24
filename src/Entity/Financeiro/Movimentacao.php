@@ -25,7 +25,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *
  * @ApiResource(
  *     shortName="Financeiro/Movimentacao",
- *     normalizationContext={"groups"={"movimentacao","modo","carteira","categoria","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"movimentacao","modo","carteira","categoria","grupoItem","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"movimentacao"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -56,7 +56,8 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "carteira.codigo": "exact",
  *     "modo": "exact",
  *     "status": "exact",
- *     "centroCusto": "exact"
+ *     "centroCusto": "exact",
+ *     "grupoItem": "exact"
  * })
  * 
  * @ApiFilter(DateFilter::class, properties={"dtUtil", "dtVenctoEfetiva", "dtVencto", "dtPagto"})
@@ -564,10 +565,6 @@ class Movimentacao implements EntityId
 
         if ($this->operadoraCartao) {
             $sufixo .= ' (Operadora: ' . $this->operadoraCartao->descricao . ')';
-        }
-
-        if ($this->grupoItem) {
-            $sufixo .= ' (' . $this->grupoItem->descricao . ')';
         }
 
         return $this->descricao . $sufixo;

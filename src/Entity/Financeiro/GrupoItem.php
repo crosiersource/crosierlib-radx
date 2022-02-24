@@ -43,7 +43,12 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * )
  * @ApiFilter(PropertyFilter::class)
  *
- * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "codigoGrupoItem": "exact", "id": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "nome": "partial", 
+ *     "pai": "exact", 
+ *     "codigoGrupoItem": "exact", 
+ *     "id": "exact"
+ * })
  * @ApiFilter(BooleanFilter::class, properties={"utilizado": "exact"})
  * @ApiFilter(OrderFilter::class, properties={"id", "codigoGrupoItem", "nome", "updated"}, arguments={"orderParameterName"="order"})
  *
@@ -175,4 +180,15 @@ class GrupoItem implements EntityId
     {
         return $this->getValorLanctos() - $this->valorInformado;
     }
+
+
+    /**
+     * @return string
+     * @Groups("grupoItem")
+     */
+    public function getDescricaoMontada(): string
+    {
+        return $this->pai->descricao . ' de ' . $this->dtVencto->format('d/m/Y');
+    }
+
 }

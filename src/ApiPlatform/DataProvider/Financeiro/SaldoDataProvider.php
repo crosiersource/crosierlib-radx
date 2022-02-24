@@ -14,7 +14,6 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\SaldoEntityHandl
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CarteiraRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\MovimentacaoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\SaldoRepository;
-use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @author Carlos Eduardo Pauluk
@@ -57,10 +56,13 @@ class SaldoDataProvider implements ContextAwareCollectionDataProviderInterface, 
 
             $carteiraId = substr($context['filters']['carteira'], strrpos($context['filters']['carteira'], '/') + 1);
 
+            /** @var SaldoRepository $repoSaldo */
+            $repoSaldo = $this->saldoEntityHandler->getDoctrine()->getRepository(Saldo::class);
+            
             /** @var CarteiraRepository $repoCarteira */
             $repoCarteira = $this->saldoEntityHandler->getDoctrine()->getRepository(Carteira::class);
             $carteira = $repoCarteira->find($carteiraId);
-            
+
             $rDtConsolidado = $conn->fetchAssociative('SELECT dt_consolidado FROM fin_carteira WHERE id = :carteiraId', ['carteiraId' => $carteiraId]);
             $dtConsolidado = DateTimeUtils::parseDateStr($rDtConsolidado['dt_consolidado'] ?? '1900-01-01');
 
@@ -80,7 +82,7 @@ class SaldoDataProvider implements ContextAwareCollectionDataProviderInterface, 
                     'dtIni' => $dtIni->format('Y-m-d'),
                     'dtFim' => $dtFim->format('Y-m-d'),
                 ]);
-            
+
             $saldoByData = [];
             foreach ($saldos as $saldo) {
                 $saldoByData[$saldo['dt_saldo']] = $saldo;
@@ -103,23 +105,27 @@ class SaldoDataProvider implements ContextAwareCollectionDataProviderInterface, 
                 if (!$tem || DateTimeUtils::dataMaiorQue($dia, $dtConsolidado)) {
                     /** @var MovimentacaoRepository $movimentacaoRepo */
                     $movimentacaoRepo = $movimentacaoRepo ?? $this->saldoEntityHandler->getDoctrine()->getRepository(Movimentacao::class);
-                    $saldoPosterior = $movimentacaoRepo->findSaldo($dia, $carteiraId, 'SALDO_POSTERIOR_REALIZADAS');
-                    $saldoPosteriorComCheques = $movimentacaoRepo->findSaldo($dia, $carteiraId, 'SALDO_POSTERIOR_COM_CHEQUES');
+                    $saldoPosterior = (float)$movimentacaoRepo->findSaldo($dia, $carteiraId, 'SALDO_POSTERIOR_REALIZADAS') ?? 0;
+                    $saldoPosteriorComCheques = (float)$movimentacaoRepo->findSaldo($dia, $carteiraId, 'SALDO_POSTERIOR_COM_CHEQUES') ?? 0;
 
                     // Só salva se mudou algo
-                    if (!isset($saldoByData[$dia->format('Y-m-d')]) || 
-                        $saldoByData[$dia->format('Y-m-d')]['total_realizadas'] !== $saldoPosterior ||
-                        $saldoByData[$dia->format('Y-m-d')]['total_pendencias'] !== $saldoPosteriorComCheques) {
+                    if (!isset($saldoByData[$dia->format('Y-m-d')]) ||
+                        (float)$saldoByData[$dia->format('Y-m-d')]['total_realizadas'] !== $saldoPosterior ||
+                        (float)$saldoByData[$dia->format('Y-m-d')]['total_pendencias'] !== $saldoPosteriorComCheques) {
 
-                        $saldo = new Saldo();
+                        if (!isset($saldoByData[$dia->format('Y-m-d')])) {
+                            $saldo = new Saldo();
+                        } else {
+                            $saldo = $repoSaldo->find($saldoByData[$dia->format('Y-m-d')]['id']);
+                        }
                         $saldo->carteira = $carteira;
                         $saldo->dtSaldo = $dia;
                         $saldo->totalRealizadas = $saldoPosterior;
                         $saldo->totalPendencias = $saldoPosteriorComCheques;
                         $this->saldoEntityHandler->save($saldo);
-                        
+
                     }
-                    
+
                 }
             }
 
@@ -132,7 +138,7 @@ class SaldoDataProvider implements ContextAwareCollectionDataProviderInterface, 
 
             return $saldos;
         } catch (\Exception $e) {
-            throw new ViewException('Erro ao calcular saldos', 0, $e);
+                throw new ViewException('Erro ao calcular saldos', 0, $e);
         }
     }
 }

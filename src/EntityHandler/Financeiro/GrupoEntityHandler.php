@@ -71,7 +71,7 @@ class GrupoEntityHandler extends EntityHandler
             if ($prox) {
 
                 /** @var GrupoItem $ultimo */
-                $ultimo = $repoGrupoItem->findOneBy(['pai' => $pai], ['dtVencto' => 'ASC']);
+                $ultimo = $repoGrupoItem->findOneBy(['pai' => $pai], ['dtVencto' => 'DESC']);
 
                 if (!$ultimo) {
                     $proxDtVencto = new \DateTime();
@@ -92,7 +92,7 @@ class GrupoEntityHandler extends EntityHandler
 
                 if ($ultimo) {
                     $ultimo->proximo = $novo;
-                    $this->save($ultimo);
+                    $this->grupoItemEntityHandler->save($ultimo);
                 }
             } else {
                 /** @var GrupoItem $primeiro */
