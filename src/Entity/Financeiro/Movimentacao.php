@@ -31,7 +31,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     itemOperations={
  *          "get"={"path"="/fin/movimentacao/{id}", "security"="is_granted('ROLE_FINAN')"},
  *          "put"={"path"="/fin/movimentacao/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/movimentacao/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "delete"={"path"="/fin/movimentacao/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/movimentacao", "security"="is_granted('ROLE_FINAN')"},
@@ -306,13 +306,6 @@ class Movimentacao implements EntityId
     public ?BandeiraCartao $bandeiraCartao = null;
 
     /**
-     *
-     * @ORM\Column(name="qtde_parcelas_cartao", type="integer", nullable=true)
-     * @Groups("movimentacao")
-     */
-    public ?int $qtdeParcelasCartao = null;
-
-    /**
      * Geralmente o NSU.
      *
      * @ORM\Column(name="id_transacao_cartao", type="string", nullable=true)
@@ -410,8 +403,26 @@ class Movimentacao implements EntityId
     public ?bool $parcelamento = false;
 
     /**
+     * O número da parcela.
+     * 
+     * @ORM\Column(name="parcela_num", type="integer", nullable=true)
+     * @Groups("movimentacao")
+     */
+    public ?int $parcelaNum = null;
+
+    /**
+     * A qtde total de parcelas.
+     * 
+     * @ORM\Column(name="qtde_parcelas", type="integer", nullable=true)
+     * @Groups("movimentacao")
+     */
+    public ?int $qtdeParcelas = null;
+
+
+    /**
      * Caso a movimentação faça parte de uma cadeia, informa em qual posição.
-     * Também é utilizado para armazenar o número da parcela.
+     * Não deve ser utilizado para armazenar o número da parcela, pois a cadeia pode conter mais movimentações que o
+     * número de parcelas do parcelamento.
      *
      * @ORM\Column(name="cadeia_ordem", type="integer", nullable=true)
      * @Groups("movimentacao")
@@ -540,11 +551,10 @@ class Movimentacao implements EntityId
     {
         $sufixo = '';
 
-        if ($this->cadeia && $this->parcelamento) {
-            $qtdeParcelas = $this->cadeia->movimentacoes->count();
-            $zerosfill = strlen('' . $qtdeParcelas);
+        if ($this->parcelamento) {
+            $zerosfill = strlen('' . $this->qtdeParcelas);
             $zerosfill = $zerosfill < 2 ? 2 : $zerosfill;
-            $sufixo .= ' (' . str_pad($this->cadeiaOrdem, $zerosfill, '0', STR_PAD_LEFT) . '/' . str_pad($qtdeParcelas, $zerosfill, '0', STR_PAD_LEFT) . ')';
+            $sufixo .= ' (' . str_pad($this->parcelaNum ?? 0, $zerosfill, '0', STR_PAD_LEFT) . '/' . str_pad($this->qtdeParcelas ?? 0, $zerosfill, '0', STR_PAD_LEFT) . ')';
         }
 
         if ($this->documentoNum) {

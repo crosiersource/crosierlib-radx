@@ -77,6 +77,9 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
         $repoCarteira = $this->doctrine->getRepository(Carteira::class);
         $repoModo = $this->doctrine->getRepository(Modo::class);
+        $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
+        
+        $movimentacao->tipoLancto = $movimentacao->tipoLancto ?? $repoTipoLancto->findOneByCodigo(20);
         
         if ($movimentacao->grupoItem) {
             $movimentacao->carteira = $repoCarteira->findOneByCodigo(50);
@@ -85,7 +88,11 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
 
         if (!$movimentacao->carteira) {
-            throw new ViewException('Campo "Carteira" precisa ser informado');
+            if ($movimentacao->operadoraCartao) {
+                $movimentacao->carteira = $movimentacao->operadoraCartao->carteira;
+            } else {
+                throw new ViewException('Campo "Carteira" precisa ser informado');
+            }
         }
         if (!$movimentacao->modo) {
             throw new ViewException('Campo "Modo" precisa ser informado');
@@ -201,7 +208,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         // Regras para movimentações de cartões
         if (FALSE === $movimentacao->modo->modoDeCartao) {
-            $movimentacao->qtdeParcelasCartao = null;
+            $movimentacao->qtdeParcelas = null;
             $movimentacao->bandeiraCartao = null;
             $movimentacao->operadoraCartao = null;
         } else {
@@ -226,11 +233,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
         }
 
-        $movimentacao->parcelamento = ($movimentacao->cadeia &&
-            !$movimentacao->recorrente &&
-            $movimentacao->tipoLancto->getCodigo() !== 60 &&
-            $movimentacao->tipoLancto->getCodigo() !== 61);
-
+        
 
         // Regras para movimentações com cheque
         if (FALSE === $movimentacao->modo->modoDeCheque) {
@@ -747,8 +750,8 @@ class MovimentacaoEntityHandler extends EntityHandler
      */
     private function saveEntradaCartaoDeCreditoOuDebito(Movimentacao $movimentacao): Movimentacao
     {
-        if (!$movimentacao->carteiraDestino || !$movimentacao->carteiraDestino->operadoraCartao) {
-            throw new ViewException('Movimentação de cartão precisa ter carteira destino como operadora de cartão');
+        if (!$movimentacao->carteira || !$movimentacao->operadoraCartao) {
+            throw new ViewException('Movimentação de cartão precisa ter carteira e operadora de cartão');
         }
 
         $this->getDoctrine()->beginTransaction();
@@ -765,7 +768,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $ehDebito = $movimentacao->modo->codigo === 10;
 
-        $qtdeParcelas = $ehDebito ? 1 : $movimentacao->jsonData['qtdeParcelas'];
+        $qtdeParcelas = $ehDebito ? 1 : $movimentacao->qtdeParcelas;
         $cadeiaQtde = $qtdeParcelas + 2; // 101 + 291 + 191s...
 
         // Está editando
@@ -807,12 +810,14 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $cadeia = new Cadeia();
         $cadeia->fechada = true;
+        $cadeia->vinculante = true;
         /** @var Cadeia $cadeia */
         $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
 
         $movimentacao->cadeia = $cadeia;
         $movimentacao->cadeiaOrdem = 1;
         $movimentacao->cadeiaQtde = $cadeiaQtde;
+        
 
         $moviment291 = new Movimentacao();
         $moviment291->tipoLancto = $movimentacao->tipoLancto;
@@ -826,7 +831,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment291->centroCusto = $movimentacao->centroCusto;
         $moviment291->modo = $movimentacao->modo;
         $moviment291->carteira = $movimentacao->carteira;
-        $moviment291->carteiraDestino = $movimentacao->carteiraDestino;
+        $moviment291->carteiraDestino = $movimentacao->operadoraCartao->carteira;
         $moviment291->status = 'REALIZADA';
         $moviment291->valor = $movimentacao->valor;
         $moviment291->descontos = $movimentacao->descontos;
@@ -847,27 +852,31 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $parcelas = DecimalUtils::gerarParcelas($movimentacao->valor, $qtdeParcelas);
 
-        for ($i = 0; $i < $qtdeParcelas; $i++) {
+        for ($i = 1; $i <= $qtdeParcelas; $i++) {
             $moviment191 = new Movimentacao();
             $moviment191->tipoLancto = $movimentacao->tipoLancto;
             $moviment191->fatura = $movimentacao->fatura;
             $moviment191->cadeia = $cadeia;
-            $moviment191->cadeiaOrdem = 3 + $i;
+            $moviment191->qtdeParcelas = $qtdeParcelas;
+            $moviment191->parcelamento = true;
+            $moviment191->parcelaNum = $i;
+            $moviment191->cadeiaOrdem = 2 + $i;
             $moviment191->faturaOrdem = $faturaOrdem ? ++$faturaOrdem : null;
             $moviment191->cadeiaQtde = $cadeiaQtde;
             $moviment191->descricao = $movimentacao->descricao;
             $moviment191->categoria = $categ191;
             $moviment191->centroCusto = $movimentacao->centroCusto;
             $moviment191->modo = $movimentacao->modo;
-            $moviment191->carteira = $movimentacao->carteiraDestino;
-            $moviment191->carteiraDestino = $movimentacao->carteira;
+            $moviment191->operadoraCartao = $movimentacao->operadoraCartao;
+            $moviment191->carteira = $movimentacao->operadoraCartao->carteira;
+            $moviment191->carteiraDestino = $movimentacao->carteira; // a oposta
             $moviment191->status = 'ABERTA'; // se torna 'REALIZADA' na consolidação do extrato
-            $moviment191->valor = $parcelas[$i];
-            $moviment191->valorTotal = $parcelas[$i];
+            $moviment191->valor = $parcelas[$i-1];
+            $moviment191->valorTotal = $parcelas[$i-1];
 
             $moviment191->dtMoviment = clone($movimentacao->dtMoviment);
-            $moviment191->dtVencto = $i === 0 ? (clone $primeiraDtVencto) :
-                (clone $movimentacao->dtMoviment)->add(new \DateInterval('P' . ($i + 1) . 'M'));
+            $moviment191->dtVencto = $i === 1 ? (clone $primeiraDtVencto) :
+                (clone $movimentacao->dtMoviment)->add(new \DateInterval('P' . ($i) . 'M'));
             $moviment191->dtVenctoEfetiva = clone($moviment191->dtVencto);
 
             $moviment191->tipoLancto = $movimentacao->tipoLancto;
@@ -875,6 +884,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             parent::save($moviment191);
         }
 
+        $movimentacao->operadoraCartao = null; // remove
         parent::save($movimentacao);
         $this->getDoctrine()->commit();
 

@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
@@ -39,6 +40,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * )
  * @ApiFilter(PropertyFilter::class)
+ * 
+ * @ApiFilter(BooleanFilter::class, properties={"ativa": "exact"})
  *
  * @ApiFilter(SearchFilter::class,
  *     properties={
@@ -76,4 +79,19 @@ class OperadoraCartao implements EntityId
      */
     public ?Carteira $carteira = null;
 
+    /**
+     * @ORM\Column(name="ativa", type="boolean")
+     * @Groups("operadoraCartao")
+     */
+    public ?bool $ativa = true;
+
+    
+    /**
+     * @return string
+     * @Groups("operadoraCartao")
+     */
+    public function getDescricaoMontada(): string
+    {
+        return $this->descricao . ' (' . $this->carteira->getDescricaoMontada() . ')';
+    }
 }

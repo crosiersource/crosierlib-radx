@@ -12,8 +12,12 @@
       <argument type="service_locator">
         <argument key="WEBSTORM" type="service"
                   id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_web_storm"/>
+        <argument key="TRAY" type="service"
+                  id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_tray"/>
         <argument key="SIMPLO7" type="service"
                   id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_simplo7"/>
+        <argument key="SIMPLO7" type="service"
+                  id="crosier_source.crosier_lib_radx_bundle.business.ecommerce.integrador_mercado_pago"/>
       </argument>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
     </service>

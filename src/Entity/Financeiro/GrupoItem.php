@@ -50,7 +50,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     "id": "exact"
  * })
  * @ApiFilter(BooleanFilter::class, properties={"utilizado": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "codigoGrupoItem", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(OrderFilter::class, properties={"id", "codigoGrupoItem", "nome", "updated", "dtVencto"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoItemEntityHandler")
  *

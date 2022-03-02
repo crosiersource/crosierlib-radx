@@ -7,6 +7,7 @@ use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringAssembler;
 use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
@@ -39,8 +40,11 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Contracts\Cache\ItemInterface;
 
 /**
  * Regras de negócio para a integração com a Tray.
@@ -134,8 +138,8 @@ class IntegradorTray implements IntegradorEcommerce
     private function loadConfigs(): void
     {
         try {
-            $r = $this->deptoEntityHandler->getDoctrine()->getConnection()
-                ->fetchAssociative('SELECT id, valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave = :chave',
+            $conn = $this->deptoEntityHandler->getDoctrine()->getConnection();
+            $r = $conn->fetchAssociative('SELECT id, valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave = :chave',
                     [
                         'appUUID' => $_SERVER['CROSIERAPP_UUID'],
                         'chave' => 'tray.configs.json'
@@ -143,7 +147,14 @@ class IntegradorTray implements IntegradorEcommerce
             $rs = json_decode($r['valor'] ?? '{}', true);
             if ($rs) {
                 $this->trayConfigs = $rs;
-                $this->trayConfigs['cfg_app_config.id'] = $r['id'];
+                if (!($this->trayConfigs['cfg_app_config.id'] ?? false)) {                    
+                    $this->trayConfigs['cfg_app_config.id'] = $r['id'];
+                    $conn->update('cfg_app_config', 
+                        [
+                            'updated' => (new \DateTime())->format('Y-m-d H:i:s'),
+                            'valor' => json_encode($this->trayConfigs)
+                        ], ['id' => $r['id']]);
+                }
             }
         } catch (Exception $e) {
             throw new ViewException('Erro ao carregar as configurações de tray.configs.json');
@@ -275,16 +286,92 @@ class IntegradorTray implements IntegradorEcommerce
 
         return $idDeptoTray;
     }
+    
+    
+    public function selectMarcas() {
+        try {
+            $cache = new FilesystemAdapter('integrador_tray.cache', 600, $_SERVER['CROSIER_SESSIONS_FOLDER']);
+            return $cache->get('select_marcas', function (ItemInterface $item) {
+                $temResults = true;
+                $page = 1;
+                $rs = [];
+                while ($temResults) {
+                    $url = $this->getEndpoint() . 'web_api/products/brands/?limit=50&access_token=' . $this->getAccessToken() . '&page=' . $page;
+                    $method = 'GET';
+                    $response = $this->client->request($method, $url);
+                    $bodyContents = $response->getBody()->getContents();
+                    $json = json_decode($bodyContents, true);
 
+                    if (count($json['Brands'] ?? []) > 0) {
+                        $rs = array_merge($rs, $json['Brands']);
+                        $page++;
+                    } else {
+                        $temResults = false;
+                    }
+                }
+                return $rs;
+            });
+        } catch (\Exception $e) {
+            throw new ViewException('Erro ao buscar marcas na tray', 0, $e);
+        }
+    }
+
+
+    /**
+     * @param string $marca
+     * @return int
+     * @throws ViewException
+     */
+    public function integraMarca(string $marca): int
+    {
+        $marcas = $this->selectMarcas();
+        
+        foreach ($marcas as $marca) {
+            if ($marca['Brand']['brand'] === $marca) {
+                return (int)$marca['Brand']['id'];
+            }
+        }
+        // else...
+
+        $this->syslog->info('integraMarca: ini', 'marca = ' . $marca);
+        
+        $url = $this->getEndpoint() . 'web_api/brands?access_token=' . $this->getAccessToken();
+        $method = 'POST';
+        
+        $arr = [
+          'Brand' => [
+              'slug' => mb_strtolower((new StringAssembler([$marca]))->kebab()),
+              'brand' => $marca,
+          ]  
+        ];
+        
+        $response = $this->client->request($method, $url, [
+            'form_params' => $arr
+        ]);
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        if (!in_array($json['message'], ['Created', 'Saved'], true)) {
+            throw new ViewException('Erro ao criar marca');
+        }
+
+        $cache = new FilesystemAdapter('integrador_tray.cache', 600, $_SERVER['CROSIER_SESSIONS_FOLDER']);
+        $cache->clear('select_marcas');
+        
+        return $json['id'];
+    }
+    
     /**
      * @throws ViewException
      */
-    public function integraProduto(Produto $produto): int
+    public function integraProduto(Produto $produto, ?bool $integrarImagens = true, ?bool $respeitarDelay = false): void
     {
         // Ainda só funciona para a arquitetura 1x1
         try {
             $syslog_obs = 'produto = ' . $produto->nome . ' (' . $produto->getId() . ')';
             $this->syslog->debug('integraProduto - ini', $syslog_obs);
+            
+            $idMarca = $this->integraMarca($produto->jsonData['marca'] ?? '');
+            
             $arrProduct = [
                 'Product' => [
 //                    'category_id' => $produto->depto->jsonData['ecommerce_id'],
@@ -328,7 +415,7 @@ class IntegradorTray implements IntegradorEcommerce
             $produto->jsonData['integrado_por'] = $this->security->getUser() ? $this->security->getUser()->getUsername() : 'n/d';
             $this->produtoEntityHandler->save($produto);
             $this->syslog->info('integraProduto - salvando json_data: OK', $syslog_obs);
-            return $idProdutoTray;
+            
         } catch (GuzzleException $e) {
             dd($e->getResponse()->getBody()->getContents());
         }
