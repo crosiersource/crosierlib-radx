@@ -247,7 +247,7 @@ class IntegradorTray implements IntegradorEcommerce
     }
 
 
-    private function integraCategoriaTray(string $nome, string $codigo, ?int $parentId = null)
+    private function integraCategoriaTray(string $nome, string $codigo, string $slug, ?int $parentId = null)
     {
         $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->getAccessToken();
         $response = $this->client->request('POST', $url, [
@@ -255,7 +255,7 @@ class IntegradorTray implements IntegradorEcommerce
                 'Category' => [
                     'id' => $codigo,
                     'name' => $nome,
-                    'slug' => mb_strtolower((new StringAssembler([$nome]))->kebab()),
+                    'slug' => $slug,
                     'parent_id' => $parentId,
                 ]
             ]
@@ -274,13 +274,17 @@ class IntegradorTray implements IntegradorEcommerce
     public function integraCategoria(Produto $produto): int
     {
         if (!($idDepto_ecommerce = ($produto->depto->jsonData['ecommerce_id'] ?? false))) {
-            $idDepto_ecommerce = $this->integraCategoriaTray($produto->depto->nome, $produto->depto->codigo);
+            $idDepto_ecommerce = $this->integraCategoriaTray($produto->depto->nome, $produto->depto->codigo, $produto->depto->nome);
             $produto->depto->jsonData['ecommerce_id'] = $idDepto_ecommerce;
             $this->deptoEntityHandler->save($produto->depto);
         }
 
         if (!($idGrupo_ecommerce = ($produto->grupo->jsonData['ecommerce_id'] ?? false))) {
-            $idGrupo_ecommerce = $this->integraCategoriaTray($produto->grupo->nome, $produto->depto->codigo . $produto->grupo->codigo, $idDepto_ecommerce);
+            $idGrupo_ecommerce = $this->integraCategoriaTray(
+                $produto->grupo->nome,
+                $produto->depto->codigo . $produto->grupo->codigo,
+                mb_strtolower((new StringAssembler([$produto->depto->nome . '/' . $produto->grupo->nome]))->kebab()),
+                $idDepto_ecommerce);
             $produto->grupo->jsonData['ecommerce_id'] = $idGrupo_ecommerce;
             $this->grupoEntityHandler->save($produto->grupo);
         }
@@ -289,9 +293,13 @@ class IntegradorTray implements IntegradorEcommerce
         if ($produto->subgrupo->nome === '<< NÃO INFORMADO >>') {
             return $idGrupo_ecommerce;
         }
-        
+
         if (!($idSubgrupo_ecommerce = ($produto->subgrupo->jsonData['ecommerce_id'] ?? false))) {
-            $idSubgrupo_ecommerce = $this->integraCategoriaTray($produto->subgrupo->nome, $produto->depto->codigo . $produto->grupo->codigo . $produto->subgrupo->codigo, $idGrupo_ecommerce);
+            $idSubgrupo_ecommerce = $this->integraCategoriaTray(
+                $produto->subgrupo->nome,
+                $produto->depto->codigo . $produto->grupo->codigo . $produto->subgrupo->codigo,
+                mb_strtolower(str_replace(' ', '-', $produto->depto->nome . '/' . $produto->grupo->nome . '/' . $produto->subgrupo->nome)),
+                $idGrupo_ecommerce);
             $produto->subgrupo->jsonData['ecommerce_id'] = $idSubgrupo_ecommerce;
             $this->subgrupoEntityHandler->save($produto->subgrupo);
         }
@@ -391,6 +399,7 @@ class IntegradorTray implements IntegradorEcommerce
                 'Product' => [
                     'category_id' => $produto->subgrupo->jsonData['ecommerce_id'],
 //                    'ean' => $produto->jsonData['ean'],
+                    'available' => $produto->status === 'ATIVO' ? 1 : 0,
                     'brand' => $produto->jsonData['marca'],
                     'name' => $produto->nome,
 //                    'title' => $produto->jsonData['titulo'],
@@ -402,6 +411,7 @@ class IntegradorTray implements IntegradorEcommerce
 //                    'has_variation' => 0,
 //                    'hot' => 1,
                     'price' => $produto->jsonData['preco_tabela'],
+                    'cost_price' => $produto->jsonData['preco_custo'],
 //                    'weight' => 20,
                     //'stock' => $produto->jsonData['qtde_estoque'],
                 ],
@@ -1111,8 +1121,9 @@ class IntegradorTray implements IntegradorEcommerce
             return $this->trayConfigs['access_token'];
         }
     }
-    
-    public function apagarCategorias() {
+
+    public function apagarCategorias()
+    {
         $temResults = true;
         $page = 1;
         $rs = [];
@@ -1130,7 +1141,7 @@ class IntegradorTray implements IntegradorEcommerce
                 $temResults = false;
             }
         }
-        
+
         foreach ($rs as $r) {
             try {
                 $url = $this->getEndpoint() . 'web_api/categories/' . $r['Category']['id'] . '?access_token=' . $this->getAccessToken();
@@ -1142,7 +1153,7 @@ class IntegradorTray implements IntegradorEcommerce
                 $f = $e;
             }
         }
-        
+
     }
 
 
