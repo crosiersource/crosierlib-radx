@@ -285,6 +285,11 @@ class IntegradorTray implements IntegradorEcommerce
             $this->grupoEntityHandler->save($produto->grupo);
         }
 
+        // Pois na tray os produtos podem às vezes ter apenas 2 níveis de categoria
+        if ($produto->subgrupo->nome === '<< NÃO INFORMADO >>') {
+            return $idGrupo_ecommerce;
+        }
+        
         if (!($idSubgrupo_ecommerce = ($produto->subgrupo->jsonData['ecommerce_id'] ?? false))) {
             $idSubgrupo_ecommerce = $this->integraCategoriaTray($produto->subgrupo->nome, $produto->depto->codigo . $produto->grupo->codigo . $produto->subgrupo->codigo, $idGrupo_ecommerce);
             $produto->subgrupo->jsonData['ecommerce_id'] = $idSubgrupo_ecommerce;
