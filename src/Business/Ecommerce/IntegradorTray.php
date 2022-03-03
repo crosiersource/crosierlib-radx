@@ -26,7 +26,9 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaPagto;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DeptoEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\GrupoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\SubgrupoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Vendas\VendaItemEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository;
@@ -40,7 +42,6 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
@@ -67,6 +68,8 @@ class IntegradorTray implements IntegradorEcommerce
     private SyslogBusiness $syslog;
 
     private DeptoEntityHandler $deptoEntityHandler;
+    private GrupoEntityHandler $grupoEntityHandler;
+    private SubgrupoEntityHandler $subgrupoEntityHandler;
 
     private ProdutoEntityHandler $produtoEntityHandler;
 
@@ -87,11 +90,15 @@ class IntegradorTray implements IntegradorEcommerce
 
     private ?int $carteiraYapayId = null;
 
+    private ?string $accessToken = null;
+
 
     public function __construct(Security               $security,
                                 ParameterBagInterface  $params,
                                 SyslogBusiness         $syslog,
                                 DeptoEntityHandler     $deptoEntityHandler,
+                                GrupoEntityHandler     $grupoEntityHandler,
+                                SubgrupoEntityHandler  $subgrupoEntityHandler,
                                 ProdutoEntityHandler   $produtoEntityHandler,
                                 VendaEntityHandler     $vendaEntityHandler,
                                 VendaItemEntityHandler $vendaItemEntityHandler,
@@ -104,6 +111,8 @@ class IntegradorTray implements IntegradorEcommerce
         $this->params = $params;
         $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
         $this->deptoEntityHandler = $deptoEntityHandler;
+        $this->grupoEntityHandler = $grupoEntityHandler;
+        $this->subgrupoEntityHandler = $subgrupoEntityHandler;
         $this->conn = $deptoEntityHandler->getDoctrine()->getConnection();
         $this->produtoEntityHandler = $produtoEntityHandler;
         $this->vendaEntityHandler = $vendaEntityHandler;
@@ -140,16 +149,16 @@ class IntegradorTray implements IntegradorEcommerce
         try {
             $conn = $this->deptoEntityHandler->getDoctrine()->getConnection();
             $r = $conn->fetchAssociative('SELECT id, valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave = :chave',
-                    [
-                        'appUUID' => $_SERVER['CROSIERAPP_UUID'],
-                        'chave' => 'tray.configs.json'
-                    ]);
+                [
+                    'appUUID' => $_SERVER['CROSIERAPP_UUID'],
+                    'chave' => 'tray.configs.json'
+                ]);
             $rs = json_decode($r['valor'] ?? '{}', true);
             if ($rs) {
                 $this->trayConfigs = $rs;
-                if (!($this->trayConfigs['cfg_app_config.id'] ?? false)) {                    
+                if (!($this->trayConfigs['cfg_app_config.id'] ?? false)) {
                     $this->trayConfigs['cfg_app_config.id'] = $r['id'];
-                    $conn->update('cfg_app_config', 
+                    $conn->update('cfg_app_config',
                         [
                             'updated' => (new \DateTime())->format('Y-m-d H:i:s'),
                             'valor' => json_encode($this->trayConfigs)
@@ -238,57 +247,56 @@ class IntegradorTray implements IntegradorEcommerce
     }
 
 
+    private function integraCategoriaTray(string $nome, string $codigo, ?int $parentId = null)
+    {
+        $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->getAccessToken();
+        $response = $this->client->request('POST', $url, [
+            'form_params' => [
+                'Category' => [
+                    'id' => $codigo,
+                    'name' => $nome,
+                    'slug' => mb_strtolower((new StringAssembler([$nome]))->kebab()),
+                    'parent_id' => $parentId,
+                ]
+            ]
+        ]);
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        if ($json['message'] !== 'Created') {
+            throw new ViewException('Erro ao criar categoria');
+        }
+        return $json['id'];
+    }
+
     /**
      * @throws ViewException
      */
-    public function integraCategoria(Depto $depto): int
+    public function integraCategoria(Produto $produto): int
     {
-        // Ainda só funciona para a arquitetura 1x1
-        $syslog_obs = 'depto = ' . $depto->nome . ' (' . $depto->getId() . ')';
-        $this->syslog->debug('integraDepto - ini', $syslog_obs);
-        $idDeptoTray = null;
-
-        $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->getAccessToken() . '&name=' . $depto->nome;
-        $response = $this->client->request('GET',
-            $url);
-        $bodyContents = $response->getBody()->getContents();
-        $json = json_decode($bodyContents, true);
-        $idDeptoTray = $json['Categories'][0]['Category']['id'] ?? null;
-
-
-        if (!$idDeptoTray) {
-            $this->syslog->info('integraDepto - não existe, enviando...', $syslog_obs);
-
-            $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->getAccessToken();
-            $response = $this->client->request('POST', $url, [
-                'form_params' => [
-                    'Category' => [
-                        'name' => $depto->nome,
-                    ]
-                ]
-            ]);
-            $bodyContents = $response->getBody()->getContents();
-            $json = json_decode($bodyContents, true);
-            if ($json['message'] !== 'Created') {
-                throw new ViewException('Erro ao criar categoria');
-            }
-            $idDeptoTray = $json['id'];
-            $this->syslog->info('integraDepto - integrado', $syslog_obs);
-        }
-        if (!isset($depto->jsonData['ecommerce_id']) || $depto->jsonData['ecommerce_id'] !== $idDeptoTray) {
-            $this->syslog->info('integraDepto - salvando json_data', $syslog_obs);
-            $depto->jsonData['ecommerce_id'] = $idDeptoTray;
-            $depto->jsonData['integrado_em'] = (new \DateTime())->format('Y-m-d H:i:s');
-            $depto->jsonData['integrado_por'] = $this->security->getUser() ? $this->security->getUser()->getUsername() : 'n/d';
-            $this->deptoEntityHandler->save($depto);
-            $this->syslog->info('integraDepto - salvando json_data: OK', $syslog_obs);
+        if (!($idDepto_ecommerce = ($produto->depto->jsonData['ecommerce_id'] ?? false))) {
+            $idDepto_ecommerce = $this->integraCategoriaTray($produto->depto->nome, $produto->depto->codigo);
+            $produto->depto->jsonData['ecommerce_id'] = $idDepto_ecommerce;
+            $this->deptoEntityHandler->save($produto->depto);
         }
 
-        return $idDeptoTray;
+        if (!($idGrupo_ecommerce = ($produto->grupo->jsonData['ecommerce_id'] ?? false))) {
+            $idGrupo_ecommerce = $this->integraCategoriaTray($produto->grupo->nome, $produto->depto->codigo . $produto->grupo->codigo, $idDepto_ecommerce);
+            $produto->grupo->jsonData['ecommerce_id'] = $idGrupo_ecommerce;
+            $this->grupoEntityHandler->save($produto->grupo);
+        }
+
+        if (!($idSubgrupo_ecommerce = ($produto->subgrupo->jsonData['ecommerce_id'] ?? false))) {
+            $idSubgrupo_ecommerce = $this->integraCategoriaTray($produto->subgrupo->nome, $produto->depto->codigo . $produto->grupo->codigo . $produto->subgrupo->codigo, $idGrupo_ecommerce);
+            $produto->subgrupo->jsonData['ecommerce_id'] = $idSubgrupo_ecommerce;
+            $this->subgrupoEntityHandler->save($produto->subgrupo);
+        }
+
+        return $idSubgrupo_ecommerce;
     }
-    
-    
-    public function selectMarcas() {
+
+
+    public function selectMarcas()
+    {
         try {
             $cache = new FilesystemAdapter('integrador_tray.cache', 600, $_SERVER['CROSIER_SESSIONS_FOLDER']);
             return $cache->get('select_marcas', function (ItemInterface $item) {
@@ -324,27 +332,27 @@ class IntegradorTray implements IntegradorEcommerce
      */
     public function integraMarca(string $marca): int
     {
-        $marcas = $this->selectMarcas();
-        
-        foreach ($marcas as $marca) {
-            if ($marca['Brand']['brand'] === $marca) {
-                return (int)$marca['Brand']['id'];
+        $rsMarcas = $this->selectMarcas();
+
+        foreach ($rsMarcas as $rMarca) {
+            if ($rMarca['Brand']['brand'] === $marca) {
+                return (int)$rMarca['Brand']['id'];
             }
         }
         // else...
 
         $this->syslog->info('integraMarca: ini', 'marca = ' . $marca);
-        
+
         $url = $this->getEndpoint() . 'web_api/brands?access_token=' . $this->getAccessToken();
         $method = 'POST';
-        
+
         $arr = [
-          'Brand' => [
-              'slug' => mb_strtolower((new StringAssembler([$marca]))->kebab()),
-              'brand' => $marca,
-          ]  
+            'Brand' => [
+                'slug' => mb_strtolower((new StringAssembler([$marca]))->kebab()),
+                'brand' => $marca,
+            ]
         ];
-        
+
         $response = $this->client->request($method, $url, [
             'form_params' => $arr
         ]);
@@ -356,10 +364,10 @@ class IntegradorTray implements IntegradorEcommerce
 
         $cache = new FilesystemAdapter('integrador_tray.cache', 600, $_SERVER['CROSIER_SESSIONS_FOLDER']);
         $cache->clear('select_marcas');
-        
+
         return $json['id'];
     }
-    
+
     /**
      * @throws ViewException
      */
@@ -369,15 +377,17 @@ class IntegradorTray implements IntegradorEcommerce
         try {
             $syslog_obs = 'produto = ' . $produto->nome . ' (' . $produto->getId() . ')';
             $this->syslog->debug('integraProduto - ini', $syslog_obs);
-            
-            $idMarca = $this->integraMarca($produto->jsonData['marca'] ?? '');
-            
+
+            $idMarca_ecommerce = $this->integraMarca($produto->jsonData['marca'] ?? '');
+
+            $idSubgrupo_ecommerce = $this->integraCategoria($produto);
+
             $arrProduct = [
                 'Product' => [
-//                    'category_id' => $produto->depto->jsonData['ecommerce_id'],
+                    'category_id' => $produto->subgrupo->jsonData['ecommerce_id'],
 //                    'ean' => $produto->jsonData['ean'],
-//                    'brand' => $produto->jsonData['marca'],
-//                    'name' => $produto->nome,
+                    'brand' => $produto->jsonData['marca'],
+                    'name' => $produto->nome,
 //                    'title' => $produto->jsonData['titulo'],
 //                    'description' => $produto->jsonData['descricao_produto'],
 //                    'additional_message' => $produto->jsonData['caracteristicas'],
@@ -386,12 +396,12 @@ class IntegradorTray implements IntegradorEcommerce
 //                    'available' => $produto->status === 'ATIVO' ? 1 : 0,
 //                    'has_variation' => 0,
 //                    'hot' => 1,
-//                    'price' => 10,
+                    'price' => $produto->jsonData['preco_tabela'],
 //                    'weight' => 20,
-                    'stock' => 9,
+                    //'stock' => $produto->jsonData['qtde_estoque'],
                 ],
             ];
-            $jsonRequest = json_encode($arrProduct, JSON_UNESCAPED_SLASHES);
+
             $url = $this->getEndpoint() . 'web_api/products?access_token=' . $this->getAccessToken();
             $method = 'POST';
             if ($produto->jsonData['ecommerce_id'] ?? false) {
@@ -415,7 +425,7 @@ class IntegradorTray implements IntegradorEcommerce
             $produto->jsonData['integrado_por'] = $this->security->getUser() ? $this->security->getUser()->getUsername() : 'n/d';
             $this->produtoEntityHandler->save($produto);
             $this->syslog->info('integraProduto - salvando json_data: OK', $syslog_obs);
-            
+
         } catch (GuzzleException $e) {
             dd($e->getResponse()->getBody()->getContents());
         }
@@ -1087,7 +1097,47 @@ class IntegradorTray implements IntegradorEcommerce
      */
     public function getAccessToken(): ?string
     {
-        return $this->accessToken ?? $this->trayConfigs['access_token'];
+        if ($this->accessToken) {
+            return $this->accessToken;
+        } else {
+            if (!($this->trayConfigs['date_expiration_access_token'] ?? false) || DateTimeUtils::diffInMinutes(DateTimeUtils::parseDateStr($this->trayConfigs['date_expiration_access_token']), new \DateTime()) < 60) {
+                $this->renewAccessToken();
+            }
+            return $this->trayConfigs['access_token'];
+        }
+    }
+    
+    public function apagarCategorias() {
+        $temResults = true;
+        $page = 1;
+        $rs = [];
+        while ($temResults) {
+            $url = $this->getEndpoint() . 'web_api/categories/?limit=50&access_token=' . $this->getAccessToken() . '&page=' . $page;
+            $method = 'GET';
+            $response = $this->client->request($method, $url);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+
+            if (count($json['Categories'] ?? []) > 0) {
+                $rs = array_merge($rs, $json['Categories']);
+                $page++;
+            } else {
+                $temResults = false;
+            }
+        }
+        
+        foreach ($rs as $r) {
+            try {
+                $url = $this->getEndpoint() . 'web_api/categories/' . $r['Category']['id'] . '?access_token=' . $this->getAccessToken();
+                $method = 'DELETE';
+                $response = $this->client->request($method, $url);
+                $bodyContents = $response->getBody()->getContents();
+                $json = json_decode($bodyContents, true);
+            } catch (GuzzleException $e) {
+                $f = $e;
+            }
+        }
+        
     }
 
 

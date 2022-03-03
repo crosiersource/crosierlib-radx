@@ -122,6 +122,8 @@
       <argument type="service" id="parameter_bag"/>
       <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
       <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.depto_entity_handler"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.grupo_entity_handler"/>
+      <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.subgrupo_entity_handler"/>
       <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.estoque.produto_entity_handler"/>
       <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_entity_handler"/>
       <argument type="service" id="crosier_source.crosier_lib_radx_bundle.entity_handler.vendas.venda_item_entity_handler"/>
