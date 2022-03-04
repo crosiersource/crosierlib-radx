@@ -18,10 +18,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\JsonFilter;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"produto","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"produto","fornecedor","produtoPreco","unidade","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"produto"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -113,7 +114,7 @@ class Produto implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor")
      * @ORM\JoinColumn(name="fornecedor_id", nullable=false)
-     *
+     * @Groups("produto")
      * @var $fornecedor null|Fornecedor
      */
     public ?Fornecedor $fornecedor = null;
@@ -150,10 +151,22 @@ class Produto implements EntityId
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade")
      * @ORM\JoinColumn(name="unidade_padrao_id", nullable=false)
-     *
+     * @Groups("produto")
      * @var null|Unidade
      */
     public ?Unidade $unidadePadrao = null;
+
+    /**
+     * @ORM\Column(name="qtde_total", type="decimal", nullable=false, precision=15, scale=3)
+     * @var null|float
+     */
+    public ?float $qtdeTotal;
+
+    /**
+     * @ORM\Column(name="qtde_minima", type="decimal", nullable=true, precision=15, scale=3)
+     * @var null|float
+     */
+    public ?float $qtdeMinima;
 
     /**
      * S,N
@@ -166,28 +179,25 @@ class Produto implements EntityId
     public ?string $composicao = 'N';
 
     /**
-     *
      * @ORM\OneToMany(targetEntity="ProdutoImagem", mappedBy="produto", cascade={"all"}, orphanRemoval=true)
      * @var ProdutoImagem[]|ArrayCollection|null
      * @ORM\OrderBy({"ordem" = "ASC"})
-     *
+     * 
      */
     public $imagens;
 
     /**
-     *
      * @ORM\OneToMany(targetEntity="ProdutoComposicao", mappedBy="produtoPai", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
      * @var ProdutoComposicao[]|ArrayCollection|null
      * @ORM\OrderBy({"ordem" = "ASC"})
-     *
      */
     public $composicoes;
 
     /**
-     *
      * @ORM\OneToMany(targetEntity="ProdutoPreco", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"atual" = "DESC"})
      * @var ProdutoPreco[]|ArrayCollection|null
+     * @Groups("produto")
      *
      */
     public $precos;
@@ -203,7 +213,6 @@ class Produto implements EntityId
      *
      * @ORM\OneToMany(targetEntity="ProdutoSaldo", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
      * @var ProdutoSaldo[]|ArrayCollection|null
-     *
      */
     public $saldos;
 
@@ -278,6 +287,53 @@ class Produto implements EntityId
             $this->precosPorLista = $precosPorLista;
         }
         return $this->precosPorLista;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("produto")
+     * @SerializedName("qtdeTotal")
+     * @return float
+     */
+    public function getQtdeTotalFormatted(): float
+    {
+        return (float)$this->qtdeTotal;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("produto")
+     * @SerializedName("qtdeTotal")
+     * @param float $qtdeTotal
+     */
+    public function setQtdeTotalFormatted(float $qtdeTotal)
+    {
+        $this->qtdeTotal = $qtdeTotal;
+    }
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("produto")
+     * @SerializedName("qtdeMinima")
+     * @return float
+     */
+    public function getQtdeMinimaFormatted(): float
+    {
+        return (float)$this->qtdeMinima;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("produto")
+     * @SerializedName("qtdeMinima")
+     * @param float $qtdeMinima
+     */
+    public function setQtdeMinimaFormatted(float $qtdeMinima)
+    {
+        $this->qtdeMinima = $qtdeMinima;
     }
 
 
