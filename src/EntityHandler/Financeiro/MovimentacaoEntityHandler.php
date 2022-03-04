@@ -780,6 +780,9 @@ class MovimentacaoEntityHandler extends EntityHandler
             foreach ($movs as $mov) {
                 if ($mov->getId() !== $movimentacao->getId()) {
                     $mov->descricao = $movimentacao->descricao;
+                    $mov->operadoraCartao = $movimentacao->operadoraCartao;
+                    $mov->bandeiraCartao = $movimentacao->bandeiraCartao;
+                    $mov->numCartao = $movimentacao->numCartao;
                     $mov->fatura = $movimentacao->fatura;
                     $mov->categoria = $categ291;
                     $mov->modo = $movimentacao->modo;
@@ -827,6 +830,9 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment291->cadeiaOrdem = 2;
         $moviment291->cadeiaQtde = $cadeiaQtde;
         $moviment291->descricao = $movimentacao->descricao;
+        $moviment291->operadoraCartao = $movimentacao->operadoraCartao;
+        $moviment291->bandeiraCartao = $movimentacao->bandeiraCartao;
+        $moviment291->numCartao = $movimentacao->numCartao;
         $moviment291->categoria = $categ291;
         $moviment291->centroCusto = $movimentacao->centroCusto;
         $moviment291->modo = $movimentacao->modo;
@@ -864,6 +870,9 @@ class MovimentacaoEntityHandler extends EntityHandler
             $moviment191->faturaOrdem = $faturaOrdem ? ++$faturaOrdem : null;
             $moviment191->cadeiaQtde = $cadeiaQtde;
             $moviment191->descricao = $movimentacao->descricao;
+            $moviment191->operadoraCartao = $movimentacao->operadoraCartao;
+            $moviment191->bandeiraCartao = $movimentacao->bandeiraCartao;
+            $moviment191->numCartao = $movimentacao->numCartao;
             $moviment191->categoria = $categ191;
             $moviment191->centroCusto = $movimentacao->centroCusto;
             $moviment191->modo = $movimentacao->modo;
