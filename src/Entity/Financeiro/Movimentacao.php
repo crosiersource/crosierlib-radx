@@ -551,7 +551,7 @@ class Movimentacao implements EntityId
     {
         $sufixo = '';
 
-        if ($this->parcelamento) {
+        if ($this->parcelamento || ($this->qtdeParcelas && $this->parcelaNum)) {
             $zerosfill = strlen('' . $this->qtdeParcelas);
             $zerosfill = $zerosfill < 2 ? 2 : $zerosfill;
             $sufixo .= ' (' . str_pad($this->parcelaNum ?? 0, $zerosfill, '0', STR_PAD_LEFT) . '/' . str_pad($this->qtdeParcelas ?? 0, $zerosfill, '0', STR_PAD_LEFT) . ')';
@@ -575,6 +575,10 @@ class Movimentacao implements EntityId
 
         if ($this->operadoraCartao) {
             $sufixo .= ' (Operadora: ' . $this->operadoraCartao->descricao . ')';
+        }
+
+        if ($this->numCartao) {
+            $sufixo .= ' (**** ' . $this->numCartao . ')';
         }
 
         return $this->descricao . $sufixo;

@@ -884,7 +884,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             parent::save($moviment191);
         }
 
-        $movimentacao->operadoraCartao = null; // remove
+        // $movimentacao->operadoraCartao = null; // remove
         parent::save($movimentacao);
         $this->getDoctrine()->commit();
 
