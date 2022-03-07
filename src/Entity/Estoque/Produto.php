@@ -22,7 +22,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"produto","fornecedor","produtoPreco","unidade","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"produto","fornecedor","produtoPreco","listaPreco","unidade","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"produto"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -160,13 +160,13 @@ class Produto implements EntityId
      * @ORM\Column(name="qtde_total", type="decimal", nullable=false, precision=15, scale=3)
      * @var null|float
      */
-    public ?float $qtdeTotal;
+    public ?float $qtdeTotal = null;
 
     /**
      * @ORM\Column(name="qtde_minima", type="decimal", nullable=true, precision=15, scale=3)
      * @var null|float
      */
-    public ?float $qtdeMinima;
+    public ?float $qtdeMinima = null;
 
     /**
      * S,N

@@ -101,7 +101,7 @@ class ProdutoEntityHandler extends EntityHandler
         }
 
         if (!$produto->codigo) {
-            $rsProxCodigo = $this->doctrine->getConnection()->fetchAssociative('SELECT max(codigo)+1 as prox FROM est_produto WHERE codigo < 2147483647');
+            $rsProxCodigo = $this->doctrine->getConnection()->fetchAssociative('SELECT max(cast(codigo as unsigned))+1 as prox FROM est_produto WHERE codigo < 2147483647');
             $rsProxCodigo['prox'] = $rsProxCodigo['prox'] ?: 1;
             $produto->codigo = $rsProxCodigo['prox'];
         }

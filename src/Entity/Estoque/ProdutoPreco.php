@@ -38,7 +38,12 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  * )
  * @ApiFilter(PropertyFilter::class)
  *
- * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "nome": "partial",
+ *     "produto": "exact",
+ *     "documento": "exact",
+ *     "id": "exact"
+ * })
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoPrecoEntityHandler")
@@ -79,14 +84,12 @@ class ProdutoPreco implements EntityId
 
     /**
      * @ORM\Column(name="coeficiente", type="decimal", nullable=true, precision=15, scale=2)
-     * @Groups("produtoPreco")
      * @var null|float
      */
     public ?float $coeficiente = null;
 
     /**
      * @ORM\Column(name="custo_operacional", type="decimal", nullable=false, precision=15, scale=2)
-     * @Groups("produtoPreco")
      * @var null|float
      */
     public ?float $custoOperacional = 35.0;
@@ -305,6 +308,56 @@ class ProdutoPreco implements EntityId
     public function setCustoFinanceiroFormatted(float $custoFinanceiro)
     {
         $this->custoFinanceiro = $custoFinanceiro;
+    }
+
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("produtoPreco")
+     * @SerializedName("coeficiente")
+     * @return float
+     */
+    public function getCoeficienteFormatted(): float
+    {
+        return (float)$this->coeficiente;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("produtoPreco")
+     * @SerializedName("coeficiente")
+     * @param float $coeficiente
+     */
+    public function setCoeficienteFormatted(float $coeficiente)
+    {
+        $this->coeficiente = $coeficiente;
+    }
+
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("produtoPreco")
+     * @SerializedName("custoOperacional")
+     * @return float
+     */
+    public function getCustoOperacionalFormatted(): float
+    {
+        return (float)$this->custoOperacional;
+    }
+
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("produtoPreco")
+     * @SerializedName("custoOperacional")
+     * @param float $custoOperacional
+     */
+    public function setCustoOperacionalFormatted(float $custoOperacional)
+    {
+        $this->custoOperacional = $custoOperacional;
     }
 
 

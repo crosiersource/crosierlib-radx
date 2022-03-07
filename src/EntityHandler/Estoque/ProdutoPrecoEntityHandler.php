@@ -28,10 +28,10 @@ class ProdutoPrecoEntityHandler extends EntityHandler
      * @param CalculoPreco $calculoPreco
      */
     public function __construct(EntityManagerInterface $doctrine,
-                                Security $security,
-                                ParameterBagInterface $parameterBag,
-                                SyslogBusiness $syslog,
-                                CalculoPreco $calculoPreco)
+                                Security               $security,
+                                ParameterBagInterface  $parameterBag,
+                                SyslogBusiness         $syslog,
+                                CalculoPreco           $calculoPreco)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog);
         $this->calculoPreco = $calculoPreco;
@@ -58,15 +58,10 @@ class ProdutoPrecoEntityHandler extends EntityHandler
 
         $this->calculoPreco->calcularPreco($precoArr);
 
-        if (!$produtoPreco->precoPrazo) {
-            $produtoPreco->precoPrazo = $precoArr['precoPrazo'];
-        }
-        if (!$produtoPreco->margem) {
-            $produtoPreco->margem = $precoArr['margem'];
-        }
-        if (!$produtoPreco->coeficiente) {
-            $produtoPreco->coeficiente = $precoArr['coeficiente'];
-        }
+        $produtoPreco->precoPrazo = $precoArr['precoPrazo'];
+        $produtoPreco->margem = $precoArr['margem'];
+        $produtoPreco->coeficiente = $precoArr['coeficiente'];
+        
         if (!$produtoPreco->dtCusto) {
             $produtoPreco->dtCusto = new \DateTime();
         }
