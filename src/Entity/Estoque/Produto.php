@@ -18,6 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\JsonFilter;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 /**
  * @ApiResource(
@@ -278,6 +279,15 @@ class Produto implements EntityId
             $this->precosPorLista = $precosPorLista;
         }
         return $this->precosPorLista;
+    }
+
+    /**
+     * @SerializedName("descricaoMontada")
+     * @Groups("produto")
+     * @return string
+     */
+    public function getDescricaoMontada(): string {
+        return $this->codigo . ' - ' . $this->nome . ' (' . $this->unidadePadrao->label . ')';
     }
 
 
