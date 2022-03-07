@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
@@ -38,6 +39,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(BooleanFilter::class, properties={"atual": "exact"})
+ *
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\UnidadeEntityHandler")
  *
@@ -63,7 +66,6 @@ class Unidade implements EntityId
      *
      * @ORM\Column(name="label", type="string")
      * @Groups("unidade")
-     * @NotUppercase()
      * @var null|string
      */
     public ?string $label = null;
@@ -75,15 +77,6 @@ class Unidade implements EntityId
      * @var null|integer
      */
     public ?int $casasDecimais = null;
-
-    /**
-     *
-     * @ORM\Column(name="json_info", type="string")
-     * @var null|string
-     * @NotUppercase()
-     * @Groups("unidade")
-     */
-    public ?string $jsonInfo = null;
 
     /**
      *

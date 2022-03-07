@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
@@ -14,6 +15,7 @@ use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 /**
  * @ApiResource(
@@ -39,6 +41,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "nomeFantasia": "partial", "documento": "exact", "id": "exact"})
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "nomeFantasia", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(BooleanFilter::class, properties={"utilizado": "exact"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\FornecedorEntityHandler")
  *
@@ -116,7 +119,18 @@ class Fornecedor implements EntityId
      * @Groups("fornecedor")
      */
     public ?array $jsonData = null;
-    
+
+
+
+    /**
+     * @return string
+     * @Groups("fornecedor")
+     * @SerializedName("nomeFantasiaMontado")
+     */
+    public function getNomeFantasiaMontado(): string
+    {
+        return trim($this->nomeFantasia) ?: $this->nome;
+    }
     
 
 
@@ -132,6 +146,8 @@ class Fornecedor implements EntityId
         }
         return $r;
     }
+
+    
 
 
 }
