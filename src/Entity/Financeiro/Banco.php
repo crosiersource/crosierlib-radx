@@ -83,9 +83,9 @@ class Banco implements EntityId
 
     /**
      * @param bool $format
-     * @return int|null
+     * @return string|null
      */
-    public function getCodigoBanco(bool $format = false): ?int
+    public function getCodigoBanco(bool $format = false): ?string
     {
         if ($format) {
             return str_pad($this->codigoBanco, 3, '0', STR_PAD_LEFT);
