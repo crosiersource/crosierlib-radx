@@ -75,13 +75,12 @@ class Produto implements EntityId
      * @ORM\Column(name="uuid", type="string", nullable=false, length=36)
      * @NotUppercase()
      * @Groups("produto")
-     *
      * @var string|null
      */
     public ?string $UUID = null;
+    
 
     /**
-     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto")
      * @ORM\JoinColumn(name="depto_id", nullable=false)
      * @Groups("produto")
@@ -89,9 +88,9 @@ class Produto implements EntityId
      * @var $depto null|Depto
      */
     public ?Depto $depto = null;
+    
 
     /**
-     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo")
      * @ORM\JoinColumn(name="grupo_id", nullable=false)
      * @Groups("produto")
@@ -99,9 +98,9 @@ class Produto implements EntityId
      * @var $grupo null|Grupo
      */
     public ?Grupo $grupo = null;
+    
 
     /**
-     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo")
      * @ORM\JoinColumn(name="subgrupo_id", nullable=false)
      * @Groups("produto")
@@ -109,82 +108,105 @@ class Produto implements EntityId
      * @var $subgrupo null|Subgrupo
      */
     public ?Subgrupo $subgrupo = null;
+    
 
     /**
-     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor")
      * @ORM\JoinColumn(name="fornecedor_id", nullable=false)
      * @Groups("produto")
      * @var $fornecedor null|Fornecedor
      */
     public ?Fornecedor $fornecedor = null;
+    
 
     /**
-     *
      * @ORM\Column(name="codigo", type="string", nullable=false)
      * @Groups("produto")
-     *
      * @var null|string
      */
     public ?string $codigo = null;
 
+
     /**
-     *
+     * @ORM\Column(name="referencia", type="string", nullable=true)
+     * @Groups("produto")
+     * @var null|string
+     */
+    public ?string $referencia = null;
+
+
+    /**
+     * @ORM\Column(name="ean", type="string", nullable=true)
+     * @Groups("produto")
+     * @var null|string
+     */
+    public ?string $ean = null;
+    
+
+    /**
      * @ORM\Column(name="nome", type="string", nullable=false)
      * @Groups("produto")
-     *
      * @var null|string
      */
     public ?string $nome = null;
 
+
+    /**
+     * @ORM\Column(name="marca", type="string", nullable=true)
+     * @Groups("produto")
+     * @var null|string
+     */
+    public ?string $marca = null;
+    
+
     /**
      * ATIVO,INATIVO
-     *
      * @ORM\Column(name="status", type="string", nullable=true)
      * @Groups("produto")
-     *
      * @var null|string
      */
     public ?string $status = null;
+    
 
     /**
-     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade")
      * @ORM\JoinColumn(name="unidade_padrao_id", nullable=false)
      * @Groups("produto")
      * @var null|Unidade
      */
     public ?Unidade $unidadePadrao = null;
+    
 
     /**
      * @ORM\Column(name="qtde_total", type="decimal", nullable=false, precision=15, scale=3)
      * @var null|float
      */
     public ?float $qtdeTotal = null;
+    
 
     /**
      * @ORM\Column(name="qtde_minima", type="decimal", nullable=true, precision=15, scale=3)
      * @var null|float
      */
     public ?float $qtdeMinima = null;
+    
 
     /**
      * S,N
-     *
      * @ORM\Column(name="composicao", type="string", nullable=true)
      * @Groups("produto")
-     *
      * @var null|string
      */
     public ?string $composicao = 'N';
+    
 
     /**
      * @ORM\OneToMany(targetEntity="ProdutoImagem", mappedBy="produto", cascade={"all"}, orphanRemoval=true)
      * @var ProdutoImagem[]|ArrayCollection|null
      * @ORM\OrderBy({"ordem" = "ASC"})
-     * 
      */
     public $imagens;
+    
 
     /**
      * @ORM\OneToMany(targetEntity="ProdutoComposicao", mappedBy="produtoPai", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
@@ -192,32 +214,31 @@ class Produto implements EntityId
      * @ORM\OrderBy({"ordem" = "ASC"})
      */
     public $composicoes;
+    
 
     /**
      * @ORM\OneToMany(targetEntity="ProdutoPreco", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"atual" = "DESC"})
      * @var ProdutoPreco[]|ArrayCollection|null
      * @Groups("produto")
-     *
      */
     public $precos;
+    
 
     /**
-     *
      * @var array
-     *
      */
     private array $precosPorLista = [];
+    
 
     /**
-     *
      * @ORM\OneToMany(targetEntity="ProdutoSaldo", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
      * @var ProdutoSaldo[]|ArrayCollection|null
      */
     public $saldos;
+    
 
     /**
-     *
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()

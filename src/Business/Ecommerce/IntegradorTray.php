@@ -41,6 +41,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\PlanoPagtoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -249,32 +250,90 @@ class IntegradorTray implements IntegradorEcommerce
 
     private function integraCategoriaTray(string $nome, string $codigo, string $slug, ?int $parentId = null)
     {
-        $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->getAccessToken();
-        $response = $this->client->request('POST', $url, [
-            'form_params' => [
-                'Category' => [
-                    'id' => $codigo,
-                    'name' => $nome,
-                    'slug' => $slug,
-                    'parent_id' => $parentId,
+        try {
+            $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->getAccessToken();
+            $arr = [
+                'form_params' => [
+                    'Category' => [
+                        'id' => $codigo,
+                        'name' => $nome,
+                        'slug' => $slug,
+                        'parent_id' => $parentId,
+                    ]
                 ]
-            ]
-        ]);
-        $bodyContents = $response->getBody()->getContents();
-        $json = json_decode($bodyContents, true);
-        if ($json['message'] !== 'Created') {
-            throw new ViewException('Erro ao criar categoria');
+            ];
+            $response = $this->client->request('POST', $url, $arr);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            if ($json['message'] !== 'Created') {
+                throw new ViewException('Erro ao criar categoria');
+            }
+            return $json['id'];
+        } catch (ClientException $e) {
+            throw new ViewException($e->getResponse()->getBody()->getContents(), 0, $e);
         }
-        return $json['id'];
     }
 
+
+    /**
+     * @throws ViewException
+     */
+    public function integraSubgrupo(Subgrupo $subgrupo): int
+    {
+        if (!($idDepto_ecommerce = ($subgrupo->grupo->depto->jsonData['ecommerce_id'] ?? false))) {
+            $idDepto_ecommerce = $this->integraCategoriaTray(
+                $subgrupo->grupo->depto->nome, 
+                $subgrupo->grupo->depto->codigo,
+                mb_strtolower(str_replace(' ', '-', $subgrupo->grupo->depto->nome))
+            );
+            $subgrupo->grupo->depto->jsonData['ecommerce_id'] = $idDepto_ecommerce;
+            $this->deptoEntityHandler->save($subgrupo->grupo->depto);
+        }
+
+        // Pois na tray os produtos podem às vezes ter apenas 2 níveis de categoria
+        if ($subgrupo->grupo->nome === '<< NÃO INFORMADO >>') {
+            return $idDepto_ecommerce;
+        }
+
+        if (!($idGrupo_ecommerce = ($subgrupo->grupo->jsonData['ecommerce_id'] ?? false))) {
+            $idGrupo_ecommerce = $this->integraCategoriaTray(
+                $subgrupo->grupo->nome,
+                $subgrupo->grupo->depto->codigo . $subgrupo->grupo->codigo,
+                mb_strtolower(str_replace(' ', '-', $subgrupo->grupo->depto->nome . '_' . $subgrupo->grupo->nome)),
+                $idDepto_ecommerce);
+            $subgrupo->grupo->jsonData['ecommerce_id'] = $idGrupo_ecommerce;
+            $this->grupoEntityHandler->save($subgrupo->grupo);
+        }
+
+        // Pois na tray os produtos podem às vezes ter apenas 2 níveis de categoria
+        if ($subgrupo->nome === '<< NÃO INFORMADO >>') {
+            return $idGrupo_ecommerce;
+        }
+
+        if (!($idSubgrupo_ecommerce = ($subgrupo->jsonData['ecommerce_id'] ?? false))) {
+            $idSubgrupo_ecommerce = $this->integraCategoriaTray(
+                $subgrupo->nome,
+                $subgrupo->grupo->depto->codigo . $subgrupo->grupo->codigo . $subgrupo->codigo,
+                mb_strtolower(str_replace(' ', '-', $subgrupo->grupo->depto->nome . '_' . $subgrupo->grupo->nome . '_' . $subgrupo->nome)),
+                $idGrupo_ecommerce);
+            $subgrupo->jsonData['ecommerce_id'] = $idSubgrupo_ecommerce;
+            $this->subgrupoEntityHandler->save($subgrupo);
+        }
+
+        return $idSubgrupo_ecommerce;
+    }
+    
     /**
      * @throws ViewException
      */
     public function integraCategoria(Produto $produto): int
     {
         if (!($idDepto_ecommerce = ($produto->depto->jsonData['ecommerce_id'] ?? false))) {
-            $idDepto_ecommerce = $this->integraCategoriaTray($produto->depto->nome, $produto->depto->codigo, $produto->depto->nome);
+            $idDepto_ecommerce = $this->integraCategoriaTray(
+                $produto->depto->nome, 
+                $produto->depto->codigo,
+                mb_strtolower(str_replace(' ', '-', $produto->depto->nome)),
+            );
             $produto->depto->jsonData['ecommerce_id'] = $idDepto_ecommerce;
             $this->deptoEntityHandler->save($produto->depto);
         }
@@ -283,7 +342,7 @@ class IntegradorTray implements IntegradorEcommerce
             $idGrupo_ecommerce = $this->integraCategoriaTray(
                 $produto->grupo->nome,
                 $produto->depto->codigo . $produto->grupo->codigo,
-                mb_strtolower((new StringAssembler([$produto->depto->nome . '/' . $produto->grupo->nome]))->kebab()),
+                mb_strtolower(str_replace(' ', '-', $produto->depto->nome . '_' . $produto->grupo->nome)),
                 $idDepto_ecommerce);
             $produto->grupo->jsonData['ecommerce_id'] = $idGrupo_ecommerce;
             $this->grupoEntityHandler->save($produto->grupo);
@@ -298,7 +357,7 @@ class IntegradorTray implements IntegradorEcommerce
             $idSubgrupo_ecommerce = $this->integraCategoriaTray(
                 $produto->subgrupo->nome,
                 $produto->depto->codigo . $produto->grupo->codigo . $produto->subgrupo->codigo,
-                mb_strtolower(str_replace(' ', '-', $produto->depto->nome . '/' . $produto->grupo->nome . '/' . $produto->subgrupo->nome)),
+                mb_strtolower(str_replace(' ', '-', $produto->depto->nome . '_' . $produto->grupo->nome . '_' . $produto->subgrupo->nome)),
                 $idGrupo_ecommerce);
             $produto->subgrupo->jsonData['ecommerce_id'] = $idSubgrupo_ecommerce;
             $this->subgrupoEntityHandler->save($produto->subgrupo);
@@ -397,11 +456,12 @@ class IntegradorTray implements IntegradorEcommerce
 
             $arrProduct = [
                 'Product' => [
-                    'category_id' => $produto->subgrupo->jsonData['ecommerce_id'],
-//                    'ean' => $produto->jsonData['ean'],
+                    'category_id' => $idSubgrupo_ecommerce,
+                    'ean' => $produto->ean,
                     'available' => $produto->status === 'ATIVO' ? 1 : 0,
-                    'brand' => $produto->jsonData['marca'],
+                    'brand' => $produto->marca,
                     'name' => $produto->nome,
+                    'reference' => $produto->codigo,
 //                    'title' => $produto->jsonData['titulo'],
 //                    'description' => $produto->jsonData['descricao_produto'],
 //                    'additional_message' => $produto->jsonData['caracteristicas'],
@@ -412,8 +472,9 @@ class IntegradorTray implements IntegradorEcommerce
 //                    'hot' => 1,
                     'price' => $produto->jsonData['preco_tabela'],
                     'cost_price' => $produto->jsonData['preco_custo'],
+                    'related_products' => ["13"],
 //                    'weight' => 20,
-                    //'stock' => $produto->jsonData['qtde_estoque'],
+                    'stock' => 1,
                 ],
             ];
 
