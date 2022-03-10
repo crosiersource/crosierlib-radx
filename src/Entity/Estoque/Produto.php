@@ -48,10 +48,13 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "codigo": "exact",
  *     "depto": "exact",
  *     "grupo": "exact",
- *     "subgrupo": "exact"
+ *     "subgrupo": "exact",
+ *     "nome": "partial"
  * })
  * 
  * @ApiFilter(LikeFilter::class, properties={"nome"})
+ * 
+ * 
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
  * 
  * @ApiFilter(JsonFilter::class, properties={
