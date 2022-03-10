@@ -210,6 +210,14 @@ class Produto implements EntityId
      * @Groups("produto")
      */
     public ?bool $ecommerce = false;
+
+    /**
+     * Marca a última data de integração ao e-commerce.
+     *
+     * @ORM\Column(name="dt_ult_integracao_ecommerce", type="datetime", nullable=true)
+     * @Groups("produto")
+     */
+    public ?DateTime $dtUltIntegracaoEcommerce = null;
     
 
     /**
