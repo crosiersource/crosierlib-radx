@@ -201,6 +201,15 @@ class Produto implements EntityId
      * @var null|string
      */
     public ?string $composicao = 'N';
+
+    
+    /**
+     * Informa se o produto está em e-commerce.
+     * 
+     * @ORM\Column(name="ecommerce", type="boolean", nullable=true)
+     * @Groups("produto")
+     */
+    public ?bool $ecommerce = false;
     
 
     /**

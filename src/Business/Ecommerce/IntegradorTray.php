@@ -508,6 +508,7 @@ class IntegradorTray implements IntegradorEcommerce
             $produto->jsonData['ecommerce_id'] = $idProdutoTray;
             $produto->jsonData['integrado_em'] = (new \DateTime())->format('Y-m-d H:i:s');
             $produto->jsonData['integrado_por'] = $this->security->getUser() ? $this->security->getUser()->getUsername() : 'n/d';
+            $produto->ecommerce = true;
             $this->produtoEntityHandler->save($produto);
             $this->syslog->info('integraProduto - salvando json_data: OK', $syslog_obs);
 
