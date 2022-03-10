@@ -11,9 +11,11 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoSaldo;
  */
 class ProdutoSaldoEntityHandler extends EntityHandler
 {
-
+    
     public function getEntityClass(): string
     {
         return ProdutoSaldo::class;
     }
+
+
 }

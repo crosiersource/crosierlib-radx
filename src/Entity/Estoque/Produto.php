@@ -22,7 +22,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"produto","fornecedor","produtoPreco","listaPreco","unidade","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"produto","fornecedor","produtoPreco","produtoSaldo","listaPreco","unidade","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"produto"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -237,6 +237,7 @@ class Produto implements EntityId
     /**
      * @ORM\OneToMany(targetEntity="ProdutoSaldo", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
      * @var ProdutoSaldo[]|ArrayCollection|null
+     * @Groups("produto")
      */
     public $saldos;
     
