@@ -1106,4 +1106,10 @@ class IntegradorSimplo7 implements IntegradorEcommerce
         return $json;
     }
 
+    public function integraProduto(Produto $produto, ?bool $integrarImagens = true, ?bool $respeitarDelay = false)
+    {
+        // TODO: Implement integraProduto() method.
+    }
+
+
 }

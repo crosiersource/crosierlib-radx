@@ -483,7 +483,7 @@ class IntegradorTray implements IntegradorEcommerce
                     'price' => $produto->jsonData['preco_ecommerce'] ?? $produto->jsonData['preco_tabela'],
                     'cost_price' => $produto->jsonData['preco_custo'],
 //                    'weight' => 20,
-                    'stock' => 1,
+                    'stock' => $produto->qtdeTotal,
                 ],
             ];
 
@@ -508,6 +508,7 @@ class IntegradorTray implements IntegradorEcommerce
             $this->syslog->info('integraProduto - salvando json_data', $syslog_obs);
             $produto->jsonData['ecommerce_id'] = $idProdutoTray;
             $produto->jsonData['ecommerce_integr_por'] = $this->security->getUser() ? $this->security->getUser()->getUsername() : 'n/d';
+            $produto->jsonData['ecommerce_desatualizado'] = false;
             $produto->ecommerce = true;
             $produto->dtUltIntegracaoEcommerce = $agora;
             $this->produtoEntityHandler->save($produto);

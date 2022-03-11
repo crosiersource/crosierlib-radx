@@ -5,6 +5,7 @@ namespace CrosierSource\CrosierLibRadxBundle\Business\Ecommerce;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\DeptoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoEntityHandler;
@@ -305,6 +306,11 @@ class IntegradorMercadoLivre implements IntegradorEcommerce
     public function integrarVendaParaEcommerce(Venda $venda)
     {
         // TODO: Implement integrarVendaParaEcommerce() method.
+    }
+
+    public function integraProduto(Produto $produto, ?bool $integrarImagens = true, ?bool $respeitarDelay = false)
+    {
+        // TODO: Implement integraProduto() method.
     }
 
 
