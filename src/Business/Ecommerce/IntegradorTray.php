@@ -477,7 +477,7 @@ class IntegradorTray implements IntegradorEcommerce
 //                    'additional_message' => $produto->jsonData['caracteristicas'],
 //                    "picture_source_1" => "https://49839.cdn.simplo7.net/static/49839/sku/panos-de-cera-pano-de-cera-kit-p-m-g-estampa-abelhas--p-1619746505558.jpg",
 //                    "picture_source_2" => "https://49839.cdn.simplo7.net/static/49839/sku/panos-de-cera-pano-de-cera-kit-p-m-g-estampa-abelhas--p-1619746502208.jpg",
-//                    'available' => $produto->status === 'ATIVO' ? 1 : 0,
+                    'available' => $produto->status === 'ATIVO' ? 1 : 0,
 //                    'has_variation' => 0,
 //                    'hot' => 1,
                     'price' => $produto->jsonData['preco_ecommerce'] ?? $produto->jsonData['preco_tabela'],
