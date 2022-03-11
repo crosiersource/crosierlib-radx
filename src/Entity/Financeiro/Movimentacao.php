@@ -57,7 +57,8 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "modo": "exact",
  *     "status": "exact",
  *     "centroCusto": "exact",
- *     "grupoItem": "exact"
+ *     "grupoItem": "exact",
+ *     "chequeNumCheque": "exact"
  * })
  * 
  * @ApiFilter(DateFilter::class, properties={"dtUtil", "dtVenctoEfetiva", "dtVencto", "dtPagto"})
