@@ -507,8 +507,7 @@ class IntegradorTray implements IntegradorEcommerce
             $this->syslog->info('integraProduto - integrado', $syslog_obs);
             $this->syslog->info('integraProduto - salvando json_data', $syslog_obs);
             $produto->jsonData['ecommerce_id'] = $idProdutoTray;
-            $produto->jsonData['integrado_em'] = $agora->format('Y-m-d H:i:s');
-            $produto->jsonData['integrado_por'] = $this->security->getUser() ? $this->security->getUser()->getUsername() : 'n/d';
+            $produto->jsonData['ecommerce_integr_por'] = $this->security->getUser() ? $this->security->getUser()->getUsername() : 'n/d';
             $produto->ecommerce = true;
             $produto->dtUltIntegracaoEcommerce = $agora;
             $this->produtoEntityHandler->save($produto);

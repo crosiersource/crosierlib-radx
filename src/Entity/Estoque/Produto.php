@@ -19,10 +19,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\JsonFilter;
 use Symfony\Component\Serializer\Annotation\SerializedName;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"produto","fornecedor","produtoPreco","produtoSaldo","listaPreco","unidade","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"produto","depto","grupo","subgrupo","fornecedor","produtoPreco","produtoSaldo","listaPreco","unidade","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"produto"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -49,13 +51,32 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "depto": "exact",
  *     "grupo": "exact",
  *     "subgrupo": "exact",
- *     "nome": "partial"
+ *     "nome": "partial",
+ *     "composicao": "exact",
  * })
  * 
  * @ApiFilter(LikeFilter::class, properties={"nome"})
  * 
+ * @ApiFilter(BooleanFilter::class, properties={
+ *     "ecommerce": "exact"
+ * })
  * 
- * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(DateFilter::class, properties={"dtUltIntegracaoEcommerce"})
+ * 
+ * @ApiFilter(OrderFilter::class, properties={
+ *     "id", 
+ *     "codigo",
+ *     "marca",
+ *     "qtdeTotal",
+ *     "composicao",
+ *     "depto.codigo", 
+ *     "grupo.codigo", 
+ *     "subgrupo.codigo", 
+ *     "fornecedor.nome", 
+ *     "nome", 
+ *     "dtUltIntegracaoEcommerce",
+ *     "updated"
+ * }, arguments={"orderParameterName"="order"})
  * 
  * @ApiFilter(JsonFilter::class, properties={
  *     "jsonData.referencias_extras"={ "type": "string", "strategy": "partial" }
@@ -217,7 +238,7 @@ class Produto implements EntityId
      * @ORM\Column(name="dt_ult_integracao_ecommerce", type="datetime", nullable=true)
      * @Groups("produto")
      */
-    public ?DateTime $dtUltIntegracaoEcommerce = null;
+    public ?\DateTime $dtUltIntegracaoEcommerce = null;
     
 
     /**
