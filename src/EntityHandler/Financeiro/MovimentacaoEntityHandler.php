@@ -208,7 +208,6 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         // Regras para movimentações de cartões
         if (FALSE === $movimentacao->modo->modoDeCartao) {
-            $movimentacao->qtdeParcelas = null;
             $movimentacao->bandeiraCartao = null;
             $movimentacao->operadoraCartao = null;
         } else {
