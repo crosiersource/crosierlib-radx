@@ -1095,6 +1095,8 @@ class MovimentacaoEntityHandler extends EntityHandler
             $cadeia->fechada = true;
 
             $movimentacao->parcelamento = true;
+            $movimentacao->qtdeParcelas = count($dadosParcelamento);
+            $movimentacao->parcelaNum = 1;
             $movimentacao->cadeia = $cadeia;
             $movimentacao->cadeiaQtde = count($dadosParcelamento);
             $movimentacao->cadeiaOrdem = 1;
@@ -1107,6 +1109,8 @@ class MovimentacaoEntityHandler extends EntityHandler
                 /** @var Movimentacao $parcela */
                 $parcela = $this->cloneEntityId($movimentacao);
                 $parcela->parcelamento = true;
+                $parcela->qtdeParcelas = count($dadosParcelamento);
+                $parcela->parcelaNum = $i+1;
                 $parcela->cadeia = $cadeia;
                 $parcela->cadeiaQtde = count($dadosParcelamento);
                 $parcela->cadeiaOrdem = $i + 1;
