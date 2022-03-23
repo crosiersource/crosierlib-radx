@@ -309,7 +309,7 @@ class SpedNFeBusiness
         $total_vCOFINS = 0;
 
         $total_vICMSUFDest = 0.00;
-        
+
         /** @var NotaFiscalItem $nfItem */
         foreach ($notaFiscal->getItens() as $nfItem) {
             $itemXML = $nfe->infNFe->addChild('det');
@@ -536,7 +536,45 @@ class SpedNFeBusiness
                         $itemXML->imposto->ICMSUFDest->vBCFCPUFDest = 0.00;
                         $itemXML->imposto->ICMSUFDest->pFCPUFDest = 0.0000;
                         $icmsUFDest = 17;
-                        $itemXML->imposto->ICMSUFDest->pICMSUFDest = '17.00';
+
+                        switch ($nfe->infNFe->dest->enderDest->UF) {
+                            case 'AC':
+                            case 'AL':
+                            case 'ES':
+                            case 'GO':
+                            case 'MT':
+                            case 'MS':
+                            case 'PA':
+                            case 'PI':
+                            case 'RS':
+                            case 'RR':
+                            case 'SC':
+                                $icmsUFDest = 17;
+                                break;
+                            case 'AM':
+                            case 'AP':
+                            case 'BA':
+                            case 'CE':
+                            case 'DF':
+                            case 'MA':
+                            case 'MG':
+                            case 'PB':
+                            case 'PE':
+                            case 'RN':
+                            case 'RJ':
+                            case 'SP':
+                            case 'SE':
+                            case 'TO':
+                                $icmsUFDest = 18;
+                                break;
+                            case 'RO':
+                                $icmsUFDest = 17.5;
+                                break;
+                            case 'PR':
+                                throw new ViewException('nfe->infNFe->dest->enderDest->UF não pode ser "PR"');
+                        }
+
+                        $itemXML->imposto->ICMSUFDest->pICMSUFDest = number_format($icmsUFDest, 2, '.', '');
                         $itemXML->imposto->ICMSUFDest->pICMSInter = $itemXML->imposto->ICMS->$tagICMS->pICMS;
                         $itemXML->imposto->ICMSUFDest->pICMSInterPart = 100.00;
                         $itemXML->imposto->ICMSUFDest->vFCPUFDest = 0.00;
@@ -552,7 +590,6 @@ class SpedNFeBusiness
             }
             case 900:
             {
-
                 $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
                 $itemXML->imposto->ICMS->ICMSSN900->CSOSN = 900;
                 $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
@@ -596,11 +633,11 @@ class SpedNFeBusiness
         try {
             $tools = $this->nfeUtils->getToolsByCNPJ($notaFiscal->documentoEmitente);
             $tools->model($notaFiscal->tipoNotaFiscal === 'NFE' ? '55' : '65');
-            
+
             if (!$notaFiscal->getXMLDecoded()) {
                 throw new ViewException('Impossível enviar NFe. XMLDecoded n/d.');
             }
-            
+
             if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) && !isset($notaFiscal->getXMLDecoded()->Signature)) {
                 $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
                 $notaFiscal->setXmlNota($xmlAssinado);
@@ -608,7 +645,7 @@ class SpedNFeBusiness
             } else {
                 $xmlAssinado = $notaFiscal->getXmlNota();
             }
-            
+
             $idLote = random_int(1000000000000, 9999999999999);
             $sincrono = $notaFiscal->tipoNotaFiscal === 'NFCE' ? 1 : 0;
             $resp = $tools->sefazEnviaLote([$xmlAssinado], $idLote, $sincrono);
@@ -638,9 +675,9 @@ class SpedNFeBusiness
                     // da consultaRecibo()
                     $notaFiscal->cStat = $std->protNFe->infProt->cStat;
                     $notaFiscal->xMotivo = $std->protNFe->infProt->xMotivo;
-                    
+
                     if ($notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
-                        try {                            
+                        try {
                             $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $resp);
                             $notaFiscal->setXmlNota($r);
                         } catch (\Exception $e) {
@@ -881,14 +918,14 @@ class SpedNFeBusiness
             $st = new Standardize($response);
 
             if ($st->simpleXml()->cStat === '128') {
-                $operacoes = 
+                $operacoes =
                     [
                         210210 => '210210 - CIÊNCIA DA OPERAÇÃO',
                         210200 => '210200 - CONFIRMAÇÃO DA OPERAÇÃO',
                         210220 => '210220 - DESCONHECIMENTO DA OPERAÇÃO',
                         210240 => '210240 - OPERAÇÃO NÃO REALIZADA',
                     ];
-                
+
                 $notaFiscal->manifestDest = $operacoes[$codManifest];
             }
             $notaFiscal->dtManifestDest = new \DateTime();
