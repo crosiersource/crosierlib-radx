@@ -14,9 +14,9 @@ use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- *
  * @ApiResource(
  *     normalizationContext={"groups"={"cliente","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"cliente"},"enable_max_depth"=true},
@@ -52,17 +52,126 @@ class Cliente implements EntityId
 
     use EntityIdTrait;
 
+
     /**
-     * @ORM\Column(name="documento", type="string")
+     * @ORM\Column(name="nome", type="string", nullable="false", length=255)
+     * @Groups("cliente")
+     */
+    public ?string $nome = null;
+
+
+    /**
+     * @ORM\Column(name="documento", type="string", nullable="true", length=14)
      * @Groups("cliente")
      */
     public ?string $documento = null;
 
+
     /**
-     * @ORM\Column(name="nome", type="string")
+     * PF/PJ
+     * @ORM\Column(name="tipo_pessoa", type="string", nullable="true", length=2)
      * @Groups("cliente")
      */
-    public ?string $nome = null;
+    public ?string $tipoPessoa = null;
+
+
+    /**
+     * @ORM\Column(name="nome_fantasia", type="string", nullable="true")
+     * @Groups("cliente")
+     */
+    public ?string $nomeFantasia = null;
+
+    /**
+     * @ORM\Column(name="ie", type="string", nullable="true", length=30)
+     * @Groups("cliente")
+     */
+    public ?string $ie = null;
+
+    /**
+     * @ORM\Column(name="dt_nascimento", type="datetime", nullable=true)
+     * @Groups("cliente")
+     * @Assert\Type("\DateTime")
+     * @Assert\NotNull()
+     */
+    public ?\DateTime $dtNascimento = null;
+
+    /**
+     * @ORM\Column(name="fone1", type="string", nullable=true, length=50)
+     * @Groups("cliente")
+     * @var string|null
+     */
+    public ?string $fone1 = null;
+
+    /**
+     * @ORM\Column(name="fone2", type="string", nullable=true, length=50)
+     * @Groups("cliente")
+     * @var string|null
+     */
+    public ?string $fone2 = null;
+
+    /**
+     * @ORM\Column(name="fone3", type="string", nullable=true, length=50)
+     * @Groups("cliente")
+     * @var string|null
+     */
+    public ?string $fone3 = null;
+
+    /**
+     * @ORM\Column(name="fone4", type="string", nullable=true, length=50)
+     * @Groups("cliente")
+     * @var string|null
+     */
+    public ?string $fone4 = null;
+
+    /**
+     * @ORM\Column(name="cep", type="string", nullable=true, length=8)
+     * @var string|null
+     * @Groups("cliente")
+     */
+    public ?string $cep;
+
+    /**
+     *
+     * @ORM\Column(name="logradouro", type="string", nullable=true, length=100)
+     * @var string|null
+     * @Groups("cliente")
+     */
+    public ?string $logradouro;
+
+    /**
+     * @ORM\Column(name="numero", type="string", nullable=true, length=60)
+     * @var string|null
+     * @Groups("cliente")
+     */
+    public ?string $numero;
+
+    /**
+     * @ORM\Column(name="complemento", type="string", nullable=true, length=60)
+     * @var string|null
+     * @Groups("cliente")
+     */
+    public ?string $complemento;
+
+    /**
+     * @ORM\Column(name="bairro", type="string", nullable=true, length=60)
+     * @var string|null
+     * @Groups("cliente")
+     */
+    public ?string $bairro;
+
+    /**
+     * @ORM\Column(name="cidade", type="string", nullable=true, length=60)
+     * @var string|null
+     * @Groups("cliente")
+     */
+    public ?string $cidade;
+
+    /**
+     * @ORM\Column(name="estado", type="string", nullable=true, length=2)
+     * @var string|null
+     * @Groups("cliente")
+     */
+    public ?string $estado;
 
     /**
      * @ORM\Column(name="json_data", type="json")
@@ -89,6 +198,31 @@ class Cliente implements EntityId
 
 
     /**
+     * @return string
+     * @Groups("cliente")
+     */
+    public function getIdDocumentoNome(): string
+    {
+        $r = '(' . str_pad($this->id, 7, '0', STR_PAD_LEFT) . ') ';
+
+        if (!($this->documento ?: false)) {
+            $r .= ' [DOCUMENTO_ND]';
+        } else {
+            $r .= StringUtils::mascararCnpjCpf($this->documento);
+        }
+
+        if ($this->tipoPessoa === 'PJ') {
+            $r .= ' - ' . ($this->nomeFantasia ?: $this->nome);
+        } else {
+            $r .= ' - ' . $this->nome;
+        }
+        
+
+        return $r;
+    }
+
+
+    /**
      * @param string $tipo
      * @return array|null
      */
@@ -104,6 +238,7 @@ class Cliente implements EntityId
         }
         return null;
     }
+
 
     /**
      * Insere somente se já não existir.
