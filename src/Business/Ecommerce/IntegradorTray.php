@@ -269,7 +269,7 @@ class IntegradorTray implements IntegradorEcommerce
                 throw new ViewException('Erro ao criar categoria');
             }
             return $json['id'];
-        } catch (ClientException $e) {
+        } catch (GuzzleException $e) {
             throw new ViewException($e->getResponse()->getBody()->getContents(), 0, $e);
         }
     }
@@ -298,7 +298,7 @@ class IntegradorTray implements IntegradorEcommerce
         if (!($idGrupo_ecommerce = ($subgrupo->grupo->jsonData['ecommerce_id'] ?? false))) {
             $idGrupo_ecommerce = $this->integraCategoriaTray(
                 $subgrupo->grupo->nome,
-                $subgrupo->grupo->depto->codigo . $subgrupo->grupo->codigo,
+                $subgrupo->grupo->codigo,
                 mb_strtolower(str_replace(' ', '-', $subgrupo->grupo->depto->nome . '_' . $subgrupo->grupo->nome)),
                 $idDepto_ecommerce);
             $subgrupo->grupo->jsonData['ecommerce_id'] = $idGrupo_ecommerce;
@@ -313,7 +313,7 @@ class IntegradorTray implements IntegradorEcommerce
         if (!($idSubgrupo_ecommerce = ($subgrupo->jsonData['ecommerce_id'] ?? false))) {
             $idSubgrupo_ecommerce = $this->integraCategoriaTray(
                 $subgrupo->nome,
-                $subgrupo->grupo->depto->codigo . $subgrupo->grupo->codigo . $subgrupo->codigo,
+                $subgrupo->codigo,
                 mb_strtolower(str_replace(' ', '-', $subgrupo->grupo->depto->nome . '_' . $subgrupo->grupo->nome . '_' . $subgrupo->nome)),
                 $idGrupo_ecommerce);
             $subgrupo->jsonData['ecommerce_id'] = $idSubgrupo_ecommerce;
