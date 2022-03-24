@@ -128,7 +128,7 @@ class Cliente implements EntityId
      * @var string|null
      * @Groups("cliente")
      */
-    public ?string $cep;
+    public ?string $cep = null;
 
     /**
      *
@@ -136,42 +136,42 @@ class Cliente implements EntityId
      * @var string|null
      * @Groups("cliente")
      */
-    public ?string $logradouro;
+    public ?string $logradouro = null;
 
     /**
      * @ORM\Column(name="numero", type="string", nullable=true, length=60)
      * @var string|null
      * @Groups("cliente")
      */
-    public ?string $numero;
+    public ?string $numero = null;
 
     /**
      * @ORM\Column(name="complemento", type="string", nullable=true, length=60)
      * @var string|null
      * @Groups("cliente")
      */
-    public ?string $complemento;
+    public ?string $complemento = null;
 
     /**
      * @ORM\Column(name="bairro", type="string", nullable=true, length=60)
      * @var string|null
      * @Groups("cliente")
      */
-    public ?string $bairro;
+    public ?string $bairro = null;
 
     /**
      * @ORM\Column(name="cidade", type="string", nullable=true, length=60)
      * @var string|null
      * @Groups("cliente")
      */
-    public ?string $cidade;
+    public ?string $cidade = null;
 
     /**
      * @ORM\Column(name="estado", type="string", nullable=true, length=2)
      * @var string|null
      * @Groups("cliente")
      */
-    public ?string $estado;
+    public ?string $estado = null;
 
     /**
      * @ORM\Column(name="json_data", type="json")
