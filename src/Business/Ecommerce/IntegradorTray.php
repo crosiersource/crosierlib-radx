@@ -501,12 +501,17 @@ class IntegradorTray implements IntegradorEcommerce
 //                    'has_variation' => 0,
 //                    'hot' => 1,
                     'price' => $preco,
-                    'promotional_price' => $precoPromocional,
                     'cost_price' => $produto->jsonData['preco_custo'],
 //                    'weight' => 20,
                     'stock' => $produto->qtdeTotal,
                 ],
             ];
+            if ($precoPromocional) {
+                $ontem = DateTimeUtils::addDays(new \DateTime(), -1);
+                $arrProduct['Product']['promotional_price'] = $precoPromocional;
+                $arrProduct['Product']['start_promotion'] = $ontem->format('Y-m-d');
+                $arrProduct['Product']['end_promotion'] = '2040-12-01'; 
+            }
 
             $url = $this->getEndpoint() . 'web_api/products?access_token=' . $this->getAccessToken();
             $method = 'POST';
