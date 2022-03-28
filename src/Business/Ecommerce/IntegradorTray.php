@@ -112,7 +112,7 @@ class IntegradorTray implements IntegradorEcommerce
     {
         $this->security = $security;
         $this->params = $params;
-        $this->syslog = $syslog->setApp('radx')->setComponent(self::class)->setEcho(true);
+        $this->syslog = $syslog->setApp('radx')->setComponent(self::class)->setEcho(false);
         $this->deptoEntityHandler = $deptoEntityHandler;
         $this->grupoEntityHandler = $grupoEntityHandler;
         $this->subgrupoEntityHandler = $subgrupoEntityHandler;
