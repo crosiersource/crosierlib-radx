@@ -92,6 +92,8 @@ class IntegradorTray implements IntegradorEcommerce
     private ?int $carteiraYapayId = null;
 
     private ?string $accessToken = null;
+    
+    private ?int $delayEntreIntegracoesDeProduto = null;
 
 
     public function __construct(Security               $security,
@@ -110,7 +112,7 @@ class IntegradorTray implements IntegradorEcommerce
     {
         $this->security = $security;
         $this->params = $params;
-        $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
+        $this->syslog = $syslog->setApp('radx')->setComponent(self::class)->setEcho(true);
         $this->deptoEntityHandler = $deptoEntityHandler;
         $this->grupoEntityHandler = $grupoEntityHandler;
         $this->subgrupoEntityHandler = $subgrupoEntityHandler;
@@ -450,6 +452,17 @@ class IntegradorTray implements IntegradorEcommerce
             $syslog_obs = 'produto = ' . $produto->nome . ' (' . $produto->getId() . ')';
             $this->syslog->debug('integraProduto - ini', $syslog_obs);
 
+            if ($respeitarDelay) {
+                if ($this->getDelayEntreIntegracoesDeProduto()) {
+                    $this->syslog->info('integraProduto - delay de ' . $this->getDelayEntreIntegracoesDeProduto(), $syslog_obs);
+                    sleep($this->getDelayEntreIntegracoesDeProduto());
+                } else {
+                    $this->syslog->info('integraProduto - sem delay entre integrações');
+                }
+            }
+
+            $start = microtime(true);            
+
             $idMarca_ecommerce = $this->integraMarca($produto->jsonData['marca'] ?? '');
 
             $idSubgrupo_ecommerce = $this->integraCategoria($produto);
@@ -520,6 +533,10 @@ class IntegradorTray implements IntegradorEcommerce
             $produto->ecommerce = true;
             $produto->dtUltIntegracaoEcommerce = $agora;
             $this->produtoEntityHandler->save($produto);
+
+            $tt = (int)(microtime(true) - $start);
+            $this->syslog->info('integraProduto - OK (em ' . $tt . ' segundos)', $syslog_obs);
+            
             $this->syslog->info('integraProduto - salvando json_data: OK', $syslog_obs);
 
         } catch (GuzzleException $e) {
@@ -1235,6 +1252,29 @@ class IntegradorTray implements IntegradorEcommerce
             }
         }
 
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getDelayEntreIntegracoesDeProduto(): string
+    {
+        if ($this->delayEntreIntegracoesDeProduto === null) {
+            try {
+                $conn = $this->produtoEntityHandler->getDoctrine()->getConnection();
+                $rs = $conn->fetchAssociative('SELECT valor FROM cfg_app_config WHERE chave = :chave AND app_uuid = :appUUID',
+                    [
+                        'chave' => 'ecomm_info_delay_entre_integracoes_de_produto',
+                        'appUUID' => $_SERVER['CROSIERAPPRADX_UUID']
+                    ]);
+                $this->delayEntreIntegracoesDeProduto = (int)($rs['valor'] ?? 1);
+            } catch (\Throwable $e) {
+                $this->syslog->err('Erro ao pesquisar valor para "ecomm_info_delay_entre_integracoes_de_produto". Default para 0');
+                $this->delayEntreIntegracoesDeProduto = 0;
+            }
+        }
+        return $this->delayEntreIntegracoesDeProduto;
     }
 
 
