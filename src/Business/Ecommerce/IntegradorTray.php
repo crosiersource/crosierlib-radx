@@ -455,10 +455,17 @@ class IntegradorTray implements IntegradorEcommerce
             $idSubgrupo_ecommerce = $this->integraCategoria($produto);
 
             $preco = 0;
+            $precoPromocional = null;
+            
             if ((float)($produto->jsonData['preco_ecommerce'] ?? 0) > 0) {
                 $preco = (float)$produto->jsonData['preco_ecommerce'];
             } else if ((float)($produto->jsonData['preco_tabela'] ?? 0) > 0) {
                 $preco = (float)$produto->jsonData['preco_tabela'];
+                if ((float)($produto->jsonData['preco_promocao'] ?? 0) > 0) {
+                    $precoPromocional = (float)$produto->jsonData['preco_promocao'];
+                } elseif ((float)($produto->jsonData['preco_venda_com_desconto'] ?? 0) > 0) {
+                    $precoPromocional = (float)$produto->jsonData['preco_venda_com_desconto'];
+                }
             }
             if ($preco <= 0) {
                 throw new ViewException('Não é possível integrar ao e-commerce produto sem preço');
@@ -480,7 +487,8 @@ class IntegradorTray implements IntegradorEcommerce
                     'available' => $produto->status === 'ATIVO' ? 1 : 0,
 //                    'has_variation' => 0,
 //                    'hot' => 1,
-                    'price' => $produto->jsonData['preco_ecommerce'] ?? $produto->jsonData['preco_tabela'],
+                    'price' => $preco,
+                    'promotional_price' => $precoPromocional,
                     'cost_price' => $produto->jsonData['preco_custo'],
 //                    'weight' => 20,
                     'stock' => $produto->qtdeTotal,

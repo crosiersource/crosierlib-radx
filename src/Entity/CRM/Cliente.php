@@ -53,6 +53,14 @@ class Cliente implements EntityId
     use EntityIdTrait;
 
 
+
+    /**
+     * @ORM\Column(name="codigo", type="string")
+     * @var null|string
+     * @Groups("cliente")
+     */
+    public ?string $codigo = null;
+
     /**
      * @ORM\Column(name="nome", type="string", nullable="false", length=255)
      * @Groups("cliente")
@@ -91,7 +99,6 @@ class Cliente implements EntityId
      * @ORM\Column(name="dt_nascimento", type="datetime", nullable=true)
      * @Groups("cliente")
      * @Assert\Type("\DateTime")
-     * @Assert\NotNull()
      */
     public ?\DateTime $dtNascimento = null;
 
@@ -173,6 +180,15 @@ class Cliente implements EntityId
      */
     public ?string $estado = null;
 
+
+    /**
+     * @ORM\Column(name="ativo", type="boolean")
+     * @var null|bool
+     *
+     * @Groups("cliente")
+     */
+    public ?bool $ativo = null;
+    
     /**
      * @ORM\Column(name="json_data", type="json")
      * @NotUppercase()
