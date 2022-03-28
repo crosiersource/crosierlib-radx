@@ -539,8 +539,8 @@ class IntegradorTray implements IntegradorEcommerce
             $produto->dtUltIntegracaoEcommerce = $agora;
             $this->produtoEntityHandler->save($produto);
 
-            $tt = (int)(microtime(true) - $start);
-            $this->syslog->info('integraProduto - OK (em ' . $tt . ' segundos)', $syslog_obs);
+            $tt = (microtime(true) - $start);
+            $this->syslog->info('integraProduto - OK (em ' . $tt . ' ms)', $syslog_obs);
             
             $this->syslog->info('integraProduto - salvando json_data: OK', $syslog_obs);
 
