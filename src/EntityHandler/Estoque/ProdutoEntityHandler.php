@@ -142,7 +142,6 @@ class ProdutoEntityHandler extends EntityHandler
         }
         $produto->jsonData['info_precos'] = isset($produto->jsonData['info_precos']) ? substr($produto->jsonData['info_precos'], 0, -4) : '';
 
-
         $this->calcPorcentPreench($produto);
 
         $this->corrigirEstoqueProdutoComposicao($produto);

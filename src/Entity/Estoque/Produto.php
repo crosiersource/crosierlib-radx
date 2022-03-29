@@ -205,7 +205,7 @@ class Produto implements EntityId
      * @ORM\Column(name="qtde_total", type="decimal", nullable=false, precision=15, scale=3)
      * @var null|float
      */
-    public ?float $qtdeTotal = null;
+    public ?float $qtdeTotal = 0.0;
     
 
     /**

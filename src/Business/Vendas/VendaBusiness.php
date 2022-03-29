@@ -343,8 +343,10 @@ class VendaBusiness
             $mov_taxa->descontos = null;
             $mov_taxa->acrescimos = null;
             $mov_taxa->valorTotal = null;
-            $mov_taxa->descricao = 'TAXA YAPAY';
-            $this->movimentacaoEntityHandler->save($mov_taxa);
+            $mov_taxa->descricao = 'TAXA YAPAY ' .
+                str_pad($venda->jsonData['ecommerce_numeroPedido'] ?? '0', 9, 0, STR_PAD_LEFT) . ' - Id: ' .
+                str_pad($venda->getId(), 9, 0, STR_PAD_LEFT) . ' (' . $venda->jsonData['infoPagtos'] . ')';
+            $mov_taxa = $this->movimentacaoEntityHandler->save($mov_taxa);
             $fatura->addMovimentacao($mov_taxa);
 
             $fatura = $this->faturaEntityHandler->save($fatura);

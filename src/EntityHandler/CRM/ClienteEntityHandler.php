@@ -3,6 +3,7 @@
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM;
 
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 
 /**
@@ -16,9 +17,18 @@ class ClienteEntityHandler extends EntityHandler
     {
         return Cliente::class;
     }
+    
+    public function getProxCodigo(): int {
+        $rsProxCodigo = $this->getDoctrine()->getConnection()->fetchAssociative('SELECT max(codigo)+1 as prox FROM crm_cliente WHERE codigo < 2147483647');
+        return $rsProxCodigo['prox'] ?? 1;
+    }
 
     public function beforeSave(/** @var Cliente $cliente */ $cliente)
     {
+        if (!$cliente->codigo) {
+            $cliente->codigo = StringUtils::guidv4();
+        }
+        $cliente->ativo = $cliente->ativo === NULL ? true : $cliente->ativo;
         // CPF/CNPJ que comecem com 'G' são considerados "gerados", apenas para marcar posição.
         $cliente->documento = preg_replace("/[^G^0-9]/", "", strtoupper($cliente->documento));
         $cliente->cep = preg_replace("/[^0-9]/", "", $cliente->cep);
