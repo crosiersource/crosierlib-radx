@@ -496,7 +496,8 @@ class IntegradorTray implements IntegradorEcommerce
             if ($preco <= 0) {
                 throw new ViewException('Não é possível integrar ao e-commerce produto sem preço');
             }
-
+           
+            
             $arrProduct = [
                 'Product' => [
                     'category_id' => $idSubgrupo_ecommerce,
@@ -519,7 +520,7 @@ class IntegradorTray implements IntegradorEcommerce
                     'stock' => $produto->qtdeTotal,
                 ],
             ];
-            if ($precoPromocional) {
+            if ($precoPromocional && ($preco !== $precoPromocional)) {
                 $ontem = DateTimeUtils::addDays(new \DateTime(), -1);
                 $arrProduct['Product']['promotional_price'] = $precoPromocional;
                 $arrProduct['Product']['start_promotion'] = $ontem->format('Y-m-d');
