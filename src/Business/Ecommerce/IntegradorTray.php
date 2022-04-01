@@ -266,6 +266,7 @@ class IntegradorTray implements IntegradorEcommerce
     private function integraCategoriaTray(string $nome, string $codigo, string $slug, ?int $parentId = null)
     {
         try {
+            $this->init();
             $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->getAccessToken();
             $arr = [
                 'form_params' => [
@@ -295,6 +296,7 @@ class IntegradorTray implements IntegradorEcommerce
      */
     public function integraSubgrupo(Subgrupo $subgrupo): int
     {
+        $this->init();
         if (!($idDepto_ecommerce = ($subgrupo->grupo->depto->jsonData['ecommerce_id'] ?? false))) {
             $idDepto_ecommerce = $this->integraCategoriaTray(
                 $subgrupo->grupo->depto->nome,
@@ -462,6 +464,7 @@ class IntegradorTray implements IntegradorEcommerce
     {
         // Ainda só funciona para a arquitetura 1x1
         try {
+            $this->init();
             $syslog_obs = 'produto = ' . $produto->nome . ' (' . $produto->getId() . ')';
             $this->syslog->debug('integraProduto - ini', $syslog_obs);
 
@@ -856,6 +859,7 @@ class IntegradorTray implements IntegradorEcommerce
     public function integrarDadosFiscaisNoPedido(int $numPedido)
     {
         try {
+            $this->init();
             $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
             $existe = $conn->fetchAssociative('SELECT nf.id FROM fis_nf nf WHERE nf.json_data->>"$.num_pedido_tray" = :numPedido', ['numPedido' => $numPedido]);
             if (!$existe) {
@@ -901,6 +905,8 @@ class IntegradorTray implements IntegradorEcommerce
     private function integrarVendaParaCrosier(array $jsonPedido, ?bool $resalvar = false): void
     {
         try {
+            $this->init();
+            
             $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
             $conn->beginTransaction();
 
@@ -1289,7 +1295,6 @@ class IntegradorTray implements IntegradorEcommerce
      */
     public function integrarVendaParaEcommerce(Venda $venda)
     {
-
         try {
             $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
 
