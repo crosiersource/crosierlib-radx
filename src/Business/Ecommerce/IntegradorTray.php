@@ -518,7 +518,7 @@ class IntegradorTray implements IntegradorEcommerce
 //                    'has_variation' => 0,
 //                    'hot' => 1,
                     'price' => $preco,
-                    'promotional_price' => null,
+                    'promotional_price' => 0,
                     'start_promotion' => null,
                     'end_promotion' => null,
                     'cost_price' => $produto->jsonData['preco_custo'],
