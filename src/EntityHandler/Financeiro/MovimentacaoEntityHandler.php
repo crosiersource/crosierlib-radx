@@ -78,9 +78,9 @@ class MovimentacaoEntityHandler extends EntityHandler
         $repoCarteira = $this->doctrine->getRepository(Carteira::class);
         $repoModo = $this->doctrine->getRepository(Modo::class);
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
-        
+
         $movimentacao->tipoLancto = $movimentacao->tipoLancto ?? $repoTipoLancto->findOneByCodigo(20);
-        
+
         if ($movimentacao->grupoItem) {
             $movimentacao->carteira = $repoCarteira->findOneByCodigo(50);
             $movimentacao->modo = $repoModo->findOneByCodigo(50);
@@ -232,7 +232,6 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
         }
 
-        
 
         // Regras para movimentações com cheque
         if (FALSE === $movimentacao->modo->modoDeCheque) {
@@ -360,6 +359,10 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         if ($movimentacao->jsonData['dadosParcelamento'] ?? false) {
             return $this->saveParcelamento($movimentacao);
+        }
+
+        if (in_array($movimentacao->categoria->codigo, [130, 230], true) && ($movimentacao->jsonData['movsIds'] ?? false)) {
+            return $this->saveBaixaRecebimentoDeFatura($movimentacao);
         }
 
         // else
@@ -819,7 +822,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $movimentacao->cadeia = $cadeia;
         $movimentacao->cadeiaOrdem = 1;
         $movimentacao->cadeiaQtde = $cadeiaQtde;
-        
+
 
         $moviment291 = new Movimentacao();
         $moviment291->tipoLancto = $movimentacao->tipoLancto;
@@ -879,8 +882,8 @@ class MovimentacaoEntityHandler extends EntityHandler
             $moviment191->carteira = $movimentacao->operadoraCartao->carteira;
             $moviment191->carteiraDestino = $movimentacao->carteira; // a oposta
             $moviment191->status = 'ABERTA'; // se torna 'REALIZADA' na consolidação do extrato
-            $moviment191->valor = $parcelas[$i-1];
-            $moviment191->valorTotal = $parcelas[$i-1];
+            $moviment191->valor = $parcelas[$i - 1];
+            $moviment191->valorTotal = $parcelas[$i - 1];
 
             $moviment191->dtMoviment = clone($movimentacao->dtMoviment);
             $moviment191->dtVencto = $i === 1 ? (clone $primeiraDtVencto) :
@@ -1109,7 +1112,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $parcela = $this->cloneEntityId($movimentacao);
                 $parcela->parcelamento = true;
                 $parcela->qtdeParcelas = count($dadosParcelamento);
-                $parcela->parcelaNum = $i+1;
+                $parcela->parcelaNum = $i + 1;
                 $parcela->cadeia = $cadeia;
                 $parcela->cadeiaQtde = count($dadosParcelamento);
                 $parcela->cadeiaOrdem = $i + 1;
@@ -1133,6 +1136,52 @@ class MovimentacaoEntityHandler extends EntityHandler
                 }
             }
             throw new ViewException('Erro ao salvar o parcelamento', 0, $e);
+        }
+
+
+    }
+
+    /**
+     * Uma baixa de fatura é quando uma movimentação 110 (RECEB. FATURA) informa outras movimentações
+     * abertas (jsonData.movsIds) da qual ela será a movimentação pagante.
+     *
+     * @param Movimentacao $movimentacao
+     * @throws ViewException
+     */
+    private function saveBaixaRecebimentoDeFatura(Movimentacao $movimentacao)
+    {
+        try {
+            $this->doctrine->beginTransaction();
+
+            $movsQueSeraoPagasPorEsta = explode(',', $movimentacao->jsonData['movsIds']);
+
+            $agora = new \DateTime();
+
+            $repoMovimentacao = $this->faturaEntityHandler->getDoctrine()->getRepository(Movimentacao::class);
+
+            foreach ($movsQueSeraoPagasPorEsta as $movId) {
+                if (!$movId) continue;
+                $mov = $repoMovimentacao->find($movId);
+                if ($mov->status !== 'ABERTA') {
+                    throw new ViewException('Impossível baixar movimentação "ABERTA" em recebimento de fatura');
+                }
+                $mov->valorTotal = $mov->valor;
+                $mov->dtPagto = $agora;
+                $mov->movimentacaoPagante = $movimentacao;
+                parent::save($mov, false);
+            }
+
+            $movimentacao = parent::save($movimentacao);
+            $this->doctrine->commit();
+        } catch (ViewException $e) {
+            if ($this->doctrine->getConnection()->isTransactionActive()) {
+                try {
+                    $this->doctrine->rollback();
+                } catch (\Exception $e) {
+                    throw new ViewException('Erro no rollback - baixaRecebimentoDeFatura');
+                }
+            }
+            throw new ViewException('Erro - baixaRecebimentoDeFatura', 0, $e);
         }
 
 

@@ -25,7 +25,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *
  * @ApiResource(
  *     shortName="Financeiro/Movimentacao",
- *     normalizationContext={"groups"={"movimentacao","modo","banco","operadoraCartao","bandeiraCartao","carteira","categoria","grupoItem","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"movimentacao","fatura","modo","banco","operadoraCartao","bandeiraCartao","carteira","categoria","grupoItem","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"movimentacao"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -159,6 +159,14 @@ class Movimentacao implements EntityId
      * @Groups("movimentacao")
      */
     public ?bool $quitado = false;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao")
+     * @ORM\JoinColumn(name="movimentacao_pagante_id", nullable=true)
+     * @Groups("movimentacao")
+     * @MaxDepth(1)
+     */
+    public ?Movimentacao $movimentacaoPagante = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto")
