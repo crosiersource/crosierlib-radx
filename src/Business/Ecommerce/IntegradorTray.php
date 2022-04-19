@@ -565,7 +565,7 @@ class IntegradorTray implements IntegradorEcommerce
             $this->syslog->info('integraProduto - salvando json_data: OK', $syslog_obs);
 
         } catch (GuzzleException $e) {
-            dd($e->getResponse()->getBody()->getContents());
+            throw new ViewException('Erro ao integrar produto na tray (Id: ' . $produto->getId() . ')', 0, $e);
         }
     }
 
