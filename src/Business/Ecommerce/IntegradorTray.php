@@ -421,6 +421,7 @@ class IntegradorTray implements IntegradorEcommerce
      */
     public function integraMarca(string $marca): int
     {
+        $marca = trim($marca);
         $rsMarcas = $this->selectMarcas();
 
         foreach ($rsMarcas as $rMarca) {
@@ -479,7 +480,7 @@ class IntegradorTray implements IntegradorEcommerce
 
             $start = microtime(true);
 
-            $idMarca_ecommerce = $this->integraMarca($produto->jsonData['marca'] ?? '');
+            $idMarca_ecommerce = $this->integraMarca($produto->marca ?? '');
 
             $idSubgrupo_ecommerce = $this->integraCategoria($produto);
 
