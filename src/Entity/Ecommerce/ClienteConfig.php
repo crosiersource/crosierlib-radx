@@ -44,6 +44,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * 
  * @ApiFilter(BooleanFilter::class, properties={
  *     "ativo": "exact",
+ *     "cliente.ativo": "exact",
  * })
  *
  * @ApiFilter(SearchFilter::class, properties={
