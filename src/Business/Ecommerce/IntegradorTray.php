@@ -127,7 +127,7 @@ class IntegradorTray implements IntegradorEcommerce
         $this->client = new Client();
     }
     
-    private function  init() {
+    private function init() {
         if (!$this->deptoIndefinido) {
             /** @var DeptoRepository $repoDepto */
             $repoDepto = $this->produtoEntityHandler->getDoctrine()->getRepository(Depto::class);
@@ -184,6 +184,7 @@ class IntegradorTray implements IntegradorEcommerce
 
     public function autorizarApp(?string $code = null, ?ClienteConfig $clienteConfig = null): array
     {
+        $this->init();
         $urlLoja = $this->trayConfigs['url_loja'] ?? null;
         // Como a ativação aqui tbm serve para a arquitetura da Conecta, a url loja nesses casos é específica
         // por ClienteConfig
