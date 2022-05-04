@@ -244,6 +244,7 @@ class IntegradorTray implements IntegradorEcommerce
     public function renewAccessToken(?string $refreshToken = null): array
     {
         try {
+            $this->init();
             $refreshToken = $refreshToken ?? $this->trayConfigs['refresh_token'];
             $response = $this->client->request('GET', $this->getEndpoint() . 'web_api/auth?refresh_token=' . $refreshToken);
             $bodyContents = $response->getBody()->getContents();
@@ -346,6 +347,7 @@ class IntegradorTray implements IntegradorEcommerce
      */
     public function integraCategoria(Produto $produto): int
     {
+        $this->init();
         if (!($idDepto_ecommerce = ($produto->depto->jsonData['ecommerce_id'] ?? false))) {
             $idDepto_ecommerce = $this->integraCategoriaTray(
                 $produto->depto->nome,
@@ -385,7 +387,7 @@ class IntegradorTray implements IntegradorEcommerce
     }
 
 
-    public function selectMarcas()
+    private function selectMarcas()
     {
         try {
             $cache = new FilesystemAdapter('integrador_tray.cache', 600, $_SERVER['CROSIER_SESSIONS_FOLDER']);
@@ -1682,6 +1684,7 @@ class IntegradorTray implements IntegradorEcommerce
      */
     public function getAccessToken(): ?string
     {
+        $this->init();
         if ($this->accessToken) {
             return $this->accessToken;
         } else {
@@ -1694,6 +1697,7 @@ class IntegradorTray implements IntegradorEcommerce
 
     public function apagarCategorias()
     {
+        $this->init();
         $temResults = true;
         $page = 1;
         $rs = [];
