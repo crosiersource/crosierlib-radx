@@ -376,7 +376,7 @@ class Movimentacao implements EntityId
      * Possíveis descontos (sempre negativo).
      *
      * @ORM\Column(name="descontos", type="decimal", precision=15, scale=2, nullable=true)
-     * @Groups("movimentacao")
+     * @Groups("N")
      */
     public ?string $descontos = null;
 
@@ -460,24 +460,13 @@ class Movimentacao implements EntityId
     public ?array $jsonData = null;
 
 
+    
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("valor")
-     * @return float
      */
-    public function getValorFormatted(): float
-    {
-        return (float)$this->valor;
-    }
-
-    /**
-     * Para aceitar tanto em string quanto em double.
-     * @Groups("movimentacao")
-     * @SerializedName("valor")
-     * @param float $valor
-     */
-    public function setValorFormatted(float $valor)
+    public function setValorFormatted($valor)
     {
         $this->valor = $valor;
     }
@@ -491,39 +480,27 @@ class Movimentacao implements EntityId
      */
     public function getDescontosFormatted(): float
     {
-        return (float)$this->descontos;
+        return abs((float)$this->descontos);
     }
 
+    
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("descontos")
-     * @param float $descontos
      */
-    public function setDescontosFormatted(float $descontos)
+    public function setDescontosFormatted($descontos)
     {
-        $this->descontos = $descontos;
+        $this->descontos = (float)$descontos;
     }
 
-
+    
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("acrescimos")
-     * @return float
      */
-    public function getAcrescimosFormatted(): float
-    {
-        return (float)$this->acrescimos;
-    }
-
-    /**
-     * Para aceitar tanto em string quanto em double.
-     * @Groups("movimentacao")
-     * @SerializedName("acrescimos")
-     * @param float $acrescimos
-     */
-    public function setAcrescimosFormatted(float $acrescimos)
+    public function setAcrescimosFormatted($acrescimos)
     {
         $this->acrescimos = $acrescimos;
     }
@@ -533,20 +510,8 @@ class Movimentacao implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("valorTotal")
-     * @return float
      */
-    public function getValorTotalFormatted(): float
-    {
-        return (float)$this->valorTotal;
-    }
-
-    /**
-     * Para aceitar tanto em string quanto em double.
-     * @Groups("movimentacao")
-     * @SerializedName("valorTotal")
-     * @param float $valorTotal
-     */
-    public function setValorTotalFormatted(float $valorTotal)
+    public function setValorTotalFormatted($valorTotal)
     {
         $this->valorTotal = $valorTotal;
     }
