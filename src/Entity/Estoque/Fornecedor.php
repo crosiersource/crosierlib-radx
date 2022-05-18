@@ -4,9 +4,9 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Estoque;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
@@ -64,7 +64,8 @@ class Fornecedor implements EntityId
      * @Groups("fornecedor")
      */
     public ?string $codigo = null;
-    
+
+
     /**
      *
      * @ORM\Column(name="nome", type="string")
@@ -83,6 +84,7 @@ class Fornecedor implements EntityId
      */
     public ?string $nomeFantasia = null;
 
+
     /**
      * CPF ou CNPJ.
      *
@@ -92,6 +94,7 @@ class Fornecedor implements EntityId
      * @Groups("fornecedor")
      */
     public ?string $documento = null;
+
 
     /**
      *
@@ -104,13 +107,102 @@ class Fornecedor implements EntityId
 
 
     /**
+     * @ORM\Column(name="logradouro", type="string", length=255, nullable=true)
+     * @Groups("fornecedor")
+     * @var string|null
+     */
+    public ?string $logradouro = null;
+
+
+    /**
+     * @ORM\Column(name="numero", type="string", length=30, nullable=true)
+     * @Groups("fornecedor")
+     * @var string|null
+     */
+    public ?string $numero = null;
+
+
+    /**
+     * @ORM\Column(name="complemento", type="string", length=100, nullable=true)
+     * @Groups("fornecedor")
+     * @var string|null
+     */
+    public ?string $complemento = null;
+
+
+    /**
+     * @ORM\Column(name="bairro", type="string", length=100, nullable=true)
+     * @Groups("fornecedor")
+     * @var string|null
+     */
+    public ?string $bairro = null;
+
+
+    /**
+     * @ORM\Column(name="cep", type="string", length=8, nullable=true)
+     * @Groups("fornecedor")
+     * @var string|null
+     */
+    public ?string $cep = null;
+
+
+    /**
+     * @ORM\Column(name="cidade", type="string", length=50, nullable=true)
+     * @Groups("fornecedor")
+     * @var string|null
+     */
+    public ?string $cidade = null;
+
+
+    /**
+     * @ORM\Column(name="estado", type="string", length=2, nullable=true)
+     * @Groups("fornecedor")
+     * @var string|null
+     */
+    public ?string $uf = null;
+
+
+    /**
+     * @ORM\Column(name="fone1", type="string", nullable=false, length=50)
+     * @Groups("fornecedor")
+     * @var string|null
+     */
+    public ?string $fone1 = null;
+
+
+    /**
+     * @ORM\Column(name="fone2", type="string", nullable=true, length=50)
+     * @Groups("fornecedor")
+     * @var string|null
+     */
+    public ?string $fone2 = null;
+
+
+    /**
+     * @ORM\Column(name="fone3", type="string", nullable=true, length=50)
+     * @Groups("fornecedor")
+     * @var null|string
+     */
+    public ?string $fone3 = null;
+
+
+    /**
+     * @ORM\Column(name="fone4", type="string", nullable=true, length=50)
+     * @Groups("fornecedor")
+     * @var string|null
+     */
+    public ?string $fone4 = null;
+
+
+    /**
      * @ORM\Column(name="utilizado", type="boolean")
      * @var null|bool
      *
      * @Groups("fornecedor")
      */
     public ?bool $utilizado = null;
-    
+
+
     /**
      *
      * @ORM\Column(name="json_data", type="json")
@@ -119,7 +211,6 @@ class Fornecedor implements EntityId
      * @Groups("fornecedor")
      */
     public ?array $jsonData = null;
-
 
 
     /**
@@ -131,7 +222,6 @@ class Fornecedor implements EntityId
     {
         return trim($this->nomeFantasia) ?: $this->nome;
     }
-    
 
 
     /**
@@ -146,8 +236,6 @@ class Fornecedor implements EntityId
         }
         return $r;
     }
-
-    
 
 
 }

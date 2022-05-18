@@ -53,7 +53,6 @@ class Cliente implements EntityId
     use EntityIdTrait;
 
 
-
     /**
      * @ORM\Column(name="codigo", type="string")
      * @var null|string
@@ -89,11 +88,13 @@ class Cliente implements EntityId
      */
     public ?string $nomeFantasia = null;
 
+
     /**
      * @ORM\Column(name="ie", type="string", nullable="true", length=30)
      * @Groups("cliente")
      */
     public ?string $ie = null;
+
 
     /**
      * @ORM\Column(name="dt_nascimento", type="datetime", nullable=true)
@@ -102,12 +103,14 @@ class Cliente implements EntityId
      */
     public ?\DateTime $dtNascimento = null;
 
+
     /**
      * @ORM\Column(name="fone1", type="string", nullable=true, length=50)
      * @Groups("cliente")
      * @var string|null
      */
     public ?string $fone1 = null;
+
 
     /**
      * @ORM\Column(name="fone2", type="string", nullable=true, length=50)
@@ -116,12 +119,14 @@ class Cliente implements EntityId
      */
     public ?string $fone2 = null;
 
+
     /**
      * @ORM\Column(name="fone3", type="string", nullable=true, length=50)
      * @Groups("cliente")
      * @var string|null
      */
     public ?string $fone3 = null;
+
 
     /**
      * @ORM\Column(name="fone4", type="string", nullable=true, length=50)
@@ -130,12 +135,14 @@ class Cliente implements EntityId
      */
     public ?string $fone4 = null;
 
+
     /**
      * @ORM\Column(name="cep", type="string", nullable=true, length=8)
      * @var string|null
      * @Groups("cliente")
      */
     public ?string $cep = null;
+
 
     /**
      *
@@ -145,12 +152,14 @@ class Cliente implements EntityId
      */
     public ?string $logradouro = null;
 
+
     /**
      * @ORM\Column(name="numero", type="string", nullable=true, length=60)
      * @var string|null
      * @Groups("cliente")
      */
     public ?string $numero = null;
+
 
     /**
      * @ORM\Column(name="complemento", type="string", nullable=true, length=60)
@@ -159,6 +168,7 @@ class Cliente implements EntityId
      */
     public ?string $complemento = null;
 
+
     /**
      * @ORM\Column(name="bairro", type="string", nullable=true, length=60)
      * @var string|null
@@ -166,12 +176,14 @@ class Cliente implements EntityId
      */
     public ?string $bairro = null;
 
+
     /**
      * @ORM\Column(name="cidade", type="string", nullable=true, length=60)
      * @var string|null
      * @Groups("cliente")
      */
     public ?string $cidade = null;
+
 
     /**
      * @ORM\Column(name="estado", type="string", nullable=true, length=2)
@@ -189,6 +201,7 @@ class Cliente implements EntityId
      */
     public ?bool $ativo = null;
     
+
     /**
      * @ORM\Column(name="json_data", type="json")
      * @NotUppercase()
@@ -232,7 +245,7 @@ class Cliente implements EntityId
         } else {
             $r .= ' - ' . $this->nome;
         }
-        
+
 
         return $r;
     }

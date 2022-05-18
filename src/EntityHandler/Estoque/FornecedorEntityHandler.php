@@ -31,6 +31,9 @@ class FornecedorEntityHandler extends EntityHandler
         } else {
             $fornecedor->jsonData['tipo_pessoa'] = 'PF';
         }
+        
+        $fornecedor->cep = preg_replace("/[^0-9]/", "", $fornecedor->cep);
+        
     }
 
     /**
