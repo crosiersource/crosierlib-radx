@@ -31,7 +31,8 @@
         "doctrine/annotations": "^1.0",
         "doctrine/doctrine-bundle": "^2.4",
         "doctrine/doctrine-migrations-bundle": "^3.2",
-        "symfony/debug-bundle": "5.3.*"
+        "symfony/debug-bundle": "5.3.*",
+        "symfony/doctrine-messenger": "5.3.*"
     },
     "config": {
         "minimum-stability": "dev",
