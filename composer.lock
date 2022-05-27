@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d8bc718ebf623c822334eb411936f5d4",
+    "content-hash": "a1569ee0f3738e6a2b9ab4d91e8bad09",
     "packages": [
         {
             "name": "api-platform/core",
@@ -169,16 +169,16 @@
         },
         {
             "name": "crosiersource/crosierlib-base",
-            "version": "1.0.2",
+            "version": "v1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
-                "reference": "f90066260db17c43767ad38d3d48d0734bc782b6"
+                "reference": "915786f4e4882e9a2e8b35015933f9c256750b81"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/f90066260db17c43767ad38d3d48d0734bc782b6",
-                "reference": "f90066260db17c43767ad38d3d48d0734bc782b6",
+                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/915786f4e4882e9a2e8b35015933f9c256750b81",
+                "reference": "915786f4e4882e9a2e8b35015933f9c256750b81",
                 "shasum": ""
             },
             "require": {
@@ -204,6 +204,7 @@
                 "symfony/cache": "5.3.*",
                 "symfony/console": "5.3.*",
                 "symfony/debug-bundle": "5.3.*",
+                "symfony/doctrine-messenger": "5.3.*",
                 "symfony/dotenv": "5.3.*",
                 "symfony/form": "5.3.*",
                 "symfony/framework-bundle": "5.3.*",
@@ -240,9 +241,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
-                "source": "https://github.com/crosiersource/crosierlib-base/tree/1.0.2"
+                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.0.3"
             },
-            "time": "2022-05-27T21:43:17+00:00"
+            "time": "2022-05-27T21:56:08+00:00"
         },
         {
             "name": "doctrine/annotations",
