@@ -1,7 +1,6 @@
 <?php
 
 
-
 namespace CrosierSource\CrosierLibRadxBundle\Business\Ecommerce;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
@@ -1161,11 +1160,31 @@ class IntegradorWebStorm implements IntegradorEcommerce
 
         // está fazendo UPDATE
         if ($produtoEcommerceId) {
-            $produto->jsonData['ecommerce_id'] = (int)$xmlResult->produtos->produto->idProduto->__toString();
-            $produto->jsonData['ecommerce_item_venda_id'] = (int)$xmlResult->produtos->produto->itensVenda->itemVenda->resultado->idItemVenda->__toString();
+            $ecommerceId = (int)$xmlResult->produtos->produto->idProduto->__toString();
+            if ($ecommerceId >= 1) {
+                $produto->jsonData['ecommerce_id'] = $ecommerceId;
+            } else {
+                throw new ViewException('ecommerceId não encontrada no xmlResult');
+            }
+            $ecommerceItemVendaId = (int)$xmlResult->produtos->produto->itensVenda->itemVenda->resultado->idItemVenda->__toString();
+            if ($ecommerceItemVendaId >= 1) {
+                $produto->jsonData['ecommerce_item_venda_id'] = $ecommerceItemVendaId;
+            } else {
+                throw new ViewException('ecommerceItemVendaId não encontrada no xmlResult');
+            }
         } else {
-            $produto->jsonData['ecommerce_id'] = (int)$xmlResult->produto->produto->idProduto->__toString();
-            $produto->jsonData['ecommerce_item_venda_id'] = (int)$xmlResult->produto->produto->itensVenda->itemVenda->idItemVenda->__toString();
+            $ecommerceId = (int)$xmlResult->produto->produto->idProduto->__toString();
+            if ($ecommerceId >= 1) {
+                $produto->jsonData['ecommerce_id'] = $ecommerceId;
+            } else {
+                throw new ViewException('ecommerceId não encontrada no xmlResult');
+            }
+            $ecommerceItemVendaId = (int)$xmlResult->produto->produto->itensVenda->itemVenda->idItemVenda->__toString();
+            if ($ecommerceItemVendaId >= 1) {
+                $produto->jsonData['ecommerce_item_venda_id'] = $ecommerceItemVendaId;
+            } else {
+                throw new ViewException('ecommerceItemVendaId não encontrada no xmlResult');
+            }
         }
 
 
@@ -1385,7 +1404,7 @@ class IntegradorWebStorm implements IntegradorEcommerce
         return count($produtosParaIntegrar);
     }
 
-    
+
     /**
      * Atualiza as qtdes de estoque e preços para todos os produtos.
      *
@@ -1406,14 +1425,13 @@ class IntegradorWebStorm implements IntegradorEcommerce
         foreach ($rs as $r) {
             $produtosIds[] = $r['id'];
         }
-        
+
         $this->syslog->info('Atualizando qtdes/preços para ' . count($produtosIds) . ' produto(s)');
 
         $this->atualizaEstoqueEPrecos($produtosIds);
 
         return count($produtosIds);
     }
-
 
 
     /**
@@ -1461,9 +1479,9 @@ class IntegradorWebStorm implements IntegradorEcommerce
                         <status></status>
                     </filtro>
                     </ws_integracao>]]>';
-        
+
         $this->syslog->info('CHAMADA: Obtendo vendas entre ' . $dtIni->format('d/m/Y H:i:s') . ' e ' . $dtFim->format('d/m/Y H:i:s'), $xml);
-        
+
 
         $client = $this->getNusoapClientExportacaoInstance();
 
@@ -1479,7 +1497,7 @@ class IntegradorWebStorm implements IntegradorEcommerce
         }
 
         $this->syslog->info('RETORNO: Obtendo vendas entre ' . $dtIni->format('d/m/Y H:i:s') . ' e ' . $dtFim->format('d/m/Y H:i:s'), $arResultado);
-        
+
         $xmlResult = simplexml_load_string($arResultado);
 
         if ($xmlResult->erros ?? false) {
@@ -1584,7 +1602,7 @@ class IntegradorWebStorm implements IntegradorEcommerce
     private function integrarVendaParaCrosier(\SimpleXMLElement $pedido, ?bool $resalvar = false): void
     {
         $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
-        
+
         try {
             $dtPedido = DateTimeUtils::parseDateStr($pedido->dataPedido->__toString());
 
@@ -1780,19 +1798,19 @@ class IntegradorWebStorm implements IntegradorEcommerce
                         'SELECT id FROM est_produto 
                                     WHERE 
                                     json_data->>"$.ecommerce_id" = :idProduto AND 
-                                    json_data->>"$.ecommerce_item_venda_id" = :idItemVenda', 
-                            [
-                                'idProduto' => $produtoWebStorm->idProduto->__toString(),
-                                'idItemVenda' => $produtoWebStorm->idItemVenda->__toString(),
-                            ]
+                                    json_data->>"$.ecommerce_item_venda_id" = :idItemVenda',
+                        [
+                            'idProduto' => $produtoWebStorm->idProduto->__toString(),
+                            'idItemVenda' => $produtoWebStorm->idItemVenda->__toString(),
+                        ]
                     );
-                    
+
                     if (!isset($sProduto['id'])) {
                         // Tenta achar apenas pelo nosso id
                         // (e na sequência já corrige os json_data->>"$.ecommerce_id" e json_data->>"$.ecommerce_item_venda_id"
                         // pois estava dando muito erro de integração, como se a WebStorm integrasse o produto mas não
                         // retornasse os ids corretos. 
-                        $sProduto = $conn->fetchAssociative('SELECT id, json_data FROM est_produto WHERE id = :codigo', 
+                        $sProduto = $conn->fetchAssociative('SELECT id, json_data FROM est_produto WHERE id = :codigo',
                             ['codigo' => $produtoWebStorm->codigo->__toString()]);
                         if ($sProduto) {
                             $jsonData = json_decode($sProduto['json_data'], true);
