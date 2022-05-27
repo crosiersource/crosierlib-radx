@@ -22,21 +22,15 @@
         "ext-soap": "*",
         "ext-zip": "*",
         "ext-zlib": "*",
-        "php-http/guzzle6-adapter": "^1.1",
         "vich/uploader-bundle": "^1.13",
         "nfephp-org/sped-common": "^5.1",
         "nfephp-org/sped-da": "^1.1",
         "nfephp-org/sped-nfe": "^5.1",
-        "scienta/doctrine-json-functions": "~4.1",
         "econea/nusoap": "^0.9.7",
         "crosiersource/crosierlib-base": "@dev",
-        "symfony/webpack-encore-bundle": "^1.12",
-        "symfony/mailer": "^5.3",
-        "symfony/messenger": "^5.3",
         "doctrine/annotations": "^1.0",
         "doctrine/doctrine-bundle": "^2.4",
-        "doctrine/doctrine-migrations-bundle": "^3.2",
-        "doctrine/orm": "^2.10"
+        "doctrine/doctrine-migrations-bundle": "^3.2"
     },
     "config": {
         "minimum-stability": "dev",
