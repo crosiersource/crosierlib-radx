@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4cfe5d14115a6f6fb1617f553958e694",
+    "content-hash": "92b643b2dc8133432bf4de3c9361cee2",
     "packages": [
         {
             "name": "api-platform/core",
@@ -169,7 +169,7 @@
         },
         {
             "name": "crosiersource/crosierlib-base",
-            "version": "dev-master",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
@@ -213,7 +213,6 @@
                 "symfony/validator": "5.3.*",
                 "symfony/webpack-encore-bundle": "^1.12"
             },
-            "default-branch": true,
             "type": "symfony-bundle",
             "extra": {
                 "symfony": {
@@ -238,7 +237,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
-                "source": "https://github.com/crosiersource/crosierlib-base/tree/master"
+                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.0.1"
             },
             "time": "2022-05-27T20:44:11+00:00"
         },
@@ -8744,9 +8743,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "crosiersource/crosierlib-base": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

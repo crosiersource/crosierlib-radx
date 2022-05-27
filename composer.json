@@ -22,12 +22,12 @@
         "ext-soap": "*",
         "ext-zip": "*",
         "ext-zlib": "*",
+        "crosiersource/crosierlib-base": "^1.0.1",
         "vich/uploader-bundle": "^1.13",
         "nfephp-org/sped-common": "^5.1",
         "nfephp-org/sped-da": "^1.1",
         "nfephp-org/sped-nfe": "^5.1",
         "econea/nusoap": "^0.9.7",
-        "crosiersource/crosierlib-base": "@dev",
         "doctrine/annotations": "^1.0",
         "doctrine/doctrine-bundle": "^2.4",
         "doctrine/doctrine-migrations-bundle": "^3.2"
