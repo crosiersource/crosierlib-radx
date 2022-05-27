@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "91da5656d9413fb97945aaa0ed4eeb4e",
+    "content-hash": "4cfe5d14115a6f6fb1617f553958e694",
     "packages": [
         {
             "name": "api-platform/core",
@@ -173,12 +173,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
-                "reference": "898060be1af207ee5759085c46d73c9942d4c9f1"
+                "reference": "697e82ea4b3b4232ce9d6c7d7fafc76e7a79968e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/898060be1af207ee5759085c46d73c9942d4c9f1",
-                "reference": "898060be1af207ee5759085c46d73c9942d4c9f1",
+                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/697e82ea4b3b4232ce9d6c7d7fafc76e7a79968e",
+                "reference": "697e82ea4b3b4232ce9d6c7d7fafc76e7a79968e",
                 "shasum": ""
             },
             "require": {
@@ -212,9 +212,6 @@
                 "symfony/validator": "5.3.*",
                 "symfony/webpack-encore-bundle": "^1.12"
             },
-            "require-dev": {
-                "symfony/phpunit-bridge": "^5.2"
-            },
             "default-branch": true,
             "type": "symfony-bundle",
             "extra": {
@@ -242,7 +239,7 @@
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
                 "source": "https://github.com/crosiersource/crosierlib-base/tree/master"
             },
-            "time": "2022-05-27T18:47:26+00:00"
+            "time": "2022-05-27T19:46:51+00:00"
         },
         {
             "name": "doctrine/annotations",
