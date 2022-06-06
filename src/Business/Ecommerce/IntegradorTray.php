@@ -126,8 +126,9 @@ class IntegradorTray implements IntegradorEcommerce
         $this->vendaBusiness = $vendaBusiness;
         $this->client = new Client();
     }
-    
-    private function init() {
+
+    private function init()
+    {
         if (!$this->deptoIndefinido) {
             /** @var DeptoRepository $repoDepto */
             $repoDepto = $this->produtoEntityHandler->getDoctrine()->getRepository(Depto::class);
@@ -147,7 +148,7 @@ class IntegradorTray implements IntegradorEcommerce
         }
 
         $this->loadTrayConfigs();
-}
+    }
 
     /**
      * Carrega as configurações para os casos onde a integração é 1x1 (diferente da Conecta).
@@ -265,11 +266,11 @@ class IntegradorTray implements IntegradorEcommerce
     }
 
 
-    private function integraCategoriaTray(string $nome, string $codigo, string $slug, ?int $parentId = null)
+    private function integraCategoriaTray(string $nome, string $codigo, string $slug, ?int $parentId = null, ?int $idTray = null)
     {
         try {
             $this->init();
-            $url = $this->getEndpoint() . 'web_api/categories?access_token=' . $this->getAccessToken();
+            $url = $this->getEndpoint() . 'web_api/categories' . ($idTray ? '/' . $idTray : '') . '?access_token=' . $this->getAccessToken();
             $arr = [
                 'form_params' => [
                     'Category' => [
@@ -280,11 +281,14 @@ class IntegradorTray implements IntegradorEcommerce
                     ]
                 ]
             ];
-            $response = $this->client->request('POST', $url, $arr);
+            $method = $idTray ? 'PUT' : 'POST';
+            $response = $this->client->request($method, $url, $arr);
             $bodyContents = $response->getBody()->getContents();
             $json = json_decode($bodyContents, true);
-            if ($json['message'] !== 'Created') {
+            if ($method === 'POST' && $json['message'] !== 'Created') {
                 throw new ViewException('Erro ao criar categoria');
+            } elseif ($method === 'PUT' && $json['message'] !== 'Saved') {
+                throw new ViewException('Erro ao alterar categoria');
             }
             return $json['id'];
         } catch (GuzzleException $e) {
@@ -341,6 +345,52 @@ class IntegradorTray implements IntegradorEcommerce
 
         return $idSubgrupo_ecommerce;
     }
+
+
+    /**
+     * @throws ViewException
+     */
+    public function alteraSubgrupo(Subgrupo $subgrupo): void
+    {
+        $this->init();
+        $idGrupo_ecommerce = $subgrupo->grupo->jsonData['ecommerce_id'];
+        $idSubgrupo_ecommerce = $this->integraCategoriaTray(
+            $subgrupo->nome,
+            $subgrupo->codigo,
+            mb_strtolower(str_replace(' ', '-', $subgrupo->grupo->depto->nome . '_' . $subgrupo->grupo->nome . '_' . $subgrupo->nome)),
+            $idGrupo_ecommerce, $subgrupo->jsonData['ecommerce_id']);
+        
+    }
+
+
+    /**
+     * @throws ViewException
+     */
+    public function alteraGrupo(Grupo $grupo): void
+    {
+        $this->init();
+        $idDepto_ecommerce = $grupo->depto->jsonData['ecommerce_id'];
+        $idGrupo_ecommerce = $this->integraCategoriaTray(
+            $grupo->nome,
+            $grupo->codigo,
+            mb_strtolower(str_replace(' ', '-', $grupo->depto->nome . '_' . $grupo->nome)),
+            $idDepto_ecommerce, $grupo->jsonData['ecommerce_id']);
+    }
+
+
+    /**
+     * @throws ViewException
+     */
+    public function alteraDepto(Depto $depto): void
+    {
+        $this->init();
+        $idGrupo_ecommerce = $this->integraCategoriaTray(
+            $depto->nome,
+            $depto->codigo,
+            mb_strtolower(str_replace(' ', '-', $depto->nome)),
+            null, $depto->jsonData['ecommerce_id']);
+    }
+    
 
     /**
      * @throws ViewException
@@ -503,8 +553,8 @@ class IntegradorTray implements IntegradorEcommerce
             if ($preco <= 0) {
                 throw new ViewException('Não é possível integrar ao e-commerce produto sem preço');
             }
-           
-            
+
+
             $arrProduct = [
                 'Product' => [
                     'category_id' => $idSubgrupo_ecommerce,
@@ -611,7 +661,7 @@ class IntegradorTray implements IntegradorEcommerce
 
             /** @var FornecedorRepository $repoFornecedor */
             $repoFornecedor = $this->produtoEntityHandler->getDoctrine()->getRepository(Fornecedor::class);
-            
+
             $produto->fornecedor = $repoFornecedor->findOneBy(['nome' => 'DEFAMILIA']);
 
             $this->produtoEntityHandler->save($produto);
@@ -677,8 +727,8 @@ class IntegradorTray implements IntegradorEcommerce
 
 
     /**
-     * Obtém as vendas somente da data 
-     * 
+     * Obtém as vendas somente da data
+     *
      * @param \DateTime $dtApartirDe
      * @param bool|null $resalvar
      * @return int
@@ -913,7 +963,7 @@ class IntegradorTray implements IntegradorEcommerce
     {
         try {
             $this->init();
-            
+
             $conn = $this->vendaEntityHandler->getDoctrine()->getConnection();
             $conn->beginTransaction();
 
@@ -983,7 +1033,7 @@ class IntegradorTray implements IntegradorEcommerce
             }
 
             $venda->jsonData['dados_completos_ecommerce'] = $jsonPedido;
-            
+
             $venda->dtVenda = $dtPedido;
 
             /** @var ColaboradorRepository $repoColaborador */
@@ -1159,7 +1209,7 @@ class IntegradorTray implements IntegradorEcommerce
 
                 $vendaItem->jsonData['ecommerce_idItemVenda'] = $item['id'];
                 $vendaItem->jsonData['ecommerce_codigo'] = $produto->codigo;
-                
+
                 $this->vendaItemEntityHandler->save($vendaItem);
                 $i++;
             }
@@ -1277,9 +1327,9 @@ class IntegradorTray implements IntegradorEcommerce
                 $this->vendaBusiness->finalizarPV($venda);
             }
 
-            
+
             $venda = $this->vendaEntityHandler->save($venda);
-            
+
             $conn->commit();
 
         } catch (\Throwable $e) {
@@ -1752,7 +1802,6 @@ class IntegradorTray implements IntegradorEcommerce
         }
         return $this->delayEntreIntegracoesDeProduto;
     }
-
 
 
     /**
