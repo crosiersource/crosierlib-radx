@@ -359,7 +359,7 @@ class IntegradorTray implements IntegradorEcommerce
             $subgrupo->codigo,
             mb_strtolower(str_replace(' ', '-', $subgrupo->grupo->depto->nome . '_' . $subgrupo->grupo->nome . '_' . $subgrupo->nome)),
             $idGrupo_ecommerce, $subgrupo->jsonData['ecommerce_id']);
-        
+
     }
 
 
@@ -390,7 +390,7 @@ class IntegradorTray implements IntegradorEcommerce
             mb_strtolower(str_replace(' ', '-', $depto->nome)),
             null, $depto->jsonData['ecommerce_id']);
     }
-    
+
 
     /**
      * @throws ViewException
@@ -1835,6 +1835,18 @@ class IntegradorTray implements IntegradorEcommerce
             }
         }
         return $this->carteiraYapayId;
+    }
+
+
+    public function consultaProduto(Produto $produto): array
+    {
+        $this->init();
+        $url = $this->getEndpoint() . 'web_api/products/' . $produto->jsonData['ecommerce_id'] . '&access_token=' . $this->getAccessToken();
+        $method = 'GET';
+        $response = $this->client->request($method, $url);
+        $bodyContents = $response->getBody()->getContents();
+        $json = json_decode($bodyContents, true);
+        return $json;
     }
 
 
