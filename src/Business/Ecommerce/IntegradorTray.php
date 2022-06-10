@@ -540,18 +540,22 @@ class IntegradorTray implements IntegradorEcommerce
             $preco = 0;
             $precoPromocional = null;
 
-            if ((float)($produto->jsonData['preco_ecommerce'] ?? 0) > 0) {
-                $preco = (float)$produto->jsonData['preco_ecommerce'];
-            } else if ((float)($produto->jsonData['preco_tabela'] ?? 0) > 0) {
-                $preco = (float)$produto->jsonData['preco_tabela'];
-                if ((float)($produto->jsonData['preco_promocao'] ?? 0) > 0) {
-                    $precoPromocional = (float)$produto->jsonData['preco_promocao'];
-                } elseif ((float)($produto->jsonData['preco_venda_com_desconto'] ?? 0) > 0) {
-                    $precoPromocional = (float)$produto->jsonData['preco_venda_com_desconto'];
+            $sobConsulta = $produto->jsonData['preco_sob_consulta'] ?? false;
+            
+            if (!$sobConsulta) {
+                if ((float)($produto->jsonData['preco_ecommerce'] ?? 0) > 0) {
+                    $preco = (float)$produto->jsonData['preco_ecommerce'];
+                } else if ((float)($produto->jsonData['preco_tabela'] ?? 0) > 0) {
+                    $preco = (float)$produto->jsonData['preco_tabela'];
+                    if ((float)($produto->jsonData['preco_promocao'] ?? 0) > 0) {
+                        $precoPromocional = (float)$produto->jsonData['preco_promocao'];
+                    } elseif ((float)($produto->jsonData['preco_venda_com_desconto'] ?? 0) > 0) {
+                        $precoPromocional = (float)$produto->jsonData['preco_venda_com_desconto'];
+                    }
                 }
-            }
-            if ($preco <= 0) {
-                throw new ViewException('Não é possível integrar ao e-commerce produto sem preço');
+                if ($preco <= 0) {
+                    throw new ViewException('Não é possível integrar ao e-commerce produto sem preço');
+                }
             }
 
 
@@ -580,7 +584,7 @@ class IntegradorTray implements IntegradorEcommerce
                     'stock' => $produto->qtdeTotal,
                 ],
             ];
-            if ($precoPromocional && ($preco !== $precoPromocional)) {
+            if (!$sobConsulta && $precoPromocional && ($preco !== $precoPromocional)) {
                 $ontem = DateTimeUtils::addDays(new \DateTime(), -1);
                 $arrProduct['Product']['promotional_price'] = $precoPromocional;
                 $arrProduct['Product']['start_promotion'] = $ontem->format('Y-m-d');
