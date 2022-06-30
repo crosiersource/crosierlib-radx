@@ -151,16 +151,18 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->dtVencto = clone($movimentacao->dtMoviment);
         }
 
-        // Regras para Datas
-        if (!$movimentacao->dtPagto) {
-            $movimentacao->status = 'ABERTA';
-        } else {
-            $movimentacao->status = 'REALIZADA';
-            if (!$movimentacao->dtVencto) {
-                $movimentacao->dtVencto = clone($movimentacao->dtPagto);
-            }
-            if (!$movimentacao->dtMoviment) {
-                $movimentacao->dtMoviment = clone($movimentacao->dtPagto);
+        if ($movimentacao->status !== 'ESTORNADA') {
+            // Regras para Datas
+            if (!$movimentacao->dtPagto) {
+                $movimentacao->status = 'ABERTA';
+            } else {
+                $movimentacao->status = 'REALIZADA';
+                if (!$movimentacao->dtVencto) {
+                    $movimentacao->dtVencto = clone($movimentacao->dtPagto);
+                }
+                if (!$movimentacao->dtMoviment) {
+                    $movimentacao->dtMoviment = clone($movimentacao->dtPagto);
+                }
             }
         }
 
@@ -200,7 +202,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             if ($movimentacao->modo->getCodigo() === 99 && !in_array($movimentacao->categoria->codigo, [195, 295], true)) {
                 throw new ViewException('Não é possível salvar uma movimentação com status "REALIZADA" em modo 99 (INDEFINIDO)');
             }
-        } else { // if ($movimentacao->getStatus() === 'ABERTA') {
+        } elseif ($movimentacao->status !== 'ABERTA') { // if ($movimentacao->getStatus() === 'ABERTA') {
             if (!$movimentacao->carteira->abertas) {
                 throw new ViewException('Esta carteira não pode conter movimentações com status "ABERTA".');
             }
