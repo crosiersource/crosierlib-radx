@@ -668,8 +668,8 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
         // else
 
-        if (!in_array($movimentacao->categoria->codigo, [101, 102, 110], true)) {
-            throw new ViewException('Movimentação de entrada precisa ser lançada a partir de uma movimentação de categorias 1.01, 1.02 ou 1.10');
+        if ($movimentacao->categoria->codigoSuper !== 1) {
+            throw new ViewException('Movimentação de entrada precisa ser lançada a partir de uma movimentação de categoria 1');
         }
 
         $cadeia = new Cadeia();

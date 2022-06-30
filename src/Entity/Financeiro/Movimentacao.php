@@ -4,11 +4,11 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
@@ -60,25 +60,25 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "grupoItem": "exact",
  *     "chequeNumCheque": "exact"
  * })
- * 
+ *
  * @ApiFilter(DateFilter::class, properties={"dtUtil", "dtVenctoEfetiva", "dtVencto", "dtPagto"})
- * 
+ *
  * @ApiFilter(RangeFilter::class, properties={"valorTotal"})
- * 
+ *
  * @ApiFilter(BooleanFilter::class, properties={"recorrente": "exact"})
- * 
+ *
  * @ApiFilter(OrderFilter::class, properties={
- *     "id", 
- *     "descricao", 
- *     "dtUtil", 
- *     "dtVencto", 
- *     "dtVenctoEfetiva", 
+ *     "id",
+ *     "descricao",
+ *     "dtUtil",
+ *     "dtVencto",
+ *     "dtVenctoEfetiva",
  *     "dtPagto",
- *     "valor", 
- *     "valorTotal", 
- *     "carteira.codigo", 
- *     "categoria.codigo", 
- *     "categoria.codigoSuper", 
+ *     "valor",
+ *     "valorTotal",
+ *     "carteira.codigo",
+ *     "categoria.codigo",
+ *     "categoria.codigoSuper",
  *     "updated"
  * }, arguments={"orderParameterName"="order"})
  *
@@ -368,7 +368,7 @@ class Movimentacao implements EntityId
      * Valor bruto da movimentação.
      *
      * @ORM\Column(name="valor", type="decimal", precision=15, scale=2)
-     * @Groups("movimentacao")
+     * @Groups("N")
      */
     public ?string $valor = null;
 
@@ -384,7 +384,7 @@ class Movimentacao implements EntityId
      * Possíveis acréscimos (sempre positivo).
      *
      * @ORM\Column(name="acrescimos", type="decimal", precision=15, scale=2, nullable=true)
-     * @Groups("movimentacao")
+     * @Groups("N")
      */
     public ?string $acrescimos = null;
 
@@ -393,7 +393,7 @@ class Movimentacao implements EntityId
      * conta por algum motivo).
      *
      * @ORM\Column(name="valor_total", type="decimal", precision=15, scale=2)
-     * @Groups("movimentacao")
+     * @Groups("N")
      */
     public ?string $valorTotal = null;
 
@@ -413,7 +413,7 @@ class Movimentacao implements EntityId
 
     /**
      * O número da parcela.
-     * 
+     *
      * @ORM\Column(name="parcela_num", type="integer", nullable=true)
      * @Groups("movimentacao")
      */
@@ -421,7 +421,7 @@ class Movimentacao implements EntityId
 
     /**
      * A qtde total de parcelas.
-     * 
+     *
      * @ORM\Column(name="qtde_parcelas", type="integer", nullable=true)
      * @Groups("movimentacao")
      */
@@ -439,7 +439,7 @@ class Movimentacao implements EntityId
     public ?int $cadeiaOrdem = null;
 
     /**
-     * Informa o total de movimentações na cadeia. 
+     * Informa o total de movimentações na cadeia.
      *
      * @ORM\Column(name="cadeia_qtde", type="integer", nullable=true)
      * @Groups("movimentacao")
@@ -460,11 +460,22 @@ class Movimentacao implements EntityId
     public ?array $jsonData = null;
 
 
-    
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("valor")
+     * @return float
+     */
+    public function getValorFormatted(): float
+    {
+        return (float)$this->valor;
+    }
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("movimentacao")
+     * @SerializedName("valor")
+     * @param float $valor
      */
     public function setValorFormatted($valor)
     {
@@ -483,7 +494,7 @@ class Movimentacao implements EntityId
         return abs((float)$this->descontos);
     }
 
-    
+
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
@@ -494,7 +505,19 @@ class Movimentacao implements EntityId
         $this->descontos = (float)$descontos;
     }
 
-    
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("movimentacao")
+     * @SerializedName("acrescimos")
+     * @return float
+     */
+    public function getAcrescimosFormatted(): float
+    {
+        return abs((float)$this->acrescimos);
+    }
+
+
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
@@ -502,7 +525,7 @@ class Movimentacao implements EntityId
      */
     public function setAcrescimosFormatted($acrescimos)
     {
-        $this->acrescimos = $acrescimos;
+        $this->acrescimos = (float)$acrescimos;
     }
 
 
@@ -510,6 +533,18 @@ class Movimentacao implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("valorTotal")
+     * @return float
+     */
+    public function getValorTotalFormatted(): float
+    {
+        return (float)$this->valorTotal;
+    }
+
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("movimentacao")
+     * @SerializedName("valorTotal")
+     * @param float $valorTotal
      */
     public function setValorTotalFormatted($valorTotal)
     {
