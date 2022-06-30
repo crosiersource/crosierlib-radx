@@ -97,7 +97,6 @@ class Movimentacao implements EntityId
     use EntityIdTrait;
 
     /**
-     * Utilizado, por exemplo, na importação (para tratar duplicidades).
      * @Groups("movimentacao")
      * @ORM\Column(name="uuid", type="string", nullable=true)
      * @NotUppercase()
@@ -451,6 +450,15 @@ class Movimentacao implements EntityId
      * @Groups("movimentacao")
      */
     public ?string $obs = null;
+
+    /**
+     * Marcador para agrupar movimentações que foram importadas juntas.
+     * 
+     * @Groups("movimentacao")
+     * @ORM\Column(name="uuid_importacao", type="string", nullable=true)
+     * @NotUppercase()
+     */
+    public ?string $uuidImportacao = null;
 
     /**
      * @ORM\Column(name="json_data", type="json", nullable=true)
