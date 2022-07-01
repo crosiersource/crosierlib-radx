@@ -254,19 +254,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
 
         // Trava para Dt Consolidado
-        if ($movimentacao->dtPagto) {
-            $dtPagto = (clone($movimentacao->dtPagto))->setTime(0, 0);
-            $dtConsolidado_carteira = (clone($movimentacao->carteira->dtConsolidado))->setTime(0, 0);
-            if ($dtPagto <= $dtConsolidado_carteira) {
-                throw new ViewException('Carteira ' . $movimentacao->carteira->descricao . ' está consolidada em ' . $movimentacao->carteira->dtConsolidado->format('d/m/Y'));
-            }
-            if ($movimentacao->carteiraDestino) {
-                $dtConsolidado_carteiraDestino = (clone($movimentacao->carteira->dtConsolidado))->setTime(0, 0);
-                if ($dtPagto <= $dtConsolidado_carteiraDestino) {
-                    throw new ViewException('Carteira ' . $movimentacao->carteiraDestino->descricao . ' está consolidada em ' . $movimentacao->carteiraDestino->dtConsolidado->format('d/m/Y'));
-                }
-            }
-        }
+        $this->checkCarteiraConsolidada($movimentacao);
 
         return $movimentacao;
     }
@@ -1187,6 +1175,30 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
 
 
+    }
+
+    public function beforeDelete(/** @var Movimentacao $movimentacao */ $movimentacao)
+    {
+        // Trava para Dt Consolidado
+        $this->checkCarteiraConsolidada($movimentacao);
+    }
+
+
+    private function checkCarteiraConsolidada(Movimentacao $movimentacao): void
+    {
+        if ($movimentacao->dtPagto) {
+            $dtPagto = (clone($movimentacao->dtPagto))->setTime(0, 0);
+            $dtConsolidado_carteira = (clone($movimentacao->carteira->dtConsolidado))->setTime(0, 0);
+            if ($dtPagto <= $dtConsolidado_carteira) {
+                throw new ViewException('Carteira ' . $movimentacao->carteira->descricao . ' está consolidada em ' . $movimentacao->carteira->dtConsolidado->format('d/m/Y'));
+            }
+            if ($movimentacao->carteiraDestino) {
+                $dtConsolidado_carteiraDestino = (clone($movimentacao->carteira->dtConsolidado))->setTime(0, 0);
+                if ($dtPagto <= $dtConsolidado_carteiraDestino) {
+                    throw new ViewException('Carteira ' . $movimentacao->carteiraDestino->descricao . ' está consolidada em ' . $movimentacao->carteiraDestino->dtConsolidado->format('d/m/Y'));
+                }
+            }
+        }
     }
 
 
