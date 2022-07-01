@@ -19,6 +19,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Entidade 'Movimentação'.
@@ -368,6 +369,7 @@ class Movimentacao implements EntityId
      *
      * @ORM\Column(name="valor", type="decimal", precision=15, scale=2)
      * @Groups("N")
+     * @Assert\Type(type="string")
      */
     public ?string $valor = null;
 
@@ -376,6 +378,7 @@ class Movimentacao implements EntityId
      *
      * @ORM\Column(name="descontos", type="decimal", precision=15, scale=2, nullable=true)
      * @Groups("N")
+     * @Assert\Type(type="string")
      */
     public ?string $descontos = null;
 
@@ -384,15 +387,14 @@ class Movimentacao implements EntityId
      *
      * @ORM\Column(name="acrescimos", type="decimal", precision=15, scale=2, nullable=true)
      * @Groups("N")
+     * @Assert\Type(type="string")
      */
     public ?string $acrescimos = null;
 
     /**
-     * Valor total informado no campo e que é salvo no banco (pode divergir da
-     * conta por algum motivo).
-     *
      * @ORM\Column(name="valor_total", type="decimal", precision=15, scale=2)
      * @Groups("N")
+     * @Assert\Type(type="string")
      */
     public ?string $valorTotal = null;
 
@@ -469,7 +471,6 @@ class Movimentacao implements EntityId
 
 
     /**
-     * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("valor")
      * @return float
@@ -480,65 +481,59 @@ class Movimentacao implements EntityId
     }
 
     /**
-     * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("valor")
-     * @param float $valor
+     * @param null|float $valor
      */
-    public function setValorFormatted($valor)
+    public function setValorFormatted(?float $valor)
     {
         $this->valor = $valor;
     }
 
 
     /**
-     * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("descontos")
      * @return float
      */
     public function getDescontosFormatted(): float
     {
-        return abs((float)$this->descontos);
+        return (float)$this->descontos;
     }
 
-
     /**
-     * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("descontos")
+     * @param null|float $descontos
      */
-    public function setDescontosFormatted($descontos)
+    public function setDescontosFormatted(?float $descontos)
     {
-        $this->descontos = (float)$descontos;
+        $this->descontos = $descontos;
     }
 
-
+    
     /**
-     * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("acrescimos")
      * @return float
      */
     public function getAcrescimosFormatted(): float
     {
-        return abs((float)$this->acrescimos);
+        return (float)$this->acrescimos;
     }
 
-
     /**
-     * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("acrescimos")
+     * @param null|float $acrescimos
      */
-    public function setAcrescimosFormatted($acrescimos)
+    public function setAcrescimosFormatted(?float $acrescimos)
     {
-        $this->acrescimos = (float)$acrescimos;
+        $this->acrescimos = $acrescimos;
     }
 
-
+    
     /**
-     * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("valorTotal")
      * @return float
@@ -549,12 +544,11 @@ class Movimentacao implements EntityId
     }
 
     /**
-     * Para aceitar tanto em string quanto em double.
      * @Groups("movimentacao")
      * @SerializedName("valorTotal")
-     * @param float $valorTotal
+     * @param null|float $valorTotal
      */
-    public function setValorTotalFormatted($valorTotal)
+    public function setValorTotalFormatted(?float $valorTotal)
     {
         $this->valorTotal = $valorTotal;
     }
