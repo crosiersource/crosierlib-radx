@@ -473,9 +473,9 @@ class Movimentacao implements EntityId
     /**
      * @Groups("movimentacao")
      * @SerializedName("valor")
-     * @return float
+     * @return null|float
      */
-    public function getValorFormatted(): float
+    public function getValorFormatted(): ?float
     {
         return (float)$this->valor;
     }
@@ -494,9 +494,9 @@ class Movimentacao implements EntityId
     /**
      * @Groups("movimentacao")
      * @SerializedName("descontos")
-     * @return float
+     * @return null|float
      */
-    public function getDescontosFormatted(): float
+    public function getDescontosFormatted(): ?float
     {
         return (float)$this->descontos;
     }
@@ -515,9 +515,9 @@ class Movimentacao implements EntityId
     /**
      * @Groups("movimentacao")
      * @SerializedName("acrescimos")
-     * @return float
+     * @return null|float
      */
-    public function getAcrescimosFormatted(): float
+    public function getAcrescimosFormatted(): ?float
     {
         return (float)$this->acrescimos;
     }
@@ -536,9 +536,9 @@ class Movimentacao implements EntityId
     /**
      * @Groups("movimentacao")
      * @SerializedName("valorTotal")
-     * @return float
+     * @return null|float
      */
-    public function getValorTotalFormatted(): float
+    public function getValorTotalFormatted(): ?float
     {
         return (float)$this->valorTotal;
     }
