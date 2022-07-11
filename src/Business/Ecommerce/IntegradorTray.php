@@ -474,41 +474,38 @@ class IntegradorTray implements IntegradorEcommerce
      */
     public function integraMarca(string $marca): int
     {
-        $marca = mb_strtoupper(trim($marca));
-        $rsMarcas = $this->selectMarcas();
-
-        foreach ($rsMarcas as $rMarca) {
-            if (mb_strtoupper(trim($rMarca['Brand']['brand'])) === $marca) {
-                return (int)$rMarca['Brand']['id'];
+        try {
+            $marca = mb_strtoupper(trim($marca));
+            $rsMarcas = $this->selectMarcas();
+            foreach ($rsMarcas as $rMarca) {
+                if (mb_strtoupper(trim($rMarca['Brand']['brand'])) === $marca) {
+                    return (int)$rMarca['Brand']['id'];
+                }
+            }// else...
+            $this->syslog->info('integraMarca: ini', 'marca = ' . $marca);
+            $url = $this->getEndpoint() . 'web_api/brands?access_token=' . $this->getAccessToken();
+            $method = 'POST';
+            $arr = [
+                'Brand' => [
+                    'slug' => mb_strtolower((new StringAssembler([$marca]))->kebab()),
+                    'brand' => $marca,
+                ]
+            ];
+            $response = $this->client->request($method, $url, [
+                'form_params' => $arr
+            ]);
+            $bodyContents = $response->getBody()->getContents();
+            $json = json_decode($bodyContents, true);
+            if (!in_array($json['message'], ['Created', 'Saved'], true)) {
+                throw new ViewException('Erro ao criar marca');
             }
+            $cache = new FilesystemAdapter('integrador_tray.cache', 600, $_SERVER['CROSIER_SESSIONS_FOLDER']);
+            $cache->clear('select_marcas');
+            return $json['id'];
+        } catch (\Exception $e) {
+            $msg = ExceptionUtils::treatException($e);
+            throw new ViewException('Erro ao integrar a marca: ' . $marca . ' (' . $msg . ')');
         }
-        // else...
-
-        $this->syslog->info('integraMarca: ini', 'marca = ' . $marca);
-
-        $url = $this->getEndpoint() . 'web_api/brands?access_token=' . $this->getAccessToken();
-        $method = 'POST';
-
-        $arr = [
-            'Brand' => [
-                'slug' => mb_strtolower((new StringAssembler([$marca]))->kebab()),
-                'brand' => $marca,
-            ]
-        ];
-
-        $response = $this->client->request($method, $url, [
-            'form_params' => $arr
-        ]);
-        $bodyContents = $response->getBody()->getContents();
-        $json = json_decode($bodyContents, true);
-        if (!in_array($json['message'], ['Created', 'Saved'], true)) {
-            throw new ViewException('Erro ao criar marca');
-        }
-
-        $cache = new FilesystemAdapter('integrador_tray.cache', 600, $_SERVER['CROSIER_SESSIONS_FOLDER']);
-        $cache->clear('select_marcas');
-
-        return $json['id'];
     }
 
     /**
@@ -518,6 +515,10 @@ class IntegradorTray implements IntegradorEcommerce
     {
         // Ainda só funciona para a arquitetura 1x1
         try {
+            if (!$produto->marca) {
+                throw new ViewException('É necessário informar a marca do produto para realizar a integração');
+            }
+            
             $this->init();
             $syslog_obs = 'produto = ' . $produto->nome . ' (' . $produto->getId() . ')';
             $this->syslog->debug('integraProduto - ini', $syslog_obs);
