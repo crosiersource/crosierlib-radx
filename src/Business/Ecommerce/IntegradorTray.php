@@ -474,11 +474,11 @@ class IntegradorTray implements IntegradorEcommerce
      */
     public function integraMarca(string $marca): int
     {
-        $marca = trim($marca);
+        $marca = mb_strtoupper(trim($marca));
         $rsMarcas = $this->selectMarcas();
 
         foreach ($rsMarcas as $rMarca) {
-            if ($rMarca['Brand']['brand'] === $marca) {
+            if (mb_strtoupper(trim($rMarca['Brand']['brand'])) === $marca) {
                 return (int)$rMarca['Brand']['id'];
             }
         }
@@ -622,8 +622,9 @@ class IntegradorTray implements IntegradorEcommerce
 
             $this->syslog->info('integraProduto - salvando json_data: OK', $syslog_obs);
 
-        } catch (GuzzleException $e) {
-            throw new ViewException('Erro ao integrar produto na tray (Id: ' . $produto->getId() . ')', 0, $e);
+        } catch (\Exception $e) {
+            $msg = ExceptionUtils::treatException($e);
+            throw new ViewException('Erro ao integrar produto na tray (Id: ' . $produto->getId() . '): ' . $e->getMessage(), 0, $e);
         }
     }
 
