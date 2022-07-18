@@ -53,6 +53,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     "fatura": "exact",
  *     "descricao": "partial",
  *     "categoria": "exact",
+ *     "categoria.codigoSuper": "exact",
  *     "carteira": "exact",
  *     "carteira.codigo": "exact",
  *     "modo": "exact",
