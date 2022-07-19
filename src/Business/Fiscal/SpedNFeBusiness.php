@@ -9,6 +9,7 @@ use CrosierSource\CrosierLibBaseBundle\Repository\Base\MunicipioRepository;
 use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\FinalidadeNF;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\ModalidadeFrete;
@@ -310,6 +311,12 @@ class SpedNFeBusiness
 
         $total_vICMSUFDest = 0.00;
 
+        $qtdeItens = $notaFiscal->getItens()->count();
+        $rateioFrete = null;
+        if ($notaFiscal->transpValorTotalFrete) {
+            $rateioFrete = DecimalUtils::gerarParcelas($notaFiscal->transpValorTotalFrete, $qtdeItens);
+        }
+
         /** @var NotaFiscalItem $nfItem */
         foreach ($notaFiscal->getItens() as $nfItem) {
             $itemXML = $nfe->infNFe->addChild('det');
@@ -340,6 +347,11 @@ class SpedNFeBusiness
             if (bccomp($nfItem->valorDesconto, 0.00, 2)) {
                 $itemXML->prod->vDesc = number_format(abs($nfItem->valorDesconto), 2, '.', '');
             }
+
+            if ($rateioFrete) {
+                $itemXML->prod->vFrete = number_format($rateioFrete[$i-1], 2, '.', '');
+            }
+
             $itemXML->prod->indTot = '1';
 
             $this->handleImpostos($nfe, $nfItem, $itemXML);
@@ -353,7 +365,7 @@ class SpedNFeBusiness
 
             $total_vICMSUFDest += (float)$itemXML->imposto->ICMSUFDest->vICMSUFDest ?? 0.0;
 
-            // $itemXML->prod->vFrete = number_format($nfItem->jsonData['valor_frete_item'] ?? 0, 2, '.', '');
+
 
             $i++;
         }
@@ -384,7 +396,8 @@ class SpedNFeBusiness
         $nfe->infNFe->total->ICMSTot->vPIS = number_format($total_vPIS, 2, '.', '');;
         $nfe->infNFe->total->ICMSTot->vCOFINS = number_format($total_vCOFINS, 2, '.', '');;
         $nfe->infNFe->total->ICMSTot->vOutro = '0.00';
-        $nfe->infNFe->total->ICMSTot->vNF = number_format($notaFiscal->valorTotal, 2, '.', '');
+        $totalNota = bcadd($notaFiscal->valorTotal, $notaFiscal->transpValorTotalFrete ?? '0.00', 2);
+        $nfe->infNFe->total->ICMSTot->vNF = number_format($totalNota, 2, '.', '');
         $nfe->infNFe->total->ICMSTot->vTotTrib = '0.00';
 
         if ($notaFiscal->tipoNotaFiscal === 'NFCE') {
