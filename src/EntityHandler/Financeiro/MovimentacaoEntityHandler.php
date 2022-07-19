@@ -202,7 +202,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             if ($movimentacao->modo->getCodigo() === 99 && !in_array($movimentacao->categoria->codigo, [195, 295], true)) {
                 throw new ViewException('Não é possível salvar uma movimentação com status "REALIZADA" em modo 99 (INDEFINIDO)');
             }
-        } elseif ($movimentacao->status !== 'ABERTA') { // if ($movimentacao->getStatus() === 'ABERTA') {
+        } elseif ($movimentacao->status === 'ABERTA') { // if ($movimentacao->getStatus() === 'ABERTA') {
             if (!$movimentacao->carteira->abertas) {
                 throw new ViewException('Esta carteira não pode conter movimentações com status "ABERTA".');
             }
