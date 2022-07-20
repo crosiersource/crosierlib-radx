@@ -359,7 +359,7 @@ class NotaFiscalBusiness
 
             // Atenção, aqui tem que verificar a questão do arredondamento
             if ($venda->subtotal > 0.0) {
-                $fatorDesconto = 1 - round(bcdiv($venda->valorTotal, $venda->subtotal, 4), 2);
+                $fatorDesconto = 1 - round(bcdiv($venda->valorTotal, $venda->subtotal, 6), 6);
             } else {
                 $fatorDesconto = 1;
             }
