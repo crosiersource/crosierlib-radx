@@ -650,6 +650,9 @@ class IntegradorTray implements IntegradorEcommerce
                 }
             }
 
+            /** @var ProdutoRepository $repoProduto */
+            $repoProduto = $this->produtoEntityHandler->getDoctrine()->getRepository(Produto::class);
+            
             $produto = new Produto();
             $produto->nome = $item['name'];
             $produto->jsonData['dados_ecommerce'] = $product ?? null;
@@ -664,6 +667,8 @@ class IntegradorTray implements IntegradorEcommerce
             $produto->depto = $this->deptoIndefinido;
             $produto->grupo = $this->grupoIndefinido;
             $produto->subgrupo = $this->subgrupoIndefinido;
+            $produto->ncm = $repoProduto->getNcmPadrao();
+            
 
             /** @var FornecedorRepository $repoFornecedor */
             $repoFornecedor = $this->produtoEntityHandler->getDoctrine()->getRepository(Fornecedor::class);
@@ -799,7 +804,7 @@ class IntegradorTray implements IntegradorEcommerce
     }
 
 
-    public function obterPedidoDoEcommerce(int $numPedido, bool $resalvar = false)
+    public function obterPedidoDoEcommerce(int $numPedido)
     {
         $this->init();
         $url = $this->getEndpoint() . 'web_api/orders/' . $numPedido . '/complete?access_token=' . $this->getAccessToken();
@@ -807,7 +812,7 @@ class IntegradorTray implements IntegradorEcommerce
         $bodyContents = $response->getBody()->getContents();
         $json = json_decode($bodyContents, true);
         $json['codigo_loja_tray'] = $this->trayConfigs['store_id'];
-        return $this->integrarVendaParaCrosier($json, $resalvar);
+        return $json;
     }
 
 
@@ -1194,7 +1199,8 @@ class IntegradorTray implements IntegradorEcommerce
                     }
                     $produto = $repoProduto->find($sProduto['id']);
                 } catch (\Throwable $e) {
-                    throw new ViewException('Erro ao integrar venda. Erro ao pesquisar produto (idProduto = ' . $item['product_id'] . ')');
+                    $msg = ExceptionUtils::treatException($e);
+                    throw new ViewException('Erro ao integrar venda. Erro ao pesquisar produto (idProduto = ' . $item['product_id'] . ') [' . $msg . ']');
                 }
 
                 $vendaItem = new VendaItem();
@@ -1236,7 +1242,7 @@ class IntegradorTray implements IntegradorEcommerce
             try {
                 $conn->delete('ven_venda_pagto', ['venda_id' => $venda->getId()]);
             } catch (\Throwable $e) {
-                $erro = 'Erro ao deletar pagtos da venda (id = "' . $venda['id'] . ')';
+                $erro = 'Erro ao deletar pagtos da venda (id = "' . $venda->getId() . ')';
                 $this->syslog->err($erro);
                 throw new \RuntimeException($erro);
             }
@@ -1259,7 +1265,8 @@ class IntegradorTray implements IntegradorEcommerce
 
                 $carteiraId = null;
 
-                if (strpos($tipoFormaPagamento, 'YAPAY') !== FALSE) {
+                if ((strpos($tipoFormaPagamento, 'YAPAY') !== FALSE) || 
+                    (strpos($tipoFormaPagamento, 'VINDI') !== FALSE)) {
                     $carteiraId = $this->getCarteiraYapay($jsonPedido['codigo_loja_tray']);
                     $integrador = 'YAPAY';
                 } elseif ($tipoFormaPagamento === 'PIX') {

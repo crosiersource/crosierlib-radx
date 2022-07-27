@@ -102,53 +102,38 @@ class Produto implements EntityId
      * @var string|null
      */
     public ?string $UUID = null;
-    
 
-    /**
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto")
-     * @ORM\JoinColumn(name="depto_id", nullable=false)
-     * @Groups("produto")
-     * @MaxDepth(1)
-     * @var $depto null|Depto
-     */
-    public ?Depto $depto = null;
     
-
-    /**
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo")
-     * @ORM\JoinColumn(name="grupo_id", nullable=false)
-     * @Groups("produto")
-     * @MaxDepth(1)
-     * @var $grupo null|Grupo
-     */
-    public ?Grupo $grupo = null;
-    
-
-    /**
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo")
-     * @ORM\JoinColumn(name="subgrupo_id", nullable=false)
-     * @Groups("produto")
-     * @MaxDepth(1)
-     * @var $subgrupo null|Subgrupo
-     */
-    public ?Subgrupo $subgrupo = null;
-    
-
-    /**
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor")
-     * @ORM\JoinColumn(name="fornecedor_id", nullable=false)
-     * @Groups("produto")
-     * @var $fornecedor null|Fornecedor
-     */
-    public ?Fornecedor $fornecedor = null;
-    
-
     /**
      * @ORM\Column(name="codigo", type="string", nullable=false)
      * @Groups("produto")
      * @var null|string
      */
     public ?string $codigo = null;
+
+    
+    /**
+     * @ORM\Column(name="nome", type="string", nullable=false)
+     * @Groups("produto")
+     * @var null|string
+     */
+    public ?string $nome = null;
+
+
+    /**
+     * @ORM\Column(name="ean", type="string", nullable=true)
+     * @Groups("produto")
+     * @var null|string
+     */
+    public ?string $ean = null;
+
+
+    /**
+     * @ORM\Column(name="ncm", type="string", nullable=true)
+     * @Groups("produto")
+     * @var null|string
+     */
+    public ?string $ncm = null;
 
 
     /**
@@ -160,37 +145,43 @@ class Produto implements EntityId
 
 
     /**
-     * @ORM\Column(name="ean", type="string", nullable=true)
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto")
+     * @ORM\JoinColumn(name="depto_id", nullable=false)
      * @Groups("produto")
-     * @var null|string
+     * @MaxDepth(1)
+     * @var $depto null|Depto
      */
-    public ?string $ean = null;
-    
-
-    /**
-     * @ORM\Column(name="nome", type="string", nullable=false)
-     * @Groups("produto")
-     * @var null|string
-     */
-    public ?string $nome = null;
+    public ?Depto $depto = null;
 
 
     /**
-     * @ORM\Column(name="marca", type="string", nullable=true)
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Grupo")
+     * @ORM\JoinColumn(name="grupo_id", nullable=false)
      * @Groups("produto")
-     * @var null|string
+     * @MaxDepth(1)
+     * @var $grupo null|Grupo
      */
-    public ?string $marca = null;
-    
+    public ?Grupo $grupo = null;
+
 
     /**
-     * ATIVO,INATIVO
-     * @ORM\Column(name="status", type="string", nullable=true)
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Subgrupo")
+     * @ORM\JoinColumn(name="subgrupo_id", nullable=false)
      * @Groups("produto")
-     * @var null|string
+     * @MaxDepth(1)
+     * @var $subgrupo null|Subgrupo
      */
-    public ?string $status = null;
-    
+    public ?Subgrupo $subgrupo = null;
+
+
+    /**
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Fornecedor")
+     * @ORM\JoinColumn(name="fornecedor_id", nullable=false)
+     * @Groups("produto")
+     * @var $fornecedor null|Fornecedor
+     */
+    public ?Fornecedor $fornecedor = null;
+
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Unidade")
@@ -199,21 +190,32 @@ class Produto implements EntityId
      * @var null|Unidade
      */
     public ?Unidade $unidadePadrao = null;
-    
+
 
     /**
-     * @ORM\Column(name="qtde_total", type="decimal", nullable=false, precision=15, scale=3)
-     * @var null|float
+     * @ORM\Column(name="marca", type="string", nullable=true)
+     * @Groups("produto")
+     * @var null|string
      */
-    public ?float $qtdeTotal = 0.0;
-    
+    public ?string $marca = null;
+
 
     /**
-     * @ORM\Column(name="qtde_minima", type="decimal", nullable=true, precision=15, scale=3)
-     * @var null|float
+     * ATIVO,INATIVO
+     * @ORM\Column(name="status", type="string", nullable=true)
+     * @Groups("produto")
+     * @var null|string
      */
-    public ?float $qtdeMinima = null;
-    
+    public ?string $status = null;
+
+
+    /**
+     * @ORM\Column(name="obs", type="string", nullable=true)
+     * @Groups("produto")
+     * @var null|string
+     */
+    public ?string $obs = null;
+
 
     /**
      * S,N
@@ -223,15 +225,30 @@ class Produto implements EntityId
      */
     public ?string $composicao = 'N';
 
-    
+
+    /**
+     * @ORM\Column(name="qtde_total", type="decimal", nullable=false, precision=15, scale=3)
+     * @var null|float
+     */
+    public ?float $qtdeTotal = 0.0;
+
+
+    /**
+     * @ORM\Column(name="qtde_minima", type="decimal", nullable=true, precision=15, scale=3)
+     * @var null|float
+     */
+    public ?float $qtdeMinima = null;
+
+
     /**
      * Informa se o produto está em e-commerce.
-     * 
+     *
      * @ORM\Column(name="ecommerce", type="boolean", nullable=true)
      * @Groups("produto")
      */
     public ?bool $ecommerce = false;
 
+    
     /**
      * Marca a última data de integração ao e-commerce.
      *
@@ -239,7 +256,7 @@ class Produto implements EntityId
      * @Groups("produto")
      */
     public ?\DateTime $dtUltIntegracaoEcommerce = null;
-    
+
 
     /**
      * @ORM\OneToMany(targetEntity="ProdutoImagem", mappedBy="produto", cascade={"all"}, orphanRemoval=true)

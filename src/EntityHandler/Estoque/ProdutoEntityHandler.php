@@ -207,6 +207,10 @@ class ProdutoEntityHandler extends EntityHandler
 
         /** @var ProdutoRepository $repoProduto */
         $repoProduto = $this->doctrine->getRepository(Produto::class);
+        $produtoJsonMetadata = $repoProduto->getJsonMetadata();
+        if (!$produtoJsonMetadata) {
+            return;
+        }
         $jsonMetadata = json_decode($repoProduto->getJsonMetadata(), true);
         foreach ($jsonMetadata['campos'] as $nomeDoCampo => $metadata) {
             if (isset($metadata['soma_preench'])) {
@@ -227,7 +231,7 @@ class ProdutoEntityHandler extends EntityHandler
             }
         }
 
-        $totalPreench = $preench / $pesoTotal;
+        $totalPreench = $pesoTotal > 0 ? ($preench / $pesoTotal) : 0;
 
         $produto->jsonData['porcent_preench'] = $totalPreench;
         $produto->jsonData['porcent_preench_campos_faltantes'] = $camposFaltantes;

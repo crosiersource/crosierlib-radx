@@ -29,12 +29,13 @@ class ProdutoRepository extends FilterRepository
     {
         /** @var AppConfigRepository $repoAppConfig */
         $repoAppConfig = $this->getEntityManager()->getRepository(AppConfig::class);
-        return $repoAppConfig->findOneBy(
+        $appConfig = $repoAppConfig->findOneBy(
             [
                 'appUUID' => $_SERVER['CROSIERAPPRADX_UUID'],
                 'chave' => 'est_produto_json_metadata'
             ]
-        )->valor;
+        );
+        return $appConfig ? $appConfig->valor : null;
     }
 
     public function getUnidadesSelect2js()
@@ -75,6 +76,23 @@ class ProdutoRepository extends FilterRepository
         }
 
         return $results;
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getNcmPadrao()
+    {
+        /** @var AppConfigRepository $repoAppConfig */
+        $repoAppConfig = $this->getEntityManager()->getRepository(AppConfig::class);
+        $appConfig = $repoAppConfig->findOneBy(
+            [
+                'appUUID' => $_SERVER['CROSIERAPPRADX_UUID'],
+                'chave' => 'ncm_padrao'
+            ]
+        );
+        return $appConfig ? $appConfig->valor : null;
     }
 
 }
