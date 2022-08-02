@@ -29,7 +29,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     itemOperations={
  *          "get"={"path"="/fin/fatura/{id}", "security"="is_granted('ROLE_FINAN')"},
  *          "put"={"path"="/fin/fatura/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/fatura/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "delete"={"path"="/fin/fatura/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/fatura", "security"="is_granted('ROLE_FINAN')"},

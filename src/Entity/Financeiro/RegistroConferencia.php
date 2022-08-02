@@ -26,12 +26,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  *     itemOperations={
  *          "get"={"path"="/fin/registroConferencia/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fin/registroConferencia/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/registroConferencia/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "put"={"path"="/fin/registroConferencia/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"},
+ *          "delete"={"path"="/fin/registroConferencia/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/registroConferencia", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fin/registroConferencia", "security"="is_granted('ROLE_FINAN')"}
+ *          "post"={"path"="/fin/registroConferencia", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *
  *     attributes={

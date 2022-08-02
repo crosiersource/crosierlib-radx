@@ -25,12 +25,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  *     itemOperations={
  *          "get"={"path"="/fin/operadoraCartao/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fin/operadoraCartao/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "put"={"path"="/fin/operadoraCartao/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"},
  *          "delete"={"path"="/fin/operadoraCartao/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/operadoraCartao", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fin/operadoraCartao", "security"="is_granted('ROLE_FINAN')"}
+ *          "post"={"path"="/fin/operadoraCartao", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *
  *     attributes={

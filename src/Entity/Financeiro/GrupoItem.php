@@ -28,7 +28,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     itemOperations={
  *          "get"={"path"="/fin/grupoItem/{id}", "security"="is_granted('ROLE_FINAN')"},
  *          "put"={"path"="/fin/grupoItem/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/grupoItem/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "delete"={"path"="/fin/grupoItem/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/grupoItem", "security"="is_granted('ROLE_FINAN')"},

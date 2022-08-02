@@ -25,12 +25,12 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *
  *     itemOperations={
  *          "get"={"path"="/fin/categoria/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fin/categoria/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/categoria/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
+ *          "put"={"path"="/fin/categoria/{id}", "security"="is_granted('ROLE_FINAN_MASTER')"},
+ *          "delete"={"path"="/fin/categoria/{id}", "security"="is_granted('ROLE_FINAN_MASTER')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/categoria", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fin/categoria", "security"="is_granted('ROLE_FINAN')"}
+ *          "post"={"path"="/fin/categoria", "security"="is_granted('ROLE_FINAN_MASTER')"}
  *     },
  *
  *     attributes={

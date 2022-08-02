@@ -28,12 +28,12 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *
  *     itemOperations={
  *          "get"={"path"="/fin/carteira/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fin/carteira/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/carteira/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "put"={"path"="/fin/carteira/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"},
+ *          "delete"={"path"="/fin/carteira/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/carteira", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fin/carteira", "security"="is_granted('ROLE_FINAN')"}
+ *          "post"={"path"="/fin/carteira", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *
  *     attributes={

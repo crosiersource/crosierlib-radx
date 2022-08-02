@@ -25,12 +25,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  *     itemOperations={
  *          "get"={"path"="/fin/grupo/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fin/grupo/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/grupo/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "put"={"path"="/fin/grupo/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"},
+ *          "delete"={"path"="/fin/grupo/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/grupo", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fin/grupo", "security"="is_granted('ROLE_FINAN')"}
+ *          "post"={"path"="/fin/grupo", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *
  *     attributes={

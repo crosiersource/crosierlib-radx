@@ -26,7 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     itemOperations={
  *          "get"={"path"="/fin/cadeia/{id}", "security"="is_granted('ROLE_FINAN')"},
  *          "put"={"path"="/fin/cadeia/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/cadeia/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "delete"={"path"="/fin/cadeia/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/cadeia", "security"="is_granted('ROLE_FINAN')"},

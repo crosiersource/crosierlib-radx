@@ -27,12 +27,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  *     itemOperations={
  *          "get"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_FINAN_ADMIN')"}
+ *          "put"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_FINAN_MASTER')"},
+ *          "delete"={"path"="/fin/modo/{id}", "security"="is_granted('ROLE_FINAN_MASTER')"}
  *     },
  *     collectionOperations={
  *          "get"={"path"="/fin/modo", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fin/modo", "security"="is_granted('ROLE_FINAN')"}
+ *          "post"={"path"="/fin/modo", "security"="is_granted('ROLE_FINAN_MASTER')"}
  *     },
  *
  *     attributes={
