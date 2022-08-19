@@ -176,7 +176,11 @@ class MovimentacaoEntityHandler extends EntityHandler
             /** @var DiaUtilRepository $repoDiaUtil */
             $repoDiaUtil = $this->doctrine->getRepository(DiaUtil::class);
             $proxDiaUtilFinanceiro = $repoDiaUtil->findDiaUtil($movimentacao->dtVencto, null, true);
-            $movimentacao->dtVenctoEfetiva = clone($proxDiaUtilFinanceiro);
+            if ($proxDiaUtilFinanceiro) {
+                $movimentacao->dtVenctoEfetiva = clone($proxDiaUtilFinanceiro);
+            } else {
+                $movimentacao->dtVenctoEfetiva = clone($movimentacao->dtVencto);
+            }
         }
         $movimentacao->dtUtil = clone($movimentacao->dtPagto ?? $movimentacao->dtVenctoEfetiva);
 
