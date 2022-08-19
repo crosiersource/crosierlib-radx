@@ -9,6 +9,7 @@ use CrosierSource\CrosierLibBaseBundle\Entity\Security\User;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ImageUtils\ImageUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\WebUtils\WebUtils;
@@ -1217,6 +1218,7 @@ class IntegradorWebStorm implements IntegradorEcommerce
             $start = microtime(true);
             $this->syslog->info('atualizaEstoqueEPrecos - ini');
             $conn = $this->produtoEntityHandler->getDoctrine()->getConnection();
+            $conn->beginTransaction();
             $xml = '<![CDATA[<?xml version="1.0" encoding="iso-8859-1"?>
                 <ws_integracao xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                    <chave>' . $this->getChave() . '</chave>
@@ -1239,9 +1241,9 @@ class IntegradorWebStorm implements IntegradorEcommerce
                     continue;
                 }
                 if (!$produtoItemVendaId) {
-                    $err = 'Produto sem jsonData[\'ecommerce_item_venda_id\']';
+                    $err = 'Produto com jsonData[\'ecommerce_id\'] mas sem jsonData[\'ecommerce_item_venda_id\']';
                     $this->syslog->err($err);
-                    throw new ViewException($err);
+                    continue;
                 }
                 $preco = ($jsonData['preco_site'] ?? $jsonData['preco_tabela'] ?? 0.0);
                 $estoque = ($jsonData['qtde_estoque_total'] ?? 0);
@@ -1261,10 +1263,11 @@ class IntegradorWebStorm implements IntegradorEcommerce
                     'changing_user_id' => 1,
                     'changed_at' => (new \DateTime())->format('Y-m-d H:i:s'),
                     'changes' => 'Preço: ' . $preco . ', Estoque: ' . $estoque,
-                    'obs' => 'ATUALIZANDO SALDO NA WEBSTORM',
+                    'obs' => 'ATUALIZANDO SALDO NA WEBSTORM (via atualizarTodosOsEstoquesEPrecos)',
                 ]);
 
             }
+            
             if (!$temAtualizacao) {
                 $this->syslog->info('atualizaEstoqueEPrecos - OK (sem atualizações)');
                 return;
@@ -1301,8 +1304,17 @@ class IntegradorWebStorm implements IntegradorEcommerce
             }
 
             $tt = (int)(microtime(true) - $start);
+            $conn->commit();
             $this->syslog->info('atualizaEstoqueEPrecos - OK (em ' . $tt . ' segundos)');
         } catch (\Throwable $e) {
+            if ($conn->isTransactionActive()) {
+                try {
+                    $conn->rollBack();
+                } catch (Exception $e) {
+                    $msg = ExceptionUtils::treatException($e);
+                    $this->syslog->err($errMsg, $e->getTraceAsString());
+                }
+            }
             $errMsg = 'atualizaEstoqueEPrecos - ERRO (' . $e->getMessage() . ')';
             if ($e instanceof ViewException) {
                 $errMsg .= ' - ' . $e->getMessage();
@@ -1422,13 +1434,21 @@ class IntegradorWebStorm implements IntegradorEcommerce
         }
         $rs = $conn->fetchAllAssociative($sql);
         $produtosIds = [];
+        
+        $enviarNoMax = 100;
+        $i = 0;
         foreach ($rs as $r) {
             $produtosIds[] = $r['id'];
+            if ($i++ > $enviarNoMax) {
+                $this->atualizaEstoqueEPrecos($produtosIds);
+                $produtosIds = [];
+                $i=0;
+            }
         }
 
         $this->syslog->info('Atualizando qtdes/preços para ' . count($produtosIds) . ' produto(s)');
 
-        $this->atualizaEstoqueEPrecos($produtosIds);
+        
 
         return count($produtosIds);
     }
