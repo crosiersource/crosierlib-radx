@@ -54,7 +54,7 @@ class Cadeia implements EntityId
     use EntityIdTrait;
 
     /**
-     * Se for vinculante, ao deletar uma movimentação da cadeia todas deverão são deletadas (ver trigger trg_ad_delete_cadeia).
+     * Se for vinculante, ao deletar uma movimentação da cadeia todas deverão são deletadas.
      *
      * @ORM\Column(name="vinculante", type="boolean", nullable=false)
      * @Assert\NotNull()

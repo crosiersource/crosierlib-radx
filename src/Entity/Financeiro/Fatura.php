@@ -43,9 +43,27 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  * )
  * @ApiFilter(PropertyFilter::class)
+ * 
+ * @ApiFilter(DateFilter::class, properties={"dtFatura"})
+ * 
+ * @ApiFilter(BooleanFilter::class, properties={
+ *     "fechada",
+ *     "quitada",
+ *     "cancelada"
+ * })
  *
- * @ApiFilter(SearchFilter::class, properties={"codigo": "exact", "descricao": "partial", "id": "exact", "fatura": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "descricao", "dtConsolidado", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "sacadoDocumento": "exact", 
+ *     "sacadoNome": "partial", 
+ *     "cedenteDocumento": "exact", 
+ *     "cedenteNome": "partial"
+ * })
+ * 
+ * @ApiFilter(OrderFilter::class, properties={
+ *     "id", 
+ *     "updated",
+ *     "dtFatura"
+ * }, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\FaturaEntityHandler")
  *
@@ -59,6 +77,43 @@ class Fatura implements EntityId
 
     use EntityIdTrait;
 
+
+    /**
+     * CPF/CNPJ de quem paga esta movimentação.
+     *
+     * @ORM\Column(name="sacado_documento", type="string", nullable=true)
+     * @Groups("fatura")
+     */
+    public ?string $sacadoDocumento = null;
+
+    
+    /**
+     * Razão Social / Nome de quem paga esta movimentação.
+     *
+     * @ORM\Column(name="sacado_nome", type="string", nullable=true)
+     * @Groups("fatura")
+     */
+    public ?string $sacadoRazaoSocial = null;
+
+    
+    /**
+     * CPF/CNPJ de quem recebe esta movimentação.
+     *
+     * @ORM\Column(name="cedente", type="string", nullable=true)
+     * @Groups("fatura")
+     */
+    public ?string $cedenteDocumento = null;
+
+
+    /**
+     * Razão Social / Nome de quem recebe esta movimentação.
+     *
+     * @ORM\Column(name="sacado_nome", type="string", nullable=true)
+     * @Groups("fatura")
+     */
+    public ?string $cedenteRazaoSocial = null;
+    
+
     /**
      * Data em que a movimentação efetivamente aconteceu.
      *
@@ -69,6 +124,7 @@ class Fatura implements EntityId
      */
     public ?DateTime $dtFatura = null;
 
+    
     /**
      *
      * Se for fechada, não é possível incluir outras movimentações na fatura.
@@ -80,14 +136,6 @@ class Fatura implements EntityId
      */
     public ?bool $fechada = false;
 
-    /**
-     *
-     * @ORM\Column(name="transacional", type="boolean")
-     * @Groups("fatura")
-     *
-     * @var bool|null
-     */
-    public ?bool $transacional = false;
 
     /**
      *
@@ -98,6 +146,17 @@ class Fatura implements EntityId
      */
     public ?bool $quitada = false;
 
+
+    /**
+     *
+     * @ORM\Column(name="cancelada", type="boolean")
+     * @Groups("fatura")
+     *
+     * @var bool|null
+     */
+    public ?bool $cancelada = false;
+    
+
     /**
      *
      * @ORM\Column(name="json_data", type="json")
@@ -107,6 +166,7 @@ class Fatura implements EntityId
      */
     public ?array $jsonData = null;
 
+    
     /**
      *
      * @var Movimentacao[]|ArrayCollection|null
