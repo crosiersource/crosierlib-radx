@@ -1066,7 +1066,7 @@ class IntegradorWebStorm implements IntegradorEcommerce
 
         if ($integrarImagens) {
             foreach ($produto->imagens as $imagem) {
-                $url = $_SERVER['CROSIERAPP_URL'] . $this->uploaderHelper->asset($imagem, 'imageFile');
+                $url = $_SERVER['CROSIERAPPRADX_URL'] . $this->uploaderHelper->asset($imagem, 'imageFile');
                 // verifica se existe a imagem "_1080.ext"
                 $pathinfo = pathinfo($url);
                 $parsedUrl = parse_url($url);

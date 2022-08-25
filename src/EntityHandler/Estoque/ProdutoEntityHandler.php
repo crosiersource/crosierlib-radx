@@ -176,7 +176,7 @@ class ProdutoEntityHandler extends EntityHandler
     {
         $url = '';
         try {
-            $url = $_SERVER['CROSIERAPP_URL'] . '/images/produtos/' . $produto->depto->getId() . '/' . $produto->grupo->getId() . '/' . $produto->subgrupo->getId() . '/' . $img;
+            $url = $_SERVER['CROSIERAPPRADX_URL'] . '/images/produtos/' . $produto->depto->getId() . '/' . $produto->grupo->getId() . '/' . $produto->subgrupo->getId() . '/' . $img;
             $imgUtils = new ImageUtils();
             $imgUtils->load($url);
             $pathinfo = pathinfo($url);
