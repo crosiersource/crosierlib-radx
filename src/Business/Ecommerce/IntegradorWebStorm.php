@@ -12,6 +12,7 @@ use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ImageUtils\ImageUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\WebUtils\WebUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Depto;
@@ -40,6 +41,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\PlanoPagtoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\Exception;
+use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Security;
@@ -913,7 +915,7 @@ class IntegradorWebStorm implements IntegradorEcommerce
      * @return void
      * @throws ViewException
      */
-    public function integraProduto(Produto $produto, ?bool $integrarImagens = true, ?bool $respeitarDelay = false): void
+    public function integraProduto(Produto $produto, ?bool $integrarImagens = true, ?bool $respeitarDelay = false, ?bool $reintegrarRecursivo = true): void
     {
         $syslog_obs = 'produto = ' . $produto->getId() . '; integrarImagens = ' . $integrarImagens;
 
@@ -1155,7 +1157,18 @@ class IntegradorWebStorm implements IntegradorEcommerce
         $xmlResult = simplexml_load_string($arResultado);
 
         if ($xmlResult->erros->erro ?? false) {
-            $this->syslog->err('integraProduto - erros: ' . $xmlResult->erros->erro->__toString(), $syslog_obs);
+            $erro = $xmlResult->erros->erro->__toString();
+            if (strpos($erro, 'Erro: Foi encontrado produto com o idProduto') === 0) {
+                $this->syslog->info($erro, $syslog_obs);
+                $ecommerceIdCorreto = (int)substr($erro, 46);
+                $this->corrigirVinculosCrosierWebStorm($produto, $ecommerceIdCorreto);
+                if ($reintegrarRecursivo) {
+                    $this->syslog->info('Reintegrando recursivo...', $syslog_obs);
+                    $this->integraProduto($produto, $integrarImagens, $respeitarDelay, false); 
+                    return;
+                }
+            }
+            $this->syslog->err('integraProduto - erros: ' . $erro, $syslog_obs);
             throw new \RuntimeException($xmlResult->erros->erro->__toString());
         }
 
@@ -1267,7 +1280,7 @@ class IntegradorWebStorm implements IntegradorEcommerce
                 ]);
 
             }
-            
+
             if (!$temAtualizacao) {
                 $this->syslog->info('atualizaEstoqueEPrecos - OK (sem atualizações)');
                 return;
@@ -1434,7 +1447,7 @@ class IntegradorWebStorm implements IntegradorEcommerce
         }
         $rs = $conn->fetchAllAssociative($sql);
         $produtosIds = [];
-        
+
         $enviarNoMax = 100;
         $i = 0;
         foreach ($rs as $r) {
@@ -1442,13 +1455,12 @@ class IntegradorWebStorm implements IntegradorEcommerce
             if ($i++ > $enviarNoMax) {
                 $this->atualizaEstoqueEPrecos($produtosIds);
                 $produtosIds = [];
-                $i=0;
+                $i = 0;
             }
         }
 
         $this->syslog->info('Atualizando qtdes/preços para ' . count($produtosIds) . ' produto(s)');
 
-        
 
         return count($produtosIds);
     }
@@ -2137,6 +2149,66 @@ class IntegradorWebStorm implements IntegradorEcommerce
             $this->nusoapClientImportacao = $client;
         }
         return $this->nusoapClientImportacao;
+    }
+
+
+    private function corrigirVinculosCrosierWebStorm(Produto $produto, int $ecommerceId)
+    {
+        $client = new Client();
+
+        $uuid = StringUtils::guidv4();
+
+        $headers = [
+            'authority' => 'www.rodoponta.com.br',
+            'accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'accept-language' => 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+            'cookie' => 'PHPSESSID=' . $uuid,
+            'x-requested-with' => 'XMLHttpRequest',
+            'user-agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/81.0.4044.138 Chrome/81.0.4044.138 Safari/537.36',
+            'origin' => 'https://ww3.finersistemas.com',
+            'sec-fetch-site' => 'same-origin',
+            'sec-fetch-mode' => 'navigate',
+            'sec-fetch-dest' => 'document',
+            'sec-fetch-user' => '?1',
+            'sec-gpc' => '1',
+            'upgrade-insecure-requests' => '1',
+            'referer' => 'https://www.rodoponta.com.br/admin',
+        ];
+
+        $headers['content-type'] = 'application/x-www-form-urlencoded';
+
+        // login
+        $rs = $client->request('POST',
+            'https://www.rodoponta.com.br/admin/autenticacao/login',
+            [
+                'headers' => $headers,
+                'body' => 'usuario=' . $_SERVER['webstorm_username'] . '&senha=' . $_SERVER['webstorm_password'] . '%40',
+            ]
+        );
+
+        $resultado = utf8_decode($rs->getBody()->getContents());
+
+        if ($resultado !== '<meta http-equiv="X-UA-Compatible" content="IE=7"><meta HTTP-EQUIV = \'Refresh\' CONTENT = \'0; URL = https://www.rodoponta.com.br/admin/principal\'>') {
+            throw new ViewException('Não foi possível efetuar o login na WebStorm');
+        }
+
+        unset($headers['content-type']);
+
+        // login
+        $rs = $client->request('GET',
+            'https://www.rodoponta.com.br/admin/modulo/produto/incluir/0/' . $ecommerceId,
+            [
+                'headers' => $headers,
+            ]
+        );
+
+        $resultado = utf8_decode($rs->getBody()->getContents());
+
+        $ecommerceItemVendaId = (int)substr($resultado, strpos($resultado, 'onclick="editaFormPasso')+27, 5);
+        $produto->jsonData['ecommerce_id'] = $ecommerceId;
+        $produto->jsonData['ecommerce_item_venda_id'] = $ecommerceItemVendaId;
+        $this->produtoEntityHandler->gerarThumbnailAoSalvar = false;
+        $this->produtoEntityHandler->save($produto);
     }
 
 }
