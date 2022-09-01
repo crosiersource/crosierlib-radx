@@ -5,6 +5,7 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\DiaUtil;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
+use CrosierSource\CrosierLibBaseBundle\Entity\Security\User;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\DiaUtilRepository;
@@ -1202,6 +1203,27 @@ class MovimentacaoEntityHandler extends EntityHandler
                     throw new ViewException('Carteira ' . $movimentacao->carteiraDestino->descricao . ' está consolidada em ' . $movimentacao->carteiraDestino->dtConsolidado->format('d/m/Y'));
                 }
             }
+        }
+    }
+
+    /**
+     * @throws ViewException
+     */
+    public function estornar(Movimentacao $movimentacao): void
+    {
+        try {
+            $movimentacao->status = 'ESTORNADA';
+            $movimentacao->jsonData['estornada_em'] = DateTimeUtils::getSQLFormatted();
+            /** @var User $usuarioLogado */
+            $usuarioLogado = $this->security->getUser();
+            $movimentacao->jsonData['estornada_por'] = $usuarioLogado ? $usuarioLogado->getUsername() : 'n/d';
+            $this->save($movimentacao);
+        } catch (\Exception $e) {
+            if ($e instanceof ViewException) {
+                throw $e;
+            }
+            $msg = ExceptionUtils::treatException($e);
+            throw new ViewException('Erro ao estornar a movimentação (' . $msg . ')', 0, $e);
         }
     }
 

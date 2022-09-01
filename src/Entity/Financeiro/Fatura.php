@@ -13,10 +13,12 @@ use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 
 /**
@@ -81,6 +83,13 @@ class Fatura implements EntityId
 
 
     /**
+     * @ORM\Column(name="descricao", type="string", nullable=true)
+     * @Groups("fatura")
+     */
+    public ?string $descricao = null;
+
+
+    /**
      * CPF/CNPJ de quem paga esta movimentação.
      *
      * @ORM\Column(name="sacado_documento", type="string", nullable=true)
@@ -128,6 +137,17 @@ class Fatura implements EntityId
 
 
     /**
+     * Data em que a movimentação efetivamente aconteceu.
+     *
+     * @ORM\Column(name="dt_vencto", type="datetime")
+     * @Groups("fatura")
+     *
+     * @var DateTime|null
+     */
+    public ?DateTime $dtVencto = null;
+
+
+    /**
      *
      * Se for fechada, não é possível incluir outras movimentações na fatura.
      *
@@ -160,6 +180,13 @@ class Fatura implements EntityId
 
 
     /**
+     * @ORM\Column(name="obs", type="string", nullable=true)
+     * @Groups("fatura")
+     */
+    public ?string $obs = null;
+
+
+    /**
      *
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
@@ -183,6 +210,7 @@ class Fatura implements EntityId
         $this->movimentacoes = new ArrayCollection();
     }
 
+
     /**
      * @return Movimentacao[]|ArrayCollection|null
      */
@@ -190,6 +218,7 @@ class Fatura implements EntityId
     {
         return $this->movimentacoes;
     }
+
 
     /**
      * @param Movimentacao[]|ArrayCollection|null $movimentacoes
@@ -200,6 +229,7 @@ class Fatura implements EntityId
         $this->movimentacoes = $movimentacoes;
         return $this;
     }
+
 
     /**
      * @param Movimentacao $movimentacao
@@ -213,6 +243,7 @@ class Fatura implements EntityId
         }
         return $this;
     }
+
 
     /**
      * @param Movimentacao $movimentacao
@@ -229,6 +260,7 @@ class Fatura implements EntityId
         return $this;
     }
 
+
     /**
      * @param int $codigo
      * @return Movimentacao|null
@@ -244,5 +276,55 @@ class Fatura implements EntityId
     }
 
 
-}
+    /**
+     * @Groups("fatura")
+     * @SerializedName("dtQuitacao")
+     * @return null|\DateTime
+     */
+    public function getDtQuitacao(): ?\DateTime
+    {
+        $maior = null;
+        if ($this->quitada) {
+            if ($this->movimentacoes) {
+                foreach ($this->movimentacoes as $movimentacao) {
+                    if (!$maior || ($movimentacao->dtPagto && DateTimeUtils::diffInDias($movimentacao->dtPagto, $maior) > 0)) {
+                        $maior = clone $movimentacao->dtPagto;
+                    }
+                }
+            }
+        }
+        return $maior;
+    }
 
+
+    public function getValorTotalCobrancaFatura(): float
+    {
+        $total = 0.0;
+        foreach ($this->movimentacoes as $movimentacao) {
+            if (in_array($movimentacao->status, ['ABERTA', 'REALIZADA'], true) &&
+                in_array($movimentacao->categoria->codigo, [110, 210], true)) {
+                $total = bcadd($total, $movimentacao->valorTotal, 2);
+            }
+        }
+        return $total;
+    }
+
+
+    /**
+     * @Groups("fatura")
+     * @var float
+     */
+    public function getValorTotal(): float
+    {
+        $total = 0.0;
+        if ($this->movimentacoes) {
+            foreach ($this->movimentacoes as $movimentacao) {
+                if (!in_array($movimentacao->categoria->codigo, [110, 210], true)) {
+                    $total = bcadd($total, $movimentacao->valorTotal, 2);
+                }
+            }
+        }
+        return $total;
+    }
+
+}
