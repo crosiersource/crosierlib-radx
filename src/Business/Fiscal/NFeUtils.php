@@ -94,9 +94,9 @@ class NFeUtils
         $configs['certificadoPwd'] = $configs['certificadoPwd'] ?? $configsSaved['certificadoPwd'];
         $configs['atualizacao'] = $configs['atualizacao']->format('Y-m-d H:i:s.u');
 
-        $appConfig->setChave('nfeConfigs_' . $configs['cnpj']);
-        $appConfig->setAppUUID($_SERVER['CROSIERAPPRADX_UUID']);
-        $appConfig->setValor(json_encode($configs));
+        $appConfig->chave = 'nfeConfigs_' . $configs['cnpj'];
+        $appConfig->appUUID = $_SERVER['CROSIERAPPRADX_UUID'];
+        $appConfig->valor = json_encode($configs);
         $this->appConfigEntityHandler->save($appConfig);
     }
 
@@ -134,9 +134,9 @@ class NFeUtils
                 $appConfig_nfeConfigsIdEmUso_padrao = $appConfig_nfeConfigsIdEmUso_padrao[0];
             }
             $appConfig_nfeConfigsIdEmUso = new AppConfig();
-            $appConfig_nfeConfigsIdEmUso->setChave('nfeConfigsIdEmUso_' . $username);
-            $appConfig_nfeConfigsIdEmUso->setAppUUID($_SERVER['CROSIERAPPRADX_UUID']);
-            $appConfig_nfeConfigsIdEmUso->setValor($appConfig_nfeConfigsIdEmUso_padrao->valor);
+            $appConfig_nfeConfigsIdEmUso->chave = 'nfeConfigsIdEmUso_' . $username;
+            $appConfig_nfeConfigsIdEmUso->appUUID = $_SERVER['CROSIERAPPRADX_UUID'];
+            $appConfig_nfeConfigsIdEmUso->valor = $appConfig_nfeConfigsIdEmUso_padrao->valor;
             $this->appConfigEntityHandler->save($appConfig_nfeConfigsIdEmUso);
         }
         return (int)$appConfig_nfeConfigsIdEmUso->valor;

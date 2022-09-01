@@ -1255,9 +1255,9 @@ class NotaFiscalBusiness
 
             if (!$rs || !$rs[0]) {
                 $appConfig = new AppConfig();
-                $appConfig->setAppUUID($_SERVER['CROSIERAPP_UUID']);
-                $appConfig->setChave($chave);
-                $appConfig->setValor(1);
+                $appConfig->appUUID = $_SERVER['CROSIERAPP_UUID'];
+                $appConfig->chave = $chave;
+                $appConfig->valor = 1;
                 $this->appConfigEntityHandler->save($appConfig);
                 $rs = $this->selectAppConfigSequenciaNumNFForUpdate($chave);
             }
