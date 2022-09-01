@@ -142,6 +142,14 @@ class Movimentacao implements EntityId
     /**
      * CPF/CNPJ de quem paga esta movimentação.
      *
+     * @ORM\Column(name="sacado_documento", type="string", nullable=true)
+     * @Groups("movimentacao")
+     */
+    public ?string $sacadoDocumento = null;
+    
+    /**
+     * Nome/Razão Social de quem paga esta movimentação.
+     *
      * @ORM\Column(name="sacado", type="string", nullable=true)
      * @Groups("movimentacao")
      */
@@ -149,6 +157,14 @@ class Movimentacao implements EntityId
 
     /**
      * CPF/CNPJ de quem recebe esta movimentação.
+     *
+     * @ORM\Column(name="cedente_documento", type="string", nullable=true)
+     * @Groups("movimentacao")
+     */
+    public ?string $cedenteDocumento = null;
+    
+    /**
+     * Nome/Razão Social de quem recebe esta movimentação.
      *
      * @ORM\Column(name="cedente", type="string", nullable=true)
      * @Groups("movimentacao")
