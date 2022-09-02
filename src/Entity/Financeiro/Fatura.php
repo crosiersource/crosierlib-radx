@@ -14,6 +14,7 @@ use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
@@ -210,6 +211,30 @@ class Fatura implements EntityId
         $this->movimentacoes = new ArrayCollection();
     }
 
+    
+    /**
+     * @Groups("fatura")
+     * @return null|string
+     */
+    public function getSacado(): ?string {
+        if ($this->sacadoDocumento && $this->sacadoNome) {
+            return StringUtils::mascararCnpjCpf($this->sacadoDocumento) . ' - ' . $this->sacadoNome;   
+        }
+        return null;
+    }
+
+
+    /**
+     * @Groups("fatura")
+     * @return null|string
+     */
+    public function getCedente(): ?string {
+        if ($this->cedenteDocumento && $this->cedenteNome) {
+            return StringUtils::mascararCnpjCpf($this->cedenteDocumento) . ' - ' . $this->cedenteNome;
+        }
+        return null;
+    }
+    
 
     /**
      * @return Movimentacao[]|ArrayCollection|null
@@ -297,13 +322,16 @@ class Fatura implements EntityId
     }
 
 
-    public function getValorTotalCobrancaFatura(): float
+    public function getValorTotalCobrancaFatura(?bool $apenasRealizadas = false): float
     {
         $total = 0.0;
-        foreach ($this->movimentacoes as $movimentacao) {
-            if (in_array($movimentacao->status, ['ABERTA', 'REALIZADA'], true) &&
-                in_array($movimentacao->categoria->codigo, [110, 210], true)) {
-                $total = bcadd($total, $movimentacao->valorTotal, 2);
+        if ($this->movimentacoes) {
+            $statuss = $apenasRealizadas ? ['REALIZADA'] : ['ABERTA', 'REALIZADA'];
+            foreach ($this->movimentacoes as $movimentacao) {
+                if (in_array($movimentacao->status, $statuss, true) &&
+                    in_array($movimentacao->categoria->codigo, [110, 210], true)) {
+                    $total = bcadd($total, $movimentacao->valorTotal, 2);
+                }
             }
         }
         return $total;
@@ -325,6 +353,15 @@ class Fatura implements EntityId
             }
         }
         return $total;
+    }
+
+
+    /**
+     * @Groups("fatura")
+     * @var float
+     */
+    public function getSaldo(): float {
+        return (float)bcsub($this->getValorTotal(), $this->getValorTotalCobrancaFatura(true), 2);
     }
 
 }

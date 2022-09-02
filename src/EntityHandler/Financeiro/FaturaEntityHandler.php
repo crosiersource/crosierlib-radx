@@ -54,7 +54,10 @@ class FaturaEntityHandler extends EntityHandler
         if (!$fatura->dtFatura) {
             $fatura->dtFatura = new \DateTime();
         }
+        
+        $fatura->quitada = $fatura->getSaldo() <= 0.0;
     }
+
 
     public function estornar(Fatura $fatura): void
     {

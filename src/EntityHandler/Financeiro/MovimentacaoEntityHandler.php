@@ -261,8 +261,24 @@ class MovimentacaoEntityHandler extends EntityHandler
         // Trava para Dt Consolidado
         $this->checkCarteiraConsolidada($movimentacao);
 
+        if ($movimentacao->fatura) {
+            $movimentacao->cedenteDocumento = $movimentacao->fatura->cedenteDocumento;
+            $movimentacao->cedenteNome = $movimentacao->fatura->cedenteNome;
+            $movimentacao->sacadoDocumento = $movimentacao->fatura->sacadoDocumento;
+            $movimentacao->sacadoNome = $movimentacao->fatura->sacadoNome;
+        }
+        
         return $movimentacao;
     }
+
+    
+    public function afterSave(/** @var Movimentacao $movimentacao */ $movimentacao)
+    {
+        if ($movimentacao->fatura) {
+            $this->faturaEntityHandler->save($movimentacao->fatura);
+        }
+    }
+
 
     /**
      * @param array|ArrayCollection $movs

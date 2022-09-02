@@ -14,6 +14,7 @@ use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -146,14 +147,14 @@ class Movimentacao implements EntityId
      * @Groups("movimentacao")
      */
     public ?string $sacadoDocumento = null;
-    
+
     /**
      * Nome/Razão Social de quem paga esta movimentação.
      *
-     * @ORM\Column(name="sacado", type="string", nullable=true)
+     * @ORM\Column(name="sacado_nome", type="string", nullable=true)
      * @Groups("movimentacao")
      */
-    public ?string $sacado = null;
+    public ?string $sacadoNome = null;
 
     /**
      * CPF/CNPJ de quem recebe esta movimentação.
@@ -162,14 +163,14 @@ class Movimentacao implements EntityId
      * @Groups("movimentacao")
      */
     public ?string $cedenteDocumento = null;
-    
+
     /**
      * Nome/Razão Social de quem recebe esta movimentação.
      *
-     * @ORM\Column(name="cedente", type="string", nullable=true)
+     * @ORM\Column(name="cedente_nome", type="string", nullable=true)
      * @Groups("movimentacao")
      */
-    public ?string $cedente = null;
+    public ?string $cedenteNome = null;
 
     /**
      * @ORM\Column(name="quitado", type="boolean", nullable=true)
@@ -472,7 +473,7 @@ class Movimentacao implements EntityId
 
     /**
      * Marcador para agrupar movimentações que foram importadas juntas.
-     * 
+     *
      * @Groups("movimentacao")
      * @ORM\Column(name="uuid_importacao", type="string", nullable=true)
      * @NotUppercase()
@@ -486,6 +487,31 @@ class Movimentacao implements EntityId
      */
     public ?array $jsonData = null;
 
+
+    /**
+     * @Groups("movimentacao")
+     * @return null|string
+     */
+    public function getSacado(): ?string
+    {
+        if ($this->sacadoDocumento && $this->sacadoNome) {
+            return StringUtils::mascararCnpjCpf($this->sacadoDocumento) . ' - ' . $this->sacadoNome;
+        }
+        return null;
+    }
+
+
+    /**
+     * @Groups("movimentacao")
+     * @return null|string
+     */
+    public function getCedente(): ?string
+    {
+        if ($this->cedenteDocumento && $this->cedenteNome) {
+            return StringUtils::mascararCnpjCpf($this->cedenteDocumento) . ' - ' . $this->cedenteNome;
+        }
+        return null;
+    }
 
     /**
      * @Groups("movimentacao")
@@ -528,7 +554,7 @@ class Movimentacao implements EntityId
         $this->descontos = $descontos;
     }
 
-    
+
     /**
      * @Groups("movimentacao")
      * @SerializedName("acrescimos")
@@ -549,7 +575,7 @@ class Movimentacao implements EntityId
         $this->acrescimos = $acrescimos;
     }
 
-    
+
     /**
      * @Groups("movimentacao")
      * @SerializedName("valorTotal")
