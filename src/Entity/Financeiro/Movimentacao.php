@@ -12,6 +12,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\TrackDateOnly;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\TrackedEntity;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
@@ -89,6 +91,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\MovimentacaoRepository")
  * @ORM\Table(name="fin_movimentacao")
+ * @TrackedEntity
  *
  * @author Carlos Eduardo Pauluk
  */
@@ -253,6 +256,7 @@ class Movimentacao implements EntityId
      *
      * @ORM\Column(name="dt_moviment", type="datetime")
      * @Groups("movimentacao")
+     * @TrackDateOnly
      */
     public ?DateTime $dtMoviment = null;
 
@@ -261,6 +265,7 @@ class Movimentacao implements EntityId
      *
      * @ORM\Column(name="dt_vencto", type="datetime")
      * @Groups("movimentacao")
+     * @TrackDateOnly
      */
     public ?DateTime $dtVencto = null;
 
@@ -269,6 +274,7 @@ class Movimentacao implements EntityId
      *
      * @ORM\Column(name="dt_vencto_efetiva", type="datetime")
      * @Groups("movimentacao")
+     * @TrackDateOnly
      */
     public ?DateTime $dtVenctoEfetiva = null;
 
@@ -277,6 +283,7 @@ class Movimentacao implements EntityId
      *
      * @ORM\Column(name="dt_pagto", type="datetime", nullable=true)
      * @Groups("movimentacao")
+     * @TrackDateOnly
      */
     public ?DateTime $dtPagto = null;
 
@@ -285,6 +292,7 @@ class Movimentacao implements EntityId
      *
      * @ORM\Column(name="dt_util", type="datetime", nullable=true)
      * @Groups("movimentacao")
+     * @TrackDateOnly
      */
     public ?DateTime $dtUtil = null;
 

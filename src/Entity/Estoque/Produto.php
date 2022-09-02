@@ -86,7 +86,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
  *
  * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository")
  * @ORM\Table(name="est_produto")
- * @TrackedEntity()
+ * @TrackedEntity
  *
  * @author Carlos Eduardo Pauluk
  */
