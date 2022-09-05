@@ -4,11 +4,13 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\DiaUtil;
+use CrosierSource\CrosierLibBaseBundle\Entity\Config\Estabelecimento;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\Security\User;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Base\DiaUtilRepository;
+use CrosierSource\CrosierLibBaseBundle\Repository\Config\EstabelecimentoRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
@@ -31,8 +33,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Contracts\Cache\ItemInterface;
 
 /**
  * @author Carlos Eduardo Pauluk
@@ -261,20 +265,48 @@ class MovimentacaoEntityHandler extends EntityHandler
         // Trava para Dt Consolidado
         $this->checkCarteiraConsolidada($movimentacao);
 
+        $cache = new FilesystemAdapter($_SERVER['CROSIERAPPRADX_UUID'] . '.getFiliaisCnpjs_' . $movimentacao->getEstabelecimentoId(), 3600, $_SERVER['CROSIER_SESSIONS_FOLDER']);
+        $filiaisCnpjs = $cache->get('getFiliaisCnpjs', function (ItemInterface $item) use ($movimentacao) {
+            /** @var EstabelecimentoRepository $repoEstabelecimento */
+            $repoEstabelecimento = $this->getDoctrine()->getRepository(Estabelecimento::class);
+            /** @var Estabelecimento $estabelecimento */
+            $estabelecimento = $repoEstabelecimento->find($movimentacao->getEstabelecimentoId());
+
+            $filiais = $estabelecimento->jsonData['financeiro']['filiais'] ?? [];
+            $cnpjs = [];
+            foreach ($filiais as $filial) {
+                $cnpjs[] = $filial['cnpj'];
+            }
+            return $cnpjs;
+        });
+        
         if ($movimentacao->fatura) {
+            // aqui seria a lógica padrão de uma fatura...
             $movimentacao->cedenteDocumento = $movimentacao->fatura->cedenteDocumento;
             $movimentacao->cedenteNome = $movimentacao->fatura->cedenteNome;
             $movimentacao->sacadoDocumento = $movimentacao->fatura->sacadoDocumento;
             $movimentacao->sacadoNome = $movimentacao->fatura->sacadoNome;
+
+            // aqui onde ela se inverte...
+            if (
+                (in_array($movimentacao->fatura->cedenteDocumento, $filiaisCnpjs, true) && $movimentacao->categoria->codigoSuper === 2)
+                ||
+                (in_array($movimentacao->fatura->sacadoDocumento, $filiaisCnpjs, true) && $movimentacao->categoria->codigoSuper === 1)
+            ) {
+                $movimentacao->cedenteDocumento = $movimentacao->fatura->sacadoDocumento;
+                $movimentacao->cedenteNome = $movimentacao->fatura->sacadoNome;
+                $movimentacao->sacadoDocumento = $movimentacao->fatura->cedenteDocumento;
+                $movimentacao->sacadoNome = $movimentacao->fatura->cedenteNome;
+            }
         }
-        
+
         $movimentacao->cedenteDocumento = StringUtils::removeNonAlfanumerics($movimentacao->cedenteDocumento);
         $movimentacao->sacadoDocumento = StringUtils::removeNonAlfanumerics($movimentacao->sacadoDocumento);
         
         return $movimentacao;
     }
 
-    
+
     public function afterSave(/** @var Movimentacao $movimentacao */ $movimentacao)
     {
         if ($movimentacao->fatura) {
