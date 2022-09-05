@@ -268,6 +268,9 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->sacadoNome = $movimentacao->fatura->sacadoNome;
         }
         
+        $movimentacao->cedenteDocumento = StringUtils::removeNonAlfanumerics($movimentacao->cedenteDocumento);
+        $movimentacao->sacadoDocumento = StringUtils::removeNonAlfanumerics($movimentacao->sacadoDocumento);
+        
         return $movimentacao;
     }
 

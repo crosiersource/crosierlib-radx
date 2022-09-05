@@ -240,12 +240,20 @@ class MovimentacaoRepository extends FilterRepository
     {
         try {
             $sql =
-                'SELECT documento, nome, nome_fantasia FROM ' .
-                '(SELECT c.documento, c.nome, c.json_data->>"$.nomeFantasia" as nome_fantasia FROM crm_cliente c' .
-                ' UNION ' .
-                'SELECT f.documento, f.nome, f.nome_fantasia FROM est_fornecedor f) u ' .
-                'WHERE (documento LIKE :str OR nome LIKE :str OR nome_fantasia LIKE :str) ' .
-                'GROUP BY documento, nome, nome_fantasia ORDER BY nome, nome_fantasia';
+                '
+                SELECT documento, nome, nome_fantasia FROM 
+                    (
+                    SELECT c.documento, c.nome, c.json_data->>"$.nomeFantasia" as nome_fantasia 
+                        FROM crm_cliente c 
+                        WHERE documento LIKE :str OR nome LIKE :str OR nome_fantasia LIKE :str 
+                    UNION 
+                    SELECT f.documento, f.nome, f.nome_fantasia 
+                        FROM est_fornecedor f 
+                        WHERE utilizado and (documento LIKE :str OR nome LIKE :str OR nome_fantasia LIKE :str)
+                    ) u 
+                GROUP BY documento, nome, nome_fantasia ORDER BY nome, nome_fantasia
+                
+                ';
             $conn = $this->getEntityManager()->getConnection();
 
             return $conn->fetchAllAssociative($sql, ['str' => '%' . $str . '%']);
