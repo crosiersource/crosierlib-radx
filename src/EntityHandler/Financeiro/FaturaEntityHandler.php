@@ -68,6 +68,7 @@ class FaturaEntityHandler extends EntityHandler
                 $movimentacao->status = 'ESTORNADA';
                 $conn->update('fin_movimentacao', ['status' => 'ESTORNADA'], ['id' => $movimentacao->getId()]);
             }
+            $fatura->cancelada = true;
             $fatura->jsonData['estornada_em'] = DateTimeUtils::getSQLFormatted();
             $this->save($fatura);
             $conn->commit();
