@@ -17,7 +17,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.dist_dfe_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\DistDFeEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -80,7 +80,7 @@
       id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"
       class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler"
       parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -102,7 +102,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -124,7 +124,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_historico_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -169,7 +169,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_venda_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>

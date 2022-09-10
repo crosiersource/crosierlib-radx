@@ -10,6 +10,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\VendaItem;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaItemRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -24,19 +25,12 @@ class VendaItemEntityHandler extends EntityHandler
 
     public VendaBusiness $vendaBusiness;
 
-    /**
-     * VendaItemEntityHandler constructor.
-     * @param EntityManagerInterface $doctrine
-     * @param Security $security
-     * @param ParameterBagInterface $parameterBag
-     * @param SyslogBusiness $syslog
-     * @param VendaBusiness $vendaBusiness
-     */
-    public function __construct(EntityManagerInterface $doctrine,
-                                Security $security,
+    
+    public function __construct(ManagerRegistry       $doctrine,
+                                Security              $security,
                                 ParameterBagInterface $parameterBag,
-                                SyslogBusiness $syslog,
-                                VendaBusiness $vendaBusiness)
+                                SyslogBusiness        $syslog,
+                                VendaBusiness         $vendaBusiness)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->vendaBusiness = $vendaBusiness;

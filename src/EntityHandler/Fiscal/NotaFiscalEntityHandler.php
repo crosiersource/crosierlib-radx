@@ -11,7 +11,7 @@ use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
@@ -28,22 +28,12 @@ class NotaFiscalEntityHandler extends EntityHandler
 
     public NFeUtils $nfeUtils;
 
-    /**
-     * NotaFiscalEntityHandler constructor.
-     *
-     * @param EntityManagerInterface $doctrine
-     * @param Security $security
-     * @param ParameterBagInterface $parameterBag
-     * @param SyslogBusiness $syslog
-     * @param ContainerInterface $container
-     * @param NFeUtils $nfeUtils
-     */
-    public function __construct(EntityManagerInterface $doctrine,
-                                Security               $security,
-                                ParameterBagInterface  $parameterBag,
-                                SyslogBusiness         $syslog,
-                                ContainerInterface     $container,
-                                NFeUtils               $nfeUtils)
+    public function __construct(ManagerRegistry       $doctrine,
+                                Security              $security,
+                                ParameterBagInterface $parameterBag,
+                                SyslogBusiness        $syslog,
+                                ContainerInterface    $container,
+                                NFeUtils              $nfeUtils)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->container = $container;
@@ -104,12 +94,12 @@ class NotaFiscalEntityHandler extends EntityHandler
             $notaFiscal->foneEmitente = ($arrEmitente['fone1']);
         }
 
-        if ($notaFiscal->getXMLDecoded() && 
-            $notaFiscal->getXMLDecoded()->getName() === 'nfeProc' && 
+        if ($notaFiscal->getXMLDecoded() &&
+            $notaFiscal->getXMLDecoded()->getName() === 'nfeProc' &&
             $notaFiscal->resumo) {
             $notaFiscal->resumo = false;
-        } 
-        
+        }
+
         $this->calcularTotais($notaFiscal);
     }
 

@@ -7,7 +7,7 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\GrupoItemRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -23,7 +23,7 @@ class GrupoEntityHandler extends EntityHandler
     private GrupoItemEntityHandler $grupoItemEntityHandler;
 
 
-    public function __construct(EntityManagerInterface $doctrine,
+    public function __construct(ManagerRegistry        $doctrine,
                                 Security               $security,
                                 ParameterBagInterface  $parameterBag,
                                 SyslogBusiness         $syslog,

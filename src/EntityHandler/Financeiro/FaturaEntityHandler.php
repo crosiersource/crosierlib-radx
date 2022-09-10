@@ -7,6 +7,7 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Fatura;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -26,19 +27,11 @@ class FaturaEntityHandler extends EntityHandler
         return Fatura::class;
     }
 
-    /**
-     *
-     * @param EntityManagerInterface $doctrine
-     * @param Security $security
-     * @param ParameterBagInterface $parameterBag
-     * @param SyslogBusiness $syslog
-     * @param CadeiaEntityHandler $cadeiaEntityHandler
-     */
-    public function __construct(EntityManagerInterface $doctrine,
-                                Security               $security,
-                                ParameterBagInterface  $parameterBag,
-                                SyslogBusiness         $syslog,
-                                CadeiaEntityHandler    $cadeiaEntityHandler)
+    public function __construct(ManagerRegistry       $doctrine,
+                                Security              $security,
+                                ParameterBagInterface $parameterBag,
+                                SyslogBusiness        $syslog,
+                                CadeiaEntityHandler   $cadeiaEntityHandler)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->cadeiaEntityHandler = $cadeiaEntityHandler;
@@ -54,7 +47,7 @@ class FaturaEntityHandler extends EntityHandler
         if (!$fatura->dtFatura) {
             $fatura->dtFatura = new \DateTime();
         }
-        
+
         $fatura->quitada = $fatura->getSaldo() <= 0.0;
     }
 

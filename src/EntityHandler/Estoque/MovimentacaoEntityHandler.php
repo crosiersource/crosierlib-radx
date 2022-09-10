@@ -7,7 +7,7 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Movimentacao;
 use Doctrine\DBAL\ConnectionException;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -18,10 +18,10 @@ use Symfony\Component\Security\Core\Security;
 class MovimentacaoEntityHandler extends EntityHandler
 {
 
-    public function __construct(EntityManagerInterface $doctrine,
-                                Security $security,
+    public function __construct(ManagerRegistry       $doctrine,
+                                Security              $security,
                                 ParameterBagInterface $parameterBag,
-                                SyslogBusiness $syslog)
+                                SyslogBusiness        $syslog)
     {
         $syslog->setApp('radx')->setComponent(self::class);
         parent::__construct($doctrine, $security, $parameterBag, $syslog);

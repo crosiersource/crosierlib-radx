@@ -7,7 +7,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Romaneio;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\RomaneioItem;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -20,9 +20,9 @@ class RomaneioEntityHandler extends EntityHandler
 
     private FornecedorEntityHandler $fornecedorEntityHandler;
 
-    public function __construct(EntityManagerInterface $doctrine,
-                                Security $security,
-                                ParameterBagInterface $parameterBag,
+    public function __construct(ManagerRegistry         $doctrine,
+                                Security                $security,
+                                ParameterBagInterface   $parameterBag,
                                 FornecedorEntityHandler $fornecedorEntityHandler)
     {
         parent::__construct($doctrine, $security, $parameterBag);

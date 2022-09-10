@@ -7,7 +7,7 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Business\Estoque\CalculoPreco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ListaPreco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -20,18 +20,12 @@ class ProdutoPrecoEntityHandler extends EntityHandler
 
     private CalculoPreco $calculoPreco;
 
-    /**
-     * @param EntityManagerInterface $doctrine
-     * @param Security $security
-     * @param ParameterBagInterface $parameterBag
-     * @param SyslogBusiness $syslog
-     * @param CalculoPreco $calculoPreco
-     */
-    public function __construct(EntityManagerInterface $doctrine,
-                                Security               $security,
-                                ParameterBagInterface  $parameterBag,
-                                SyslogBusiness         $syslog,
-                                CalculoPreco           $calculoPreco)
+
+    public function __construct(ManagerRegistry       $doctrine,
+                                Security              $security,
+                                ParameterBagInterface $parameterBag,
+                                SyslogBusiness        $syslog,
+                                CalculoPreco          $calculoPreco)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog);
         $this->calculoPreco = $calculoPreco;
@@ -61,7 +55,7 @@ class ProdutoPrecoEntityHandler extends EntityHandler
         $produtoPreco->precoPrazo = $precoArr['precoPrazo'];
         $produtoPreco->margem = $precoArr['margem'];
         $produtoPreco->coeficiente = $precoArr['coeficiente'];
-        
+
         if (!$produtoPreco->dtCusto) {
             $produtoPreco->dtCusto = new \DateTime();
         }

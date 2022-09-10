@@ -23,7 +23,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoImagemRepositor
 use CrosierSource\CrosierLibRadxBundle\Repository\Estoque\ProdutoRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
@@ -40,25 +40,17 @@ class ProdutoEntityHandler extends EntityHandler
     private AppConfigEntityHandler $appConfigEntityHandler;
 
     private UploaderHelper $uploaderHelper;
-    
+
     public bool $gerarThumbnailAoSalvar = true;
 
-    /**
-     *
-     * @param EntityManagerInterface $doctrine
-     * @param Security $security
-     * @param ParameterBagInterface $parameterBag
-     * @param LoggerInterface $logger
-     * @param AppConfigEntityHandler $appConfigEntityHandler
-     * @param UploaderHelper $uploaderHelper
-     */
-    public function __construct(EntityManagerInterface $doctrine,
-                                Security $security,
-                                ParameterBagInterface $parameterBag,
-                                SyslogBusiness $syslog,
-                                LoggerInterface $logger,
+
+    public function __construct(ManagerRegistry        $doctrine,
+                                Security               $security,
+                                ParameterBagInterface  $parameterBag,
+                                SyslogBusiness         $syslog,
+                                LoggerInterface        $logger,
                                 AppConfigEntityHandler $appConfigEntityHandler,
-                                UploaderHelper $uploaderHelper)
+                                UploaderHelper         $uploaderHelper)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->logger = $logger;

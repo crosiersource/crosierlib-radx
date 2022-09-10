@@ -7,7 +7,7 @@ use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -20,21 +20,13 @@ use Symfony\Component\Security\Core\Security;
 class NotaFiscalItemEntityHandler extends EntityHandler
 {
 
-    /** @var NotaFiscalEntityHandler */
     private NotaFiscalEntityHandler $notaFiscalEntityHandler;
 
 
-    /**
-     * @param EntityManagerInterface $doctrine
-     * @param Security $security
-     * @param ParameterBagInterface $parameterBag
-     * @param SyslogBusiness $syslog
-     * @param NotaFiscalEntityHandler $notaFiscalEntityHandler
-     */
-    public function __construct(EntityManagerInterface $doctrine,
-                                Security $security,
-                                ParameterBagInterface $parameterBag,
-                                SyslogBusiness $syslog,
+    public function __construct(ManagerRegistry         $doctrine,
+                                Security                $security,
+                                ParameterBagInterface   $parameterBag,
+                                SyslogBusiness          $syslog,
                                 NotaFiscalEntityHandler $notaFiscalEntityHandler)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
@@ -71,11 +63,11 @@ class NotaFiscalItemEntityHandler extends EntityHandler
                 }
             }
         }
-        
+
         $nfItem->subtotal = $nfItem->subtotal ?? 0.0;
         $nfItem->calculaTotais();
-        
-        
+
+
     }
 
     /**

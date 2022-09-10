@@ -7,12 +7,11 @@ use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\Config\AppConfigRepository;
-use CrosierSource\CrosierLibRadxBundle\Business\Vendas\VendaBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\CRM\Cliente;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -27,20 +26,12 @@ class VendaEntityHandler extends EntityHandler
 
     private ClienteEntityHandler $clienteEntityHandler;
 
-    /**
-     * VendaItemEntityHandler constructor.
-     * @param EntityManagerInterface $doctrine
-     * @param Security $security
-     * @param ParameterBagInterface $parameterBag
-     * @param SyslogBusiness $syslog
-     * @param VendaBusiness $vendaBusiness
-     * @param ClienteEntityHandler $clienteEntityHandler
-     */
-    public function __construct(EntityManagerInterface $doctrine,
-                                Security $security,
+
+    public function __construct(ManagerRegistry       $doctrine,
+                                Security              $security,
                                 ParameterBagInterface $parameterBag,
-                                SyslogBusiness $syslog,
-                                ClienteEntityHandler $clienteEntityHandler)
+                                SyslogBusiness        $syslog,
+                                ClienteEntityHandler  $clienteEntityHandler)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->clienteEntityHandler = $clienteEntityHandler;

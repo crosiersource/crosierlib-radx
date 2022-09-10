@@ -155,7 +155,7 @@
     <!-- ClienteConfigEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.ecommerce.cliente_config_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\ClienteConfigEntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
       <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
@@ -167,7 +167,7 @@
     <!-- MercadoLivreItemEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.ecommerce.mercado_livre_item_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\MercadoLivreItemEntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
       <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
@@ -179,7 +179,7 @@
     <!-- MercadoLivrePerguntaEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.ecommerce.mercado_livre_pergunta_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\MercadoLivrePerguntaEntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
       <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
@@ -192,7 +192,7 @@
     <!-- TrayVendaEntityHandler -->
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.ecommerce.tray_venda_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Ecommerce\TrayVendaEntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
       <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>

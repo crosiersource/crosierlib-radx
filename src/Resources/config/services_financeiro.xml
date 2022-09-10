@@ -18,7 +18,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.banco_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\BancoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -38,7 +38,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.bandeira_cartao_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\BandeiraCartaoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -58,7 +58,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.carteira_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CarteiraEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -78,7 +78,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.caixa_operacao_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CaixaOperacaoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -98,7 +98,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.cadeia_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CadeiaEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -118,7 +118,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.categoria_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CategoriaEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -138,7 +138,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.centro_custo_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CentroCustoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -177,7 +177,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_item_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoItemEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -197,7 +197,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.modo_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\ModoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -257,7 +257,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.operadora_cartao_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\OperadoraCartaoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -278,7 +278,7 @@
       id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.registro_conferencia_entity_handler"
       class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegistroConferenciaEntityHandler"
       parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -300,7 +300,7 @@
       id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.regra_importacao_linha_entity_handler"
       class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\RegraImportacaoLinhaEntityHandler"
       parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>
@@ -380,7 +380,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.saldo_entity_handler"
              class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\SaldoEntityHandler"
              parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="doctrine"/>
       <argument type="service" id="security.helper"/>
       <argument type="service" id="parameter_bag"/>
     </service>

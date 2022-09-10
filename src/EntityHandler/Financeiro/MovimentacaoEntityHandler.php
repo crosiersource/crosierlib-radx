@@ -30,8 +30,8 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\ModoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\TipoLanctoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -48,21 +48,13 @@ class MovimentacaoEntityHandler extends EntityHandler
 
     private LoggerInterface $logger;
 
-    /**
-     *
-     * @param EntityManagerInterface $doctrine
-     * @param Security $security
-     * @param ParameterBagInterface $parameterBag
-     * @param SyslogBusiness $syslog
-     * @param FaturaEntityHandler $faturaEntityHandler
-     * @param LoggerInterface $logger
-     */
-    public function __construct(EntityManagerInterface $doctrine,
-                                Security               $security,
-                                ParameterBagInterface  $parameterBag,
-                                SyslogBusiness         $syslog,
-                                FaturaEntityHandler    $faturaEntityHandler,
-                                LoggerInterface        $logger)
+    
+    public function __construct(ManagerRegistry       $doctrine,
+                                Security              $security,
+                                ParameterBagInterface $parameterBag,
+                                SyslogBusiness        $syslog,
+                                FaturaEntityHandler   $faturaEntityHandler,
+                                LoggerInterface       $logger)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->faturaEntityHandler = $faturaEntityHandler;
@@ -279,7 +271,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
             return $cnpjs;
         });
-        
+
         if ($movimentacao->fatura) {
             // aqui seria a lógica padrão de uma fatura...
             $movimentacao->cedenteDocumento = $movimentacao->fatura->cedenteDocumento;
@@ -302,7 +294,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $movimentacao->cedenteDocumento = StringUtils::removeNonAlfanumerics($movimentacao->cedenteDocumento);
         $movimentacao->sacadoDocumento = StringUtils::removeNonAlfanumerics($movimentacao->sacadoDocumento);
-        
+
         return $movimentacao;
     }
 
