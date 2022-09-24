@@ -52,7 +52,7 @@ class NotaFiscalCartaCorrecao implements EntityId
     /**
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal", inversedBy="itens")
-     *
+     * @ORM\JoinColumn(name="nota_fiscal_id", nullable=true)
      * @var $notaFiscal null|NotaFiscal
      */
     public ?NotaFiscal $notaFiscal = null;
