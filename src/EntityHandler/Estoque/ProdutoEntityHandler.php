@@ -178,7 +178,7 @@ class ProdutoEntityHandler extends EntityHandler
             $pathinfo = pathinfo($url);
             $parsedUrl = parse_url($url);
             $imgUtils->resizeToWidth(50);// '%kernel.project_dir%/public/images/produtos'
-            $thumbnail = $_SERVER['DOCUMENT_ROOT'] .
+            $thumbnail = $_SERVER['CROSIERAPPRADX_FOLDER'] . '/public' . 
                 str_replace($pathinfo['basename'], '', $parsedUrl['path']) .
                 $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
             $imgUtils->save($thumbnail);
