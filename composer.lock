@@ -169,16 +169,16 @@
         },
         {
             "name": "crosiersource/crosierlib-base",
-            "version": "v1.3.5",
+            "version": "v1.3.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
-                "reference": "3c19fae50011860b676f055c7b8a5f7752a08fe4"
+                "reference": "88d24188d1706e45227442bf59fee4181a64a787"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/3c19fae50011860b676f055c7b8a5f7752a08fe4",
-                "reference": "3c19fae50011860b676f055c7b8a5f7752a08fe4",
+                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/88d24188d1706e45227442bf59fee4181a64a787",
+                "reference": "88d24188d1706e45227442bf59fee4181a64a787",
                 "shasum": ""
             },
             "require": {
@@ -214,6 +214,7 @@
                 "symfony/orm-pack": "^2.2",
                 "symfony/security-bundle": "5.3.*",
                 "symfony/security-guard": "5.3.*",
+                "symfony/semaphore": "5.3.*",
                 "symfony/serializer": "5.3.*",
                 "symfony/validator": "5.3.*",
                 "symfony/webpack-encore-bundle": "^1.12"
@@ -242,9 +243,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
-                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.3.5"
+                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.3.6"
             },
-            "time": "2022-09-28T20:25:06+00:00"
+            "time": "2022-10-10T14:58:25+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -7530,6 +7531,78 @@
                 }
             ],
             "time": "2022-09-29T19:14:22+00:00"
+        },
+        {
+            "name": "symfony/semaphore",
+            "version": "v5.3.14",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/semaphore.git",
+                "reference": "b24d17389f618885aecbae37982114bf5a5eeaad"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/semaphore/zipball/b24d17389f618885aecbae37982114bf5a5eeaad",
+                "reference": "b24d17389f618885aecbae37982114bf5a5eeaad",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.5",
+                "psr/log": "^1|^2|^3"
+            },
+            "require-dev": {
+                "predis/predis": "~1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Semaphore\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Grégoire Pineau",
+                    "email": "lyrixx@lyrixx.info"
+                },
+                {
+                    "name": "Jérémy Derussé",
+                    "email": "jeremy@derusse.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Semaphore Component",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "semaphore"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/semaphore/tree/v5.3.14"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2022-01-02T09:52:31+00:00"
         },
         {
             "name": "symfony/serializer",
