@@ -53,6 +53,7 @@ use Throwable;
  *     "xNomeDestinatario": "partial",
  *     "chaveAcesso": "exact",
  *     "numero": "exact",
+ *     "serie": "exact",
  *     "cidadeEmitente": "partial",
  *     "cidadeDestinatario": "partial",
  *     "valorTotal": "exact",
