@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
 use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\LikeFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
@@ -56,6 +57,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
  * })
  * 
  * @ApiFilter(LikeFilter::class, properties={"nome"})
+ * 
+ * @ApiFilter(RangeFilter::class, properties={"qtdeTotal"})
  * 
  * @ApiFilter(BooleanFilter::class, properties={
  *     "ecommerce": "exact"
