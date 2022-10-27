@@ -901,7 +901,7 @@ class SpedNFeBusiness
             $msg = ExceptionUtils::treatException($e);
             $this->logger->error($msg);
             $this->logger->error($e->getTraceAsString());
-            throw new ViewException('Erro ao consultar o CNPJ', 0, $e);
+            throw new ViewException('Erro ao consultar o CNPJ (' . $msg . ')', 0, $e);
         }
     }
 

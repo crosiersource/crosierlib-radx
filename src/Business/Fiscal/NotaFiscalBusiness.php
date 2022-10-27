@@ -256,7 +256,12 @@ class NotaFiscalBusiness
                                 !($endereco_faturamento['cidade'] ?? false) ||
                                 !($endereco_faturamento['estado'] ?? false))) {
 
-                            $endereco_consultado = $this->consultarCNPJ($notaFiscal->documentoDestinatario, $endereco_faturamento['estado']);
+                            $endereco_consultado = null;
+                            try {
+                                $endereco_consultado = $this->consultarCNPJ($notaFiscal->documentoDestinatario, $endereco_faturamento['estado']);
+                            } catch (ViewException $e) {
+                                $this->logger->error('Erro ao consultarCNPJ para o CNPJ ' . $notaFiscal->documentoDestinatario . ' de ' . $endereco_faturamento['estado']);
+                            }
 
                             if (!isset($endereco_consultado['dados'])) {
                                 $this->syslog->info('Nenhum dado retornado para endereço consultado (venda = ' . $venda->getId() . ')');
