@@ -412,6 +412,15 @@
              public="true"
              alias="crosier_source.crosier_lib_radx_bundle.api_platform.financeiro.estabelecimento_restrains_extension"/>
 
+    <!-- MovimentacaoRestrainsExtension -->
+    <service id="crosier_source.crosier_lib_radx_bundle.api_platform.financeiro.movimentacao_restrains_extension"
+             class="CrosierSource\CrosierLibRadxBundle\ApiPlatform\Financeiro\MovimentacaoRestrainsExtension">
+      <tag name="api_platform.doctrine.orm.query_extension.collection"/>
+    </service>
+    <service id="CrosierSource\CrosierLibRadxBundle\ApiPlatform\Financeiro\MovimentacaoRestrainsExtension"
+             public="true"
+             alias="crosier_source.crosier_lib_radx_bundle.api_platform.financeiro.movimentacao_restrains_extension"/>
+
 
   </services>
 </container>
