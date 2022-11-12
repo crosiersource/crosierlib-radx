@@ -29,7 +29,7 @@ class MovimentacaoRestrainsExtension implements ContextAwareQueryCollectionExten
                                       string $operationName = null, 
                                       array $context = [])
     {
-        if ($resourceClass === Movimentacao::class && $context['filters']['carteirasIds'] ?? false) {
+        if ($resourceClass === Movimentacao::class && ($context['filters']['carteirasIds'] ?? false)) {
             $carteirasIds = explode(',', $context['filters']['carteirasIds']);
             $rootAlias = $queryBuilder->getRootAliases()[0];
             $queryBuilder
