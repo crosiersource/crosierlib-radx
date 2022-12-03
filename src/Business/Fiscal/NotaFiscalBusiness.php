@@ -161,6 +161,9 @@ class NotaFiscalBusiness
         try {
 
             $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
+
+            $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
+            
             $jaExiste = $conn->fetchAllAssociative('SELECT * FROM fis_nf_venda WHERE venda_id = :vendaId', ['vendaId' => $venda->getId()]);
 
             if ($jaExiste) {
@@ -184,7 +187,7 @@ class NotaFiscalBusiness
                 $notaFiscal->deleteAllItens(); // remove as referências no ORM
             }
 
-            $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
+            
 
 
             $notaFiscal->entradaSaida = 'S';
@@ -424,7 +427,7 @@ class NotaFiscalBusiness
                 $nfItem->cfop = $cfop;
 
 
-                if ($vendaItem->unidade) {
+                if ($vendaItem->unidade && $vendaItem->unidade->getId()) {
                     $nfItem->unidade = $vendaItem->unidade->label;
                 } else if ($vendaItem->unidadeproduto->jsonData['unidade_produto'] ?? null) {
                     $nfItem->unidade = $vendaItem->produto->jsonData['unidade_produto'];
