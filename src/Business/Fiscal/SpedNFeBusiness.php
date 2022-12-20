@@ -437,8 +437,12 @@ class SpedNFeBusiness
                 $nfe->infNFe->transp->transporta->UF = $r->ufSigla;
             }
             
-            $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->transpQtdeVolumes, 0);
-            $nfe->infNFe->transp->vol->esp = $notaFiscal->transpEspecieVolumes;
+            if ($notaFiscal->transpQtdeVolumes) {
+                $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->transpQtdeVolumes, 0);
+            }
+            if ($notaFiscal->transpEspecieVolumes) {
+                $nfe->infNFe->transp->vol->esp = $notaFiscal->transpEspecieVolumes;
+            }
             if ($notaFiscal->transpMarcaVolumes) {
                 $nfe->infNFe->transp->vol->marca = $notaFiscal->transpMarcaVolumes;
             }
@@ -446,8 +450,12 @@ class SpedNFeBusiness
                 $nfe->infNFe->transp->vol->nVol = $notaFiscal->transpNumeracaoVolumes;
             }
 
-            $nfe->infNFe->transp->vol->pesoL = number_format($notaFiscal->transpPesoLiquido, 3, '.', '');
-            $nfe->infNFe->transp->vol->pesoB = number_format($notaFiscal->transpPesoBruto, 3, '.', '');
+            if ($notaFiscal->transpPesoLiquido) {
+                $nfe->infNFe->transp->vol->pesoL = number_format($notaFiscal->transpPesoLiquido, 3, '.', '');
+            }
+            if ($notaFiscal->transpPesoBruto) {
+                $nfe->infNFe->transp->vol->pesoB = number_format($notaFiscal->transpPesoBruto, 3, '.', '');
+            }
             
         }
 
