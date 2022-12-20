@@ -349,7 +349,7 @@ class SpedNFeBusiness
             }
 
             if ($rateioFrete) {
-                $itemXML->prod->vFrete = number_format($rateioFrete[$i-1], 2, '.', '');
+                $itemXML->prod->vFrete = number_format($rateioFrete[$i - 1], 2, '.', '');
             }
 
             $itemXML->prod->indTot = '1';
@@ -364,7 +364,6 @@ class SpedNFeBusiness
             $total_vCOFINS += $nfItem->cofinsValor;
 
             $total_vICMSUFDest += (float)$itemXML->imposto->ICMSUFDest->vICMSUFDest ?? 0.0;
-
 
 
             $i++;
@@ -436,20 +435,20 @@ class SpedNFeBusiness
 
                 $nfe->infNFe->transp->transporta->xMun = $r->municipioNome;
                 $nfe->infNFe->transp->transporta->UF = $r->ufSigla;
-
-                $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->transpQtdeVolumes, 0);
-                $nfe->infNFe->transp->vol->esp = $notaFiscal->transpEspecieVolumes;
-                if ($notaFiscal->transpMarcaVolumes) {
-                    $nfe->infNFe->transp->vol->marca = $notaFiscal->transpMarcaVolumes;
-                }
-                if ($notaFiscal->transpNumeracaoVolumes) {
-                    $nfe->infNFe->transp->vol->nVol = $notaFiscal->transpNumeracaoVolumes;
-                }
-
-                $nfe->infNFe->transp->vol->pesoL = number_format($notaFiscal->transpPesoLiquido, 3, '.', '');
-                $nfe->infNFe->transp->vol->pesoB = number_format($notaFiscal->transpPesoBruto, 3, '.', '');
-
             }
+            
+            $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->transpQtdeVolumes, 0);
+            $nfe->infNFe->transp->vol->esp = $notaFiscal->transpEspecieVolumes;
+            if ($notaFiscal->transpMarcaVolumes) {
+                $nfe->infNFe->transp->vol->marca = $notaFiscal->transpMarcaVolumes;
+            }
+            if ($notaFiscal->transpNumeracaoVolumes) {
+                $nfe->infNFe->transp->vol->nVol = $notaFiscal->transpNumeracaoVolumes;
+            }
+
+            $nfe->infNFe->transp->vol->pesoL = number_format($notaFiscal->transpPesoLiquido, 3, '.', '');
+            $nfe->infNFe->transp->vol->pesoB = number_format($notaFiscal->transpPesoBruto, 3, '.', '');
+            
         }
 
         if ($finNFe === 3 or $finNFe === 4) {
