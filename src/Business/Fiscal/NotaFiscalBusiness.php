@@ -1193,7 +1193,7 @@ class NotaFiscalBusiness
                 return null;
             }
             if (count($results) > 1) {
-                throw new \LogicException('Mais de uma Nota Fiscal encontrada para [' . $venda->getId() . ']');
+                throw new ViewException('Mais de uma Nota Fiscal encontrada para [' . $venda->getId() . '] em fis_nf_venda');
             }
             /** @var NotaFiscalRepository $repoNotaFiscal */
             $repoNotaFiscal = $this->notaFiscalEntityHandler->getDoctrine()->getRepository(NotaFiscal::class);
