@@ -4,11 +4,14 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Estoque;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
-use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\LikeFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\JsonFilter;
+use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\LikeFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\TrackedEntity;
@@ -18,10 +21,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
-use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\JsonFilter;
 use Symfony\Component\Serializer\Annotation\SerializedName;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 
 /**
  * @ApiResource(
@@ -55,32 +55,32 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
  *     "nome": "partial",
  *     "composicao": "exact",
  * })
- * 
+ *
  * @ApiFilter(LikeFilter::class, properties={"nome"})
- * 
+ *
  * @ApiFilter(RangeFilter::class, properties={"qtdeTotal"})
- * 
+ *
  * @ApiFilter(BooleanFilter::class, properties={
  *     "ecommerce": "exact"
  * })
- * 
+ *
  * @ApiFilter(DateFilter::class, properties={"dtUltIntegracaoEcommerce"})
- * 
+ *
  * @ApiFilter(OrderFilter::class, properties={
- *     "id", 
+ *     "id",
  *     "codigo",
  *     "marca",
  *     "qtdeTotal",
  *     "composicao",
- *     "depto.codigo", 
- *     "grupo.codigo", 
- *     "subgrupo.codigo", 
- *     "fornecedor.nome", 
- *     "nome", 
+ *     "depto.codigo",
+ *     "grupo.codigo",
+ *     "subgrupo.codigo",
+ *     "fornecedor.nome",
+ *     "nome",
  *     "dtUltIntegracaoEcommerce",
  *     "updated"
  * }, arguments={"orderParameterName"="order"})
- * 
+ *
  * @ApiFilter(JsonFilter::class, properties={
  *     "jsonData.referencias_extras"={ "type": "string", "strategy": "partial" }
  * })
@@ -106,7 +106,7 @@ class Produto implements EntityId
      */
     public ?string $UUID = null;
 
-    
+
     /**
      * @ORM\Column(name="codigo", type="string", nullable=false)
      * @Groups("produto")
@@ -114,7 +114,7 @@ class Produto implements EntityId
      */
     public ?string $codigo = null;
 
-    
+
     /**
      * @ORM\Column(name="nome", type="string", nullable=false)
      * @Groups("produto")
@@ -251,7 +251,7 @@ class Produto implements EntityId
      */
     public ?bool $ecommerce = false;
 
-    
+
     /**
      * Marca a última data de integração ao e-commerce.
      *
@@ -267,7 +267,7 @@ class Produto implements EntityId
      * @ORM\OrderBy({"ordem" = "ASC"})
      */
     public $imagens;
-    
+
 
     /**
      * @ORM\OneToMany(targetEntity="ProdutoComposicao", mappedBy="produtoPai", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
@@ -275,7 +275,7 @@ class Produto implements EntityId
      * @ORM\OrderBy({"ordem" = "ASC"})
      */
     public $composicoes;
-    
+
 
     /**
      * @ORM\OneToMany(targetEntity="ProdutoPreco", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
@@ -284,13 +284,13 @@ class Produto implements EntityId
      * @Groups("produto")
      */
     public $precos;
-    
+
 
     /**
      * @var array
      */
     private array $precosPorLista = [];
-    
+
 
     /**
      * @ORM\OneToMany(targetEntity="ProdutoSaldo", mappedBy="produto", cascade={"all"}, orphanRemoval=true, fetch="EXTRA_LAZY")
@@ -298,7 +298,7 @@ class Produto implements EntityId
      * @Groups("produto")
      */
     public $saldos;
-    
+
 
     /**
      * @ORM\Column(name="json_data", type="json")
@@ -319,11 +319,12 @@ class Produto implements EntityId
 
 
     /**
-     * @return ProdutoImagem[]|ArrayCollection|null
+     * @return ProdutoImagem[]|null
      */
-    public function getImagens()
+    public function getImagens(): ?array
     {
-        return $this->imagens;
+        return $this->imagens instanceof ArrayCollection ?
+            $this->imagens->toArray() : $this->imagens;
     }
 
     /**
@@ -377,7 +378,8 @@ class Produto implements EntityId
      * @Groups("produto")
      * @return string
      */
-    public function getDescricaoMontada(): string {
+    public function getDescricaoMontada(): string
+    {
         return $this->codigo . ' - ' . $this->nome . ' (' . $this->unidadePadrao->label . ')';
     }
 

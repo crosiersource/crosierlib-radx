@@ -239,13 +239,20 @@ class ProdutoEntityHandler extends EntityHandler
      */
     private function verificaPathDasImagens(Produto $produto)
     {
+        $this->logger->info(
+            'verificaPathDasImagens para ' . 
+            $produto->getId() . ' (' . $produto->nome . '). Total de imagens: ' . count($produto->getImagens()));
         /** @var ProdutoImagem $imagem */
         foreach ($produto->imagens as $imagem) {
             $arquivo = $this->parameterBag->get('kernel.project_dir') . '/public' . $this->uploaderHelper->asset($imagem, 'imageFile');
-
+            
+                
             if (!file_exists($arquivo)) {
                 /** @var Connection $conn */
                 $conn = $this->getDoctrine()->getConnection();
+
+                $this->logger->info('Arquivo ainda não existe: ' . $arquivo);
+                
                 // Como ainda não foi salvo (estou no beforeSave), então ainda posso pegar os valores anteriores na base
                 $rImagem = $conn->fetchAllAssociative('select i.id, i.produto_id, depto_id, grupo_id, subgrupo_id, image_name from est_produto p, est_produto_imagem i where p.id = i.produto_id AND i.id = :image_id', ['image_id' => $imagem->getId()]);
 
@@ -255,17 +262,21 @@ class ProdutoEntityHandler extends EntityHandler
                     $rImagem[0]['grupo_id'] . '/' .
                     $rImagem[0]['subgrupo_id'] . '/' . $rImagem[0]['image_name'];
 
+                
                 if (file_exists($caminhoAntigo)) {
+                    $this->logger->info('Caminho antigo já existente: ' . $caminhoAntigo);
                     // Se existe no caminhoAntigo, então é porque foi alterado o depto_id, grupo_id e/ou subgrupo_id
                     $somenteNovaPasta = str_replace(basename($arquivo), '', $arquivo);
-
+                    $this->logger->info('Tentando criar (somente nova pasta): ' . $somenteNovaPasta);
                     @mkdir($somenteNovaPasta, 0777, true);
+                    $this->logger->info('Renomeando/movendo do caminho antigo para o novo');
                     rename($caminhoAntigo, $arquivo);
+                    $this->logger->info('OK');
                 } else {
                     $this->logger->info('Arquivo (id = ' . $imagem->getId() . ') não existe no sistema de arquivos.');
                 }
-
-
+            } else {
+                $this->logger->info('Arquivo JÁ existe: ' . $arquivo);
             }
         }
     }
