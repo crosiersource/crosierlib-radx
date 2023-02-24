@@ -374,14 +374,19 @@ class ProdutoEntityHandler extends EntityHandler
                     if ($primeiraDasImagens_semExtensao . '_thumbnail' !== $imagem1_semExtensao) {
                         $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
                         $produto->jsonData['imagem1'] = $imgName_thumbnail;
+                    } else {
+                        $this->logger->debug($primeiraDasImagens_semExtensao . ' com mais "_thumbnail" difere de "' . $imagem1_semExtensao . "'");
                     }
                 } else {
                     $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
                     $produto->jsonData['imagem1'] = $imgName_thumbnail;
                 }
             } else {
+                $this->logger->debug('Produto sem imagens... sem geração de thumbnails');
                 unset($produto->jsonData['imagem1']);
             }
+        } else {
+            $this->logger->debug('Não está setado para "gerarThumbnailAoSalvar"');
         }
     }
 
@@ -395,6 +400,7 @@ class ProdutoEntityHandler extends EntityHandler
         $url = '';
         try {
             $url = $_SERVER['CROSIERAPPRADX_URL'] . '/images/produtos/' . $produto->depto->getId() . '/' . $produto->grupo->getId() . '/' . $produto->subgrupo->getId() . '/' . $img;
+            $this->logger->debug('gerarThumbnail para "' . $url . '"');
             $imgUtils = new ImageUtils();
             $imgUtils->load($url);
             $pathinfo = pathinfo($url);
@@ -403,6 +409,7 @@ class ProdutoEntityHandler extends EntityHandler
             $thumbnail = $_SERVER['PASTA_FOTOS_PRODUTOS'] . '/public' .
                 str_replace($pathinfo['basename'], '', $parsedUrl['path']) .
                 $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
+            $this->logger->debug('thumbnail: "' . $thumbnail . '"');
             $imgUtils->save($thumbnail);
             return $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
         } catch (\Exception $e) {
