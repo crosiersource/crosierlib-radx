@@ -142,50 +142,7 @@ class ProdutoEntityHandler extends EntityHandler
 
         $this->verificaPathDasImagens($produto);
 
-        if ($this->gerarThumbnailAoSalvar) {
-            if ($produto->jsonData['qtde_imagens'] > 0) {
-                // Se já tem registrado a imagem1...
-                if ($produto->jsonData['imagem1'] ?? false) {
-                    $primeiraDasImagens_semExtensao = substr($imagens[0]->getImageName(), 0, strpos($imagens[0]->getImageName(), '.'));
-                    $imagem1_semExtensao = substr($produto->jsonData['imagem1'], 0, strpos($produto->jsonData['imagem1'], '.'));
-                    // Verifica se é a mesma da primeira imagem, porém já em thumbnail. Se não...
-                    if ($primeiraDasImagens_semExtensao . '_thumbnail' !== $imagem1_semExtensao) {
-                        $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
-                        $produto->jsonData['imagem1'] = $imgName_thumbnail;
-                    }
-                } else {
-                    $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
-                    $produto->jsonData['imagem1'] = $imgName_thumbnail;
-                }
-            } else {
-                unset($produto->jsonData['imagem1']);
-            }
-        }
-    }
-
-    /**
-     * @param Produto $produto
-     * @param string|null $img
-     * @return string
-     */
-    public function gerarThumbnail(Produto $produto, string $img = null)
-    {
-        $url = '';
-        try {
-            $url = $_SERVER['CROSIERAPPRADX_URL'] . '/images/produtos/' . $produto->depto->getId() . '/' . $produto->grupo->getId() . '/' . $produto->subgrupo->getId() . '/' . $img;
-            $imgUtils = new ImageUtils();
-            $imgUtils->load($url);
-            $pathinfo = pathinfo($url);
-            $parsedUrl = parse_url($url);
-            $imgUtils->resizeToWidth(50);// '%kernel.project_dir%/public/images/produtos'
-            $thumbnail = $_SERVER['CROSIERAPPRADX_FOLDER'] . '/public' . 
-                str_replace($pathinfo['basename'], '', $parsedUrl['path']) .
-                $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
-            $imgUtils->save($thumbnail);
-            return $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
-        } catch (\Exception $e) {
-            throw new ViewException('Erro ao gerar thumbnail da imagem (' . $url . ')', 0, $e);
-        }
+        $this->gerarThumbnails($produto);
     }
 
 
@@ -240,30 +197,30 @@ class ProdutoEntityHandler extends EntityHandler
     private function verificaPathDasImagens(Produto $produto)
     {
         $this->logger->info(
-            'verificaPathDasImagens para ' . 
+            'verificaPathDasImagens para ' .
             $produto->getId() . ' (' . $produto->nome . '). Total de imagens: ' . count($produto->getImagens()));
         /** @var ProdutoImagem $imagem */
         foreach ($produto->imagens as $imagem) {
-            
+
             $arquivo = $_SERVER['PASTA_FOTOS_PRODUTOS'] . '/public' . $this->uploaderHelper->asset($imagem, 'imageFile');
-            
-                
+
+
             if (!file_exists($arquivo)) {
                 /** @var Connection $conn */
                 $conn = $this->getDoctrine()->getConnection();
 
                 $this->logger->info('Arquivo ainda não existe: ' . $arquivo);
-                
+
                 // Como ainda não foi salvo (estou no beforeSave), então ainda posso pegar os valores anteriores na base
                 $rImagem = $conn->fetchAllAssociative('select i.id, i.produto_id, depto_id, grupo_id, subgrupo_id, image_name from est_produto p, est_produto_imagem i where p.id = i.produto_id AND i.id = :image_id', ['image_id' => $imagem->getId()]);
 
-                $caminhoAntigo = $_SERVER['PASTA_FOTOS_PRODUTOS'] .  
+                $caminhoAntigo = $_SERVER['PASTA_FOTOS_PRODUTOS'] .
                     '/public/images/produtos/' .
                     $rImagem[0]['depto_id'] . '/' .
                     $rImagem[0]['grupo_id'] . '/' .
                     $rImagem[0]['subgrupo_id'] . '/' . $rImagem[0]['image_name'];
 
-                
+
                 if (file_exists($caminhoAntigo)) {
                     $this->logger->info('Caminho antigo já existente: ' . $caminhoAntigo);
                     // Se existe no caminhoAntigo, então é porque foi alterado o depto_id, grupo_id e/ou subgrupo_id
@@ -402,6 +359,56 @@ class ProdutoEntityHandler extends EntityHandler
             }
         } catch (\Throwable $e) {
             throw new ViewException('Erro ao atualizar unidades dos preços do produto');
+        }
+    }
+
+    private function gerarThumbnails(Produto $produto): void
+    {
+        if ($this->gerarThumbnailAoSalvar) {
+            if ($produto->jsonData['qtde_imagens'] > 0) {
+                // Se já tem registrado a imagem1...
+                if ($produto->jsonData['imagem1'] ?? false) {
+                    $primeiraDasImagens_semExtensao = substr($imagens[0]->getImageName(), 0, strpos($imagens[0]->getImageName(), '.'));
+                    $imagem1_semExtensao = substr($produto->jsonData['imagem1'], 0, strpos($produto->jsonData['imagem1'], '.'));
+                    // Verifica se é a mesma da primeira imagem, porém já em thumbnail. Se não...
+                    if ($primeiraDasImagens_semExtensao . '_thumbnail' !== $imagem1_semExtensao) {
+                        $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
+                        $produto->jsonData['imagem1'] = $imgName_thumbnail;
+                    }
+                } else {
+                    $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
+                    $produto->jsonData['imagem1'] = $imgName_thumbnail;
+                }
+            } else {
+                unset($produto->jsonData['imagem1']);
+            }
+        }
+    }
+
+    /**
+     * @param Produto $produto
+     * @param string|null $img
+     * @return string
+     */
+    public function gerarThumbnail(Produto $produto, string $img = null)
+    {
+        $url = '';
+        try {
+            $url = $_SERVER['CROSIERAPPRADX_URL'] . '/images/produtos/' . $produto->depto->getId() . '/' . $produto->grupo->getId() . '/' . $produto->subgrupo->getId() . '/' . $img;
+            $imgUtils = new ImageUtils();
+            $imgUtils->load($url);
+            $pathinfo = pathinfo($url);
+            $parsedUrl = parse_url($url);
+            $imgUtils->resizeToWidth(50);// '%kernel.project_dir%/public/images/produtos'
+            $thumbnail = $_SERVER['PASTA_FOTOS_PRODUTOS'] . '/public' .
+                str_replace($pathinfo['basename'], '', $parsedUrl['path']) .
+                $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
+            $imgUtils->save($thumbnail);
+            return $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
+        } catch (\Exception $e) {
+            $this->logger->error('Erro ao gerar thumbnail da imagem (' . $url . ')');
+            $this->logger->error($e->getMessage());
+            throw new ViewException('Erro ao gerar thumbnail da imagem (' . $url . ')', 0, $e);
         }
     }
 
