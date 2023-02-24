@@ -244,7 +244,8 @@ class ProdutoEntityHandler extends EntityHandler
             $produto->getId() . ' (' . $produto->nome . '). Total de imagens: ' . count($produto->getImagens()));
         /** @var ProdutoImagem $imagem */
         foreach ($produto->imagens as $imagem) {
-            $arquivo = $this->parameterBag->get('kernel.project_dir') . '/public' . $this->uploaderHelper->asset($imagem, 'imageFile');
+            
+            $arquivo = $_SERVER['PASTA_FOTOS_PRODUTOS'] . '/public/images' . $this->uploaderHelper->asset($imagem, 'imageFile');
             
                 
             if (!file_exists($arquivo)) {
@@ -256,7 +257,7 @@ class ProdutoEntityHandler extends EntityHandler
                 // Como ainda não foi salvo (estou no beforeSave), então ainda posso pegar os valores anteriores na base
                 $rImagem = $conn->fetchAllAssociative('select i.id, i.produto_id, depto_id, grupo_id, subgrupo_id, image_name from est_produto p, est_produto_imagem i where p.id = i.produto_id AND i.id = :image_id', ['image_id' => $imagem->getId()]);
 
-                $caminhoAntigo = $this->parameterBag->get('kernel.project_dir') .
+                $caminhoAntigo = $_SERVER['PASTA_FOTOS_PRODUTOS'] .  
                     '/public/images/produtos/' .
                     $rImagem[0]['depto_id'] . '/' .
                     $rImagem[0]['grupo_id'] . '/' .
