@@ -19,6 +19,7 @@ use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\PersistentCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -323,8 +324,15 @@ class Produto implements EntityId
      */
     public function getImagens(): ?array
     {
-        return $this->imagens instanceof ArrayCollection ?
-            $this->imagens->toArray() : $this->imagens;
+        if ($this->imagens) {
+            if (is_array($this->imagens)) {
+                return $this->imagens;
+            }
+            if (($this->imagens instanceof ArrayCollection) || ($this->imagens instanceof PersistentCollection)) {
+                return $this->imagens->toArray();
+            }
+        }
+        return null;
     }
 
     /**
