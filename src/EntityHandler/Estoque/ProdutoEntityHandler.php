@@ -245,7 +245,7 @@ class ProdutoEntityHandler extends EntityHandler
         /** @var ProdutoImagem $imagem */
         foreach ($produto->imagens as $imagem) {
             
-            $arquivo = $_SERVER['PASTA_FOTOS_PRODUTOS'] . '/public/images' . $this->uploaderHelper->asset($imagem, 'imageFile');
+            $arquivo = $_SERVER['PASTA_FOTOS_PRODUTOS'] . '/public' . $this->uploaderHelper->asset($imagem, 'imageFile');
             
                 
             if (!file_exists($arquivo)) {
