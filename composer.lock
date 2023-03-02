@@ -1632,19 +1632,23 @@
         },
         {
             "name": "econea/nusoap",
-            "version": "v0.9.13",
+            "version": "v0.9.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f00b4r/nusoap.git",
-                "reference": "c177861ed6232668845a86b4aec40d5b61cab7f5"
+                "reference": "ae53073db524180a70a0e9007110e21cf065753c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f00b4r/nusoap/zipball/c177861ed6232668845a86b4aec40d5b61cab7f5",
-                "reference": "c177861ed6232668845a86b4aec40d5b61cab7f5",
+                "url": "https://api.github.com/repos/f00b4r/nusoap/zipball/ae53073db524180a70a0e9007110e21cf065753c",
+                "reference": "ae53073db524180a70a0e9007110e21cf065753c",
                 "shasum": ""
             },
             "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-xml": "*",
+                "ext-zlib": "*",
                 "php": ">=5.4"
             },
             "require-dev": {
@@ -1685,7 +1689,7 @@
             ],
             "support": {
                 "issues": "https://github.com/f00b4r/nusoap/issues",
-                "source": "https://github.com/f00b4r/nusoap/tree/v0.9.13"
+                "source": "https://github.com/f00b4r/nusoap/tree/v0.9.14"
             },
             "funding": [
                 {
@@ -1693,7 +1697,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-12-11T11:15:03+00:00"
+            "time": "2023-02-13T07:42:38+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -2155,16 +2159,16 @@
         },
         {
             "name": "jms/metadata",
-            "version": "2.7.0",
+            "version": "2.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/schmittjoh/metadata.git",
-                "reference": "283c714831d272d78ddd6e52e08ac16d76be30fd"
+                "reference": "7ca240dcac0c655eb15933ee55736ccd2ea0d7a6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/schmittjoh/metadata/zipball/283c714831d272d78ddd6e52e08ac16d76be30fd",
-                "reference": "283c714831d272d78ddd6e52e08ac16d76be30fd",
+                "url": "https://api.github.com/repos/schmittjoh/metadata/zipball/7ca240dcac0c655eb15933ee55736ccd2ea0d7a6",
+                "reference": "7ca240dcac0c655eb15933ee55736ccd2ea0d7a6",
                 "shasum": ""
             },
             "require": {
@@ -2175,7 +2179,7 @@
                 "doctrine/coding-standard": "^8.0",
                 "mikey179/vfsstream": "^1.6.7",
                 "phpunit/phpunit": "^8.5|^9.0",
-                "psr/container": "^1.0",
+                "psr/container": "^1.0|^2.0",
                 "symfony/cache": "^3.1|^4.0|^5.0",
                 "symfony/dependency-injection": "^3.1|^4.0|^5.0"
             },
@@ -2213,9 +2217,9 @@
             ],
             "support": {
                 "issues": "https://github.com/schmittjoh/metadata/issues",
-                "source": "https://github.com/schmittjoh/metadata/tree/2.7.0"
+                "source": "https://github.com/schmittjoh/metadata/tree/2.8.0"
             },
-            "time": "2022-09-13T19:18:27+00:00"
+            "time": "2023-02-15T13:44:18+00:00"
         },
         {
             "name": "justinrainbow/json-schema",
@@ -2457,16 +2461,16 @@
         },
         {
             "name": "nfephp-org/sped-common",
-            "version": "v5.1.5",
+            "version": "v5.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-common.git",
-                "reference": "0c73ff77b2847df33018b9966ba55fa940d07661"
+                "reference": "cbcc59f9036b5a2d3dc0d4daa4348a473c42a358"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-common/zipball/0c73ff77b2847df33018b9966ba55fa940d07661",
-                "reference": "0c73ff77b2847df33018b9966ba55fa940d07661",
+                "url": "https://api.github.com/repos/nfephp-org/sped-common/zipball/cbcc59f9036b5a2d3dc0d4daa4348a473c42a358",
+                "reference": "cbcc59f9036b5a2d3dc0d4daa4348a473c42a358",
                 "shasum": ""
             },
             "require": {
@@ -2529,9 +2533,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-common/issues",
-                "source": "https://github.com/nfephp-org/sped-common/tree/v5.1.5"
+                "source": "https://github.com/nfephp-org/sped-common/tree/v5.1.6"
             },
-            "time": "2022-12-18T12:25:27+00:00"
+            "time": "2023-02-10T13:59:49+00:00"
         },
         {
             "name": "nfephp-org/sped-da",
@@ -2693,16 +2697,16 @@
         },
         {
             "name": "nfephp-org/sped-nfe",
-            "version": "v5.1.11",
+            "version": "v5.1.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-nfe.git",
-                "reference": "6a060e5e7673cdd3c56a978f16655b315d113f06"
+                "reference": "8b3e71f98c13fbc18f3142b3e4e2934968aff0ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/6a060e5e7673cdd3c56a978f16655b315d113f06",
-                "reference": "6a060e5e7673cdd3c56a978f16655b315d113f06",
+                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/8b3e71f98c13fbc18f3142b3e4e2934968aff0ad",
+                "reference": "8b3e71f98c13fbc18f3142b3e4e2934968aff0ad",
                 "shasum": ""
             },
             "require": {
@@ -2769,9 +2773,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-nfe/issues",
-                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.1.11"
+                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.1.12"
             },
-            "time": "2022-12-26T19:44:56+00:00"
+            "time": "2023-02-22T19:49:20+00:00"
         },
         {
             "name": "php-http/guzzle6-adapter",
