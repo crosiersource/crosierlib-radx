@@ -364,29 +364,34 @@ class ProdutoEntityHandler extends EntityHandler
 
     private function gerarThumbnails(Produto $produto): void
     {
+        $imagem1 = $produto->getImagens()[0] ?? null;
+        if (!$imagem1) {
+            $this->logger->debug('Produto sem imagens... sem geração de thumbnail');
+            unset($produto->jsonData['imagem1']);
+            return;
+        }
+
         if ($this->gerarThumbnailAoSalvar) {
-            if ($produto->jsonData['qtde_imagens'] > 0) {
-                // Se já tem registrado a imagem1...
-                if ($produto->jsonData['imagem1'] ?? false) {
-                    $primeiraDasImagens_semExtensao = substr($imagens[0]->getImageName(), 0, strpos($imagens[0]->getImageName(), '.'));
-                    $imagem1_semExtensao = substr($produto->jsonData['imagem1'], 0, strpos($produto->jsonData['imagem1'], '.'));
-                    // Verifica se é a mesma da primeira imagem, porém já em thumbnail. Se não...
-                    if ($primeiraDasImagens_semExtensao . '_thumbnail' !== $imagem1_semExtensao) {
-                        $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
-                        $produto->jsonData['imagem1'] = $imgName_thumbnail;
-                    } else {
-                        $this->logger->debug($primeiraDasImagens_semExtensao . ' com mais "_thumbnail" difere de "' . $imagem1_semExtensao . "'");
-                    }
-                } else {
-                    $imgName_thumbnail = $this->gerarThumbnail($produto, $imagens[0]->getImageName());
+            // Se já tem registrado a imagem1...
+            if ($produto->jsonData['imagem1'] ?? false) {
+                $primeiraDasImagens_semExtensao =
+                    substr(
+                        $imagem1->getImageName(),
+                        0,
+                        strpos($imagem1->getImageName(), '.')
+                    );
+                $imagem1_semExtensao = substr($produto->jsonData['imagem1'], 0, strpos($produto->jsonData['imagem1'], '.'));
+                // Verifica se é a mesma da primeira imagem, porém já em thumbnail. Se não...
+                if ($primeiraDasImagens_semExtensao . '_thumbnail' !== $imagem1_semExtensao) {
+                    $imgName_thumbnail = $this->gerarThumbnail($produto, $imagem1->getImageName());
                     $produto->jsonData['imagem1'] = $imgName_thumbnail;
+                } else {
+                    $this->logger->debug($primeiraDasImagens_semExtensao . ' com mais "_thumbnail" difere de "' . $imagem1_semExtensao . "'");
                 }
             } else {
-                $this->logger->debug('Produto sem imagens... sem geração de thumbnails');
-                unset($produto->jsonData['imagem1']);
+                $imgName_thumbnail = $this->gerarThumbnail($produto, $imagem1->getImageName());
+                $produto->jsonData['imagem1'] = $imgName_thumbnail;
             }
-        } else {
-            $this->logger->debug('Não está setado para "gerarThumbnailAoSalvar"');
         }
     }
 
