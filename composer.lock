@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "df184a7e61d4d8506ac822af1f43eca3",
+    "content-hash": "b406f3a32ead8e6f04432a5620fb43a2",
     "packages": [
         {
             "name": "api-platform/core",
@@ -177,16 +177,16 @@
         },
         {
             "name": "crosiersource/crosierlib-base",
-            "version": "v1.7.1",
+            "version": "v1.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
-                "reference": "cdaee6a73051d9ad0b54348b816ce5f985f238d5"
+                "reference": "46d7f74897304e35e5d7389fddab38d8c3b4f725"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/cdaee6a73051d9ad0b54348b816ce5f985f238d5",
-                "reference": "cdaee6a73051d9ad0b54348b816ce5f985f238d5",
+                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/46d7f74897304e35e5d7389fddab38d8c3b4f725",
+                "reference": "46d7f74897304e35e5d7389fddab38d8c3b4f725",
                 "shasum": ""
             },
             "require": {
@@ -237,7 +237,7 @@
                 "symfony/property-access": "5.4.*",
                 "symfony/property-info": "5.4.*",
                 "symfony/proxy-manager-bridge": "5.4.*",
-                "symfony/rate-limiter": "5.2.*",
+                "symfony/rate-limiter": "5.4.*",
                 "symfony/runtime": "5.4.*",
                 "symfony/security-bundle": "5.4.*",
                 "symfony/security-guard": "5.4.*",
@@ -289,9 +289,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
-                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.7.1"
+                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.7.2"
             },
-            "time": "2023-03-27T14:37:16+00:00"
+            "time": "2023-03-27T14:39:23+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -7867,22 +7867,22 @@
         },
         {
             "name": "symfony/rate-limiter",
-            "version": "v5.2.12",
+            "version": "v5.4.21",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/rate-limiter.git",
-                "reference": "fba2944fb7e2edc84f92b2ba3ab028a739f45637"
+                "reference": "342acb2d23f6012f6150e7a8b167bf9cd931c0f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/rate-limiter/zipball/fba2944fb7e2edc84f92b2ba3ab028a739f45637",
-                "reference": "fba2944fb7e2edc84f92b2ba3ab028a739f45637",
+                "url": "https://api.github.com/repos/symfony/rate-limiter/zipball/342acb2d23f6012f6150e7a8b167bf9cd931c0f8",
+                "reference": "342acb2d23f6012f6150e7a8b167bf9cd931c0f8",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.2.5",
-                "symfony/lock": "^5.2",
-                "symfony/options-resolver": "^5.1"
+                "symfony/lock": "^5.2|^6.0",
+                "symfony/options-resolver": "^5.1|^6.0"
             },
             "require-dev": {
                 "psr/cache": "^1.0|^2.0|^3.0"
@@ -7917,7 +7917,7 @@
                 "rate-limiter"
             ],
             "support": {
-                "source": "https://github.com/symfony/rate-limiter/tree/v5.2.12"
+                "source": "https://github.com/symfony/rate-limiter/tree/v5.4.21"
             },
             "funding": [
                 {
@@ -7933,7 +7933,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-07-15T22:07:55+00:00"
+            "time": "2023-02-21T19:46:44+00:00"
         },
         {
             "name": "symfony/redis-messenger",
