@@ -9,19 +9,7 @@
             "email": "carlospauluk@gmail.com"
         }
     ],
-    "require": {
-        "php": "7.4.*",
-        "ext-bcmath": "*",
-        "ext-ctype": "*",
-        "ext-curl": "*",
-        "ext-gd": "*",
-        "ext-iconv": "*",
-        "ext-intl": "*",
-        "ext-json": "*",
-        "ext-simplexml": "*",
-        "ext-soap": "*",
-        "ext-zip": "*",
-        "ext-zlib": "*",
+    "require": {        
         "crosiersource/crosierlib-base": "^1.6.2",
         "vich/uploader-bundle": "^1.13",
         "nfephp-org/sped-common": "^5.1",
@@ -31,7 +19,11 @@
     },
     "config": {
         "minimum-stability": "dev",
-        "prefer-stable": false
+        "prefer-stable": false,
+        "allow-plugins": {
+            "symfony/flex": true,
+            "symfony/runtime": true
+        }
     },
     "autoload": {
         "psr-4": {
