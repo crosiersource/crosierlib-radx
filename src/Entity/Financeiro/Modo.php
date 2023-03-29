@@ -59,6 +59,21 @@ class Modo implements EntityId
 {
 
     use EntityIdTrait;
+    
+    const EM_ESPECIE = 1;
+    const DEBITO_AUTOMATICO = 2;
+    const CHEQUE_PROPRIO = 3;
+    const CHEQUE_TERCEIROS = 4;
+    const DEPOSITO_BANCARIO = 5;
+    const BOLETO_GUIA_DDA = 6;
+    const PIX_TRANSF_BANCARIA = 7;
+    const RECEB_CARTAO_CREDITO = 9;
+    const RECEB_CARTAO_DEBITO = 10;
+    const TRANSF_ENTRE_CONTAS = 11;
+    const MOVIMENTACAO_AGRUPADA = 50;
+    const VIRTUAL = 60;
+    const INDEFINIDO = 99;
+    
 
     /**
      * @ORM\Column(name="codigo", type="integer")
