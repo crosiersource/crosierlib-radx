@@ -177,16 +177,16 @@
         },
         {
             "name": "crosiersource/crosierlib-base",
-            "version": "v1.7.3",
+            "version": "v1.7.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
-                "reference": "575372d6aacdf51c9274238dadfd6e4c40a87614"
+                "reference": "72dc55871496dc6b471199ff135f2e05a04255d1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/575372d6aacdf51c9274238dadfd6e4c40a87614",
-                "reference": "575372d6aacdf51c9274238dadfd6e4c40a87614",
+                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/72dc55871496dc6b471199ff135f2e05a04255d1",
+                "reference": "72dc55871496dc6b471199ff135f2e05a04255d1",
                 "shasum": ""
             },
             "require": {
@@ -290,9 +290,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
-                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.7.3"
+                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.7.4"
             },
-            "time": "2023-03-27T17:08:05+00:00"
+            "time": "2023-04-28T19:07:38+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -2983,16 +2983,16 @@
         },
         {
             "name": "nfephp-org/sped-nfe",
-            "version": "v5.1.12",
+            "version": "v5.1.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-nfe.git",
-                "reference": "8b3e71f98c13fbc18f3142b3e4e2934968aff0ad"
+                "reference": "9757308c0193312f5d834b08dc51256aa372c507"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/8b3e71f98c13fbc18f3142b3e4e2934968aff0ad",
-                "reference": "8b3e71f98c13fbc18f3142b3e4e2934968aff0ad",
+                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/9757308c0193312f5d834b08dc51256aa372c507",
+                "reference": "9757308c0193312f5d834b08dc51256aa372c507",
                 "shasum": ""
             },
             "require": {
@@ -3059,9 +3059,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-nfe/issues",
-                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.1.12"
+                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.1.13"
             },
-            "time": "2023-02-22T19:49:20+00:00"
+            "time": "2023-04-18T14:47:59+00:00"
         },
         {
             "name": "phenx/php-font-lib",
@@ -10601,16 +10601,16 @@
         },
         {
             "name": "vich/uploader-bundle",
-            "version": "1.22.0",
+            "version": "1.23.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dustin10/VichUploaderBundle.git",
-                "reference": "8655c362102ec7cbb277faeb864af9756358ffbc"
+                "reference": "af3599741765984f7675e87a20fdf26f64d883c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dustin10/VichUploaderBundle/zipball/8655c362102ec7cbb277faeb864af9756358ffbc",
-                "reference": "8655c362102ec7cbb277faeb864af9756358ffbc",
+                "url": "https://api.github.com/repos/dustin10/VichUploaderBundle/zipball/af3599741765984f7675e87a20fdf26f64d883c3",
+                "reference": "af3599741765984f7675e87a20fdf26f64d883c3",
                 "shasum": ""
             },
             "require": {
@@ -10703,9 +10703,9 @@
             ],
             "support": {
                 "issues": "https://github.com/dustin10/VichUploaderBundle/issues",
-                "source": "https://github.com/dustin10/VichUploaderBundle/tree/1.22.0"
+                "source": "https://github.com/dustin10/VichUploaderBundle/tree/1.23.0"
             },
-            "time": "2023-03-18T12:46:44+00:00"
+            "time": "2023-04-10T08:13:31+00:00"
         },
         {
             "name": "webmozart/assert",
