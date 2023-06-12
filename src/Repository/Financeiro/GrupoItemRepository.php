@@ -3,6 +3,8 @@
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Grupo;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem;
 
 /**
@@ -18,16 +20,27 @@ class GrupoItemRepository extends FilterRepository
         return GrupoItem::class;
     }
 
-    public function findByMesAno(\DateTime $mesAno)
+    public function findAllByMesAno(\DateTime $mesAno): array
     {
-        $dtIni = \DateTime::createFromFormat('Y-m-d', $mesAno->format('Y-m-') . '01')->setTime(0, 0, 0, 0);
-        $dtFim = \DateTime::createFromFormat('Y-m-d', $mesAno->format('Y-m-t'))->setTime(23, 59, 59, 999999);
+        return $this->findAllByFiltersSimpl([
+            ['dtVencto', 'BETWEEN_MESANO', $mesAno]
+        ]);
+    }
 
-        $ql = "SELECT e FROM CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\GrupoItem e WHERE e.dtVencto BETWEEN :dtIni AND :dtFim";
+    public function findByMesAnoAndGrupo(\DateTime $mesAno, Grupo $grupo): ?GrupoItem
+    {
+        return $this->findOneByFiltersSimpl([
+            ['dtVencto', 'BETWEEN_MESANO', $mesAno],
+            ['pai', 'EQ', $grupo]
+        ]);
+    }
 
-        $qry = $this->getEntityManager()->createQuery($ql);
-        $qry->setParameter('dtIni', $dtIni);
-        $qry->setParameter('dtFim', $dtFim);
-        return $qry->getResult();
+    public function findByDtMoviment(Grupo $grupo, \DateTime $dtMoviment): ?GrupoItem
+    {
+        $mesAno = ($dtMoviment->format('d') >= $grupo->diaInicioAprox) ? DateTimeUtils::incMes($dtMoviment) : $dtMoviment;
+        return $this->findOneByFiltersSimpl([
+            ['dtVencto', 'BETWEEN_MESANO', $mesAno],
+            ['pai', 'EQ', $grupo]
+        ]);
     }
 }

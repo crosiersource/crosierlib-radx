@@ -45,12 +45,13 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(BooleanFilter::class, properties={
- *     "atual": "exact",
- *     "caixa": "exact",
- *     "concreta": "exact",
- *     "abertas": "exact",
- *     "caixaStatus": "exact",
- *     "cheque": "exact"})
+ *     "atual",
+ *     "caixa",
+ *     "concreta",
+ *     "abertas",
+ *     "caixaStatus",
+ *     "cheque"
+ * })
  *
  * @ApiFilter(SearchFilter::class, properties={
  *     "codigo": "exact",
@@ -59,7 +60,14 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "id": "exact",
  *     "operadoraCartao": "exact"})
  *
- * @ApiFilter(OrderFilter::class, properties={"id", "codigo", "descricao", "dtConsolidado", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(OrderFilter::class, properties={
+ *     "id", 
+ *     "codigo", 
+ *     "descricao", 
+ *     "dtConsolidado", 
+ *     "atual",
+ *     "updated"
+ * }, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CarteiraEntityHandler")
  *

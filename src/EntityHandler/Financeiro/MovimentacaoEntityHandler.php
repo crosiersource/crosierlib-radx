@@ -15,6 +15,7 @@ use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\ExceptionUtils\ExceptionUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\NumberUtils\DecimalUtils;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
+use CrosierSource\CrosierLibRadxBundle\Business\Financeiro\GrupoBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Banco;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\BandeiraCartao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia;
@@ -46,18 +47,22 @@ class MovimentacaoEntityHandler extends EntityHandler
 
     public FaturaEntityHandler $faturaEntityHandler;
 
+    public GrupoEntityHandler $grupoEntityHandler;
+
     private LoggerInterface $logger;
 
-    
+
     public function __construct(ManagerRegistry       $doctrine,
                                 Security              $security,
                                 ParameterBagInterface $parameterBag,
                                 SyslogBusiness        $syslog,
                                 FaturaEntityHandler   $faturaEntityHandler,
+                                GrupoEntityHandler    $grupoEntityHandler,
                                 LoggerInterface       $logger)
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->faturaEntityHandler = $faturaEntityHandler;
+        $this->grupoEntityHandler = $grupoEntityHandler;
         $this->logger = $logger;
     }
 
@@ -342,7 +347,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $this->doctrine->clear();
             }
             $this->doctrine->commit();
-        } catch (ViewException | \Throwable $e) {
+        } catch (ViewException|\Throwable $e) {
             $this->logger->error('Erro no saveAll()');
             $this->logger->error($e->getMessage());
             $this->doctrine->clear();
@@ -395,8 +400,12 @@ class MovimentacaoEntityHandler extends EntityHandler
             return $this->saveEntradaDeCaixaPorTransfBancaria($movimentacao);
         }
 
-        if ($movimentacao->jsonData['dadosParcelamento'] ?? false) {
+        if ($this->iniciarSaveDeParcelamento($movimentacao)) {
             return $this->saveParcelamento($movimentacao);
+        } else {
+            if ($movimentacao->grupoItem) {
+                $this->corrigirGrupoItemPorDtMoviment($movimentacao);
+            }
         }
 
         if (in_array($movimentacao->categoria->codigo, [130, 230], true) && ($movimentacao->jsonData['movsIds'] ?? false)) {
@@ -1064,6 +1073,12 @@ class MovimentacaoEntityHandler extends EntityHandler
     public function beforeClone(/** @var Movimentacao $movimentacao */ $movimentacao)
     {
         $movimentacao->UUID = null;
+        $movimentacao->cadeia = null;
+        $movimentacao->cadeiaOrdem = null;
+        $movimentacao->cadeiaQtde = null;
+        unset($movimentacao->jsonData['dadosParcelamento']);
+        $movimentacao->parcelaNum = null;
+        $movimentacao->qtdeParcelas = null;
     }
 
     /**
@@ -1117,6 +1132,20 @@ class MovimentacaoEntityHandler extends EntityHandler
         $this->getDoctrine()->flush();
     }
 
+
+    private function iniciarSaveDeParcelamento(
+        Movimentacao $movimentacao
+    ): bool
+    {
+        return
+            !$movimentacao->getId() &&
+            (
+                ($movimentacao->jsonData['dadosParcelamento'] ?? false) ||
+                $movimentacao->qtdeParcelas > 1
+            );
+    }
+
+
     /**
      * @param Movimentacao $movimentacao
      * @throws ViewException
@@ -1126,9 +1155,44 @@ class MovimentacaoEntityHandler extends EntityHandler
         try {
             $this->doctrine->beginTransaction();
 
-            $dadosParcelamento = $movimentacao->jsonData['dadosParcelamento'];
+            $repoGrupoItem = $this->doctrine->getRepository(GrupoItem::class);
+            $gruposItens = [];
+            $dadosParcelamento = $movimentacao->jsonData['dadosParcelamento'] ?? null;
+            if (!$dadosParcelamento) {
 
-            unset($movimentacao->jsonData['dadosParcelamento']);
+                $mesIni = GrupoBusiness::findDtVenctoByDtMoviment(
+                    $movimentacao->grupoItem->pai,
+                    $movimentacao->dtMoviment
+                );
+                $mesFim = DateTimeUtils::incMes($mesIni, $movimentacao->qtdeParcelas - 1);
+                $this->grupoEntityHandler->gerarDesdeAte(
+                    $movimentacao->grupoItem->pai,
+                    $mesIni,
+                    $mesFim
+                );
+
+                // se não tem dadosParcelamento é porque é um save para grupoItem
+                $grupoItem = $repoGrupoItem->findByDtMoviment(
+                    $movimentacao->grupoItem->pai,
+                    $movimentacao->dtMoviment
+                );
+                $gruposItens[] = $grupoItem;
+                for ($i = 1; $i <= $movimentacao->qtdeParcelas; $i++) {
+                    $dadosParcelamento[] = [
+                        'valor' => $movimentacao->valorTotal,
+                        'dtVencto' => $grupoItem->dtVencto->format('Y-m-d'),
+                        'grupoItemId' => $grupoItem->getId()
+                    ];
+                    if ($grupoItem->proximo) {
+                        $grupoItem = $repoGrupoItem->find($grupoItem->proximo->getId());
+                        $gruposItens[] = $grupoItem;
+                    } else {
+                        break; // na verdade já irá sair do for mesmo
+                    }
+                }
+            } else {
+                unset($movimentacao->jsonData['dadosParcelamento']);
+            }
 
             $cadeia = new Cadeia();
             $cadeia->vinculante = true;
@@ -1140,6 +1204,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->cadeia = $cadeia;
             $movimentacao->cadeiaQtde = count($dadosParcelamento);
             $movimentacao->cadeiaOrdem = 1;
+            $movimentacao->grupoItem = $gruposItens[0] ?? null;
 
             $cadeia->movimentacoes->add($movimentacao);
 
@@ -1155,10 +1220,10 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $parcela->cadeiaQtde = count($dadosParcelamento);
                 $parcela->cadeiaOrdem = $i + 1;
                 $parcela->dtVencto = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVencto']);
-                $parcela->dtVenctoEfetiva = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVenctoEfetiva']);
                 $parcela->valor = $dadosParcelamento[$i]['valor'];
                 $parcela->documentoNum = $dadosParcelamento[$i]['documentoNum'] ?? null;
                 $parcela->chequeNumCheque = $dadosParcelamento[$i]['chequeNumCheque'] ?? null;
+                $parcela->grupoItem = $gruposItens[$i] ?? null;
                 $cadeia->movimentacoes->add($parcela);
 
                 parent::save($parcela, false);
@@ -1175,8 +1240,6 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
             throw new ViewException('Erro ao salvar o parcelamento', 0, $e);
         }
-
-
     }
 
     /**
@@ -1267,6 +1330,24 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
             $msg = ExceptionUtils::treatException($e);
             throw new ViewException('Erro ao estornar a movimentação (' . $msg . ')', 0, $e);
+        }
+    }
+
+
+    private function corrigirGrupoItemPorDtMoviment(
+        Movimentacao $movimentacao
+    ): void
+    {
+        $repoGrupoItem = $this->doctrine->getRepository(GrupoItem::class);
+        $grupoItem = $repoGrupoItem->findByDtMoviment(
+            $movimentacao->grupoItem->pai,
+            $movimentacao->dtMoviment
+        );
+        if (!$grupoItem) {
+            $grupoItem = $this->grupoEntityHandler->gerarParaDtMoviment($movimentacao->grupoItem->pai, $movimentacao->dtMoviment);
+        }
+        if ($movimentacao->grupoItem->getId() !== $grupoItem->getId()) {
+            $movimentacao->grupoItem = $grupoItem;
         }
     }
 

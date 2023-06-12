@@ -29,7 +29,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ApiResource(
  *     shortName="Financeiro/Movimentacao",
- *     normalizationContext={"groups"={"movimentacao","fatura","modo","banco","operadoraCartao","bandeiraCartao","carteira","categoria","grupoItem","entityId"},"enable_max_depth"=true},
+ *     normalizationContext={"groups"={"movimentacao","fatura","modo","banco","operadoraCartao","bandeiraCartao","carteira","categoria","grupoItem","grupo","entityId"},"enable_max_depth"=true},
  *     denormalizationContext={"groups"={"movimentacao"},"enable_max_depth"=true},
  *
  *     itemOperations={
@@ -66,11 +66,18 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     "chequeNumCheque": "exact"
  * })
  *
- * @ApiFilter(DateFilter::class, properties={"dtUtil", "dtVenctoEfetiva", "dtVencto", "dtPagto"})
+ * @ApiFilter(DateFilter::class, properties={
+ *     "dtUtil", 
+ *     "dtVenctoEfetiva", 
+ *     "dtVencto", 
+ *     "dtPagto"
+ * })
  *
  * @ApiFilter(RangeFilter::class, properties={"valorTotal"})
  *
- * @ApiFilter(BooleanFilter::class, properties={"recorrente": "exact"})
+ * @ApiFilter(BooleanFilter::class, properties={
+ *     "recorrente"
+ * })
  *
  * @ApiFilter(OrderFilter::class, properties={
  *     "id",

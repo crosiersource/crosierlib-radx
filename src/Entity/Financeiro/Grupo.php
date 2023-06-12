@@ -4,6 +4,7 @@ namespace CrosierSource\CrosierLibRadxBundle\Entity\Financeiro;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
@@ -41,8 +42,23 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * )
  * @ApiFilter(PropertyFilter::class)
  *
- * @ApiFilter(SearchFilter::class, properties={"codigo": "exact", "descricao": "partial", "id": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "descricao", "dtConsolidado", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "codigo": "exact",
+ *     "descricao": "partial",
+ *     "id": "exact"
+ * })
+ *
+ * @ApiFilter(BooleanFilter::class, properties={
+ *     "ativo"
+ * })
+ *
+ * @ApiFilter(OrderFilter::class, properties={
+ *     "id",
+ *     "descricao",
+ *     "diaVencto",
+ *     "ativo",
+ *     "updated"
+ * }, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoEntityHandler")
  *
@@ -93,22 +109,18 @@ class Grupo implements EntityId
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_pagante_id", nullable=true)
-     *
      * @Groups("grupo")
      */
     public ?Carteira $carteiraPagantePadrao = null;
 
     /**
-     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Categoria")
      * @ORM\JoinColumn(name="categoria_padrao_id", nullable=true)
-     *
      * @Groups("grupo")
      */
     public ?Categoria $categoriaPadrao = null;
 
     /**
-     *
      * @ORM\OneToMany(
      *      targetEntity="GrupoItem",
      *      mappedBy="pai",

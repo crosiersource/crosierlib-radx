@@ -21,6 +21,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\OperadoraCartao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\TipoLancto;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\CadeiaEntityHandler;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\GrupoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\CarteiraRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\MovimentacaoRepository;
@@ -39,7 +40,7 @@ class MovimentacaoBusiness
 
     private EntityManagerInterface $doctrine;
 
-    private GrupoBusiness $grupoBusiness;
+    private GrupoEntityHandler $grupoEntityHandler;
 
     private MovimentacaoEntityHandler $movimentacaoEntityHandler;
 
@@ -47,24 +48,14 @@ class MovimentacaoBusiness
 
     private LoggerInterface $logger;
 
-    /**
-     *
-     * MovimentacaoBusiness constructor.
-     *
-     * @param EntityManagerInterface $doctrine
-     * @param GrupoBusiness $grupoBusiness
-     * @param MovimentacaoEntityHandler $movimentacaoEntityHandler
-     * @param CadeiaEntityHandler $cadeiaEntityHandler
-     * @param LoggerInterface $logger
-     */
     public function __construct(EntityManagerInterface $doctrine,
-                                GrupoBusiness $grupoBusiness,
+                                GrupoEntityHandler $grupoEntityHandler,
                                 MovimentacaoEntityHandler $movimentacaoEntityHandler,
                                 CadeiaEntityHandler $cadeiaEntityHandler,
                                 LoggerInterface $logger)
     {
         $this->doctrine = $doctrine;
-        $this->grupoBusiness = $grupoBusiness;
+        $this->grupoEntityHandler = $grupoEntityHandler;
         $this->movimentacaoEntityHandler = $movimentacaoEntityHandler;
         $this->cadeiaEntityHandler = $cadeiaEntityHandler;
         $this->logger = $logger;
@@ -206,7 +197,7 @@ class MovimentacaoBusiness
                     $proximoId = $giAtual->proximo->getId();
                     $giAtual = $this->doctrine->getRepository(Grupo::class)->find($proximoId);
                 } else {
-                    $giAtual = $this->grupoBusiness->gerarNovo($giAtual->pai);
+                    $giAtual = $this->grupoEntityHandler->gerarNovo($giAtual->pai);
                 }
                 $movimentacao->grupoItem = $giAtual;
             }
@@ -592,9 +583,18 @@ class MovimentacaoBusiness
 
         $nova->cadeia = $cadeia;
 
-        $this->calcularNovaDtVencto($originante, $nova);
-
-        $nova->status = 'ABERTA'; // posso setar como ABERTA pois no beforeSave(), se for CHEQUE, ele altera para A_COMPENSAR.
+        if ($originante->grupoItem) {
+            if ($originante->grupoItem->proximo) {
+                $nova->grupoItem = $originante->grupoItem->proximo;
+            } else {
+                $nova->grupoItem = $this->grupoEntityHandler->gerarNovo($originante->grupoItem->pai);
+            }
+            $nova->dtMoviment = DateTimeUtils::incMes($originante->dtMoviment);
+            $nova->dtPagto = $nova->dtMoviment;
+        } else {
+            $this->calcularNovaDtVencto($originante, $nova);
+        }
+        $nova->status = 'ABERTA';
 
         /** @var TipoLancto $aPagarReceber */
         $aPagarReceber = $this->doctrine->getRepository(TipoLancto::class)->findOneBy(['codigo' => 20]);

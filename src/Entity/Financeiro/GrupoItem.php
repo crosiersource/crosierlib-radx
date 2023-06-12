@@ -152,18 +152,17 @@ class GrupoItem implements EntityId
 
     /**
      * Método auxiliar para cálculo.
-     *
-     * @return number
+     * @Groups("grupoItem")
      */
     public function getValorLanctos(): float
     {
         if ($this->movimentacoes && count($this->movimentacoes) > 0) {
             $bdValor = 0.0;
             foreach ($this->movimentacoes as $m) {
-                if (strpos($m->getCategoria()->getCodigo(), 0) === 1) {
-                    $bdValor += $m->getValorTotal();
+                if (strpos($m->categoria->codigo, 0) === 1) {
+                    $bdValor += $m->valorTotal;
                 } else {
-                    $bdValor -= $m->getValorTotal();
+                    $bdValor -= $m->valorTotal;
                 }
             }
             return abs($bdValor);
@@ -173,8 +172,7 @@ class GrupoItem implements EntityId
 
     /**
      * Método auxiliar para view.
-     *
-     * @return number
+     * @Groups("grupoItem")
      */
     public function getDiferenca(): ?float
     {

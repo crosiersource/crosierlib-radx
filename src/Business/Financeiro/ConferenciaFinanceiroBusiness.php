@@ -308,7 +308,7 @@ class ConferenciaFinanceiroBusiness
 
     public function buildListGrupos($dtFim)
     {
-        $gruposItens = $this->doctrine->getRepository(GrupoItem::class)->findByMesAno($dtFim);
+        $gruposItens = $this->doctrine->getRepository(GrupoItem::class)->findAllByMesAno($dtFim);
 
         $list = [];
 

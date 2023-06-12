@@ -27,10 +27,11 @@ class CategoriaEntityHandler extends EntityHandler
     public function beforeSave($categoria)
     {
         $categoria->codigoSuper = substr($categoria->codigo, 0, 1);
-        $categoria->codigoOrd = str_pad($categoria->codigo, 12, 0);
+        $categoria->codigoOrd = str_pad($categoria->codigo, 18, 0);
         if (!$categoria->getId() && $categoria->pai && $categoria->pai->codigo && strlen((string)$categoria->pai->codigo) > 9) {
             throw new ViewException('Não é possível criar categoria abaixo do quinto nível');
         }
+        $categoria->setId($categoria->codigo);
     }
 
 

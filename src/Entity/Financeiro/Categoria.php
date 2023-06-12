@@ -60,6 +60,13 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 class Categoria implements EntityId
 {
     use EntityIdTrait;
+    
+    /**
+     * @ORM\Id()
+     * @ORM\Column(type="bigint")
+     * @Groups("entityId")
+     */
+    private ?int $id = null;
 
     public const MASK = '0.00.000.000.000';
 
