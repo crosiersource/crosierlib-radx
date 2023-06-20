@@ -63,10 +63,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     "status": "exact",
  *     "centroCusto": "exact",
  *     "grupoItem": "exact",
- *     "chequeNumCheque": "exact"
+ *     "chequeNumCheque": "exact",
+ *     "dtMoviment": "exact"
  * })
  *
  * @ApiFilter(DateFilter::class, properties={
+ *     "dtMoviment", 
  *     "dtUtil", 
  *     "dtVenctoEfetiva", 
  *     "dtVencto", 
@@ -91,6 +93,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     "carteira.codigo",
  *     "categoria.codigo",
  *     "categoria.codigoSuper",
+ *     "modo.codigo",
  *     "updated"
  * }, arguments={"orderParameterName"="order"})
  *
@@ -638,13 +641,22 @@ class Movimentacao implements EntityId
             $sufixo .= '<br /> (CHQ: ' . $nomeBanco . 'nº ' . $this->chequeNumCheque . ')';
         }
 
-        if ($this->bandeiraCartao) {
-            $sufixo .= ' (Bandeira: ' . $this->bandeiraCartao->descricao . ')';
+        if ($this->bandeiraCartao || $this->operadoraCartao) {
+            if ($this->bandeiraCartao) {
+                $sufixo .= ' (Bandeira: ' . $this->bandeiraCartao->descricao . ')';
+                if (!$this->operadoraCartao) {
+                    $sufixo .= ' (Operadora não informada)';
+                }
+            }
+            if ($this->operadoraCartao) {
+                $sufixo .= ' (Operadora: ' . $this->operadoraCartao->descricao . ')';
+                if (!$this->bandeiraCartao) {
+                    $sufixo .= ' (Bandeira não informada)';
+                }
+            }
         }
 
-        if ($this->operadoraCartao) {
-            $sufixo .= ' (Operadora: ' . $this->operadoraCartao->descricao . ')';
-        }
+        
 
         if ($this->numCartao) {
             $sufixo .= ' (**** ' . $this->numCartao . ')';

@@ -222,6 +222,7 @@
       <argument type="service"
                 id="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.grupo_entity_handler"/>
       <argument type="service" id="monolog.logger"/>
+      <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.app_config_business"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler" public="true"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.financeiro.movimentacao_entity_handler"/>

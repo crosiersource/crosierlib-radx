@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\AppConfigBusiness;
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\DiaUtil;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\Estabelecimento;
@@ -51,6 +52,8 @@ class MovimentacaoEntityHandler extends EntityHandler
 
     private LoggerInterface $logger;
 
+    private AppConfigBusiness $appConfigBusiness;
+
 
     public function __construct(ManagerRegistry       $doctrine,
                                 Security              $security,
@@ -58,12 +61,15 @@ class MovimentacaoEntityHandler extends EntityHandler
                                 SyslogBusiness        $syslog,
                                 FaturaEntityHandler   $faturaEntityHandler,
                                 GrupoEntityHandler    $grupoEntityHandler,
-                                LoggerInterface       $logger)
+                                LoggerInterface       $logger,
+                                AppConfigBusiness     $appConfigBusiness
+    )
     {
         parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
         $this->faturaEntityHandler = $faturaEntityHandler;
         $this->grupoEntityHandler = $grupoEntityHandler;
         $this->logger = $logger;
+        $this->appConfigBusiness = $appConfigBusiness;
     }
 
 
@@ -77,6 +83,9 @@ class MovimentacaoEntityHandler extends EntityHandler
      */
     public function beforeSave($movimentacao)
     {
+        if ($movimentacao->getId()) {
+            $this->verificaPossibilidadeDeEdicao($movimentacao);
+        }
         $repoCarteira = $this->doctrine->getRepository(Carteira::class);
         $repoModo = $this->doctrine->getRepository(Modo::class);
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
@@ -303,6 +312,16 @@ class MovimentacaoEntityHandler extends EntityHandler
         return $movimentacao;
     }
 
+    private function verificaPossibilidadeDeEdicao(Movimentacao $movimentacao): void
+    {
+        $movimentacaoJaSalva = $this->getRegistroDaTabela($movimentacao);
+        if (in_array((int)$movimentacaoJaSalva['modo_id'], [9,10], true)) {
+            if ($movimentacao->modo->getId() !== (int)$movimentacaoJaSalva['modo_id']) {
+                throw new ViewException('Não é possível alterar o modo de uma movimentação de cartão (crédito ou débito)');
+            }
+        }
+    }
+
 
     public function afterSave(/** @var Movimentacao $movimentacao */ $movimentacao)
     {
@@ -373,6 +392,10 @@ class MovimentacaoEntityHandler extends EntityHandler
      */
     public function save(EntityId $movimentacao, $flush = true)
     {
+        if ($movimentacao->getId()) {
+            $this->verificaPossibilidadeDeEdicao($movimentacao);
+        }
+        
         /** @var TipoLanctoRepository $repoTipoLancto */
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
         /** @var Movimentacao $movimentacao */
@@ -390,14 +413,9 @@ class MovimentacaoEntityHandler extends EntityHandler
             return $this->saveTransfEntradaCaixa($movimentacao);
         }
 
-        // 62 - ENTRADA POR CARTÃO DE CRÉDITO
-        if ($movimentacao->tipoLancto->getCodigo() === 63 && !$movimentacao->getId()) {
-            return $this->saveEntradaCartaoDeCreditoOuDebito($movimentacao);
-        }
-
-        // 64 - ENTRADA DE CAIXA POR TRANSF. BANCÁRIA
-        if ($movimentacao->tipoLancto->getCodigo() === 64 && !$movimentacao->getId()) {
-            return $this->saveEntradaDeCaixaPorTransfBancaria($movimentacao);
+        // 63 - ENTRADA POR CARTÃO DE CRÉDITO OU DÉBITO
+        if ($movimentacao->tipoLancto->getCodigo() === 63) {
+            return $this->saveEntradaEmCaixaPorCartaoDeCreditoOuDebito($movimentacao);
         }
 
         if ($this->iniciarSaveDeParcelamento($movimentacao)) {
@@ -587,9 +605,9 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
         // else
 
-        if (!in_array($movimentacao->categoria->codigo, [101, 102], true)) {
+        $categoriasIds = $this->appConfigBusiness->getValor('categoria_ids_saveTransfEntradaCaixa.json') ?? [101, 102];
+        if (!in_array($movimentacao->categoria->codigo, $categoriasIds, true)) {
             throw new ViewException('TRANSFERÊNCIA DE ENTRADA DE CAIXA precisa ser lançada a partir de uma movimentação de categoria 1.01 ou 1.02');
-
         }
 
         $cadeia = new Cadeia();
@@ -797,68 +815,42 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @return Movimentacao
      * @throws ViewException
      */
-    private function saveEntradaCartaoDeCreditoOuDebito(Movimentacao $movimentacao): Movimentacao
+    private function saveEntradaEmCaixaPorCartaoDeCreditoOuDebito(Movimentacao $movimentacao): Movimentacao
     {
         if (!$movimentacao->carteira || !$movimentacao->operadoraCartao) {
             throw new ViewException('Movimentação de cartão precisa ter carteira e operadora de cartão');
         }
 
+        $categoriasIds = $this->appConfigBusiness->getValor('categoria_ids_saveEntradaCartaoDeCreditoOuDebito.json') ?? [101, 102, 110];
+        if (!in_array($movimentacao->categoria->codigo, $categoriasIds, true)) {
+            $implode = implode(', ', $categoriasIds);
+            throw new ViewException('Entrada por cartão precisa ser lançada a partir movimentações de categorias ' . $implode);
+        }
+
         $this->getDoctrine()->beginTransaction();
+        $ehDebito = $movimentacao->modo->codigo === 10;
+        if ($ehDebito) {
+            $this->saveEntradaPorCartaoDebito($movimentacao);
+        } else {
+            $this->saveEntradaPorCartaoCredito($movimentacao);
+        }
+        $this->getDoctrine()->commit();
+
+        return $movimentacao;
+    }
+
+
+    private function saveEntradaPorCartaoDebito(Movimentacao $movimentacao): void
+    {
+        if ($movimentacao->getId()) {
+            $this->editaEntradaPorCartaoDebito($movimentacao);
+            return;
+        }
 
         /** @var Categoria $categ291 */
         $categ291 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 291]);
         /** @var Categoria $categ191 */
         $categ191 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 191]);
-
-        $faturaOrdem = null;
-        if ($movimentacao->fatura && !$movimentacao->faturaOrdem) {
-            $faturaOrdem = 1;
-        }
-
-        $ehDebito = $movimentacao->modo->codigo === 10;
-
-        $qtdeParcelas = $ehDebito ? 1 : $movimentacao->qtdeParcelas;
-        $cadeiaQtde = $qtdeParcelas + 2; // 101 + 291 + 191s...
-
-        // Está editando
-        if ($movimentacao->getId()) {
-
-            $movs = $movimentacao->cadeia->movimentacoes;
-            $outraMov = null;
-            /** @var Movimentacao $mov */
-            foreach ($movs as $mov) {
-                if ($mov->getId() !== $movimentacao->getId()) {
-                    $mov->descricao = $movimentacao->descricao;
-                    $mov->operadoraCartao = $movimentacao->operadoraCartao;
-                    $mov->bandeiraCartao = $movimentacao->bandeiraCartao;
-                    $mov->numCartao = $movimentacao->numCartao;
-                    $mov->fatura = $movimentacao->fatura;
-                    $mov->categoria = $categ291;
-                    $mov->modo = $movimentacao->modo;
-                    $mov->valor = $movimentacao->valor;
-                    $mov->valorTotal = $movimentacao->valorTotal;
-                    $mov->centroCusto = $movimentacao->centroCusto;
-                    $mov->dtMoviment = clone($movimentacao->dtMoviment);
-                    $mov->dtVencto = clone($movimentacao->dtVencto);
-                    $mov->dtVenctoEfetiva = clone($movimentacao->dtVenctoEfetiva);
-                    $mov->dtPagto = clone($movimentacao->dtPagto);
-                    $mov->cadeiaQtde = $cadeiaQtde;
-                    $mov->jsonData = $movimentacao->jsonData;
-                    parent::save($mov);
-                }
-            }
-
-            /** @var Movimentacao $movimentacao */
-            $movimentacao = parent::save($movimentacao);
-
-            $this->getDoctrine()->commit();
-            return $movimentacao;
-        }
-        // else
-
-        if (!in_array($movimentacao->categoria->codigo, [101, 102, 110], true)) {
-            throw new ViewException('Entrada por cartão precisa ser lançada a partir de uma movimentação de categorias 1.01, 1.02 ou 1.10');
-        }
 
         $cadeia = new Cadeia();
         $cadeia->fechada = true;
@@ -866,89 +858,176 @@ class MovimentacaoEntityHandler extends EntityHandler
         /** @var Cadeia $cadeia */
         $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
 
+        $cadeiaQtde = 3; // 101 + 291 + 191
+
         $movimentacao->cadeia = $cadeia;
         $movimentacao->cadeiaOrdem = 1;
         $movimentacao->cadeiaQtde = $cadeiaQtde;
+        $movimentacao->carteiraDestino = $movimentacao->operadoraCartao->carteira;
+        parent::save($movimentacao);
 
-
-        $moviment291 = new Movimentacao();
-        $moviment291->tipoLancto = $movimentacao->tipoLancto;
-        $moviment291->fatura = $movimentacao->fatura;
-        $moviment291->faturaOrdem = $faturaOrdem ? ++$faturaOrdem : null;
+        /** @var Movimentacao $moviment291 */
+        $moviment291 = $this->cloneEntityId($movimentacao);
         $moviment291->cadeia = $cadeia;
         $moviment291->cadeiaOrdem = 2;
-        $moviment291->cadeiaQtde = $cadeiaQtde;
-        $moviment291->descricao = $movimentacao->descricao;
-        $moviment291->operadoraCartao = $movimentacao->operadoraCartao;
-        $moviment291->bandeiraCartao = $movimentacao->bandeiraCartao;
-        $moviment291->numCartao = $movimentacao->numCartao;
+        $moviment291->cadeiaQtde = 3;
         $moviment291->categoria = $categ291;
-        $moviment291->centroCusto = $movimentacao->centroCusto;
-        $moviment291->modo = $movimentacao->modo;
-        $moviment291->carteira = $movimentacao->carteira;
-        $moviment291->carteiraDestino = $movimentacao->operadoraCartao->carteira;
         $moviment291->status = 'REALIZADA';
-        $moviment291->valor = $movimentacao->valor;
-        $moviment291->descontos = $movimentacao->descontos;
-        $moviment291->acrescimos = $movimentacao->acrescimos;
-        $moviment291->valorTotal = $movimentacao->valorTotal;
-        $moviment291->dtMoviment = clone($movimentacao->dtMoviment);
-        $moviment291->dtVencto = clone($movimentacao->dtMoviment);
-        $moviment291->dtVenctoEfetiva = clone($movimentacao->dtMoviment);
-        $moviment291->dtPagto = clone($movimentacao->dtMoviment);
 
-        $moviment291->tipoLancto = $movimentacao->tipoLancto;
-        $moviment291->jsonData = $movimentacao->jsonData;
         parent::save($moviment291);
 
-        $primeiraDtVencto = $ehDebito ?
-            (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1D')) :
-            (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1M'));
+        $moviment191 = $this->cloneEntityId($movimentacao);
+        $moviment191->cadeia = $cadeia;
+        $moviment191->cadeiaOrdem = 3;
+        $moviment291->cadeiaQtde = 3;
+        $moviment191->carteira = $movimentacao->carteiraDestino;
+        $moviment191->carteiraDestino = $movimentacao->carteira;
+        $moviment191->categoria = $categ191;
+        $moviment191->status = 'ABERTA'; // se torna 'REALIZADA' na consolidação do extrato
+
+        // Em débito, pode ser no próximo dia útil, ou 2 dias depois.
+        $moviment191->dtVencto =
+            (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1D'));
+        $moviment191->dtVenctoEfetiva = clone($moviment191->dtVencto);
+        parent::save($moviment191);
+    }
+
+    private function editaEntradaPorCartaoDebito(Movimentacao $movimentacao): void
+    {
+        /** @var Categoria $categ291 */
+        $categ291 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 291]);
+        /** @var Categoria $categ191 */
+        $categ191 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 191]);
+
+        $movimentacao->parcelaNum = null;
+        $movimentacao->qtdeParcelas = null;
+        $movimentacao->parcelamento = false;
+        $movimentacao->carteiraDestino = $movimentacao->operadoraCartao->carteira;
+        parent::save($movimentacao);
+
+        $repoMovimentacao = $this->doctrine->getRepository(Movimentacao::class);
+
+        $moviment291 = $repoMovimentacao->findOneBy(['cadeia' => $movimentacao->cadeia, 'categoria' => $categ291]);
+        $moviment291->parcelaNum = null;
+        $moviment291->qtdeParcelas = null;
+        $moviment291->parcelamento = false;
+        $this->copiaCamposParaEdicaoDeMovimentacaoPorCartao($movimentacao, $moviment291);
+        parent::save($moviment291);
+
+        $moviment191 = $repoMovimentacao->findOneBy(['cadeia' => $movimentacao->cadeia, 'categoria' => $categ191]);
+        $this->copiaCamposParaEdicaoDeMovimentacaoPorCartao($movimentacao, $moviment191);
+        $moviment191->parcelaNum = null;
+        $moviment191->qtdeParcelas = null;
+        $moviment191->parcelamento = false;
+        $moviment191->carteira = $movimentacao->carteiraDestino;
+        $moviment191->carteiraDestino = $movimentacao->carteira;
+        $moviment191->dtVencto =
+            (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1D'));
+        $moviment191->dtVenctoEfetiva = clone($moviment191->dtVencto);
+        parent::save($moviment191);
+    }
+
+    private function copiaCamposParaEdicaoDeMovimentacaoPorCartao(
+        Movimentacao $movimentacaoOriginal,
+        Movimentacao $outraMovimentacaoDaCadeia
+    ): void
+    {
+        $outraMovimentacaoDaCadeia->descricao = $movimentacaoOriginal->descricao;
+        $outraMovimentacaoDaCadeia->valor = $movimentacaoOriginal->valor;
+        $outraMovimentacaoDaCadeia->descontos = $movimentacaoOriginal->descontos;
+        $outraMovimentacaoDaCadeia->acrescimos = $movimentacaoOriginal->acrescimos;
+        $outraMovimentacaoDaCadeia->valorTotal = $movimentacaoOriginal->valorTotal;
+        $outraMovimentacaoDaCadeia->centroCusto = $movimentacaoOriginal->centroCusto;
+        $outraMovimentacaoDaCadeia->dtMoviment = $movimentacaoOriginal->dtMoviment;
+        $outraMovimentacaoDaCadeia->dtVencto = $movimentacaoOriginal->dtVencto;
+        $outraMovimentacaoDaCadeia->operadoraCartao = $movimentacaoOriginal->operadoraCartao;
+        $outraMovimentacaoDaCadeia->bandeiraCartao = $movimentacaoOriginal->bandeiraCartao;
+        $outraMovimentacaoDaCadeia->sacadoDocumento = $movimentacaoOriginal->sacadoDocumento;
+        $outraMovimentacaoDaCadeia->sacadoNome = $movimentacaoOriginal->sacadoNome;
+        $outraMovimentacaoDaCadeia->cedenteDocumento = $movimentacaoOriginal->cedenteDocumento;
+        $outraMovimentacaoDaCadeia->cedenteNome = $movimentacaoOriginal->cedenteNome;
+    }
+
+
+    private function saveEntradaPorCartaoCredito(Movimentacao $movimentacao): void
+    {
+        if ($movimentacao->getId()) {
+            throw new ViewException('Não é possível editar movimentação de entrada por cartão de crédito');
+            return;
+        }
+
+        /** @var Categoria $categ291 */
+        $categ291 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 291]);
+        /** @var Categoria $categ191 */
+        $categ191 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 191]);
+
+        $fatura = new Fatura();
+        $fatura->dtFatura = $movimentacao->dtMoviment;
+        $fatura->descricao = 'ENTRADA POR CARTÃO DE CRÉDITO';
+        $fatura->fechada = true;
+        $cadeia = $this->faturaEntityHandler->save($fatura);
+
+        $cadeia = new Cadeia();
+        $cadeia->fechada = true;
+        $cadeia->vinculante = true;
+        /** @var Cadeia $cadeia */
+        $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
+
+        $qtdeParcelas = $movimentacao->qtdeParcelas;
+        $cadeiaQtde = 2 + $qtdeParcelas; // (101 + 291) + 191s...
+
+        $movimentacao->fatura = $fatura;
+        $movimentacao->cadeia = $cadeia;
+        $movimentacao->cadeiaOrdem = 1;
+        $movimentacao->cadeiaQtde = $cadeiaQtde;
+        $movimentacao->carteiraDestino = $movimentacao->operadoraCartao->carteira;
+
+        /** @var Movimentacao $moviment291 */
+        $moviment291 = $this->cloneEntityId($movimentacao);
+        $moviment291->cadeia = $cadeia;
+        $moviment291->cadeiaOrdem = 2;
+        $moviment291->fatura = $fatura;
+        $moviment291->faturaOrdem = 2;
+        $moviment291->categoria = $categ291;
+        $moviment291->status = 'REALIZADA';
+
+        parent::save($moviment291);
+
+        $primeiraDtVencto = (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1M'));
 
         $parcelas = DecimalUtils::gerarParcelas($movimentacao->valor, $qtdeParcelas);
 
         for ($i = 1; $i <= $qtdeParcelas; $i++) {
-            $moviment191 = new Movimentacao();
-            $moviment191->tipoLancto = $movimentacao->tipoLancto;
-            $moviment191->fatura = $movimentacao->fatura;
+            $moviment191 = $this->cloneEntityId($movimentacao);
             $moviment191->cadeia = $cadeia;
-            $moviment191->qtdeParcelas = $qtdeParcelas;
+            $moviment191->cadeiaOrdem = $i + 1;
+            $moviment191->fatura = $fatura;
+            $moviment191->carteira = $movimentacao->carteiraDestino;
+            $moviment191->carteiraDestino = $movimentacao->carteira;
             $moviment191->parcelamento = true;
             $moviment191->parcelaNum = $i;
-            $moviment191->cadeiaOrdem = 2 + $i;
             $moviment191->faturaOrdem = $faturaOrdem ? ++$faturaOrdem : null;
-            $moviment191->cadeiaQtde = $cadeiaQtde;
-            $moviment191->descricao = $movimentacao->descricao;
-            $moviment191->operadoraCartao = $movimentacao->operadoraCartao;
-            $moviment191->bandeiraCartao = $movimentacao->bandeiraCartao;
-            $moviment191->numCartao = $movimentacao->numCartao;
             $moviment191->categoria = $categ191;
-            $moviment191->centroCusto = $movimentacao->centroCusto;
-            $moviment191->modo = $movimentacao->modo;
-            $moviment191->operadoraCartao = $movimentacao->operadoraCartao;
-            $moviment191->carteira = $movimentacao->operadoraCartao->carteira;
-            $moviment191->carteiraDestino = $movimentacao->carteira; // a oposta
             $moviment191->status = 'ABERTA'; // se torna 'REALIZADA' na consolidação do extrato
+
+            // Aqui é variável (sendo débito ou crédito).
+            // Em débito, pode ser no próximo dia útil, ou 2 dias depois.
+            // Em crédito, pode variar mais.
+            // E ainda tem a questão das antecipações, se estão ativadas ou não, etc.
+            // Então, lá na carteira da operadora do cartão, não vai bater exatamente, até que seja
+            // consolidado o extrato e tudo esteja corrigido (datas e status, que vai para o REALIZADA).
+            // 
             $moviment191->valor = $parcelas[$i - 1];
             $moviment191->valorTotal = $parcelas[$i - 1];
-
-            $moviment191->dtMoviment = clone($movimentacao->dtMoviment);
-            $moviment191->dtVencto = $i === 1 ? (clone $primeiraDtVencto) :
+            $moviment191->dtVencto =
                 (clone $movimentacao->dtMoviment)->add(new \DateInterval('P' . ($i) . 'M'));
             $moviment191->dtVenctoEfetiva = clone($moviment191->dtVencto);
-
-            $moviment191->tipoLancto = $movimentacao->tipoLancto;
-            $moviment191->jsonData = $movimentacao->jsonData;
             parent::save($moviment191);
         }
 
-        // $movimentacao->operadoraCartao = null; // remove
         parent::save($movimentacao);
-        $this->getDoctrine()->commit();
-
-        return $movimentacao;
     }
-
+    
 
     /**
      * Tratamento para casos de movimentação em cadeia.
