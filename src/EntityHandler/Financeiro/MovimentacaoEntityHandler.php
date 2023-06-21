@@ -530,6 +530,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         /** @var Movimentacao $movimentOposta */
         $movimentOposta = $this->cloneEntityId($movimentacao);
+        $movimentOposta->cadeia = $cadeia;
         $movimentOposta->carteira = $movimentacao->carteiraDestino;
         $movimentOposta->carteiraDestino = $movimentacao->carteira;
         $movimentOposta->cadeiaOrdem = $cadeiaOrdemOposta;
@@ -1299,6 +1300,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $parcela->cadeiaQtde = count($dadosParcelamento);
                 $parcela->cadeiaOrdem = $i + 1;
                 $parcela->dtVencto = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVencto']);
+                $parcela->dtVenctoEfetiva = null;
                 $parcela->valor = $dadosParcelamento[$i]['valor'];
                 $parcela->documentoNum = $dadosParcelamento[$i]['documentoNum'] ?? null;
                 $parcela->chequeNumCheque = $dadosParcelamento[$i]['chequeNumCheque'] ?? null;
