@@ -177,7 +177,7 @@ class ProdutoEntityHandler extends EntityHandler
         }
 
         for ($i = 1; $i <= $qtdeFotosMinima; $i++) {
-            if ($produto->getImagens() && $produto->getImagens()->count() >= $i) {
+            if ($produto->getImagens() && count($produto->getImagens()) >= $i) {
                 $preench += $pesos['imagem'] ?? 1;
             } else {
                 $camposFaltantes .= 'Imagem ' . $i . ' (1%)|';
