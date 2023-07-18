@@ -966,6 +966,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $fatura->dtFatura = $movimentacao->dtMoviment;
         $fatura->descricao = 'ENTRADA POR CARTÃO DE CRÉDITO';
         $fatura->fechada = true;
+        $fatura->dtVencto = $movimentacao->dtMoviment; // tanto faz neste caso        
         $cadeia = $this->faturaEntityHandler->save($fatura);
 
         $cadeia = new Cadeia();
@@ -978,6 +979,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $cadeiaQtde = 2 + $qtdeParcelas; // (101 + 291) + 191s...
 
         $movimentacao->fatura = $fatura;
+        $movimentacao->faturaOrdem = 1;
         $movimentacao->cadeia = $cadeia;
         $movimentacao->cadeiaOrdem = 1;
         $movimentacao->cadeiaQtde = $cadeiaQtde;
@@ -1001,13 +1003,13 @@ class MovimentacaoEntityHandler extends EntityHandler
         for ($i = 1; $i <= $qtdeParcelas; $i++) {
             $moviment191 = $this->cloneEntityId($movimentacao);
             $moviment191->cadeia = $cadeia;
-            $moviment191->cadeiaOrdem = $i + 1;
+            $moviment191->cadeiaOrdem = $i + 2;
             $moviment191->fatura = $fatura;
             $moviment191->carteira = $movimentacao->carteiraDestino;
             $moviment191->carteiraDestino = $movimentacao->carteira;
             $moviment191->parcelamento = true;
             $moviment191->parcelaNum = $i;
-            $moviment191->faturaOrdem = $faturaOrdem ? ++$faturaOrdem : null;
+            $moviment191->faturaOrdem = $i + 2;
             $moviment191->categoria = $categ191;
             $moviment191->status = 'ABERTA'; // se torna 'REALIZADA' na consolidação do extrato
 
