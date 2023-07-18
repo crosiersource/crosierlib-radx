@@ -962,31 +962,34 @@ class MovimentacaoEntityHandler extends EntityHandler
         /** @var Categoria $categ191 */
         $categ191 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 191]);
 
-        $fatura = new Fatura();
+        $fatura = $movimentacao->fatura ?? new Fatura();
         $fatura->dtFatura = $movimentacao->dtMoviment;
         $fatura->descricao = 'ENTRADA POR CARTÃO DE CRÉDITO';
         $fatura->fechada = true;
         $fatura->dtVencto = $movimentacao->dtMoviment; // tanto faz neste caso        
-        $cadeia = $this->faturaEntityHandler->save($fatura);
+        $fatura = $this->faturaEntityHandler->save($fatura);
 
         $cadeia = new Cadeia();
         $cadeia->fechada = true;
         $cadeia->vinculante = true;
         /** @var Cadeia $cadeia */
-        $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
+        $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia, false);
 
         $qtdeParcelas = $movimentacao->qtdeParcelas;
         $cadeiaQtde = 2 + $qtdeParcelas; // (101 + 291) + 191s...
 
-        $movimentacao->fatura = $fatura;
+        $fatura->addMovimentacao($movimentacao);
         $movimentacao->faturaOrdem = 1;
         $movimentacao->cadeia = $cadeia;
         $movimentacao->cadeiaOrdem = 1;
         $movimentacao->cadeiaQtde = $cadeiaQtde;
         $movimentacao->carteiraDestino = $movimentacao->operadoraCartao->carteira;
 
+        parent::save($movimentacao, false);
+        
         /** @var Movimentacao $moviment291 */
         $moviment291 = $this->cloneEntityId($movimentacao);
+        $fatura->addMovimentacao($moviment291);
         $moviment291->cadeia = $cadeia;
         $moviment291->cadeiaOrdem = 2;
         $moviment291->fatura = $fatura;
@@ -994,24 +997,23 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment291->categoria = $categ291;
         $moviment291->status = 'REALIZADA';
 
-        parent::save($moviment291);
+        parent::save($moviment291, false);
 
         $primeiraDtVencto = (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1M'));
-
         $parcelas = DecimalUtils::gerarParcelas($movimentacao->valor, $qtdeParcelas);
 
         for ($i = 1; $i <= $qtdeParcelas; $i++) {
             $moviment191 = $this->cloneEntityId($movimentacao);
             $moviment191->cadeia = $cadeia;
             $moviment191->cadeiaOrdem = $i + 2;
-            $moviment191->fatura = $fatura;
+            $fatura->addMovimentacao($moviment191);
             $moviment191->carteira = $movimentacao->carteiraDestino;
             $moviment191->carteiraDestino = $movimentacao->carteira;
             $moviment191->parcelamento = true;
             $moviment191->parcelaNum = $i;
             $moviment191->faturaOrdem = $i + 2;
             $moviment191->categoria = $categ191;
-            $moviment191->status = 'ABERTA'; // se torna 'REALIZADA' na consolidação do extrato
+            $moviment191->status = 'REALIZADA';
 
             // Aqui é variável (sendo débito ou crédito).
             // Em débito, pode ser no próximo dia útil, ou 2 dias depois.
@@ -1025,10 +1027,10 @@ class MovimentacaoEntityHandler extends EntityHandler
             $moviment191->dtVencto =
                 (clone $movimentacao->dtMoviment)->add(new \DateInterval('P' . ($i) . 'M'));
             $moviment191->dtVenctoEfetiva = clone($moviment191->dtVencto);
-            parent::save($moviment191);
+            parent::save($moviment191, false);
         }
 
-        parent::save($movimentacao);
+        $this->faturaEntityHandler->save($fatura);
     }
     
 
