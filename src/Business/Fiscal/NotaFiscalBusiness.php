@@ -335,6 +335,9 @@ class NotaFiscalBusiness
             foreach ($venda->itens as $vendaItem) {
                 if ($vendaItem->produto && $vendaItem->produto->composicao === 'S') {
                     $qtdeItens = $vendaItem->produto->composicoes->count();
+                    if ($qtdeItens < 1) {
+                        throw new ViewException('Produto de composição mas sem nenhum item. Verifique!');
+                    }
                     $descontoPorItemMock = 0.0;
                     if ($vendaItem->desconto) {
                         $descontoPorItemMock = bcdiv($vendaItem->desconto, $qtdeItens, 2);

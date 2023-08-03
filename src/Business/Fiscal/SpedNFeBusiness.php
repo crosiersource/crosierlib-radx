@@ -429,7 +429,7 @@ class SpedNFeBusiness
                 ]);
 
                 if (!$r || strtoupper(StringUtils::removerAcentos($r->municipioNome)) !== strtoupper(StringUtils::removerAcentos($notaFiscal->transpCidade))) {
-                    throw new ViewException('Município inválido: [' . $notaFiscal->transpCidade . '-' . $notaFiscal->transpEstado . ']');
+                    throw new ViewException('Município da transportadora inválido : [' . $notaFiscal->transpCidade . '-' . $notaFiscal->transpEstado . ']');
                 }
 
 
