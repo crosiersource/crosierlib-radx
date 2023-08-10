@@ -88,6 +88,7 @@ class SpedNFeBusiness
      */
     public function gerarXML(NotaFiscal $notaFiscal): NotaFiscal
     {
+        $this->logger->info('Iniciando geração do XML para a NF ' . $notaFiscal->getNumero() . ' (' . $notaFiscal->getSerie() . ') do emitente ' . $notaFiscal->getDocumentoEmitente());
         /** @var AppConfigRepository $repoAppConfig */
         $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
         $layoutXMLpadrao = $repoAppConfig->findByChave('fiscal.layoutPadraoXML');
@@ -319,6 +320,9 @@ class SpedNFeBusiness
 
         /** @var NotaFiscalItem $nfItem */
         foreach ($notaFiscal->getItens() as $nfItem) {
+            
+            $this->logger->info('Gerando item ' . $nfItem->ordem . ' (' . $nfItem->codigo . ' - ' . $nfItem->descricao . ')');
+            
             $itemXML = $nfe->infNFe->addChild('det');
             $itemXML['nItem'] = $nfItem->ordem;
             $itemXML->prod->cProd = $nfItem->codigo;
@@ -344,8 +348,12 @@ class SpedNFeBusiness
             $itemXML->prod->uTrib = $nfItem->unidade;
             $itemXML->prod->qTrib = $nfItem->qtde;
             $itemXML->prod->vUnTrib = number_format($nfItem->valorUnit, 2, '.', '');
+            $this->logger->info('Verificando desconto do item (' . $nfItem->valorDesconto . ')');
             if (bccomp($nfItem->valorDesconto, 0.00, 2)) {
                 $itemXML->prod->vDesc = number_format(abs($nfItem->valorDesconto), 2, '.', '');
+                $this->logger->info('Desconto no XML: ' . $itemXML->prod->vDesc);
+            } else {
+                $this->logger->info('Item sem Desconto');
             }
 
             if ($rateioFrete) {
