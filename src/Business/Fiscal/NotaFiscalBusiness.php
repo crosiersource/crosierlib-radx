@@ -87,23 +87,6 @@ class NotaFiscalBusiness
      */
     private NotaFiscalRepository $repoNotaFiscal;
 
-    /**
-     * NotaFiscalBusiness constructor.
-     * @param Connection $conn
-     * @param LoggerInterface $logger
-     * @param SpedNFeBusiness $spedNFeBusiness
-     * @param AppConfigEntityHandler $appConfigEntityHandler
-     * @param NotaFiscalEntityHandler $notaFiscalEntityHandler
-     * @param NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler
-     * @param NotaFiscalVendaEntityHandler $notaFiscalVendaEntityHandler
-     * @param NotaFiscalHistoricoEntityHandler $notaFiscalHistoricoEntityHandler
-     * @param MovimentacaoEntityHandler $movimentacaoEntityHandler
-     * @param NFeUtils $nfeUtils
-     * @param SyslogBusiness $syslog
-     * @param NotaFiscalRepository $repoNotaFiscal
-     * @param ClienteEntityHandler $clienteEntityHandler
-     * @param VendaEntityHandler $vendaEntityHandler
-     */
     public function __construct(Connection $conn,
                                 LoggerInterface $logger,
                                 SpedNFeBusiness $spedNFeBusiness,
@@ -129,7 +112,7 @@ class NotaFiscalBusiness
         $this->notaFiscalHistoricoEntityHandler = $notaFiscalHistoricoEntityHandler;
         $this->movimentacaoEntityHandler = $movimentacaoEntityHandler;
         $this->nfeUtils = $nfeUtils;
-        $this->syslog = $syslog;
+        $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
         $this->repoNotaFiscal = $repoNotaFiscal;
         $this->clienteEntityHandler = $clienteEntityHandler;
         $this->vendaEntityHandler = $vendaEntityHandler;
@@ -159,10 +142,10 @@ class NotaFiscalBusiness
     public function saveNotaFiscalVenda(Venda $venda, NotaFiscal $notaFiscal, bool $alterouTipo): ?NotaFiscal
     {
         try {
-            $this->logger->info('saveNotaFiscalVenda - Início');
-            $this->logger->info('Venda (id): ' . $venda->getId());
-            $this->logger->info('Venda (dtVenda): ' . $venda->dtVenda->format('d/m/Y H:i:s'));
-            $this->logger->info('Venda (valorTotal): ' . $venda->valorTotal);
+            $this->syslog->info('saveNotaFiscalVenda - Início');
+            $this->syslog->info('Venda (id): ' . $venda->getId());
+            $this->syslog->info('Venda (dtVenda): ' . $venda->dtVenda->format('d/m/Y H:i:s'));
+            $this->syslog->info('Venda (valorTotal): ' . $venda->valorTotal);
             
             $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
 
@@ -264,7 +247,7 @@ class NotaFiscalBusiness
                             try {
                                 $endereco_consultado = $this->consultarCNPJ($notaFiscal->documentoDestinatario, $endereco_faturamento['estado']);
                             } catch (ViewException $e) {
-                                $this->logger->error('Erro ao consultarCNPJ para o CNPJ ' . $notaFiscal->documentoDestinatario . ' de ' . $endereco_faturamento['estado']);
+                                $this->syslog->error('Erro ao consultarCNPJ para o CNPJ ' . $notaFiscal->documentoDestinatario . ' de ' . $endereco_faturamento['estado']);
                             }
 
                             if (!isset($endereco_consultado['dados'])) {
@@ -332,18 +315,18 @@ class NotaFiscalBusiness
             $ordem = 1;
 
             $itensNaNota = [];
-            $this->logger->info('Transformando itens de composição para itens únicos na nota');
+            $this->syslog->info('Transformando itens de composição para itens únicos na nota');
             /** @var VendaItem $vendaItem */
             foreach ($venda->itens as $vendaItem) {
                 if ($vendaItem->produto && $vendaItem->produto->composicao === 'S') {
-                    $this->logger->info('Item de composição encontrado: ' . $vendaItem->produto->descricao);
+                    $this->syslog->info('Item de composição encontrado: ' . $vendaItem->produto->descricao);
                     $qtdeItens = $vendaItem->produto->composicoes->count();
                     if ($qtdeItens < 1) {
                         throw new ViewException('Produto de composição mas sem nenhum item. Verifique!');
                     }
                     $descontoPorItemMock = 0.0;
                     if ($vendaItem->desconto) {
-                        $this->logger->info('Desconto encontrado no item de composição: ' . $vendaItem->desconto);
+                        $this->syslog->info('Desconto encontrado no item de composição: ' . $vendaItem->desconto);
                         $descontoPorItemMock = bcdiv($vendaItem->desconto, $qtdeItens, 2);
                     }
                     $totalDescontoMock = 0.0;
@@ -354,7 +337,7 @@ class NotaFiscalBusiness
                         $mockItem->qtde = bcmul($vendaItem->qtde, $produtoComposicao->qtde, 3);
                         $mockItem->precoVenda = $produtoComposicao->precoComposicao;
                         $mockItem->desconto = $descontoPorItemMock;
-                        $this->logger->info('Desconto dividido: ' . $descontoPorItemMock);
+                        $this->syslog->info('Desconto dividido: ' . $descontoPorItemMock);
                         $totalDescontoMock = bcadd($totalDescontoMock, $descontoPorItemMock, 2);
                         $itensNaNota[] = $mockItem;
                     }
@@ -366,7 +349,7 @@ class NotaFiscalBusiness
                         $mockItem->desconto = bcadd($mockItem->desconto, bcsub($vendaItem->desconto, $totalDescontoMock, 2), 2);
                     }
                 } else {
-                    $this->logger->info('Item não é composição: ' . $vendaItem->produto->descricao);
+                    $this->syslog->info('Item não é composição: ' . $vendaItem->produto->descricao);
                     $itensNaNota[] = $vendaItem;
                 }
             }
@@ -377,11 +360,11 @@ class NotaFiscalBusiness
             
             // Atenção, aqui tem que verificar a questão do arredondamento
             if ($venda->subtotal > 0.0) {
-                $this->logger->info('Calculando fator de desconto pela diferença entre subtotal e valor total');
+                $this->syslog->info('Calculando fator de desconto pela diferença entre subtotal e valor total');
                 $fatorDesconto = 1 - round(bcdiv($venda->valorTotal, $venda->subtotal, 6), 6);
-                $this->logger->info('Fator de desconto: ' . $fatorDesconto);
+                $this->syslog->info('Fator de desconto: ' . $fatorDesconto);
             } else {
-                $this->logger->info('Sem fator de desconto pois subtotal é zero');
+                $this->syslog->info('Sem fator de desconto pois subtotal é zero');
                 $fatorDesconto = 1;
             }
 
@@ -394,8 +377,8 @@ class NotaFiscalBusiness
             foreach ($itensNaNota as $vendaItem) {
                 if ($vendaItem->desconto > 0) {
                     $algumItemTemDesconto = true;
-                    $this->logger->info('Item tem desconto: ' . $vendaItem->produto->descricao);
-                    $this->logger->info('Vendas podem ter descontos globais, mas NFs não. Se uma venda tem apenas um desconto global e não nos itens, então o desconto global é rateado entre todos');
+                    $this->syslog->info('Item tem desconto: ' . $vendaItem->produto->descricao);
+                    $this->syslog->info('Vendas podem ter descontos globais, mas NFs não. Se uma venda tem apenas um desconto global e não nos itens, então o desconto global é rateado entre todos');
                     break;
                 }
             }
@@ -407,7 +390,7 @@ class NotaFiscalBusiness
 
             /** @var VendaItem $vendaItem */
             foreach ($itensNaNota as $vendaItem) {
-                $this->logger->info('Processando item da venda: ' . $vendaItem->produto->descricao);
+                $this->syslog->info('Processando item da venda: ' . $vendaItem->produto->descricao);
 
                 $nfItem = new NotaFiscalItem();
                 $nfItem->notaFiscal = $notaFiscal;
@@ -426,12 +409,12 @@ class NotaFiscalBusiness
                 $nfItem->valorTotal = $valorTotalItem;
 
                 if (!$algumItemTemDesconto) {
-                    $this->logger->info('Calculando desconto no item com base no fator de desconto:');
+                    $this->syslog->info('Calculando desconto no item com base no fator de desconto:');
                     $vDesconto = round(bcmul($valorTotalItem, $fatorDesconto, 4), 2);
-                    $this->logger->info('Desconto no item: ' . $vDesconto);
+                    $this->syslog->info('Desconto no item: ' . $vDesconto);
                 } else {
                     $vDesconto = bcmul($vendaItem->desconto, 1, 2); // joga p/ string certo
-                    $this->logger->info('Item com desconto específico: ' . $vDesconto);
+                    $this->syslog->info('Item com desconto específico: ' . $vDesconto);
                 }
 
                 $nfItem->valorDesconto = $vDesconto;
@@ -516,10 +499,10 @@ class NotaFiscalBusiness
                 }
 
                 $notaFiscal->addItem($nfItem);
-                $this->logger->info('Valor Unitário do item: ' . $nfItem->valorUnit);
-                $this->logger->info('Qtde: ' . $nfItem->qtde);
-                $this->logger->info('Subtotal do item: ' . $nfItem->subtotal);
-                $this->logger->info('Total do item: ' . $nfItem->valorTotal);
+                $this->syslog->info('Valor Unitário do item: ' . $nfItem->valorUnit);
+                $this->syslog->info('Qtde: ' . $nfItem->qtde);
+                $this->syslog->info('Subtotal do item: ' . $nfItem->subtotal);
+                $this->syslog->info('Total do item: ' . $nfItem->valorTotal);
                 $this->notaFiscalItemEntityHandler->save($nfItem, false);
             }
 
@@ -619,8 +602,8 @@ class NotaFiscalBusiness
             }
             return $mudou;
         } catch (\Throwable $e) {
-            $this->logger->error('handleIdeFields');
-            $this->logger->error($e->getMessage());
+            $this->syslog->error('handleIdeFields');
+            $this->syslog->error($e->getMessage());
             throw new ViewException('Erro ao gerar campos ide');
         }
     }
@@ -1318,8 +1301,8 @@ class NotaFiscalBusiness
             return $prox;
         } catch (\Exception $e) {
             $this->notaFiscalEntityHandler->getDoctrine()->rollback();
-            $this->logger->error($e);
-            $this->logger->error('Erro ao pesquisar próximo número de nota fiscal para [' . $ambiente . '] [' . $serie . '] [' . $tipoNotaFiscal . ']');
+            $this->syslog->error($e);
+            $this->syslog->error('Erro ao pesquisar próximo número de nota fiscal para [' . $ambiente . '] [' . $serie . '] [' . $tipoNotaFiscal . ']');
             throw new \RuntimeException('Erro ao pesquisar próximo número de nota fiscal para [' . $ambiente . '] [' . $serie . '] [' . $tipoNotaFiscal . ']');
         }
     }

@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Business\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Base\Municipio;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
@@ -54,22 +55,15 @@ class SpedNFeBusiness
     private ParameterBagInterface $params;
 
 
-    /**
-     * @param EntityManagerInterface $doctrine
-     * @param NotaFiscalEntityHandler $notaFiscalEntityHandler
-     * @param NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler
-     * @param NotaFiscalCartaCorrecaoEntityHandler $notaFiscalCartaCorrecaoEntityHandler
-     * @param LoggerInterface $logger
-     * @param NFeUtils $nfeUtils
-     * @param ParameterBagInterface $params
-     */
     public function __construct(EntityManagerInterface               $doctrine,
                                 NotaFiscalEntityHandler              $notaFiscalEntityHandler,
                                 NotaFiscalEventoEntityHandler        $notaFiscalEventoEntityHandler,
                                 NotaFiscalCartaCorrecaoEntityHandler $notaFiscalCartaCorrecaoEntityHandler,
                                 LoggerInterface                      $logger,
                                 NFeUtils                             $nfeUtils,
-                                ParameterBagInterface                $params)
+                                ParameterBagInterface                $params,
+                                SyslogBusiness                       $syslog
+    )
     {
         $this->doctrine = $doctrine;
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
@@ -78,6 +72,7 @@ class SpedNFeBusiness
         $this->logger = $logger;
         $this->nfeUtils = $nfeUtils;
         $this->params = $params;
+        $this->syslog = $syslog->setApp('radx')->setComponent(self::class);
     }
 
 
@@ -88,7 +83,7 @@ class SpedNFeBusiness
      */
     public function gerarXML(NotaFiscal $notaFiscal): NotaFiscal
     {
-        $this->logger->info('Iniciando geração do XML para a NF ' . $notaFiscal->getNumero() . ' (' . $notaFiscal->getSerie() . ') do emitente ' . $notaFiscal->getDocumentoEmitente());
+        $this->syslog->info('Iniciando geração do XML para a NF ' . $notaFiscal->getNumero() . ' (' . $notaFiscal->getSerie() . ') do emitente ' . $notaFiscal->getDocumentoEmitente());
         /** @var AppConfigRepository $repoAppConfig */
         $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
         $layoutXMLpadrao = $repoAppConfig->findByChave('fiscal.layoutPadraoXML');
@@ -320,9 +315,9 @@ class SpedNFeBusiness
 
         /** @var NotaFiscalItem $nfItem */
         foreach ($notaFiscal->getItens() as $nfItem) {
-            
-            $this->logger->info('Gerando item ' . $nfItem->ordem . ' (' . $nfItem->codigo . ' - ' . $nfItem->descricao . ')');
-            
+
+            $this->syslog->info('Gerando item ' . $nfItem->ordem . ' (' . $nfItem->codigo . ' - ' . $nfItem->descricao . ')');
+
             $itemXML = $nfe->infNFe->addChild('det');
             $itemXML['nItem'] = $nfItem->ordem;
             $itemXML->prod->cProd = $nfItem->codigo;
@@ -348,12 +343,12 @@ class SpedNFeBusiness
             $itemXML->prod->uTrib = $nfItem->unidade;
             $itemXML->prod->qTrib = $nfItem->qtde;
             $itemXML->prod->vUnTrib = number_format($nfItem->valorUnit, 2, '.', '');
-            $this->logger->info('Verificando desconto do item (' . $nfItem->valorDesconto . ')');
+            $this->syslog->info('Verificando desconto do item (' . $nfItem->valorDesconto . ')');
             if (bccomp($nfItem->valorDesconto, 0.00, 2)) {
                 $itemXML->prod->vDesc = number_format(abs($nfItem->valorDesconto), 2, '.', '');
-                $this->logger->info('Desconto no XML: ' . $itemXML->prod->vDesc);
+                $this->syslog->info('Desconto no XML: ' . $itemXML->prod->vDesc);
             } else {
-                $this->logger->info('Item sem Desconto');
+                $this->syslog->info('Item sem Desconto');
             }
 
             if ($rateioFrete) {
@@ -444,7 +439,7 @@ class SpedNFeBusiness
                 $nfe->infNFe->transp->transporta->xMun = $r->municipioNome;
                 $nfe->infNFe->transp->transporta->UF = $r->ufSigla;
             }
-            
+
             if ($notaFiscal->transpQtdeVolumes) {
                 $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->transpQtdeVolumes, 0);
             }
@@ -464,7 +459,7 @@ class SpedNFeBusiness
             if ($notaFiscal->transpPesoBruto) {
                 $nfe->infNFe->transp->vol->pesoB = number_format($notaFiscal->transpPesoBruto, 3, '.', '');
             }
-            
+
         }
 
         if ($finNFe === 3 or $finNFe === 4) {
@@ -709,8 +704,8 @@ class SpedNFeBusiness
                             $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $resp);
                             $notaFiscal->setXmlNota($r);
                         } catch (\Exception $e) {
-                            $this->logger->error($e->getMessage());
-                            $this->logger->error('Erro no Complements::toAuthorize para $notaFiscal->id = ' . $notaFiscal->getId());
+                            $this->syslog->error($e->getMessage());
+                            $this->syslog->error('Erro no Complements::toAuthorize para $notaFiscal->id = ' . $notaFiscal->getId());
                         }
                     }
                     if (in_array($std->protNFe->infProt->cStat, ['100', '302'])) { //DENEGADAS
@@ -719,15 +714,15 @@ class SpedNFeBusiness
                     }
                     $this->notaFiscalEntityHandler->save($notaFiscal);
                 } catch (\Throwable $e) {
-                    $this->logger->error('consultaRecibo - Id: ' . $notaFiscal->getId());
-                    $this->logger->error($e->getMessage());
+                    $this->syslog->error('consultaRecibo - Id: ' . $notaFiscal->getId());
+                    $this->syslog->error($e->getMessage());
                     throw new ViewException('Erro ao setar info de transmissão síncrona');
                 }
             }
             return $notaFiscal;
         } catch (\Throwable $e) {
-            $this->logger->error('enviaNFe - id: ' . $notaFiscal->getId());
-            $this->logger->error($e->getMessage());
+            $this->syslog->error('enviaNFe - id: ' . $notaFiscal->getId());
+            $this->syslog->error($e->getMessage());
             $msg = 'Erro ao enviar a NFe';
             if ($e instanceof ValidatorException) {
                 $msg .= ' (' . $e->getMessage() . ')';
@@ -774,8 +769,8 @@ class SpedNFeBusiness
                     $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $xmlResp);
                     $notaFiscal->setXmlNota($r);
                 } catch (\Exception $e) {
-                    $this->logger->error($e->getMessage());
-                    $this->logger->error('Erro no Complements::toAuthorize para $notaFiscal->id = ' . $notaFiscal->getId());
+                    $this->syslog->error($e->getMessage());
+                    $this->syslog->error('Erro no Complements::toAuthorize para $notaFiscal->id = ' . $notaFiscal->getId());
                 }
             }
             if (in_array($cStat, ['100', '302'])) { //DENEGADAS
@@ -873,8 +868,8 @@ class SpedNFeBusiness
 
         //verifique se o evento foi processado
         if ($std->cStat != 128) {
-            $this->logger->error('Erro ao enviar carta de correção');
-            $this->logger->error('$std->cStat != 128');
+            $this->syslog->error('Erro ao enviar carta de correção');
+            $this->syslog->error('$std->cStat != 128');
         } else {
             $cStat = $std->retEvento->infEvento->cStat;
             if ($cStat == '135' || $cStat == '136') {
@@ -883,8 +878,8 @@ class SpedNFeBusiness
                 $cartaCorrecao->msgRetorno = $xml;
                 $cartaCorrecao = $this->notaFiscalCartaCorrecaoEntityHandler->save($cartaCorrecao);
             } else {
-                $this->logger->error('Erro ao enviar carta de correção');
-                $this->logger->error('cStat: ' . $cStat);
+                $this->syslog->error('Erro ao enviar carta de correção');
+                $this->syslog->error('cStat: ' . $cStat);
             }
         }
 
@@ -914,8 +909,8 @@ class SpedNFeBusiness
             return $xml[0]->nfeResultMsg->retConsCad->infCons ?? $xml[0]->consultaCadastro4Result->retConsCad->infCons ?? $xml[0]->nfeResultMsg->consultaCadastroResult->retConsCad->infCons ?? null;
         } catch (\Exception $e) {
             $msg = ExceptionUtils::treatException($e);
-            $this->logger->error($msg);
-            $this->logger->error($e->getTraceAsString());
+            $this->syslog->error($msg);
+            $this->syslog->error($e->getTraceAsString());
             throw new ViewException('Erro ao consultar o CNPJ (' . $msg . ')', 0, $e);
         }
     }
@@ -961,8 +956,8 @@ class SpedNFeBusiness
             $this->notaFiscalEntityHandler->save($notaFiscal);
 
         } catch (\Exception $e) {
-            $this->logger->error('Erro ao processar XML');
-            $this->logger->error($e->getMessage());
+            $this->syslog->error('Erro ao processar XML');
+            $this->syslog->error($e->getMessage());
             throw new ViewException('Erro ao manifestar DFe (chave: ' . $notaFiscal->chaveAcesso . ')');
         }
     }
@@ -993,8 +988,8 @@ class SpedNFeBusiness
 
 
         } catch (\Exception $e) {
-            $this->logger->error('Erro ao processar XML');
-            $this->logger->error($e->getMessage());
+            $this->syslog->error('Erro ao processar XML');
+            $this->syslog->error($e->getMessage());
             throw new ViewException('Erro ao consultaChaveDFe (chave: ' . $notaFiscal->chaveAcesso . ')');
         }
     }
@@ -1033,7 +1028,7 @@ class SpedNFeBusiness
 
                 throw new ViewException('XML inválido (fis_nf.id = ' . $nf->getId() . ')');
             } catch (\Exception $e) {
-                $this->logger->error('Erro ao fazer o parse do xml para NF (chave: ' . $nf->chaveAcesso . ')');
+                $this->syslog->error('Erro ao fazer o parse do xml para NF (chave: ' . $nf->chaveAcesso . ')');
             }
         }
 
@@ -1099,8 +1094,8 @@ class SpedNFeBusiness
                         $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $xmlResp);
                         $notaFiscal->setXmlNota($r);
                     } catch (\Exception $e) {
-                        $this->logger->error($e->getMessage());
-                        $this->logger->error('Erro no Complements::toAuthorize para $notaFiscal->id = ' . $notaFiscal->getId());
+                        $this->syslog->error($e->getMessage());
+                        $this->syslog->error('Erro no Complements::toAuthorize para $notaFiscal->id = ' . $notaFiscal->getId());
                     }
                 }
                 if (in_array($cStat, ['100', '302'])) { //DENEGADAS
@@ -1110,8 +1105,8 @@ class SpedNFeBusiness
             }
             $this->notaFiscalEntityHandler->save($notaFiscal);
         } catch (\Throwable $e) {
-            $this->logger->error('consultaRecibo - Id: ' . $notaFiscal->getId());
-            $this->logger->error($e->getMessage());
+            $this->syslog->error('consultaRecibo - Id: ' . $notaFiscal->getId());
+            $this->syslog->error($e->getMessage());
             throw new ViewException('Erro ao consultar recibo');
         }
     }
