@@ -176,18 +176,19 @@ class NotaFiscalRepository extends FilterRepository
                 $p['nome'] = $ultimo->getXNomeDestinatario();
                 $p['ie'] = $ultimo->getInscricaoEstadualDestinatario();
             }
-            /** @var NotaFiscal $ultimoComEndereco */
+            
             $ultimoComEndereco = $this->findByFiltersSimpl([['documentoDestinatario', 'EQ', $documento], ['logradouroDestinatario', 'IS_NOT_NULL']], ['updated' => 'DESC']);
+            /** @var NotaFiscal $ultimoComEndereco */
             $ultimoComEndereco = $ultimoComEndereco[0] ?? null;
             if ($ultimoComEndereco) {
-                $p['logradouro'] = $ultimoComEndereco->getLogradouroDestinatario();
-                $p['numero'] = $ultimoComEndereco->getNumeroDestinatario();
-                $p['bairro'] = $ultimoComEndereco->getBairroDestinatario();
-                $p['cidade'] = $ultimoComEndereco->getCidadeDestinatario();
-                $p['estado'] = $ultimoComEndereco->getEstadoDestinatario();
-                $p['cep'] = $ultimoComEndereco->getCepDestinatario();
-                $p['fone'] = $ultimoComEndereco->getFoneDestinatario();
-                $p['email'] = $ultimoComEndereco->getEmailDestinatario();
+                $p['logradouro'] = $ultimoComEndereco->logradouroDestinatario;
+                $p['numero'] = $ultimoComEndereco->numeroDestinatario;
+                $p['bairro'] = $ultimoComEndereco->bairroDestinatario;
+                $p['cidade'] = $ultimoComEndereco->cidadeDestinatario;
+                $p['estado'] = $ultimoComEndereco->estadoDestinatario;
+                $p['cep'] = $ultimoComEndereco->cepDestinatario;
+                $p['fone'] = $ultimoComEndereco->foneDestinatario;
+                $p['email'] = $ultimoComEndereco->emailDestinatario;
             } else {
                 $p['logradouro'] = '';
                 $p['numero'] = '';
