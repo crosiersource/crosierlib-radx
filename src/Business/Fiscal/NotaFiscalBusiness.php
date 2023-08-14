@@ -319,7 +319,7 @@ class NotaFiscalBusiness
             /** @var VendaItem $vendaItem */
             foreach ($venda->itens as $vendaItem) {
                 if ($vendaItem->produto && $vendaItem->produto->composicao === 'S') {
-                    $this->syslog->info('Item de composição encontrado: ' . $vendaItem->produto->descricao);
+                    $this->syslog->info('Item de composição encontrado: ' . $vendaItem->produto->nome);
                     $qtdeItens = $vendaItem->produto->composicoes->count();
                     if ($qtdeItens < 1) {
                         throw new ViewException('Produto de composição mas sem nenhum item. Verifique!');
@@ -349,7 +349,7 @@ class NotaFiscalBusiness
                         $mockItem->desconto = bcadd($mockItem->desconto, bcsub($vendaItem->desconto, $totalDescontoMock, 2), 2);
                     }
                 } else {
-                    $this->syslog->info('Item não é composição: ' . $vendaItem->produto->descricao);
+                    $this->syslog->info('Item não é composição: ' . $vendaItem->produto->nome);
                     $itensNaNota[] = $vendaItem;
                 }
             }
