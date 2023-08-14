@@ -83,7 +83,7 @@ class SpedNFeBusiness
      */
     public function gerarXML(NotaFiscal $notaFiscal): NotaFiscal
     {
-        $this->syslog->info('Iniciando geração do XML para a NF ' . $notaFiscal->getNumero() . ' (' . $notaFiscal->getSerie() . ') do emitente ' . $notaFiscal->getDocumentoEmitente());
+        $this->syslog->info('Iniciando geração do XML para a NF ' . $notaFiscal->numero . ' (' . $notaFiscal->serie . ') do emitente ' . $notaFiscal->documentoEmitente);
         /** @var AppConfigRepository $repoAppConfig */
         $repoAppConfig = $this->doctrine->getRepository(AppConfig::class);
         $layoutXMLpadrao = $repoAppConfig->findByChave('fiscal.layoutPadraoXML');

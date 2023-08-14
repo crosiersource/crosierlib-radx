@@ -319,7 +319,7 @@ class NotaFiscalBusiness
             /** @var VendaItem $vendaItem */
             foreach ($venda->itens as $vendaItem) {
                 if ($vendaItem->produto && $vendaItem->produto->composicao === 'S') {
-                    $this->syslog->info('Item de composição encontrado: ' . $vendaItem->produto->descricao);
+                    $this->syslog->info('Item de composição encontrado: ' . $vendaItem->produto->nome);
                     $qtdeItens = $vendaItem->produto->composicoes->count();
                     if ($qtdeItens < 1) {
                         throw new ViewException('Produto de composição mas sem nenhum item. Verifique!');
@@ -349,7 +349,7 @@ class NotaFiscalBusiness
                         $mockItem->desconto = bcadd($mockItem->desconto, bcsub($vendaItem->desconto, $totalDescontoMock, 2), 2);
                     }
                 } else {
-                    $this->syslog->info('Item não é composição: ' . $vendaItem->produto->descricao);
+                    $this->syslog->info('Item não é composição: ' . $vendaItem->produto->nome);
                     $itensNaNota[] = $vendaItem;
                 }
             }
@@ -377,7 +377,7 @@ class NotaFiscalBusiness
             foreach ($itensNaNota as $vendaItem) {
                 if ($vendaItem->desconto > 0) {
                     $algumItemTemDesconto = true;
-                    $this->syslog->info('Item tem desconto: ' . $vendaItem->produto->descricao);
+                    $this->syslog->info('Item tem desconto: ' . $vendaItem->produto->nome);
                     $this->syslog->info('Vendas podem ter descontos globais, mas NFs não. Se uma venda tem apenas um desconto global e não nos itens, então o desconto global é rateado entre todos');
                     break;
                 }
@@ -390,7 +390,7 @@ class NotaFiscalBusiness
 
             /** @var VendaItem $vendaItem */
             foreach ($itensNaNota as $vendaItem) {
-                $this->syslog->info('Processando item da venda: ' . $vendaItem->produto->descricao);
+                $this->syslog->info('Processando item da venda: ' . $vendaItem->produto->nome);
 
                 $nfItem = new NotaFiscalItem();
                 $nfItem->notaFiscal = $notaFiscal;
