@@ -7,19 +7,6 @@ namespace CrosierSource\CrosierLibRadxBundle\ApiPlatform\Financeiro;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
-use App\Business\TotalDoctor\SecurityBusiness;
-use App\Entity\TotalDoctor\AssociadoInfop;
-use App\Entity\TotalDoctor\Atendimento;
-use App\Entity\TotalDoctor\Canal;
-use App\Entity\TotalDoctor\Credito;
-use App\Entity\TotalDoctor\Fechamento;
-use App\Entity\TotalDoctor\FechamentoLancto;
-use App\Entity\TotalDoctor\Servico;
-use App\Entity\TotalDoctor\Unidade;
-use App\Entity\TotalDoctor\UsuarioCanal;
-use App\Entity\TotalDoctor\UsuarioClientePj;
-use App\Entity\TotalDoctor\UsuarioConveniado;
-use App\Entity\TotalDoctor\UsuarioUnidade;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Cadeia;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CaixaOperacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
@@ -90,7 +77,7 @@ class EstabelecimentoRestrainsExtension implements QueryCollectionExtensionInter
         $estabelecimentoId = $this->security->getUser()->getEstabelecimentoId();
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
-        
+
         $queryBuilder
             ->andWhere($rootAlias . '.estabelecimentoId  = :estabelecimentoId')
             ->setParameter('estabelecimentoId', $estabelecimentoId);

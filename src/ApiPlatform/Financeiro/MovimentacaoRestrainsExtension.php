@@ -6,9 +6,6 @@ namespace CrosierSource\CrosierLibRadxBundle\ApiPlatform\Financeiro;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\ContextAwareQueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
-use App\Entity\TotalDoctor\Associado;
-use App\Entity\TotalDoctor\UsuarioClientePj;
-use App\Repository\TotalDoctor\UsuarioClientePjRepository;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use Doctrine\ORM\QueryBuilder;
 
