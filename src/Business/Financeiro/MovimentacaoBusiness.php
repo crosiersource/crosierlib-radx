@@ -48,11 +48,11 @@ class MovimentacaoBusiness
 
     private LoggerInterface $logger;
 
-    public function __construct(EntityManagerInterface $doctrine,
-                                GrupoEntityHandler $grupoEntityHandler,
+    public function __construct(EntityManagerInterface    $doctrine,
+                                GrupoEntityHandler        $grupoEntityHandler,
                                 MovimentacaoEntityHandler $movimentacaoEntityHandler,
-                                CadeiaEntityHandler $cadeiaEntityHandler,
-                                LoggerInterface $logger)
+                                CadeiaEntityHandler       $cadeiaEntityHandler,
+                                LoggerInterface           $logger)
     {
         $this->doctrine = $doctrine;
         $this->grupoEntityHandler = $grupoEntityHandler;
@@ -455,18 +455,15 @@ class MovimentacaoBusiness
 
     /**
      * Processa um conjunto de movimentações e gera suas recorrentes.
-     *
-     * @param $movs
-     * @return string
      */
-    public function processarRecorrentes($movs): ?string
+    public function processarRecorrentes($movs): array
     {
         $this->doctrine->beginTransaction();
         try {
-            $results = '';
+            $results = [];
             $i = 1;
             foreach ($movs as $mov) {
-                $results .= $i++ . ' - ' . $this->processarRecorrente($mov) . "\r\n";
+                $results[] = $this->processarRecorrente($mov);
             }
             $this->doctrine->commit();
             return $results;
@@ -481,9 +478,9 @@ class MovimentacaoBusiness
      * @return mixed
      * @throws \Exception
      */
-    private function processarRecorrente(Movimentacao $originante)
+    private function processarRecorrente(Movimentacao $originante): array
     {
-        $result = '';
+        $results = [];
 
         if (!$originante->recorrente) {
             // Tem que ter sido passada uma List com movimentações que sejam recorrentes
@@ -522,7 +519,12 @@ class MovimentacaoBusiness
                 $posterior->recorrTipoRepet = $originante->recorrTipoRepet;
 
                 if ($posterior->dtPagto) {
-                    $result = 'Posterior já realizada. Não será possível alterar: ' . $originante->descricao . '"';
+                    $results[$originante->getId()][] =
+                        [
+                            'tipo' => 'INFO',
+                            'msg' => 'Posterior já realizada. Não será possível alterar: ' . $originante->descricao . '"'
+                        ];
+
                 } // verifico se teve alterações na originante
                 else if ($originante->getUpdated()->getTimestamp() > $posterior->getUpdated()->getTimestamp()) {
 
@@ -533,8 +535,10 @@ class MovimentacaoBusiness
                     $posterior->descontos = $originante->descontos;
                     $posterior->valorTotal = null; // null para recalcular no beforeSave
 
-                    $posterior->sacado = $originante->sacado;
-                    $posterior->cedente = $originante->cedente;
+                    $posterior->sacadoDocumento = $originante->sacadoDocumento;
+                    $posterior->sacadoNome = $originante->sacadoDocumento;
+                    $posterior->cedenteDocumento = $originante->cedenteDocumento;
+                    $posterior->cedenteNome = $originante->cedenteNome;
 
                     $posterior->carteira = $originante->carteira;
                     $posterior->categoria = $originante->categoria;
@@ -546,12 +550,20 @@ class MovimentacaoBusiness
                 }
                 try {
                     $this->movimentacaoEntityHandler->save($posterior);
-                    $result = 'SUCESSO ao atualizar movimentação: ' . $originante->descricao;
-                } catch (\Exception $e) {
-                    $result = 'ERRO ao atualizar movimentação: ' . $originante->descricao . '. (' . $e->getMessage() . ')';
-                }
 
-                return $result;
+                    $results[$originante->getId()][] =
+                        [
+                            'tipo' => 'SUCCESS',
+                            'msg' => 'SUCESSO ao atualizar movimentação: ' . $originante->descricao
+                        ];
+                } catch (\Exception $e) {
+                    $results[$originante->getId()][] =
+                        [
+                            'tipo' => 'ERROR',
+                            'msg' => 'ERRO ao atualizar movimentação: ' . $originante->descricao . '. (' . $e->getMessage() . ')'
+                        ];
+                }
+                return $results;
             }
         }
 
@@ -613,21 +625,37 @@ class MovimentacaoBusiness
         if ($salvarOriginal) {
             try {
                 $this->movimentacaoEntityHandler->save($originante);
-                $result .= 'SUCESSO ao salvar movimentação originante: ' . $originante->descricao;
+                $results[$originante->getId()][] =
+                    [
+                        'tipo' => 'SUCCESS',
+                        'msg' => 'SUCESSO ao salvar movimentação originante: ' . $originante->descricao
+                    ];
             } catch (\Exception $e) {
-                $result .= 'ERRO ao salvar movimentação originante: ' . $originante->descricao . '. (' . $e->getMessage() . ')';
+                $results[$originante->getId()][] =
+                    [
+                        'tipo' => 'ERROR',
+                        'msg' => 'ERRO ao salvar movimentação originante: ' . $originante->descricao . '. (' . $e->getMessage() . ')'
+                    ];
             }
             $nova->cadeia = $originante->cadeia;
         }
 
         try {
             $this->movimentacaoEntityHandler->save($nova);
-            $result .= 'SUCESSO ao gerar movimentação: ' . $nova->descricao;
+            $results[$originante->getId()][] =
+                [
+                    'tipo' => 'SUCCESS',
+                    'msg' => 'SUCESSO ao gerar movimentação: ' . $nova->descricao
+                ];
         } catch (\Exception $e) {
-            $result .= 'ERRO ao atualizar movimentação: ' . $originante->descricao . '. (' . $e->getMessage() . ')';
+            $results[$originante->getId()][] =
+                [
+                    'tipo' => 'ERROR',
+                    'msg' => 'ERRO ao atualizar movimentação: ' . $originante->descricao . '. (' . $e->getMessage() . ')'
+                ];
         }
 
-        return $result;
+        return $results;
     }
 
     /**
@@ -744,12 +772,20 @@ class MovimentacaoBusiness
                 $mov->documentoNum = $movComAlteracoes->documentoNum;
             }
 
-            if ($movComAlteracoes->sacado) {
-                $mov->sacado = $movComAlteracoes->sacado;
+            if ($movComAlteracoes->sacadoDocumento) {
+                $mov->sacadoDocumento = $movComAlteracoes->sacadoDocumento;
             }
 
-            if ($movComAlteracoes->cedente) {
-                $mov->cedente = $movComAlteracoes->cedente;
+            if ($movComAlteracoes->sacadoNome) {
+                $mov->sacadoNome = $movComAlteracoes->sacadoNome;
+            }
+
+            if ($movComAlteracoes->cedenteDocumento) {
+                $mov->cedenteDocumento = $movComAlteracoes->cedenteDocumento;
+            }
+
+            if ($movComAlteracoes->cedenteNome) {
+                $mov->cedenteNome = $movComAlteracoes->cedenteNome;
             }
 
             if ($movComAlteracoes->quitado) {
@@ -776,9 +812,6 @@ class MovimentacaoBusiness
                 $mov->centroCusto = $movComAlteracoes->centroCusto;
             }
 
-            
-            
-            
 
             if ($movComAlteracoes->grupoItem) {
                 $mov->grupoItem = $movComAlteracoes->grupoItem;
@@ -928,8 +961,10 @@ class MovimentacaoBusiness
             $this->movimentacaoEntityHandler->getDoctrine()->beginTransaction();
             $aberta->dtPagto = clone $realizada->dtPagto;
             $aberta->carteira = $realizada->carteira;
-            $aberta->cedente = $aberta->cedente ?? $realizada->cedente;
-            $aberta->sacado = $aberta->sacado ?? $realizada->sacado;
+            $aberta->cedenteDocumento = $aberta->cedenteDocumento ?? $realizada->cedenteDocumento;
+            $aberta->cedenteNome = $aberta->cedenteNome ?? $realizada->cedenteNome;
+            $aberta->sacadoDocumento = $aberta->sacadoDocumento ?? $realizada->sacadoDocumento;
+            $aberta->sacadoNome = $aberta->sacadoNome ?? $realizada->sacadoNome;
 
             $aberta->valor = $realizada->valor;
             $aberta->descontos = $realizada->descontos;

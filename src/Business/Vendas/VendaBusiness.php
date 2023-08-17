@@ -223,11 +223,12 @@ class VendaBusiness
             $movimentacao->descricao = 'RECEB VENDA MERCADOPAGO ' .
                 str_pad($venda->jsonData['ecommerce_numeroPedido'] ?? '0', 9, 0, STR_PAD_LEFT) . ' - Id: ' .
                 str_pad($venda->getId(), 9, 0, STR_PAD_LEFT) . ' (' . $venda->jsonData['infoPagtos'] . ')';
-            $sacado = '';
+            
             if (($venda->cliente->documento ?? false) && ($venda->cliente->nome ?? false)) {
-                $sacado .= StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' . mb_strtoupper($venda->cliente->nome);
+                $movimentacao->sacadoDocumento = $venda->cliente->documento;
+                $movimentacao->sacadoNome = mb_strtoupper($venda->cliente->nome);
             }
-            $movimentacao->sacado = $sacado;
+            
             $movimentacao->jsonData['venda_id'] = $pagto->venda->getId();
 
             $movimentacao = $this->movimentacaoEntityHandler->save($movimentacao);
@@ -257,8 +258,10 @@ class VendaBusiness
                 $mov_taxa = $this->movimentacaoEntityHandler->cloneEntityId($movimentacao);
                 $categ_taxa = $repoCategoria->findOneBy(['codigo' => $taxa['categoria_codigo']]);
                 $mov_taxa->carteiraDestino = null;
-                $mov_taxa->sacado = null;
-                $mov_taxa->cedente = null;
+                $mov_taxa->sacadoDocumento = null;
+                $mov_taxa->sacadoNome = null;
+                $mov_taxa->cedenteDocumento = null;
+                $mov_taxa->cedenteNome = null;
                 $mov_taxa->categoria = $categ_taxa;
                 $mov_taxa->valor = $taxa['valor'];
                 $mov_taxa->descontos = null;
@@ -318,11 +321,12 @@ class VendaBusiness
             $movimentacao->descricao = 'RECEB VENDA YAPAY ' .
                 str_pad($venda->jsonData['ecommerce_numeroPedido'] ?? '0', 9, 0, STR_PAD_LEFT) . ' - Id: ' .
                 str_pad($venda->getId(), 9, 0, STR_PAD_LEFT) . ' (' . $venda->jsonData['infoPagtos'] . ')';
-            $sacado = '';
+            
             if (($venda->cliente->documento ?? false) && ($venda->cliente->nome ?? false)) {
-                $sacado .= StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' . mb_strtoupper($venda->cliente->nome);
+                $movimentacao->sacadoDocumento = $venda->cliente->documento;
+                $movimentacao->sacadoNome = mb_strtoupper($venda->cliente->nome);
             }
-            $movimentacao->sacado = $sacado;
+            
             $movimentacao->jsonData['venda_id'] = $pagto->venda->getId();
 
             $movimentacao = $this->movimentacaoEntityHandler->save($movimentacao);
@@ -336,8 +340,10 @@ class VendaBusiness
             $mov_taxa = $this->movimentacaoEntityHandler->cloneEntityId($movimentacao);
             $categ_taxa = $repoCategoria->findOneBy(['codigo' => '202005001']);
             $mov_taxa->carteiraDestino = null;
-            $mov_taxa->sacado = null;
-            $mov_taxa->cedente = null;
+            $mov_taxa->sacadoDocumento = null;
+            $mov_taxa->sacadoNome = null;
+            $mov_taxa->cedenteDocumento = null;
+            $mov_taxa->cedenteNome = null;
             $mov_taxa->categoria = $categ_taxa;
             $mov_taxa->valor = $taxa;
             $mov_taxa->descontos = null;
@@ -394,11 +400,11 @@ class VendaBusiness
         $movimentacao->descricao = 'RECEB VENDA MERCADOPAGO ' .
             str_pad($venda->jsonData['ecommerce_numeroPedido'] ?? '0', 9, 0, STR_PAD_LEFT) . ' - Id: ' .
             str_pad($venda->getId(), 9, 0, STR_PAD_LEFT) . ' (' . $venda->jsonData['infoPagtos'] . ')';
-        $sacado = '';
         if (($venda->cliente->documento ?? false) && ($venda->cliente->nome ?? false)) {
-            $sacado .= StringUtils::mascararCnpjCpf($venda->cliente->documento) . ' - ' . mb_strtoupper($venda->cliente->nome);
+            $movimentacao->sacadoDocumento = $venda->cliente->documento;
+            $movimentacao->sacadoNome = mb_strtoupper($venda->cliente->nome);
         }
-        $movimentacao->sacado = $sacado;
+        
         $movimentacao->jsonData['venda_id'] = $pagto->venda->getId();
 
         $fatura->addMovimentacao($movimentacao);
