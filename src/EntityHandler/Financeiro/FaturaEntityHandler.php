@@ -47,6 +47,7 @@ class FaturaEntityHandler extends EntityHandler
         if (!$fatura->dtFatura) {
             $fatura->dtFatura = new \DateTime();
         }
+        $fatura->descricao = substr($fatura->descricao, 0, 500);
 
         $fatura->quitada = $fatura->getSaldo() <= 0.0;
     }
