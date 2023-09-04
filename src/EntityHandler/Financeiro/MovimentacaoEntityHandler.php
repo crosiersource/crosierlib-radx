@@ -111,6 +111,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         if (!$movimentacao->categoria) {
             throw new ViewException('Campo "Categoria" precisa ser informado');
         }
+        $movimentacao->descricao = substr($movimentacao->descricao, 0, 500);
         if ('' === trim($movimentacao->descricao)) {
             throw new ViewException('Campo "Descrição" precisa ser informado');
         }
