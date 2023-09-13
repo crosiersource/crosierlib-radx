@@ -44,6 +44,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Query\ResultSetMapping;
+use NFePHP\Common\Exception\ValidatorException;
 use NFePHP\DA\NFe\Danfe;
 use Psr\Log\LoggerInterface;
 
@@ -87,20 +88,20 @@ class NotaFiscalBusiness
      */
     private NotaFiscalRepository $repoNotaFiscal;
 
-    public function __construct(Connection $conn,
-                                LoggerInterface $logger,
-                                SpedNFeBusiness $spedNFeBusiness,
-                                AppConfigEntityHandler $appConfigEntityHandler,
-                                NotaFiscalEntityHandler $notaFiscalEntityHandler,
-                                NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler,
-                                NotaFiscalVendaEntityHandler $notaFiscalVendaEntityHandler,
+    public function __construct(Connection                       $conn,
+                                LoggerInterface                  $logger,
+                                SpedNFeBusiness                  $spedNFeBusiness,
+                                AppConfigEntityHandler           $appConfigEntityHandler,
+                                NotaFiscalEntityHandler          $notaFiscalEntityHandler,
+                                NotaFiscalItemEntityHandler      $notaFiscalItemEntityHandler,
+                                NotaFiscalVendaEntityHandler     $notaFiscalVendaEntityHandler,
                                 NotaFiscalHistoricoEntityHandler $notaFiscalHistoricoEntityHandler,
-                                MovimentacaoEntityHandler $movimentacaoEntityHandler,
-                                NFeUtils $nfeUtils,
-                                SyslogBusiness $syslog,
-                                NotaFiscalRepository $repoNotaFiscal,
-                                ClienteEntityHandler $clienteEntityHandler,
-                                VendaEntityHandler $vendaEntityHandler)
+                                MovimentacaoEntityHandler        $movimentacaoEntityHandler,
+                                NFeUtils                         $nfeUtils,
+                                SyslogBusiness                   $syslog,
+                                NotaFiscalRepository             $repoNotaFiscal,
+                                ClienteEntityHandler             $clienteEntityHandler,
+                                VendaEntityHandler               $vendaEntityHandler)
     {
         $this->conn = $conn;
         $this->logger = $logger;
@@ -146,11 +147,11 @@ class NotaFiscalBusiness
             $this->syslog->info('Venda (id): ' . $venda->getId());
             $this->syslog->info('Venda (dtVenda): ' . $venda->dtVenda->format('d/m/Y H:i:s'));
             $this->syslog->info('Venda (valorTotal): ' . $venda->valorTotal);
-            
+
             $conn = $this->notaFiscalEntityHandler->getDoctrine()->getConnection();
 
             $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
-            
+
             $jaExiste = $conn->fetchAllAssociative('SELECT * FROM fis_nf_venda WHERE venda_id = :vendaId', ['vendaId' => $venda->getId()]);
 
             if ($jaExiste) {
@@ -357,7 +358,7 @@ class NotaFiscalBusiness
             /** @var NotaFiscal $notaFiscal */
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal, false);
 
-            
+
             // Atenção, aqui tem que verificar a questão do arredondamento
             if ($venda->subtotal > 0.0) {
                 $this->syslog->info('Calculando fator de desconto pela diferença entre subtotal e valor total');
@@ -643,59 +644,6 @@ class NotaFiscalBusiness
         return $chaveAcesso;
     }
 
-    /**
-     * Salvar uma notaFiscal normal.
-     *
-     * @param NotaFiscal $notaFiscal
-     * @return NotaFiscal|null
-     * @throws ViewException
-     */
-    public function saveNotaFiscal(NotaFiscal $notaFiscal): ?NotaFiscal
-    {
-        try {
-            if (!$notaFiscal->tipoNotaFiscal) {
-                throw new ViewException('Tipo da Nota não informado');
-            }
-            $this->notaFiscalEntityHandler->getDoctrine()->beginTransaction();
-
-            $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
-
-            $notaFiscal->xNomeEmitente = $nfeConfigs['razaosocial'];
-            $notaFiscal->inscricaoEstadualEmitente = $nfeConfigs['ie'];
-
-            if (!$notaFiscal->uuid) {
-                $notaFiscal->uuid = md5(uniqid(mt_rand(), true));
-            }
-
-            if (!$notaFiscal->serie) {
-                $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
-                $notaFiscal->serie = $notaFiscal->tipoNotaFiscal === 'NFE' ? $nfeConfigs['serie_NFE_' . $ambiente] : $nfeConfigs['serie_NFCE_' . $ambiente];
-            }
-
-            if (!$notaFiscal->cnf) {
-                $cNF = random_int(10000000, 99999999);
-                $notaFiscal->cnf = $cNF;
-            }
-
-            $this->notaFiscalEntityHandler->save($notaFiscal, false);
-
-            foreach ($notaFiscal->itens as $item) {
-                $this->notaFiscalItemEntityHandler->save($item, false);
-            }
-
-
-            $this->notaFiscalEntityHandler->save($notaFiscal);
-            $this->notaFiscalEntityHandler->getDoctrine()->commit();
-            return $notaFiscal;
-        } catch (\Exception $e) {
-            $this->notaFiscalEntityHandler->getDoctrine()->rollback();
-            $erro = 'Erro ao salvar Nota Fiscal';
-            if ($e instanceof ViewException) {
-                $erro .= ' (' . $e->getMessage() . ')';
-            }
-            throw new ViewException($erro, null, $e);
-        }
-    }
 
     /**
      * Corrige os NCMs. Na verdade troca para um NCM genérico nos casos onde o NCM informado não exista na base.
@@ -733,8 +681,7 @@ class NotaFiscalBusiness
         $this->checkNotaFiscal($notaFiscal);
 
         $this->spedNFeBusiness->addHistorico($notaFiscal, -1, 'INICIANDO FATURAMENTO');
-        if ($this->permiteFaturamento($notaFiscal)) {
-
+        if ($notaFiscal->isPermiteFaturamento()) {
             try {
                 if ($notaFiscal->nRec) {
                     $this->spedNFeBusiness->consultaRecibo($notaFiscal);
@@ -743,7 +690,7 @@ class NotaFiscalBusiness
                     }
                 }
                 $this->handleIdeFields($notaFiscal);
-                if ($gerarXML) {
+                if ($gerarXML || !$notaFiscal->getXmlNota() || $notaFiscal->getXMLDecoded()->infNFE !== null) {
                     $notaFiscal = $this->spedNFeBusiness->gerarXML($notaFiscal);
                 }
                 $notaFiscal = $this->spedNFeBusiness->enviaNFe($notaFiscal);
@@ -799,26 +746,23 @@ class NotaFiscalBusiness
         if ($notaFiscal->dtEmissao > $notaFiscal->dtSaiEnt) {
             throw new ViewException('Dt Emissão maior que Dt Saída/Entrada. Não é possível faturar.');
         }
-
     }
 
-    /**
-     * Só exibe o botão faturar se tiver nestas condições.
-     * Lembrando que o botão "Faturar" serve tanto para faturar a primeira vez, como para tentar faturar novamente nos casos de erros.
-     *
-     * @param NotaFiscal $notaFiscal
-     * @param null|bool $retornaMotivo
-     * @return bool
-     */
     public function permiteFaturamento(NotaFiscal $notaFiscal, ?bool $retornaMotivo = false): bool
     {
-        if ($notaFiscal && $notaFiscal->getId() && in_array($notaFiscal->cStat, [-100, 100, 101, 204, 135], false)) {
+        if ($notaFiscal && !$notaFiscal->getId()) {
+            $notaFiscal->jsonData['permiteFaturamento'] = false;
+            $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Não (Nota Fiscal ainda sem id)';
             return false;
         }
-        if ($notaFiscal && !$notaFiscal->getId()) {
-//            if ($retornaMotivo) {
-//                throw new ViewException('id n/d');
-//            }
+        if ($notaFiscal && $notaFiscal->getId() && in_array($notaFiscal->cStat, [-100, 100, 101, 204, 135], false)) {
+            $notaFiscal->jsonData['permiteFaturamento'] = false;
+            $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Não (cStat em ' . $notaFiscal->cStat . ')';
+            return false;
+        }
+        if ($notaFiscal->getItens() && $notaFiscal->getItens()->count() === 0) {
+            $notaFiscal->jsonData['permiteFaturamento'] = false;
+            $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Não (sem itens)';
             return false;
         }
 
@@ -826,113 +770,28 @@ class NotaFiscalBusiness
             $this->checkNotaFiscal($notaFiscal);
         } catch (\Exception $e) {
             if ($e instanceof ViewException && $retornaMotivo) {
+                $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Não (' . $e->getMessage() . ')';
                 throw new ViewException($e->getMessage());
+            } else {
+                $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Não';
             }
+            $notaFiscal->jsonData['permiteFaturamento'] = false;
             return false;
         }
-
+        $notaFiscal->jsonData['permiteFaturamento'] = true;
+        $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Sim';
         return true;
-
     }
 
-    /**
-     * Só exibe o botão faturar se tiver nestas condições.
-     * Lembrando que o botão "Faturar" serve tanto para faturar a primeira vez, como para tentar faturar novamente nos casos de erros.
-     *
-     * @param NotaFiscal $notaFiscal
-     * @return bool
-     */
-    public function permiteSalvar(NotaFiscal $notaFiscal)
-    {
-        if (!$notaFiscal->getId()) {
-            return true;
-        }
-
-        if (substr($notaFiscal->cStat, 0, 1) !== '1') {
-            return true;
-        }
-
-        return false;
-
-    }
 
     /**
-     * Por enquanto o 'cancelar' segue a mesma regra do 'reimprimir'.
-     *
-     * @param NotaFiscal $notaFiscal
-     * @return bool
-     */
-    public function permiteCancelamento(NotaFiscal $notaFiscal): ?bool
-    {
-        return (int)$notaFiscal->cStat === 100;
-    }
-
-    /**
-     * Verifica se é possível reimprimir.
-     *
-     * @param NotaFiscal $notaFiscal
-     * @return boolean
-     */
-    public function permiteReimpressao(NotaFiscal $notaFiscal)
-    {
-        if ($notaFiscal->getId()) {
-            if ($notaFiscal->cStat == 100 || $notaFiscal->cStat == 204 || $notaFiscal->cStat == 135) {
-                return true;
-            }
-            // else
-            if ($notaFiscal->cStat == 0 && strpos($notaFiscal->xMotivo, 'DUPLICIDADE DE NF') !== FALSE) {
-                return true;
-            }
-
-            if ($notaFiscal->getXMLDecoded() && $notaFiscal->getXMLDecoded()->getName() === 'nfeProc') {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Verifica se é possível imprimir o cancelamento.
-     *
-     * @param NotaFiscal $notaFiscal
-     * @return boolean
-     */
-    public function permiteReimpressaoCancelamento(NotaFiscal $notaFiscal)
-    {
-        if ($notaFiscal->getId()) {
-            if ($notaFiscal->cStatLote == 101) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Verifica se é possível enviar carta de correção.
-     *
-     * @param NotaFiscal $notaFiscal
-     * @return boolean
-     */
-    public function permiteCartaCorrecao(NotaFiscal $notaFiscal)
-    {
-        if ($notaFiscal->getId()) {
-            if ($notaFiscal->cStat == 100) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param NotaFiscal $notaFiscal
-     * @return NotaFiscal|\CrosierSource\CrosierLibBaseBundle\Entity\EntityId|object
      * @throws ViewException
      */
-    public function cancelar(NotaFiscal $notaFiscal)
+    public function cancelar(NotaFiscal $notaFiscal): NotaFiscal
     {
-        $this->spedNFeBusiness->addHistorico($notaFiscal, -1, 'INICIANDO CANCELAMENTO');
-        $notaFiscal = $this->checkChaveAcesso($notaFiscal);
         try {
+            $this->spedNFeBusiness->addHistorico($notaFiscal, -1, 'INICIANDO CANCELAMENTO');
+            $notaFiscal = $this->checkChaveAcesso($notaFiscal);
             $notaFiscalR = $this->spedNFeBusiness->cancelar($notaFiscal);
             if ($notaFiscalR) {
                 $notaFiscal = $notaFiscalR;
@@ -941,18 +800,20 @@ class NotaFiscalBusiness
             } else {
                 $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO CANCELAR');
             }
-        } catch (\Exception | ViewException $e) {
+            return $notaFiscal;
+        } catch (\Exception $e) {
             $this->spedNFeBusiness->addHistorico($notaFiscal, -2, 'PROBLEMA AO CANCELAR: [' . $e->getMessage() . ']');
-            if ($e instanceof ViewException) {
-                $this->spedNFeBusiness->addHistorico($notaFiscal, -2, $e->getMessage());
+            $msg = ExceptionUtils::treatException($e);
+            if (!$msg && $e instanceof ValidatorException) {
+                $msg = $e->getMessage();
             }
+            $this->spedNFeBusiness->addHistorico($notaFiscal, -2, $e->getMessage());
+            throw $e;
         }
-        return $notaFiscal;
     }
 
+
     /**
-     * @param NotaFiscal $notaFiscal
-     * @return NotaFiscal|\CrosierSource\CrosierLibBaseBundle\Entity\EntityId|object
      * @throws ViewException
      */
     public function checkChaveAcesso(NotaFiscal $notaFiscal)
@@ -965,6 +826,7 @@ class NotaFiscalBusiness
         }
         return $notaFiscal;
     }
+
 
     /**
      * @param NotaFiscal $notaFiscal
@@ -987,9 +849,8 @@ class NotaFiscalBusiness
         return $notaFiscal;
     }
 
+
     /**
-     * @param NotaFiscalCartaCorrecao $cartaCorrecao
-     * @return NotaFiscal|NotaFiscalCartaCorrecao
      * @throws ViewException
      */
     public function cartaCorrecao(NotaFiscalCartaCorrecao $cartaCorrecao)
@@ -1013,10 +874,8 @@ class NotaFiscalBusiness
         return $cartaCorrecao->notaFiscal;
     }
 
+
     /**
-     * @param string $cnpj
-     * @param string $uf
-     * @return mixed
      * @throws ViewException
      */
     public function consultarCNPJ(string $cnpj, string $uf)
@@ -1042,13 +901,10 @@ class NotaFiscalBusiness
             ];
         }
         return $r;
-
     }
 
 
     /**
-     * @param $mesano
-     * @return bool|string
      * @throws \Exception
      */
     public function criarZip($mesano)
@@ -1078,14 +934,9 @@ class NotaFiscalBusiness
         // Zip archive will be created only after closing object
         $zip->close();
         return file_get_contents($zipname);
-
     }
 
-    /**
-     * @param \ZipArchive $zip
-     * @param $pasta
-     * @param $nomePasta
-     */
+
     private function criarZipDir(\ZipArchive $zip, $pasta, $nomePasta)
     {
         $xmls = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($pasta), \RecursiveIteratorIterator::LEAVES_ONLY);
@@ -1104,8 +955,6 @@ class NotaFiscalBusiness
     }
 
     /**
-     * @param NotaFiscal $notaFiscal
-     * @param NotaFiscalItem $notaFiscalItem
      * @throws ViewException
      */
     public function colarItem(NotaFiscal $notaFiscal, NotaFiscalItem $notaFiscalItem)
@@ -1121,10 +970,9 @@ class NotaFiscalBusiness
 
 
     /**
-     *
      * @return array obtido a partir das cfg_app_config de nfeConfigs_%
      */
-    public function getEmitentes()
+    public function getEmitentes(): array
     {
         $nfeConfigs = $this->conn->fetchAllAssociative('SELECT * FROM cfg_app_config WHERE chave LIKE \'nfeConfigs\\_%\'');
         $emitentes = [];
@@ -1146,10 +994,6 @@ class NotaFiscalBusiness
         return $emitentes;
     }
 
-    /**
-     * @param string $cnpj
-     * @return bool
-     */
     public function isCnpjEmitente(string $cnpj): bool
     {
         $emitentes = $this->getEmitentes();
@@ -1161,9 +1005,8 @@ class NotaFiscalBusiness
         return false;
     }
 
+
     /**
-     * @param string $cnpj
-     * @return array
      * @throws ViewException
      */
     public function getEmitenteFromNFeConfigsByCNPJ(string $cnpj): array
@@ -1478,7 +1321,7 @@ class NotaFiscalBusiness
     public function gerarPDF(NotaFiscal $notaFiscal)
     {
         try {
-            if ($this->permiteFaturamento($notaFiscal)){
+            if ($notaFiscal->isPermiteFaturamento()) {
                 $notaFiscal = $this->spedNFeBusiness->gerarXML($notaFiscal);
             }
             $xml = $notaFiscal->getXMLDecodedAsString();
@@ -1506,9 +1349,9 @@ class NotaFiscalBusiness
 
 
             $pdf = $danfe->render($logo);
-            
+
             return $pdf;
-            
+
         } catch (\Throwable $e) {
             throw new \RuntimeException('Ocorreu um erro durante o processamento :' . $e->getMessage());
         }

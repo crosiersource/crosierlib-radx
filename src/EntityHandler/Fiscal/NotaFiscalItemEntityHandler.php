@@ -35,7 +35,7 @@ class NotaFiscalItemEntityHandler extends EntityHandler
 
 
     /**
-     * @param $nfItem
+     * @param NotaFiscalItem $nfItem
      * @return mixed|void
      */
     public function beforeSave($nfItem)
@@ -46,28 +46,35 @@ class NotaFiscalItemEntityHandler extends EntityHandler
         /** @var NotaFiscalItem $nfItem */
         if (!$nfItem->ordem) {
             $ultimaOrdem = 0;
-            foreach ($nfItem->notaFiscal->getItens() as $item) {
-                if ($item->ordem > $ultimaOrdem) {
-                    $ultimaOrdem = $item->ordem;
+            if ($nfItem->notaFiscal->getItens()) {
+                foreach ($nfItem->notaFiscal->getItens() as $item) {
+                    if ($item->ordem > $ultimaOrdem) {
+                        $ultimaOrdem = $item->ordem;
+                    }
                 }
             }
             $nfItem->ordem = $ultimaOrdem + 1;
         }
 
+        $nfeConfigs = [];
+        $cnpjsProprios = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsCNPJs();
+        if (in_array(($nfItem->notaFiscal->documentoEmitente ?? ''), $cnpjsProprios, true)) {
+            $nfeConfigs = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsByCNPJ($nfItem->notaFiscal->documentoEmitente);
+        }
+
         if (!$nfItem->csosn) {
-            $cnpjsProprios = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsCNPJs();
-            if (in_array(($nfItem->notaFiscal->documentoEmitente ?? ''), $cnpjsProprios, true)) {
-                $nfeConfigs = $this->notaFiscalEntityHandler->nfeUtils->getNFeConfigsByCNPJ($nfItem->notaFiscal->documentoEmitente);
-                if ($nfeConfigs['CSOSN'] ?? false) {
-                    $nfItem->csosn = $nfeConfigs['CSOSN'];
-                }
+            if ($nfeConfigs['CSOSN'] ?? false) {
+                $nfItem->csosn = $nfeConfigs['CSOSN'];
+            }
+        }
+        if (!$nfItem->cst) {
+            if ($nfeConfigs['CST'] ?? false) {
+                $nfItem->cst = $nfeConfigs['CST'];
             }
         }
 
         $nfItem->subtotal = $nfItem->subtotal ?? 0.0;
         $nfItem->calculaTotais();
-
-
     }
 
     /**
@@ -76,7 +83,7 @@ class NotaFiscalItemEntityHandler extends EntityHandler
      */
     public function afterSave(/** @var NotaFiscalItem $nfItem */ $nfItem)
     {
-
+        $this->notaFiscalEntityHandler->save($nfItem->notaFiscal);
     }
 
     /**

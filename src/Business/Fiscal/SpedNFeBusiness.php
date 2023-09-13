@@ -309,7 +309,7 @@ class SpedNFeBusiness
 
         $qtdeItens = $notaFiscal->getItens()->count();
         $rateioFrete = null;
-        if ($notaFiscal->transpValorTotalFrete) {
+        if ((float)$notaFiscal->transpValorTotalFrete !== 0.00) {
             $rateioFrete = DecimalUtils::gerarParcelas($notaFiscal->transpValorTotalFrete, $qtdeItens);
         }
 
@@ -712,13 +712,13 @@ class SpedNFeBusiness
                         $notaFiscal->protocoloAutorizacao = $std->protNFe->infProt->nProt;
                         $notaFiscal->dtProtocoloAutorizacao = DateTimeUtils::parseDateStr($std->protNFe->infProt->dhRecbto);
                     }
-                    $this->notaFiscalEntityHandler->save($notaFiscal);
                 } catch (\Throwable $e) {
                     $this->syslog->error('consultaRecibo - Id: ' . $notaFiscal->getId());
                     $this->syslog->error($e->getMessage());
                     throw new ViewException('Erro ao setar info de transmissão síncrona');
                 }
             }
+            $this->notaFiscalEntityHandler->save($notaFiscal);
             return $notaFiscal;
         } catch (\Throwable $e) {
             $this->syslog->error('enviaNFe - id: ' . $notaFiscal->getId());
@@ -814,18 +814,24 @@ class SpedNFeBusiness
         $std = $stdCl->toStd();
 
         //verifique se o evento foi processado
-        if ((string)$std->cStat !== '128') {
+        if ((string)$std->cStat !== '128') { // Processamento do Lote – o lote foi processado (cStat=128)
             $notaFiscal->cStat = $std->cStat;
             $notaFiscal->xMotivo = $std->retEvento->infEvento->xMotivo;
             /** @var NotaFiscal $notaFiscal */
             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
         } else {
             $cStat = $std->retEvento->infEvento->cStat;
+            /**
+             * 101 - Cancelamento de NF-e homologado
+             * 135 - Evento registrado e vinculado a NF-e
+             * 155 - Cancelamento homologado fora de prazo”.
+             */
             if ($cStat == '101' || $cStat == '155' || $cStat == '135') {
                 $xml = Complements::toAuthorize($tools->lastRequest, $response);
 
                 $notaFiscal->cStat = $cStat;
                 $notaFiscal->xMotivo = $std->retEvento->infEvento->xMotivo;
+                $notaFiscal->jsonData['dt_cancelamento'] = $std->retEvento->infEvento->dhRegEvento;
                 /** @var NotaFiscal $notaFiscal */
                 $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
 

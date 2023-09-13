@@ -52,6 +52,14 @@ class NotaFiscalEntityHandler extends EntityHandler
      */
     public function beforeSave(/** @var NotaFiscal $notaFiscal */ $notaFiscal)
     {
+        if (!$notaFiscal->getId()) {
+            $this->checkNovaNota();    
+        }
+        
+        if (!$notaFiscal->tipoNotaFiscal) {
+            $notaFiscal->tipoNotaFiscal = 'NFE';
+        }
+        
         if (!$notaFiscal->entradaSaida) {
             throw new ViewException('Entrada/Saída não informado');
         }
@@ -75,7 +83,7 @@ class NotaFiscalEntityHandler extends EntityHandler
         $notaFiscal->transpDocumento = (preg_replace("/[\D]/", '', $notaFiscal->transpDocumento));
 
         if ($notaFiscal->chaveAcesso === '') {
-            $notaFiscal->chaveAcesso = (null);
+            $notaFiscal->chaveAcesso = null;
         }
 
         $notaFiscalBusiness = $this->container->get(NotaFiscalBusiness::class);
@@ -99,8 +107,36 @@ class NotaFiscalEntityHandler extends EntityHandler
             $notaFiscal->resumo) {
             $notaFiscal->resumo = false;
         }
+        
+        $notaFiscalBusiness->permiteFaturamento($notaFiscal);
 
         $this->calcularTotais($notaFiscal);
+    }
+    
+    private function checkNovaNota(NotaFiscal $notaFiscal): void
+    {
+        if (!$notaFiscal->tipoNotaFiscal) {
+            throw new ViewException('Tipo da Nota não informado');
+        }
+
+        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
+
+        $notaFiscal->xNomeEmitente = $nfeConfigs['razaosocial'];
+        $notaFiscal->inscricaoEstadualEmitente = $nfeConfigs['ie'];
+
+        if (!$notaFiscal->uuid) {
+            $notaFiscal->uuid = md5(uniqid(mt_rand(), true));
+        }
+
+        if (!$notaFiscal->serie) {
+            $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
+            $notaFiscal->serie = $notaFiscal->tipoNotaFiscal === 'NFE' ? $nfeConfigs['serie_NFE_' . $ambiente] : $nfeConfigs['serie_NFCE_' . $ambiente];
+        }
+
+        if (!$notaFiscal->cnf) {
+            $cNF = random_int(10000000, 99999999);
+            $notaFiscal->cnf = $cNF;
+        }
     }
 
 

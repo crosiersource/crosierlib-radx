@@ -38,8 +38,22 @@ use Symfony\Component\Validator\Constraints as Assert;
  * )
  * @ApiFilter(PropertyFilter::class)
  *
- * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "id": "exact",
+ *     "notaFiscal": "exact"
+ * })
+ *
+ * @ApiFilter(OrderFilter::class, properties={
+ *     "id",
+ *     "updated",
+ *     "ordem",
+ *     "codigo",
+ *     "cfop",
+ *     "ncm",
+ *     "valorUnit",
+ *     "qtde",
+ *     "valorTotal"
+ * }, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalItemEntityHandler")
  *
@@ -52,77 +66,79 @@ class NotaFiscalItem implements EntityId
     use EntityIdTrait;
 
     /**
-     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal", inversedBy="itens")
      * @ORM\JoinColumn(name="nota_fiscal_id")
-     *
+     * @Groups("notaFiscalItem")
      * @var $notaFiscal null|NotaFiscal
      */
     public ?NotaFiscal $notaFiscal = null;
 
+    /**
+     * @ORM\Column(name="ordem", type="integer", nullable=true)
+     * @Groups("notaFiscalItem")
+     * @var null|int
+     */
+    public ?int $ordem = null;
 
     /**
-     *
-     * @ORM\Column(name="codigo", type="string")
+     * @ORM\Column(name="codigo", type="string", nullable=false)
+     * @Groups("notaFiscalItem")
      * @var null|string
      */
     public ?string $codigo = null;
 
     /**
-     *
-     * @ORM\Column(name="descricao", type="string")
+     * @ORM\Column(name="descricao", type="string", nullable=false)
+     * @Groups("notaFiscalItem")
      * @var null|string
      */
     public ?string $descricao = null;
 
     /**
-     *
-     * @ORM\Column(name="cfop", type="string")
+     * @ORM\Column(name="cfop", type="string", nullable=false)
+     * @Groups("notaFiscalItem")
      * @var null|string
      */
     public ?string $cfop = null;
 
     /**
-     *
-     * @ORM\Column(name="ean", type="string")
+     * @ORM\Column(name="ean", type="string", nullable=true)
+     * @Groups("notaFiscalItem")
      * @var null|string
      */
     public ?string $ean = null;
 
     /**
-     *
-     * @ORM\Column(name="csosn", type="integer")
+     * @ORM\Column(name="csosn", type="integer", nullable=true)
+     * @Groups("notaFiscalItem")
      * @var null|int
      */
     public ?int $csosn = null;
 
     /**
-     *
-     * @ORM\Column(name="ncm", type="string", length=20)
+     * @ORM\Column(name="ncm", type="string", length=20, nullable=false)
+     * @Groups("notaFiscalItem")
      * @var null|string
      */
     public ?string $ncm = null;
 
     /**
-     *
-     * @ORM\Column(name="cest", type="string",  length=20)
+     * Código Especificador da Substituição Tributária.
+     * 
+     * @ORM\Column(name="cest", type="string",  length=20, nullable=true)
+     * @Groups("notaFiscalItem")
      * @var null|string
      */
     public ?string $cest = null;
 
     /**
-     *
-     * @ORM\Column(name="cst", type="string")
+     * Código da Situação Tributária.
+     * 
+     * @ORM\Column(name="cst", type="string", nullable=true)
+     * @Groups("notaFiscalItem")
      * @var null|string
      */
     public ?string $cst = null;
-
-    /**
-     *
-     * @ORM\Column(name="ordem", type="integer")
-     * @var null|int
-     */
-    public ?int $ordem = null;
 
     /**
      * @ORM\Column(name="qtde", type="decimal", nullable=false, precision=15, scale=2)
@@ -133,8 +149,8 @@ class NotaFiscalItem implements EntityId
     public ?string $qtde = null;
 
     /**
-     *
-     * @ORM\Column(name="unidade", type="string", length=50)
+     * @ORM\Column(name="unidade", type="string", length=50, nullable=true)
+     * @Groups("notaFiscalItem")
      * @var null|string
      */
     public ?string $unidade = null;
@@ -176,8 +192,8 @@ class NotaFiscalItem implements EntityId
     public ?string $icmsValor = null;
 
     /**
-     *
-     * @ORM\Column(name="icms_mod_bc", type="string")
+     * @ORM\Column(name="icms_mod_bc", type="string", nullable=true)
+     * @Groups("notaFiscalItem")
      * @var null|string
      */
     public ?string $icmsModBC = null;
@@ -195,7 +211,6 @@ class NotaFiscalItem implements EntityId
      * @Assert\Type(type="string")
      */
     public ?string $icmsAliquota = null;
-
 
     /**
      * @ORM\Column(name="pis_valor", type="decimal", nullable=true, precision=15, scale=2)
@@ -217,7 +232,6 @@ class NotaFiscalItem implements EntityId
      * @Assert\Type(type="string")
      */
     public ?string $pisAliquota = null;
-
 
     /**
      * @ORM\Column(name="cofins_valor", type="decimal", nullable=true, precision=15, scale=2)
@@ -241,15 +255,15 @@ class NotaFiscalItem implements EntityId
     public ?string $cofinsAliquota = null;
 
     /**
-     *
-     * @ORM\Column(name="ncm_existente", type="boolean")
+     * @ORM\Column(name="ncm_existente", type="boolean", nullable=true)
+     * @Groups("notaFiscalItem")
      * @var null|bool
      */
     public ?bool $ncmExistente = null;
 
     /**
-     *
-     * @ORM\Column(name="json_data", type="json")
+     * @ORM\Column(name="json_data", type="json", nullable=true)
+     * @Groups("notaFiscalItem")
      * @var null|array
      * @NotUppercase()
      */
@@ -277,7 +291,6 @@ class NotaFiscalItem implements EntityId
         $this->qtde = $qtde;
     }
 
-
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
@@ -300,7 +313,6 @@ class NotaFiscalItem implements EntityId
         $this->valorTotal = $valorTotal;
     }
 
-
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
@@ -322,7 +334,28 @@ class NotaFiscalItem implements EntityId
     {
         $this->valorUnit = $valorUnit;
     }
+    
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("valorDesconto")
+     * @return float
+     */
+    public function getValorDescontoFormatted(): float
+    {
+        return (float)$this->valorDesconto;
+    }
 
+    /**
+     * Para aceitar tanto em string quanto em double.
+     * @Groups("notaFiscalItem")
+     * @SerializedName("valorDesconto")
+     * @param float $valorDesconto
+     */
+    public function setValorDescontoFormatted(float $valorDesconto)
+    {
+        $this->valorDesconto = $valorDesconto;
+    }
 
     /**
      * Para aceitar tanto em string quanto em double.
@@ -346,7 +379,6 @@ class NotaFiscalItem implements EntityId
         $this->subtotal = $subtotal;
     }
 
-
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
@@ -368,7 +400,6 @@ class NotaFiscalItem implements EntityId
     {
         $this->icmsValor = $icmsValor;
     }
-
 
     /**
      * Para aceitar tanto em string quanto em double.
@@ -392,7 +423,6 @@ class NotaFiscalItem implements EntityId
         $this->icmsValorBc = $icmsValorBc;
     }
 
-
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
@@ -414,7 +444,6 @@ class NotaFiscalItem implements EntityId
     {
         $this->icmsAliquota = $icmsAliquota;
     }
-
 
     /**
      * Para aceitar tanto em string quanto em double.
@@ -438,7 +467,6 @@ class NotaFiscalItem implements EntityId
         $this->pisValor = $pisValor;
     }
 
-
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
@@ -460,7 +488,6 @@ class NotaFiscalItem implements EntityId
     {
         $this->pisValorBc = $pisValorBc;
     }
-
 
     /**
      * Para aceitar tanto em string quanto em double.
@@ -484,7 +511,6 @@ class NotaFiscalItem implements EntityId
         $this->pisAliquota = $pisAliquota;
     }
 
-
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
@@ -506,7 +532,6 @@ class NotaFiscalItem implements EntityId
     {
         $this->cofinsValor = $cofinsValor;
     }
-
 
     /**
      * Para aceitar tanto em string quanto em double.
@@ -530,7 +555,6 @@ class NotaFiscalItem implements EntityId
         $this->cofinsValorBc = $cofinsValorBc;
     }
 
-
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
@@ -553,7 +577,6 @@ class NotaFiscalItem implements EntityId
         $this->cofinsAliquota = $cofinsAliquota;
     }
 
-
     public function calculaTotais(): void
     {
         if ($this->qtde === null || $this->valorUnit === null) {
@@ -573,4 +596,5 @@ class NotaFiscalItem implements EntityId
             $this->valorTotal = $this->subtotal;
         }
     }
+    
 }

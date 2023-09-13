@@ -21,7 +21,7 @@ class NotaFiscalCartaCorrecaoEntityHandler extends EntityHandler
 
 
     /**
-     * @param $cartaCorrecao
+     * @param NotaFiscalCartaCorrecao $cartaCorrecao
      * @return mixed|void
      * @throws ViewException
      */
@@ -47,8 +47,16 @@ class NotaFiscalCartaCorrecaoEntityHandler extends EntityHandler
         } catch (\Throwable $e) {
             throw new ViewException('Erro ao incrementar seq da carta de correção');
         }
+    }
 
-
+    /**
+     * @param NotaFiscalCartaCorrecao $cartaCorrecao
+     * @return mixed|void
+     * @throws ViewException
+     */
+    public function afterSave($cartaCorrecao)
+    {
+        $notaFiscal = $this->notaFiscalBusiness->cartaCorrecao($cartaCorrecao);
     }
 
 

@@ -13,6 +13,7 @@ use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
@@ -108,9 +109,7 @@ class NotaFiscal implements EntityId
     public ?string $ambiente = null;
 
     /**
-     *
      * Número randômico utilizado na geração do nome do arquivo XML, para poder saber qual foi o nome do último arquivo gerado, evitando duplicidades.
-     *
      * @ORM\Column(name="rand_faturam", type="string", nullable=true)
      * @var null|string
      */
@@ -126,25 +125,20 @@ class NotaFiscal implements EntityId
     public ?string $cnf = null;
 
     /**
-     *
      * @ORM\Column(name="natureza_operacao", type="string", nullable=true, length=60)
      * @Groups("notaFiscal")
      * @var null|string
      */
     public ?string $naturezaOperacao = null;
 
-
     /**
-     *
      * @ORM\Column(name="finalidade_nf", type="string", nullable=false, length=30)
      * @var null|string
-     *
      * @Groups("notaFiscal")
      */
     public ?string $finalidadeNf = null;
 
     /**
-     *
      * @ORM\Column(name="chave_acesso", type="string", nullable=true, length=44)
      * @Groups("notaFiscal")
      * @var null|string
@@ -152,73 +146,60 @@ class NotaFiscal implements EntityId
     public ?string $chaveAcesso = null;
 
     /**
-     *
      * @ORM\Column(name="protocolo_autoriz", type="string", nullable=true, length=255)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $protocoloAutorizacao = null;
 
     /**
-     *
      * @ORM\Column(name="dt_protocolo_autoriz", type="datetime", nullable=true)
      * @var null|DateTime
+     * @Groups("notaFiscal")
      */
     public ?DateTime $dtProtocoloAutorizacao = null;
 
     /**
-     *
      * @ORM\Column(name="dt_emissao", type="datetime", nullable=true)
      * @var null|DateTime
-     *
      * @Groups("notaFiscal")
      */
     public ?DateTime $dtEmissao = null;
 
     /**
-     *
      * @ORM\Column(name="dt_saient", type="datetime", nullable=true)
      * @var null|DateTime
-     *
      * @Groups("notaFiscal")
      */
     public ?DateTime $dtSaiEnt = null;
 
     /**
-     *
      * @ORM\Column(name="numero", type="integer", nullable=false)
      * @var null|int
-     *
      * @Groups("notaFiscal")
      */
     public ?int $numero = null;
 
     /**
-     *
      * @ORM\Column(name="serie", type="integer", nullable=false)
      * @var null|int
-     *
      * @Groups("notaFiscal")
      */
     public ?int $serie = null;
 
     /**
-     *
      * @ORM\Column(name="tipo", type="string", nullable=true, length=30)
      * @var null|string
-     *
      * @Groups("notaFiscal")
      */
     public ?string $tipoNotaFiscal = null;
 
     /**
-     *
      * @ORM\Column(name="entrada_saida", nullable=false)
      * @var null|string
-     *
      * @Groups("notaFiscal")
      */
     public ?string $entradaSaida = null;
-
 
     /**
      * @ORM\Column(name="documento_emitente", type="string", nullable=false)
@@ -242,77 +223,60 @@ class NotaFiscal implements EntityId
     public ?string $inscricaoEstadualEmitente = null;
 
     /**
-     *
      * @ORM\Column(name="cep_emitente", type="string", nullable=true, length=9)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $cepEmitente = null;
 
     /**
-     *
      * @ORM\Column(name="logradouro_emitente", type="string", nullable=true, length=200)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $logradouroEmitente = null;
 
     /**
-     *
      * @ORM\Column(name="numero_emitente", type="string", nullable=true, length=200)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $numeroEmitente = null;
 
     /**
-     *
      * @ORM\Column(name="complemento_emitente", type="string", nullable=true, length=60)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $complementoEmitente = null;
 
     /**
-     *
      * @ORM\Column(name="fone_emitente", type="string", nullable=true, length=50)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $foneEmitente = null;
 
     /**
-     *
      * @ORM\Column(name="bairro_emitente", type="string", nullable=true, length=120)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $bairroEmitente = null;
 
     /**
-     *
      * @ORM\Column(name="cidade_emitente", type="string", nullable=true, length=120)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $cidadeEmitente = null;
 
     /**
-     *
      * @ORM\Column(name="estado_emitente", type="string", nullable=true, length=2)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $estadoEmitente = null;
-
 
     /**
      * @ORM\Column(name="documento_destinatario", type="string", nullable=false)
@@ -336,105 +300,85 @@ class NotaFiscal implements EntityId
     public ?string $inscricaoEstadualDestinatario = null;
 
     /**
-     *
      * @ORM\Column(name="logradouro_destinatario", type="string", nullable=true, length=200)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $logradouroDestinatario = null;
 
     /**
-     *
      * @ORM\Column(name="numero_destinatario", type="string", nullable=true, length=200)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $numeroDestinatario = null;
 
     /**
-     *
      * @ORM\Column(name="complemento_destinatario", type="string", nullable=true, length=60)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $complementoDestinatario = null;
 
     /**
-     *
      * @ORM\Column(name="bairro_destinatario", type="string", nullable=true, length=120)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $bairroDestinatario = null;
 
     /**
-     *
      * @ORM\Column(name="cidade_destinatario", type="string", nullable=true, length=120)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $cidadeDestinatario = null;
 
     /**
-     *
      * @ORM\Column(name="estado_destinatario", type="string", nullable=true, length=2)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $estadoDestinatario = null;
 
     /**
-     *
      * @ORM\Column(name="cep_destinatario", type="string", nullable=true, length=9)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $cepDestinatario = null;
 
     /**
-     *
      * @ORM\Column(name="fone_destinatario", type="string", nullable=true, length=50)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $foneDestinatario = null;
 
     /**
-     *
      * @ORM\Column(name="email_destinatario", type="string", nullable=true, length=200)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $emailDestinatario = null;
 
     /**
-     *
      * @ORM\Column(name="motivo_cancelamento", type="string", nullable=true, length=3000)
      * @var null|string
-     *
+     * @Groups("notaFiscal")
      */
     public ?string $motivoCancelamento = null;
 
     /**
-     *
      * @ORM\Column(name="info_compl", type="string", nullable=true, length=3000)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $infoCompl = null;
 
     /**
      * @ORM\Column(name="total_descontos", type="decimal", nullable=false, precision=15, scale=2)
      * @Groups("N")
-     * @Assert\NotNull()
      * @Assert\Type(type="string")
      */
     public ?string $totalDescontos = null;
@@ -442,7 +386,6 @@ class NotaFiscal implements EntityId
     /**
      * @ORM\Column(name="subtotal", type="decimal", nullable=false, precision=15, scale=2)
      * @Groups("N")
-     * @Assert\NotNull()
      * @Assert\Type(type="string")
      */
     public ?string $subtotal = null;
@@ -450,79 +393,77 @@ class NotaFiscal implements EntityId
     /**
      * @ORM\Column(name="valor_total", type="decimal", nullable=false, precision=15, scale=2)
      * @Groups("N")
-     * @Assert\NotNull()
      * @Assert\Type(type="string")
      */
     public ?string $valorTotal = null;
 
-
     /**
      * @ORM\Column(name="transp_documento", type="string", nullable=false)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $transpDocumento = null;
 
     /**
      * @ORM\Column(name="transp_nome", type="string", nullable=false)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $transpNome = null;
 
     /**
      * @ORM\Column(name="transp_inscr_est", type="string", nullable=true)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $transpInscricaoEstadual = null;
 
     /**
      * @ORM\Column(name="transp_endereco", type="string", nullable=true)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $transpEndereco = null;
 
     /**
-     *
      * @ORM\Column(name="transp_cidade", type="string", nullable=true, length=120)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $transpCidade = null;
 
     /**
-     *
      * @ORM\Column(name="transp_estado", type="string", nullable=true, length=2)
      * @var string|null
-     *
      * @Groups("notaFiscal")
      */
     public ?string $transpEstado = null;
 
     /**
-     *
      * @ORM\Column(name="transp_especie_volumes", type="string", nullable=true, length=200)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $transpEspecieVolumes = null;
 
     /**
-     *
      * @ORM\Column(name="transp_marca_volumes", type="string", nullable=true, length=200)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $transpMarcaVolumes = null;
 
     /**
-     *
      * @ORM\Column(name="transp_modalidade_frete", type="string", nullable=false, length=30)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $transpModalidadeFrete = null;
 
     /**
-     *
      * @ORM\Column(name="transp_numeracao_volumes", type="string", nullable=true, length=200)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $transpNumeracaoVolumes = null;
 
@@ -555,113 +496,91 @@ class NotaFiscal implements EntityId
     public ?string $transpValorTotalFrete = null;
 
     /**
-     *
      * @ORM\Column(name="indicador_forma_pagto", type="string", nullable=false, length=30)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $indicadorFormaPagto = null;
 
-
     /**
-     *
      * @ORM\Column(name="a03id_nf_referenciada", type="string", nullable=true, length=100)
      * @var null|string
+     * @Groups("notaFiscal")
      */
     public ?string $a03idNfReferenciada = null;
 
     /**
-     *
      * @ORM\Column(name="xml_nota", type="string", nullable=true)
      * @var null|string
-     *
      * @NotUppercase()
      */
     private ?string $xmlNota = null;
 
-
     /**
      * Informa se o XML é de um resumo <resNFe> (ainda não foi baixada o XML da nota completa).
-     *
      * @ORM\Column(name="resumo", type="boolean", nullable=true)
      * @var null|bool
-     *
      * @Groups("notaFiscal")
      */
     public ?bool $resumo = null;
 
     /**
-     *
      * @ORM\Column(name="nrec", type="string", length=30, nullable=true)
      * @var null|string
      */
     public ?string $nRec = null;
 
     /**
-     *
      * @ORM\Column(name="cstat_lote", type="integer", nullable=true)
      * @var null|string
-     *
      * @Groups("notaFiscal")
      */
     public ?string $cStatLote = null;
 
     /**
-     *
      * @ORM\Column(name="xmotivo_lote", type="string", length=255, nullable=true)
      * @var null|string
-     *
      * @Groups("notaFiscal")
      */
     public ?string $xMotivoLote = null;
 
     /**
-     *
      * @ORM\Column(name="cstat", type="integer", nullable=true)
      * @var null|int
-     *
      * @Groups("notaFiscal")
      */
     public ?int $cStat = null;
 
     /**
-     *
      * @ORM\Column(name="xmotivo", type="string", length=255, nullable=true)
      * @var null|string
-     *
      * @Groups("notaFiscal")
      */
     public ?string $xMotivo = null;
 
     /**
-     *
      * @ORM\Column(name="manifest_dest", type="string", length=255, nullable=true)
      * @var null|string
-     *
      * @Groups("notaFiscal")
      */
     public ?string $manifestDest = null;
 
     /**
      * Informa quando foi alterado o status do último $manifestDest.
-     *
      * @ORM\Column(name="dt_manifest_dest", type="datetime", nullable=true)
      * @var null|DateTime
-     *
      * @Groups("notaFiscal")
      */
     public ?DateTime $dtManifestDest = null;
 
     /**
-     *
      * @ORM\Column(name="nsu", type="integer", nullable=false)
      * @var null|int
-     *
      * @Groups("notaFiscal")
      */
     public ?int $nsu = null;
 
     /**
-     *
      * @ORM\Column(name="json_data", type="json")
      * @var null|array
      * @NotUppercase()
@@ -670,9 +589,14 @@ class NotaFiscal implements EntityId
     public ?array $jsonData = null;
 
     /**
-     *
+     * Transient (ver getters e setters).
+     * @var int|null
+     * @Groups("notaFiscal")
+     */
+    private ?int $idDest = null;
+
+    /**
      * @var NotaFiscalItem[]|ArrayCollection
-     *
      * @ORM\OneToMany(
      *      targetEntity="NotaFiscalItem",
      *      mappedBy="notaFiscal"
@@ -682,9 +606,7 @@ class NotaFiscal implements EntityId
     public $itens;
 
     /**
-     *
      * @var NotaFiscalEvento[]|ArrayCollection
-     *
      * @ORM\OneToMany(
      *      targetEntity="NotaFiscalEvento",
      *      cascade={"all"},
@@ -695,9 +617,7 @@ class NotaFiscal implements EntityId
     public $eventos;
 
     /**
-     *
      * @var NotaFiscalCartaCorrecao[]|ArrayCollection
-     *
      * @ORM\OneToMany(
      *      targetEntity="NotaFiscalCartaCorrecao",
      *      cascade={"all"},
@@ -708,9 +628,7 @@ class NotaFiscal implements EntityId
     public $cartasCorrecao;
 
     /**
-     *
      * @var NotaFiscalHistorico[]|ArrayCollection
-     *
      * @ORM\OneToMany(
      *      targetEntity="NotaFiscalHistorico",
      *      cascade={"all"},
@@ -719,6 +637,23 @@ class NotaFiscal implements EntityId
      * )
      */
     public $historicos;
+
+
+    /** @Groups("notaFiscal") */
+    public string $msgPermiteSalvar = '';
+    /** @Groups("notaFiscal") */
+    public string $msgPermiteReimpressao = '';
+    /** @Groups("notaFiscal") */
+    public string $msgPermiteReimpressaoCancelamento = '';
+    /** @Groups("notaFiscal") */
+    public string $msgPermiteCancelamento = '';
+    /** @Groups("notaFiscal") */
+    public string $msgPermiteCartaCorrecao = '';
+    /** 
+     * @Groups("notaFiscal") 
+     * ver o getter
+     */
+    private string $msgPermiteFaturamento = '';
 
 
     public function __construct()
@@ -1096,5 +1031,168 @@ class NotaFiscal implements EntityId
         $this->transpValorTotalFrete = $transpValorTotalFrete;
     }
 
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function getDadosDuplicatas(): array
+    {
+        if (
+            $this->getXMLDecoded() &&
+            $this->getXMLDecoded()->NFe &&
+            $this->getXMLDecoded()->NFe->infNFe &&
+            $this->getXMLDecoded()->NFe->infNFe->cobr &&
+            $this->getXMLDecoded()->NFe->infNFe->cobr->dup
+        ) {
+            $duplicatas = [];
+            foreach ($this->getXMLDecoded()->NFe->infNFe->cobr->dup as $dup) {
+                $duplicatas[] = [
+                    'numero' => (string)$dup->nDup,
+                    'vencimento' => (string)$dup->dVenc,
+                    'valor' => (string)$dup->vDup,
+                ];
+            }
+            return $duplicatas;
+        } else {
+            return [];
+        }
+    }
+
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function getEmitenteCompleto(): string
+    {
+        return StringUtils::mascararCnpjCpf($this->documentoEmitente) . ' - ' . $this->xNomeEmitente;
+    }
+
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function isNossaEmissao(): bool
+    {
+        return !$this->getId() || in_array($this->documentoEmitente, explode(',', $_SERVER['FISCAL_EMITENTES']), true);
+    }
+
+    public function getIdDest(): ?int
+    {
+        $idDest = $this->jsonData['idDest'] ?? null;
+
+        if (
+            !$idDest && (
+                $this->getXMLDecoded() &&
+                $this->getXMLDecoded()->NFe &&
+                $this->getXMLDecoded()->NFe->infNFe &&
+                $this->getXMLDecoded()->NFe->infNFe->ide &&
+                $this->getXMLDecoded()->NFe->infNFe->ide->idDest)
+        ) {
+            $idDest = $this->getXMLDecoded()->NFe->infNFe->ide->idDest->__toString();
+        }
+        $this->idDest = (int)$idDest;
+        return $this->idDest;
+    }
+
+    public function setIdDest(?int $idDest): ?int
+    {
+        $this->jsonData['idDest'] = $idDest;
+        $this->idDest = $idDest;
+        return $this->idDest;
+    }
+
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function isPermiteSalvar(): bool
+    {
+        $this->msgPermiteSalvar = 'Sim';
+        if (!$this->getId()) {
+            return true;
+        }
+        if ($this->isNossaEmissao()) {
+            if (substr($this->cStat, 0, 1) !== '1') {
+                return true;
+            }
+        }
+        $this->msgPermiteSalvar = 'Não';
+        return false;
+    }
+
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function isPermiteReimpressao(): bool
+    {
+        if ($this->getId()) {
+            if (in_array((int)$this->cStat, [100, 204, 135], true)) {
+                $this->msgPermiteReimpressao = 'Sim (cStat em 100, 204 ou 135)';
+                return true;
+            }
+            // else
+            if ($this->cStat == 0 && strpos($this->xMotivo, 'DUPLICIDADE DE NF') !== FALSE) {
+                $this->msgPermiteReimpressao = 'Sim (cStat em 0 e motivo "DUPLICIDADE DE NF")';
+                return true;
+            }
+            // else
+            if ($this->getXMLDecoded() && $this->getXMLDecoded()->getName() === 'nfeProc') {
+                $this->msgPermiteReimpressao = 'Sim (com nfeProc)';
+                return true;
+            }
+        }
+        $this->msgPermiteReimpressao = 'Não';
+        return false;
+    }
+
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function isPermiteReimpressaoCancelamento(): bool
+    {
+        if ($this->getId() && $this->cStatLote == 101) {
+            $this->msgPermiteReimpressaoCancelamento = 'Sim (cStatLote em 101)';
+            return true;
+        }
+        $this->msgPermiteReimpressaoCancelamento = 'Não';
+        return false;
+    }
+
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function isPermiteCancelamento(): bool
+    {
+        if ($this->getId() && (int)$this->cStat === 100) {
+            $this->msgPermiteCancelamento = 'Sim (cStat em 100)';
+            return true;
+        }
+        $this->msgPermiteCancelamento = 'Não';
+        return false;
+    }
+
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function isPermiteCartaCorrecao(): bool
+    {
+        if ($this->getId() && (int)$this->cStat === 100) {
+            $this->msgPermiteCartaCorrecao = 'Sim (cStat em 100)';
+            return true;
+        }
+        $this->msgPermiteCartaCorrecao = 'Não';
+        return false;
+    }
+
+    public function getMsgPermiteFaturamento(): string
+    {
+        return $this->jsonData['msgPermiteFaturamento'] ?? false;
+    }
+    
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function isPermiteFaturamento(): bool
+    {
+        // verificar o beforeSave() para entender o motivo
+        // é lá também onde é setado o msgPermiteFaturamento
+        return $this->jsonData['permiteFaturamento'] ?? false;
+    }
 
 }
