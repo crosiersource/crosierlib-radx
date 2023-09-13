@@ -52,12 +52,12 @@ class NotaFiscalEntityHandler extends EntityHandler
      */
     public function beforeSave(/** @var NotaFiscal $notaFiscal */ $notaFiscal)
     {
-        if (!$notaFiscal->getId()) {
-            $this->checkNovaNota();    
-        }
-        
         if (!$notaFiscal->tipoNotaFiscal) {
             $notaFiscal->tipoNotaFiscal = 'NFE';
+        }
+
+        if (!$notaFiscal->getId()) {
+            $this->checkNovaNota($notaFiscal);    
         }
         
         if (!$notaFiscal->entradaSaida) {
