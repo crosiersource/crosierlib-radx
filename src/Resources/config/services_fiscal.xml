@@ -80,9 +80,7 @@
       id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_carta_correcao_entity_handler"
       class="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler"
       parent="CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler">
-      <argument type="service" id="doctrine"/>
-      <argument type="service" id="security.helper"/>
-      <argument type="service" id="parameter_bag"/>
+      <argument type="service" id="service_container"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler"
              public="true"

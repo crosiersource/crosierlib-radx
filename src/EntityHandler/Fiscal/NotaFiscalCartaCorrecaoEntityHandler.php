@@ -2,9 +2,15 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NotaFiscalBusiness;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalCartaCorrecao;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Security\Core\Security;
 
 /**
  * Class NotaFiscalCartaCorrecaoEntityHandler
@@ -13,6 +19,22 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalCartaCorrecao;
  */
 class NotaFiscalCartaCorrecaoEntityHandler extends EntityHandler
 {
+
+    private bool $enviando = false;
+    
+    protected bool $isTransacionalSave = true;
+
+    public ContainerInterface $container;
+
+    public function __construct(ManagerRegistry       $doctrine,
+                                Security              $security,
+                                ParameterBagInterface $parameterBag,
+                                SyslogBusiness        $syslog,
+                                ContainerInterface    $container)
+    {
+        parent::__construct($doctrine, $security, $parameterBag, $syslog->setApp('radx')->setComponent(self::class));
+        $this->container = $container;
+    }
 
     public function getEntityClass()
     {
@@ -33,9 +55,8 @@ class NotaFiscalCartaCorrecaoEntityHandler extends EntityHandler
             throw new ViewException('É necessário informar a mensagem');
         }
         if (!$cartaCorrecao->dtCartaCorrecao) {
-            throw new ViewException('É necessário informar a data/hora');
+            $cartaCorrecao->dtCartaCorrecao = new \DateTime();
         }
-
 
         try {
             $conn = $this->getDoctrine()->getConnection();
@@ -56,7 +77,11 @@ class NotaFiscalCartaCorrecaoEntityHandler extends EntityHandler
      */
     public function afterSave($cartaCorrecao)
     {
-        $notaFiscal = $this->notaFiscalBusiness->cartaCorrecao($cartaCorrecao);
+        if (!$this->enviando) {
+            $this->enviando = true;
+            $notaFiscalBusiness = $this->container->get(NotaFiscalBusiness::class);
+            $notaFiscalBusiness->cartaCorrecao($cartaCorrecao);
+        }
     }
 
 

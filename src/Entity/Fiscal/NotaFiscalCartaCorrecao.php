@@ -11,6 +11,7 @@ use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
+use Symfony\Component\Serializer\Annotation\Groups;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -20,13 +21,13 @@ use Doctrine\ORM\Mapping as ORM;
  *     denormalizationContext={"groups"={"notaFiscalCartaCorrecao"},"enable_max_depth"=true},
  *
  *     itemOperations={
- *          "get"={"path"="/fis/notaFiscalCartaCorrecao/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fis/notaFiscalCartaCorrecao/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "get"={"path"="/fis/notaFiscalCartaCorrecao/{id}", "security"="is_granted('ROLE_FISCAL')"},
+ *          "put"={"path"="/fis/notaFiscalCartaCorrecao/{id}", "security"="is_granted('ROLE_FISCAL')"},
  *          "delete"={"path"="/fis/notaFiscalCartaCorrecao/{id}", "security"="is_granted('ROLE_ADMIN')"}
  *     },
  *     collectionOperations={
- *          "get"={"path"="/fis/notaFiscalCartaCorrecao", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fis/notaFiscalCartaCorrecao", "security"="is_granted('ROLE_FINAN')"}
+ *          "get"={"path"="/fis/notaFiscalCartaCorrecao", "security"="is_granted('ROLE_FISCAL')"},
+ *          "post"={"path"="/fis/notaFiscalCartaCorrecao", "security"="is_granted('ROLE_FISCAL')"}
  *     },
  *
  *     attributes={
@@ -36,8 +37,18 @@ use Doctrine\ORM\Mapping as ORM;
  * )
  * @ApiFilter(PropertyFilter::class)
  *
- * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "id": "exact",
+ *     "notaFiscal": "exact",
+ *     "cartaCorrecao": "partial"
+ * })
+ * 
+ * @ApiFilter(OrderFilter::class, properties={
+ *     "id",
+ *     "updated",
+ *     "seq", 
+ *     "dtCartaCorrecao" 
+ * }, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler")
  *
@@ -50,9 +61,9 @@ class NotaFiscalCartaCorrecao implements EntityId
     use EntityIdTrait;
 
     /**
-     *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal", inversedBy="itens")
-     * @ORM\JoinColumn(name="nota_fiscal_id", nullable=true)
+     * @ORM\JoinColumn(name="nota_fiscal_id")
+     * @Groups("notaFiscalCartaCorrecao")
      * @var $notaFiscal null|NotaFiscal
      */
     public ?NotaFiscal $notaFiscal = null;
@@ -61,18 +72,19 @@ class NotaFiscalCartaCorrecao implements EntityId
      * @NotUppercase()
      * @ORM\Column(name="carta_correcao", type="string", nullable=true)
      * @var null|string
+     * @Groups("notaFiscalCartaCorrecao")
      */
     public ?string $cartaCorrecao = null;
 
     /**
-     *
+     * @Groups("notaFiscalCartaCorrecao")
      * @ORM\Column(name="seq", type="integer", nullable=true)
      * @var null|int
      */
     public ?int $seq = null;
 
     /**
-     *
+     * @Groups("notaFiscalCartaCorrecao")
      * @ORM\Column(name="dt_carta_correcao", type="datetime", nullable=false)
      * @var null|DateTime
      */
@@ -82,6 +94,7 @@ class NotaFiscalCartaCorrecao implements EntityId
      * @NotUppercase()
      * @ORM\Column(name="msg_retorno", type="string", nullable=true)
      * @var null|string
+     * @Groups("notaFiscalCartaCorrecao")
      */
     public ?string $msgRetorno = null;
 

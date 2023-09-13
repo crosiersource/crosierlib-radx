@@ -343,16 +343,17 @@ class SpedNFeBusiness
             $itemXML->prod->uTrib = $nfItem->unidade;
             $itemXML->prod->qTrib = $nfItem->qtde;
             $itemXML->prod->vUnTrib = number_format($nfItem->valorUnit, 2, '.', '');
+
+            if ($rateioFrete) {
+                $itemXML->prod->vFrete = number_format($rateioFrete[$i - 1], 2, '.', '');
+            }
+            
             $this->syslog->info('Verificando desconto do item (' . $nfItem->valorDesconto . ')');
             if (bccomp($nfItem->valorDesconto, 0.00, 2)) {
                 $itemXML->prod->vDesc = number_format(abs($nfItem->valorDesconto), 2, '.', '');
                 $this->syslog->info('Desconto no XML: ' . $itemXML->prod->vDesc);
             } else {
                 $this->syslog->info('Item sem Desconto');
-            }
-
-            if ($rateioFrete) {
-                $itemXML->prod->vFrete = number_format($rateioFrete[$i - 1], 2, '.', '');
             }
 
             $itemXML->prod->indTot = '1';
