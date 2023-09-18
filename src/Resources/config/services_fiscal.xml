@@ -241,7 +241,7 @@
 
 
     <!-- DistDFeBusiness -->
-    <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"
+    <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_dfe_business"
              class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\DistDFeBusiness">
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
       <argument type="service"
@@ -250,13 +250,13 @@
                 id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_entity_handler"/>
       <argument type="service"
                 id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_item_entity_handler"/>
-      <argument type="service" id="monolog.logger"/>
+      <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
       <argument type="service" id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"/>
       <argument type="service"
                 id="crosier_source.crosier_lib_radx_bundle.entity_handler.fiscal.nota_fiscal_evento_entity_handler"/>
     </service>
     <service id="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\DistDFeBusiness"
-             public="true" alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_nfe_business"/>
+             public="true" alias="crosier_source.crosier_lib_radx_bundle.business.fiscal.dist_dfe_business"/>
 
 
   </services>

@@ -2,7 +2,10 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Business\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
+use CrosierSource\CrosierLibBaseBundle\Entity\Logs\Syslog;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
+use CrosierSource\CrosierLibBaseBundle\Messenger\CrosierQueueHandler;
 use CrosierSource\CrosierLibBaseBundle\Utils\APIUtils\CrosierApiResponse;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\DistDFe;
@@ -37,37 +40,33 @@ class DistDFeBusiness
 
     private NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler;
 
-    private LoggerInterface $logger;
+    private SyslogBusiness $logger;
 
     private NFeUtils $nfeUtils;
 
     private NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler;
 
+    private CrosierQueueHandler $crosierQueueHandler;
+    
+    
 
-    /**
-     * @param EntityManagerInterface $doctrine
-     * @param DistDFeEntityHandler $distDFeEntityHandler
-     * @param NotaFiscalEntityHandler $notaFiscalEntityHandler
-     * @param NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler
-     * @param LoggerInterface $logger
-     * @param NFeUtils $nfeUtils
-     * @param NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler
-     */
     public function __construct(EntityManagerInterface        $doctrine,
                                 DistDFeEntityHandler          $distDFeEntityHandler,
                                 NotaFiscalEntityHandler       $notaFiscalEntityHandler,
                                 NotaFiscalItemEntityHandler   $notaFiscalItemEntityHandler,
                                 LoggerInterface               $logger,
                                 NFeUtils                      $nfeUtils,
-                                NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler)
+                                NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler,
+                                CrosierQueueHandler           $crosierQueueHandler)
     {
         $this->doctrine = $doctrine;
         $this->distDFeEntityHandler = $distDFeEntityHandler;
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
         $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
-        $this->logger = $logger;
+        $this->logger = $logger->setApp('radx')->setComponent(self::class);
         $this->nfeUtils = $nfeUtils;
         $this->notaFiscalEventoEntityHandler = $notaFiscalEventoEntityHandler;
+        $this->crosierQueueHandler = $crosierQueueHandler;
     }
 
     /**
@@ -697,6 +696,8 @@ class DistDFeBusiness
                     $nf = $this->nfeProc2NotaFiscal($cnpjEmUso, $distDFe->getXMLDecoded(), null, $distDFe);
                     $distDFe->notaFiscal = $nf;
                     $this->distDFeEntityHandler->save($distDFe);
+                    $this->logger->info('DistDFe processado: ' . $distDFe->chave . ' (chamando fiscal.eventos.nova_nf_com_xml)');
+                    $this->crosierQueueHandler->post('fiscal.eventos.nova_nf_com_xml', ['id' => $nf->getId()]);
                 } elseif ($xmlName === 'resNFe') {
                     $this->resNfe2NotaFiscal($distDFe);
                 } else {

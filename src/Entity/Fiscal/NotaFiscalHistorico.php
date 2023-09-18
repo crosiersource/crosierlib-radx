@@ -13,9 +13,9 @@ use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- *
  * Entidade que guarda informações sobre o histórico da nota fiscal.
  *
  * @ApiResource(
@@ -23,13 +23,13 @@ use Doctrine\ORM\Mapping as ORM;
  *     denormalizationContext={"groups"={"notaFiscalHistorico"},"enable_max_depth"=true},
  *
  *     itemOperations={
- *          "get"={"path"="/fis/notaFiscalHistorico/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fis/notaFiscalHistorico/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "get"={"path"="/fis/notaFiscalHistorico/{id}", "security"="is_granted('ROLE_FISCAL')"},
+ *          "put"={"path"="/fis/notaFiscalHistorico/{id}", "security"="is_granted('ROLE_FISCAL')"},
  *          "delete"={"path"="/fis/notaFiscalHistorico/{id}", "security"="is_granted('ROLE_ADMIN')"}
  *     },
  *     collectionOperations={
- *          "get"={"path"="/fis/notaFiscalHistorico", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fis/notaFiscalHistorico", "security"="is_granted('ROLE_FINAN')"}
+ *          "get"={"path"="/fis/notaFiscalHistorico", "security"="is_granted('ROLE_FISCAL')"},
+ *          "post"={"path"="/fis/notaFiscalHistorico", "security"="is_granted('ROLE_FISCAL')"}
  *     },
  *
  *     attributes={
@@ -39,11 +39,18 @@ use Doctrine\ORM\Mapping as ORM;
  * )
  * @ApiFilter(PropertyFilter::class)
  *
- * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *      "id": "exact",
+ *      "notaFiscal": "exact"
+ *  })
+ *
+ * @ApiFilter(OrderFilter::class, properties={
+ *     "id",
+ *     "updated",
+ *     "dtHistorico"
+ * }, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler")
- *
  * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalHistoricoRepository")
  * @ORM\Table(name="fis_nf_historico")
  *
@@ -55,132 +62,41 @@ class NotaFiscalHistorico implements EntityId
     use EntityIdTrait;
 
     /**
-     *
-     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal", inversedBy="historicos")
-     * @ORM\JoinColumn(name="fis_nf_id", nullable=false)
-     *
-     * @var $fisNf null|NotaFiscal
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal")
+     * @ORM\JoinColumn(name="fis_nf_id")
+     * @Groups("notaFiscalHistorico")
+     * @var $notaFiscal null|NotaFiscal
      */
     public ?NotaFiscal $notaFiscal = null;
 
     /**
-     *
      * @ORM\Column(name="codigo_status", type="integer", nullable=false)
+     * @Groups("notaFiscalHistorico")
      * @var null|int
      */
     public ?int $codigoStatus = null;
 
     /**
-     *
      * @ORM\Column(name="dt_historico", type="datetime", nullable=false)
+     * @Groups("notaFiscalHistorico")
      * @var null|DateTime
      */
     public ?DateTime $dtHistorico = null;
 
     /**
-     *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=2000)
+     * @Groups("notaFiscalHistorico")
      * @var null|string
      */
     public ?string $descricao = null;
 
     /**
-     *
      * @ORM\Column(name="obs", type="string", nullable=false, length=255)
+     * @Groups("notaFiscalHistorico")
      * @var null|string
      * @NotUppercase()
      */
     public ?string $obs = null;
-
-    /**
-     * @return NotaFiscal|null
-     */
-    public function getNotaFiscal(): ?NotaFiscal
-    {
-        return $this->notaFiscal;
-    }
-
-    /**
-     * @param NotaFiscal|null $notaFiscal
-     * @return NotaFiscalHistorico
-     */
-    public function setNotaFiscal(?NotaFiscal $notaFiscal): NotaFiscalHistorico
-    {
-        $this->notaFiscal = $notaFiscal;
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getCodigoStatus(): ?int
-    {
-        return $this->codigoStatus;
-    }
-
-    /**
-     * @param int|null $codigoStatus
-     * @return NotaFiscalHistorico
-     */
-    public function setCodigoStatus(?int $codigoStatus): NotaFiscalHistorico
-    {
-        $this->codigoStatus = $codigoStatus;
-        return $this;
-    }
-
-    /**
-     * @return DateTime|null
-     */
-    public function getDtHistorico(): ?DateTime
-    {
-        return $this->dtHistorico;
-    }
-
-    /**
-     * @param DateTime|null $dtHistorico
-     * @return NotaFiscalHistorico
-     */
-    public function setDtHistorico(?DateTime $dtHistorico): NotaFiscalHistorico
-    {
-        $this->dtHistorico = $dtHistorico;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getDescricao(): ?string
-    {
-        return $this->descricao;
-    }
-
-    /**
-     * @param null|string $descricao
-     * @return NotaFiscalHistorico
-     */
-    public function setDescricao(?string $descricao): NotaFiscalHistorico
-    {
-        $this->descricao = $descricao;
-        return $this;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getObs(): ?string
-    {
-        return $this->obs;
-    }
-
-    /**
-     * @param null|string $obs
-     * @return NotaFiscalHistorico
-     */
-    public function setObs(?string $obs): NotaFiscalHistorico
-    {
-        $this->obs = $obs;
-        return $this;
-    }
 
 
 }

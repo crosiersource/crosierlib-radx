@@ -825,6 +825,15 @@ class NotaFiscal implements EntityId
         }
     }
 
+    /**
+     * @Groups("notaFiscal")
+     * @return bool
+     */
+    public function isPossuiXml(): bool
+    {
+        return $this->xmlNota !== null;
+    }
+
 
     /**
      * @return string|null

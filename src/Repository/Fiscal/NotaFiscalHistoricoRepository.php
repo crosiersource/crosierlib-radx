@@ -3,7 +3,7 @@
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Fiscal;
 
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
-use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalHistorico;
 
 /**
  * Repository para a entidade NotaFiscalHistorico.
@@ -19,6 +19,6 @@ class NotaFiscalHistoricoRepository extends FilterRepository
      */
     public function getEntityClass(): string
     {
-        return NotaFiscal::class;
+        return NotaFiscalHistorico::class;
     }
 }
