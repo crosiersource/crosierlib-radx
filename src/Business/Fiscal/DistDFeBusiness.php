@@ -3,7 +3,6 @@
 namespace CrosierSource\CrosierLibRadxBundle\Business\Fiscal;
 
 use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
-use CrosierSource\CrosierLibBaseBundle\Entity\Logs\Syslog;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Messenger\CrosierQueueHandler;
 use CrosierSource\CrosierLibBaseBundle\Utils\APIUtils\CrosierApiResponse;
@@ -22,7 +21,6 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\DistDFeRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
@@ -47,14 +45,13 @@ class DistDFeBusiness
     private NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler;
 
     private CrosierQueueHandler $crosierQueueHandler;
-    
-    
+
 
     public function __construct(EntityManagerInterface        $doctrine,
                                 DistDFeEntityHandler          $distDFeEntityHandler,
                                 NotaFiscalEntityHandler       $notaFiscalEntityHandler,
                                 NotaFiscalItemEntityHandler   $notaFiscalItemEntityHandler,
-                                LoggerInterface               $logger,
+                                SyslogBusiness                $logger,
                                 NFeUtils                      $nfeUtils,
                                 NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler,
                                 CrosierQueueHandler           $crosierQueueHandler)
