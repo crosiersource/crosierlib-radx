@@ -180,7 +180,7 @@
     <service id="crosier_source.crosier_lib_radx_bundle.business.fiscal.nfe_utils"
              class="CrosierSource\CrosierLibRadxBundle\Business\Fiscal\NFeUtils">
       <argument type="service" id="doctrine.dbal.default_connection"/>
-      <argument type="service" id="monolog.logger"/>
+      <argument type="service" id="crosier_source.crosier_lib_base_bundle.business.config.syslog_business"/>
       <argument type="service"
                 id="crosier_source.crosier_lib_base_bundle.entity_handler.config.app_config_entity_handler"/>
       <argument type="service" id="security.helper"/>

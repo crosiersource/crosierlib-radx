@@ -862,13 +862,14 @@ class DistDFeBusiness
                     $distDFe->nSeqEvento = (int)$xml->evento->infEvento->nSeqEvento->__toString();
                 }
                 if (!$chave) {
-                    throw new \RuntimeException('Não consegui encontrar a chave');
+                    throw new \RuntimeException('Não consegui encontrar a chave (tpEvento: ' + $xml->tpEvento->__toString() . ')');
                 }
                 $distDFe->proprio = $nfeConfigs['cnpj'] === $cnpj;
                 $distDFe->tipoDistDFe = $xml->getName();
                 $distDFe->chave = $chave;
                 $this->distDFeEntityHandler->save($distDFe);
             } catch (\Exception $e) {
+                $this->logger->error($e->getMessage());
                 $this->logger->error('Erro ao extrair chave do DistDFe id=' . $distDFe->getId());
             }
         }

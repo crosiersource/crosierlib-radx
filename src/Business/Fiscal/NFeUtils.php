@@ -3,6 +3,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Business\Fiscal;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Entity\Config\AppConfig;
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\Config\AppConfigEntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
@@ -13,7 +14,6 @@ use Doctrine\DBAL\Exception;
 use NFePHP\Common\Certificate;
 use NFePHP\NFe\Tools;
 use Psr\Cache\InvalidArgumentException;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Security\Core\Security;
 
@@ -25,7 +25,7 @@ class NFeUtils
 
     public Connection $conn;
 
-    private LoggerInterface $logger;
+    private SyslogBusiness $logger;
 
     private AppConfigEntityHandler $appConfigEntityHandler;
 
@@ -35,14 +35,19 @@ class NFeUtils
     /**
      * NFeUtils constructor.
      * @param Connection $conn
-     * @param LoggerInterface $logger
+     * @param SyslogBusiness $logger
      * @param AppConfigEntityHandler $appConfigEntityHandler
      * @param Security $security
      */
-    public function __construct(Connection $conn, LoggerInterface $logger, AppConfigEntityHandler $appConfigEntityHandler, Security $security)
+    public function __construct(
+        Connection             $conn,
+        SyslogBusiness         $logger,
+        AppConfigEntityHandler $appConfigEntityHandler,
+        Security               $security
+    )
     {
         $this->conn = $conn;
-        $this->logger = $logger;
+        $this->logger = $logger->setApp('radx')->setComponent(self::class)->setEcho(true);
         $this->appConfigEntityHandler = $appConfigEntityHandler;
         $this->security = $security;
     }
@@ -262,7 +267,7 @@ class NFeUtils
             unset($a['certificado'], $a['certificadoPwd']);
             return $a;
         } catch (\Throwable $e) {
-            $this->logger->error('Erro ao obter nfeConfigs do cachê');
+            $this->logger->error('Erro ao obter nfeConfigs do cachê (NfeUtils)');
             $this->logger->error($e->getMessage());
             throw new ViewException('Erro ao obter nfeConfigs do cachê');
         }
