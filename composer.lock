@@ -177,16 +177,16 @@
         },
         {
             "name": "crosiersource/crosierlib-base",
-            "version": "v1.9.6",
+            "version": "v1.9.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
-                "reference": "6489535b50c593ae88a34035f09c2d388b5c39f3"
+                "reference": "3c55bccf43985c40e8bc92b8c7aac8406c78ef63"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/6489535b50c593ae88a34035f09c2d388b5c39f3",
-                "reference": "6489535b50c593ae88a34035f09c2d388b5c39f3",
+                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/3c55bccf43985c40e8bc92b8c7aac8406c78ef63",
+                "reference": "3c55bccf43985c40e8bc92b8c7aac8406c78ef63",
                 "shasum": ""
             },
             "require": {
@@ -220,6 +220,7 @@
                 "symfony/asset": "5.4.*",
                 "symfony/cache": "5.4.*",
                 "symfony/console": "5.4.*",
+                "symfony/debug-bundle": "5.4.*",
                 "symfony/doctrine-messenger": "5.4.*",
                 "symfony/dotenv": "5.4.*",
                 "symfony/expression-language": "5.4.*",
@@ -258,7 +259,6 @@
                 "phpunit/phpunit": "^9.5",
                 "symfony/browser-kit": "5.4.*",
                 "symfony/css-selector": "5.4.*",
-                "symfony/debug-bundle": "5.4.*",
                 "symfony/maker-bundle": "^1.0",
                 "symfony/phpunit-bridge": "^5.4",
                 "symfony/stopwatch": "5.4.*",
@@ -289,9 +289,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
-                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.9.6"
+                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.9.7"
             },
-            "time": "2023-09-18T23:52:37+00:00"
+            "time": "2023-09-19T00:01:42+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -4642,6 +4642,85 @@
                 }
             ],
             "time": "2023-08-07T06:12:30+00:00"
+        },
+        {
+            "name": "symfony/debug-bundle",
+            "version": "v5.4.26",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/debug-bundle.git",
+                "reference": "17c372891d4554d5d2f5cf602aef02c859ad52d8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/debug-bundle/zipball/17c372891d4554d5d2f5cf602aef02c859ad52d8",
+                "reference": "17c372891d4554d5d2f5cf602aef02c859ad52d8",
+                "shasum": ""
+            },
+            "require": {
+                "ext-xml": "*",
+                "php": ">=7.2.5",
+                "symfony/http-kernel": "^4.4|^5.0|^6.0",
+                "symfony/polyfill-php80": "^1.16",
+                "symfony/twig-bridge": "^4.4|^5.0|^6.0",
+                "symfony/var-dumper": "^4.4|^5.0|^6.0"
+            },
+            "conflict": {
+                "symfony/config": "<4.4",
+                "symfony/dependency-injection": "<5.2"
+            },
+            "require-dev": {
+                "symfony/config": "^4.4|^5.0|^6.0",
+                "symfony/dependency-injection": "^4.4|^5.0|^6.0",
+                "symfony/web-profiler-bundle": "^4.4|^5.0|^6.0"
+            },
+            "suggest": {
+                "symfony/config": "For service container configuration",
+                "symfony/dependency-injection": "For using as a service from the container"
+            },
+            "type": "symfony-bundle",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Bundle\\DebugBundle\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides a tight integration of the Symfony VarDumper component and the ServerLogCommand from MonologBridge into the Symfony full-stack framework",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/debug-bundle/tree/v5.4.26"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2023-07-11T21:42:03+00:00"
         },
         {
             "name": "symfony/dependency-injection",
