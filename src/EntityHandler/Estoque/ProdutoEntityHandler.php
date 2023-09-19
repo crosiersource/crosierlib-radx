@@ -202,8 +202,7 @@ class ProdutoEntityHandler extends EntityHandler
         /** @var ProdutoImagem $imagem */
         foreach ($produto->imagens as $imagem) {
 
-            $arquivo = $_SERVER['PASTA_FOTOS_PRODUTOS'] . '/public' . $this->uploaderHelper->asset($imagem, 'imageFile');
-
+            $arquivo = str_replace('/public/images/produtos', '', $_SERVER['PASTA_FOTOS_PRODUTOS']) . '/public' . $this->uploaderHelper->asset($imagem, 'imageFile');
 
             if (!file_exists($arquivo)) {
                 /** @var Connection $conn */
@@ -411,7 +410,7 @@ class ProdutoEntityHandler extends EntityHandler
             $pathinfo = pathinfo($url);
             $parsedUrl = parse_url($url);
             $imgUtils->resizeToWidth(50);// '%kernel.project_dir%/public/images/produtos'
-            $thumbnail = $_SERVER['PASTA_FOTOS_PRODUTOS'] . '/public' .
+            $thumbnail = str_replace('/public/images/produtos', '', $_SERVER['PASTA_FOTOS_PRODUTOS']) . '/public' .
                 str_replace($pathinfo['basename'], '', $parsedUrl['path']) .
                 $pathinfo['filename'] . '_thumbnail.' . $pathinfo['extension'];
             $this->logger->debug('thumbnail: "' . $thumbnail . '"');
