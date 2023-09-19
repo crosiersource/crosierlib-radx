@@ -1325,6 +1325,9 @@ class NotaFiscalBusiness
                 $notaFiscal = $this->spedNFeBusiness->gerarXML($notaFiscal);
             }
             $xml = $notaFiscal->getXMLDecodedAsString();
+            if (!$xml) {
+                throw new \RuntimeException('XML não encontrado');
+            }
             $danfe = new Danfe($xml);
             $danfe->debugMode(false);
             $danfe->creditsIntegratorFooter('EKT Plus');
@@ -1342,16 +1345,13 @@ class NotaFiscalBusiness
             if ($notaFiscal->documentoEmitente && in_array($notaFiscal->documentoEmitente, $this->nfeUtils->getNFeConfigsCNPJs(), true)) {
                 $nfeConfigsEmUso = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
 
-                $response = file_get_contents($nfeConfigsEmUso['logo_fiscal'] ?? $_SERVER['CROSIER_LOGO'], false, stream_context_create($arrContextOptions));
+                $response = file_get_contents($nfeConfigsEmUso['logo_fiscal'] ?: $_SERVER['CROSIER_LOGO'], false, stream_context_create($arrContextOptions));
                 $logo = 'data://text/plain;base64,' . base64_encode($response);
-
             }
-
 
             $pdf = $danfe->render($logo);
 
             return $pdf;
-
         } catch (\Throwable $e) {
             throw new \RuntimeException('Ocorreu um erro durante o processamento :' . $e->getMessage());
         }
