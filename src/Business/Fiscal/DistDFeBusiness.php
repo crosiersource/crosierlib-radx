@@ -693,7 +693,7 @@ class DistDFeBusiness
                     $nf = $this->nfeProc2NotaFiscal($cnpjEmUso, $distDFe->getXMLDecoded(), null, $distDFe);
                     $distDFe->notaFiscal = $nf;
                     $this->distDFeEntityHandler->save($distDFe);
-                    $this->logger->info('DistDFe processado: ' . $distDFe->chave . ' (chamando fiscal.eventos.nova_nf_com_xml)');
+                    $this->logger->info('CrosierQueue: DistDFe processado: ' . $distDFe->chave . ' (chamando fiscal.eventos.nova_nf_com_xml)');
                     $this->crosierQueueHandler->post('fiscal.eventos.nova_nf_com_xml', ['id' => $nf->getId()]);
                 } elseif ($xmlName === 'resNFe') {
                     $this->resNfe2NotaFiscal($distDFe);
