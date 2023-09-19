@@ -1089,7 +1089,7 @@ class NotaFiscal implements EntityId
      */
     public function isNossaEmissao(): bool
     {
-        return !$this->getId() || in_array($this->documentoEmitente, explode(',', $_SERVER['FISCAL_EMITENTES']), true);
+        return in_array($this->documentoEmitente, explode(',', $_SERVER['FISCAL_EMITENTES']), true);
     }
 
     public function getIdDest(): ?int

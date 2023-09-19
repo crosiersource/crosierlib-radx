@@ -56,7 +56,7 @@ class NotaFiscalEntityHandler extends EntityHandler
             $notaFiscal->tipoNotaFiscal = 'NFE';
         }
 
-        if (!$notaFiscal->getId()) {
+        if (!$notaFiscal->getId() && $notaFiscal->isNossaEmissao()) {
             $this->checkNovaNota($notaFiscal);    
         }
         
