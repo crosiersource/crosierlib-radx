@@ -273,9 +273,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("qtde")
-     * @return float
+     * @return null|float
      */
-    public function getQtdeFormatted(): float
+    public function getQtdeFormatted(): ?float
     {
         return (float)$this->qtde;
     }
@@ -284,9 +284,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("qtde")
-     * @param float $qtde
+     * @param null|float $qtde
      */
-    public function setQtdeFormatted(float $qtde)
+    public function setQtdeFormatted(?float $qtde)
     {
         $this->qtde = $qtde;
     }
@@ -295,9 +295,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("valorTotal")
-     * @return float
+     * @return null|float
      */
-    public function getValorTotalFormatted(): float
+    public function getValorTotalFormatted(): ?float
     {
         return (float)$this->valorTotal;
     }
@@ -306,9 +306,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("valorTotal")
-     * @param float $valorTotal
+     * @param null|float $valorTotal
      */
-    public function setValorTotalFormatted(float $valorTotal)
+    public function setValorTotalFormatted(?float $valorTotal)
     {
         $this->valorTotal = $valorTotal;
     }
@@ -317,9 +317,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("valorUnit")
-     * @return float
+     * @return null|float
      */
-    public function getValorUnitFormatted(): float
+    public function getValorUnitFormatted(): ?float
     {
         return (float)$this->valorUnit;
     }
@@ -328,9 +328,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("valorUnit")
-     * @param float $valorUnit
+     * @param null|float $valorUnit
      */
-    public function setValorUnitFormatted(float $valorUnit)
+    public function setValorUnitFormatted(?float $valorUnit)
     {
         $this->valorUnit = $valorUnit;
     }
@@ -339,9 +339,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("valorDesconto")
-     * @return float
+     * @return null|float
      */
-    public function getValorDescontoFormatted(): float
+    public function getValorDescontoFormatted(): ?float
     {
         return (float)$this->valorDesconto;
     }
@@ -350,9 +350,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("valorDesconto")
-     * @param float $valorDesconto
+     * @param null|float $valorDesconto
      */
-    public function setValorDescontoFormatted(float $valorDesconto)
+    public function setValorDescontoFormatted(?float $valorDesconto)
     {
         $this->valorDesconto = $valorDesconto;
     }
@@ -361,9 +361,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("subtotal")
-     * @return float
+     * @return null|float
      */
-    public function getSubTotalFormatted(): float
+    public function getSubTotalFormatted(): ?float
     {
         return $this->subtotal;
     }
@@ -372,9 +372,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("subtotal")
-     * @param float $subtotal
+     * @param null|float $subtotal
      */
-    public function setSubTotalFormatted(float $subtotal)
+    public function setSubTotalFormatted(?float $subtotal)
     {
         $this->subtotal = $subtotal;
     }
@@ -383,9 +383,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("icmsValor")
-     * @return float
+     * @return null|float
      */
-    public function getIcmsValorFormatted(): float
+    public function getIcmsValorFormatted(): ?float
     {
         return (float)$this->icmsValor;
     }
@@ -394,9 +394,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("icmsValor")
-     * @param float $icmsValor
+     * @param null|float $icmsValor
      */
-    public function setIcmsValorFormatted(float $icmsValor)
+    public function setIcmsValorFormatted(?float $icmsValor)
     {
         $this->icmsValor = $icmsValor;
     }
@@ -405,9 +405,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("icmsValorBc")
-     * @return float
+     * @return null|float
      */
-    public function getIcmsValorBcFormatted(): float
+    public function getIcmsValorBcFormatted(): ?float
     {
         return (float)$this->icmsValorBc;
     }
@@ -416,9 +416,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("icmsValorBc")
-     * @param float $icmsValorBc
+     * @param null|float $icmsValorBc
      */
-    public function setIcmsValorBcFormatted(float $icmsValorBc)
+    public function setIcmsValorBcFormatted(?float $icmsValorBc)
     {
         $this->icmsValorBc = $icmsValorBc;
     }
@@ -427,9 +427,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("icmsAliquota")
-     * @return float
+     * @return null|float
      */
-    public function getIcmsAliquotaFormatted(): float
+    public function getIcmsAliquotaFormatted(): ?float
     {
         return (float)$this->icmsAliquota;
     }
@@ -438,9 +438,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("icmsAliquota")
-     * @param float $icmsAliquota
+     * @param null|float $icmsAliquota
      */
-    public function setIcmsAliquotaFormatted(float $icmsAliquota)
+    public function setIcmsAliquotaFormatted(?float $icmsAliquota)
     {
         $this->icmsAliquota = $icmsAliquota;
     }
@@ -449,9 +449,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("pisValor")
-     * @return float
+     * @return null|float
      */
-    public function getPisValorFormatted(): float
+    public function getPisValorFormatted(): ?float
     {
         return (float)$this->pisValor;
     }
@@ -460,9 +460,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("pisValor")
-     * @param float $pisValor
+     * @param null|float $pisValor
      */
-    public function setPisValorFormatted(float $pisValor)
+    public function setPisValorFormatted(?float $pisValor)
     {
         $this->pisValor = $pisValor;
     }
@@ -471,9 +471,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("pisValorBc")
-     * @return float
+     * @return null|float
      */
-    public function getPisValorBcFormatted(): float
+    public function getPisValorBcFormatted(): ?float
     {
         return (float)$this->pisValorBc;
     }
@@ -482,9 +482,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("pisValorBc")
-     * @param float $pisValorBc
+     * @param null|float $pisValorBc
      */
-    public function setPisValorBcFormatted(float $pisValorBc)
+    public function setPisValorBcFormatted(?float $pisValorBc)
     {
         $this->pisValorBc = $pisValorBc;
     }
@@ -493,9 +493,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("pisAliquota")
-     * @return float
+     * @return null|float
      */
-    public function getPisAliquotaFormatted(): float
+    public function getPisAliquotaFormatted(): ?float
     {
         return (float)$this->pisAliquota;
     }
@@ -504,9 +504,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("pisAliquota")
-     * @param float $pisAliquota
+     * @param null|float $pisAliquota
      */
-    public function setPisAliquotaFormatted(float $pisAliquota)
+    public function setPisAliquotaFormatted(?float $pisAliquota)
     {
         $this->pisAliquota = $pisAliquota;
     }
@@ -515,9 +515,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("cofinsValor")
-     * @return float
+     * @return null|float
      */
-    public function getCofinsValorFormatted(): float
+    public function getCofinsValorFormatted(): ?float
     {
         return (float)$this->cofinsValor;
     }
@@ -526,9 +526,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("cofinsValor")
-     * @param float $cofinsValor
+     * @param null|float $cofinsValor
      */
-    public function setCofinsValorFormatted(float $cofinsValor)
+    public function setCofinsValorFormatted(?float $cofinsValor)
     {
         $this->cofinsValor = $cofinsValor;
     }
@@ -537,9 +537,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("cofinsValorBc")
-     * @return float
+     * @return null|float
      */
-    public function getCofinsValorBcFormatted(): float
+    public function getCofinsValorBcFormatted(): ?float
     {
         return (float)$this->cofinsValorBc;
     }
@@ -548,9 +548,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("cofinsValorBc")
-     * @param float $cofinsValorBc
+     * @param null|float $cofinsValorBc
      */
-    public function setCofinsValorBcFormatted(float $cofinsValorBc)
+    public function setCofinsValorBcFormatted(?float $cofinsValorBc)
     {
         $this->cofinsValorBc = $cofinsValorBc;
     }
@@ -559,9 +559,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("cofinsAliquota")
-     * @return float
+     * @return null|float
      */
-    public function getCofinsAliquotaFormatted(): float
+    public function getCofinsAliquotaFormatted(): ?float
     {
         return (float)$this->cofinsAliquota;
     }
@@ -570,9 +570,9 @@ class NotaFiscalItem implements EntityId
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
      * @SerializedName("cofinsAliquota")
-     * @param float $cofinsAliquota
+     * @param null|float $cofinsAliquota
      */
-    public function setCofinsAliquotaFormatted(float $cofinsAliquota)
+    public function setCofinsAliquotaFormatted(?float $cofinsAliquota)
     {
         $this->cofinsAliquota = $cofinsAliquota;
     }

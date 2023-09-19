@@ -109,6 +109,8 @@ class NotaFiscalEntityHandler extends EntityHandler
         }
         
         $notaFiscalBusiness->permiteFaturamento($notaFiscal);
+        
+        $notaFiscalBusiness->verificarESetarVenda($notaFiscal);
 
         $this->calcularTotais($notaFiscal);
     }

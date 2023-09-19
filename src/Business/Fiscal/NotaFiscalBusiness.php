@@ -1356,5 +1356,18 @@ class NotaFiscalBusiness
             throw new \RuntimeException('Ocorreu um erro durante o processamento :' . $e->getMessage());
         }
     }
+    
+    public function verificarESetarVenda(NotaFiscal $notaFiscal): void
+    {
+        $temVenda = $this->conn->fetchAssociative(
+            'SELECT * FROM fis_nf_venda WHERE nota_fiscal_id = :nota_fiscal_id',
+            [
+                'nota_fiscal_id' => $notaFiscal->getId()
+            ]
+        );
+        if ($temVenda) {
+            $notaFiscal->jsonData['venda_id'] = $temVenda['venda_id'];
+        }
+    }
 
 }

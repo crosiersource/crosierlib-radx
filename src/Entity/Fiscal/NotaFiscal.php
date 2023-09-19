@@ -1214,4 +1214,11 @@ class NotaFiscal implements EntityId
         return $this->jsonData['permiteFaturamento'] ?? false;
     }
 
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function getVendaId(): ?int
+    {
+        return $this->jsonData['venda_id'] ?? null;
+    }
 }
