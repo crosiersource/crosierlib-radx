@@ -10,7 +10,7 @@
         }
     ],
     "require": {        
-        "crosiersource/crosierlib-base": "^1.7.3",
+        "crosiersource/crosierlib-base": "^1.9.9",
         "vich/uploader-bundle": "^1.13",
         "nfephp-org/sped-common": "^5.1",
         "nfephp-org/sped-da": "^1.1",
