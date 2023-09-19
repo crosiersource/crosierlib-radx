@@ -441,7 +441,7 @@ class NotaFiscalBusiness
 
                 // Ordem de preferência para setar a descrição do item na nota
                 $descricaoNoItem = trim($vendaItem->descricao ?? '');
-                $produtoNome = trim($vendaItem->descricao ?? '');
+                $produtoNome = trim($vendaItem->produto ? $vendaItem->produto->nome : '');
                 $produtoNomeJson = trim($vendaItem->jsonData['produto']['descricao'] ?? '');
                 $descricaoDoItemNaNota = $descricaoNoItem ?: $produtoNome ?: $produtoNomeJson;
 
