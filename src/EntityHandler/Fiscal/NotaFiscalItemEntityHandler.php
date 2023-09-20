@@ -75,9 +75,9 @@ class NotaFiscalItemEntityHandler extends EntityHandler
 
         $nfItem->subtotal = $nfItem->subtotal ?? 0.0;
         
-        $nfItem->pisValor = bcmul($nfItem->pisValorBc, $nfItem->pisAliquota, 2);
-        $nfItem->icmsValor = bcmul($nfItem->icmsValorBc, $nfItem->icmsAliquota, 2);
-        $nfItem->cofinsValor = bcmul($nfItem->cofinsValorBc, $nfItem->cofinsAliquota, 2);
+        $nfItem->pisValor = bcmul($nfItem->pisValorBc / 100.0, $nfItem->pisAliquota, 2);
+        $nfItem->icmsValor = bcmul($nfItem->icmsValorBc / 100.0, $nfItem->icmsAliquota, 2);
+        $nfItem->cofinsValor = bcmul($nfItem->cofinsValorBc / 100.0, $nfItem->cofinsAliquota, 2);
         
         $nfItem->calculaTotais();
     }
