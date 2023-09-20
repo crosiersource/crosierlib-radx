@@ -47,7 +47,7 @@ class NFeUtils
     )
     {
         $this->conn = $conn;
-        $this->logger = $logger->setApp('radx')->setComponent(self::class)->setEcho(true);
+        $this->logger = $logger->setApp('radx')->setComponent(self::class)->setEcho(false);
         $this->appConfigEntityHandler = $appConfigEntityHandler;
         $this->security = $security;
     }
