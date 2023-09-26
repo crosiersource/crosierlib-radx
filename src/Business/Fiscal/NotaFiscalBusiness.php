@@ -189,7 +189,7 @@ class NotaFiscalBusiness
                         $notaFiscal->xNomeDestinatario = $venda->cliente->nome;
                     }
                     if (!$notaFiscal->foneDestinatario) {
-                        $notaFiscal->foneDestinatario = $venda->cliente->jsonData['fone1'] ?? '';
+                        $notaFiscal->foneDestinatario = $venda->cliente->jsonData['fone1'] ?? '(00) 00000-0000';
                     }
                     if (!$notaFiscal->emailDestinatario) {
                         $notaFiscal->emailDestinatario = $venda->cliente->jsonData['email'] ?? '';
