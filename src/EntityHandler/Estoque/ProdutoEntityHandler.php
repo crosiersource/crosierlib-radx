@@ -213,8 +213,7 @@ class ProdutoEntityHandler extends EntityHandler
                 // Como ainda não foi salvo (estou no beforeSave), então ainda posso pegar os valores anteriores na base
                 $rImagem = $conn->fetchAllAssociative('select i.id, i.produto_id, depto_id, grupo_id, subgrupo_id, image_name from est_produto p, est_produto_imagem i where p.id = i.produto_id AND i.id = :image_id', ['image_id' => $imagem->getId()]);
 
-                $caminhoAntigo = $_SERVER['PASTA_FOTOS_PRODUTOS'] .
-                    '/public/images/produtos/' .
+                $caminhoAntigo = $_SERVER['PASTA_FOTOS_PRODUTOS'] . '/' .                   
                     $rImagem[0]['depto_id'] . '/' .
                     $rImagem[0]['grupo_id'] . '/' .
                     $rImagem[0]['subgrupo_id'] . '/' . $rImagem[0]['image_name'];
