@@ -810,9 +810,9 @@ class DistDFeBusiness
                 }
             }
 
-            $zip = $xml[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip->__toString() ?? null;
+            $zip = $xml[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip ?? null;
             if ($zip) {
-                $notaFiscal->setXmlNota($zip);
+                $notaFiscal->setXmlNota($zip->__toString());
                 $this->nfeProc2NotaFiscal($notaFiscal->documentoDestinatario, $notaFiscal->getXMLDecoded(), $notaFiscal);
             } else {
                 $this->logger->error('Erro ao obter XML (download zip) para a chave: ' . $notaFiscal->chaveAcesso);
