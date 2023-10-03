@@ -559,6 +559,10 @@ class NotaFiscalBusiness
     {
         try {
             $mudou = false;
+            
+            $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
+            $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
+            
             if (!$notaFiscal->uuid) {
                 $notaFiscal->uuid = md5(uniqid(mt_rand(), true));
                 $mudou = true;
@@ -568,12 +572,12 @@ class NotaFiscalBusiness
                 $notaFiscal->cnf = $cNF;
                 $mudou = true;
             }
+            if (!$notaFiscal->ambiente) {
+                $notaFiscal->ambiente = $ambiente;
+            }
             // Rejeição 539: Duplicidade de NF-e, com diferença na Chave de Acesso
             // Rejeição 266: 266 - SERIE UTILIZADA FORA DA FAIXA PERMITIDA NO WEB SERVICE (0-889).
             if (!$notaFiscal->numero || in_array($notaFiscal->cStat, [539, 266], true)) {
-                $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
-
-                $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
                 $notaFiscal->ambiente = $ambiente;
 
                 if (!$notaFiscal->tipoNotaFiscal) {
