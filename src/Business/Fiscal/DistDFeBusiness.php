@@ -108,6 +108,7 @@ class DistDFeBusiness
                     break;
                 }
                 $iCount++;
+                $this->logger->info("Obtendo distDFes a partir do NSU: " . $nsu . " (CNPJ: " . $cnpj . ")");
                 $resp = $tools->sefazDistDFe($nsu);
                 $xmlResp = simplexml_load_string($resp);
                 $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
@@ -116,18 +117,22 @@ class DistDFeBusiness
                 // maxNSU: último na base da sefaz
 
                 if ($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->cStat->__toString() === '137') {
+                    $this->logger->info('Nenhum documento localizado (NSU: ' . $nsu . ')');
                     // xMotivo: Nenhum documento localizado
                     return 0;
                 }
 
                 if (!($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip ?? false)) {
+                    $this->logger->info('Interrompendo a busca (NSU: ' . $nsu . ')');
                     if ($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo ?? false) {
+                        $this->logger->info('Motivo: ' . $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo);
                         throw new ViewException($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo);
                     }
                     break;
                 }
 
                 $qtdeDocs = $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip->count();
+                $this->logger->info('Obtidos ' . $qtdeDocs . ' documentos (NSU: ' . $nsu . ')');
 
                 for ($i = 0; $i < $qtdeDocs; $i++) {
                     $doc = $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip[$i];

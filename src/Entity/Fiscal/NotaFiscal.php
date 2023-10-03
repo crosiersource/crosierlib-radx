@@ -639,22 +639,8 @@ class NotaFiscal implements EntityId
     public $historicos;
 
 
-    /** @Groups("notaFiscal") */
-    public string $msgPermiteSalvar = '';
-    /** @Groups("notaFiscal") */
-    public string $msgPermiteReimpressao = '';
-    /** @Groups("notaFiscal") */
-    public string $msgPermiteReimpressaoCancelamento = '';
-    /** @Groups("notaFiscal") */
-    public string $msgPermiteCancelamento = '';
-    /** @Groups("notaFiscal") */
-    public string $msgPermiteCartaCorrecao = '';
-    /** 
-     * @Groups("notaFiscal") 
-     * ver o getter
-     */
-    private string $msgPermiteFaturamento = '';
-
+    
+    
 
     public function __construct()
     {
@@ -833,8 +819,8 @@ class NotaFiscal implements EntityId
     {
         return $this->xmlNota !== null;
     }
-    
-    
+
+
     /**
      * @Groups("notaFiscal")
      * @return bool
@@ -1131,8 +1117,23 @@ class NotaFiscal implements EntityId
                 return true;
             }
         }
-        $this->msgPermiteSalvar = 'Não';
         return false;
+    }
+    
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function getMsgPermiteSalvar(): string
+    {
+        if (!$this->getId()) {
+            return 'Sim';
+        }
+        if ($this->isNossaEmissao()) {
+            if (substr($this->cStat, 0, 1) !== '1') {
+                return 'Sim';
+            }
+        }
+        return 'Não';
     }
 
     /**
@@ -1142,22 +1143,39 @@ class NotaFiscal implements EntityId
     {
         if ($this->getId()) {
             if (in_array((int)$this->cStat, [100, 204, 135], true)) {
-                $this->msgPermiteReimpressao = 'Sim (cStat em 100, 204 ou 135)';
                 return true;
             }
             // else
             if ($this->cStat == 0 && strpos($this->xMotivo, 'DUPLICIDADE DE NF') !== FALSE) {
-                $this->msgPermiteReimpressao = 'Sim (cStat em 0 e motivo "DUPLICIDADE DE NF")';
                 return true;
             }
             // else
             if ($this->getXMLDecoded() && $this->getXMLDecoded()->getName() === 'nfeProc') {
-                $this->msgPermiteReimpressao = 'Sim (com nfeProc)';
                 return true;
             }
         }
-        $this->msgPermiteReimpressao = 'Não';
         return false;
+    }
+    
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function getMsgPermiteReimpressao(): string
+    {
+        if ($this->getId()) {
+            if (in_array((int)$this->cStat, [100, 204, 135], true)) {
+                return 'Sim (cStat em 100, 204 ou 135)';
+            }
+            // else
+            if ($this->cStat == 0 && strpos($this->xMotivo, 'DUPLICIDADE DE NF') !== FALSE) {
+                return 'Sim (cStat em 0 e motivo "DUPLICIDADE DE NF")';
+            }
+            // else
+            if ($this->getXMLDecoded() && $this->getXMLDecoded()->getName() === 'nfeProc') {
+                return 'Sim (com nfeProc)';
+            }
+        }
+        return 'Não';
     }
 
     /**
@@ -1165,12 +1183,18 @@ class NotaFiscal implements EntityId
      */
     public function isPermiteReimpressaoCancelamento(): bool
     {
+        return ($this->getId() && $this->cStatLote == 101);
+    }
+
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function getMsgPermiteReimpressaoCancelamento(): string
+    {
         if ($this->getId() && $this->cStatLote == 101) {
-            $this->msgPermiteReimpressaoCancelamento = 'Sim (cStatLote em 101)';
-            return true;
+            return 'Sim (cStatLote em 101)';
         }
-        $this->msgPermiteReimpressaoCancelamento = 'Não';
-        return false;
+        return 'Não';
     }
 
     /**
@@ -1178,12 +1202,18 @@ class NotaFiscal implements EntityId
      */
     public function isPermiteCancelamento(): bool
     {
+        return ($this->getId() && (int)$this->cStat === 100);
+    }
+    
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function getMsgPermiteCancelamento(): string
+    {
         if ($this->getId() && (int)$this->cStat === 100) {
-            $this->msgPermiteCancelamento = 'Sim (cStat em 100)';
-            return true;
+            return 'Sim (cStat em 100)';
         }
-        $this->msgPermiteCancelamento = 'Não';
-        return false;
+        return 'Não';
     }
 
     /**
@@ -1191,21 +1221,32 @@ class NotaFiscal implements EntityId
      */
     public function isPermiteCartaCorrecao(): bool
     {
-        if ($this->getId() && (int)$this->cStat === 100) {
-            $this->msgPermiteCartaCorrecao = 'Sim (cStat em 100)';
-            return true;
-        }
-        $this->msgPermiteCartaCorrecao = 'Não';
-        return false;
-    }
-
-    public function getMsgPermiteFaturamento(): string
-    {
-        return $this->jsonData['msgPermiteFaturamento'] ?? false;
+        return ($this->getId() && (int)$this->cStat === 100);
     }
     
     /**
      * @Groups("notaFiscal")
+     */
+    public function getMsgPermiteCartaCorrecao(): string
+    {
+        if ($this->getId() && (int)$this->cStat === 100) {
+            return 'Sim (cStat em 100)';
+        }
+        return 'Não';
+    }
+
+    /**
+     * @Groups("notaFiscal")
+     * @var string
+     */
+    public function getMsgPermiteFaturamento(): string
+    {
+        return $this->jsonData['msgPermiteFaturamento'] ?? false;
+    }
+
+    /**
+     * @Groups("notaFiscal")
+     * @var bool
      */
     public function isPermiteFaturamento(): bool
     {
