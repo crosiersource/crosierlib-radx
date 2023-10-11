@@ -752,7 +752,7 @@ class NotaFiscalBusiness
         }
     }
 
-    public function permiteFaturamento(NotaFiscal $notaFiscal, ?bool $retornaMotivo = false): bool
+    public function permiteFaturamento(NotaFiscal $notaFiscal): bool
     {
         if ($notaFiscal && !$notaFiscal->getId()) {
             $notaFiscal->jsonData['permiteFaturamento'] = false;
@@ -773,11 +773,12 @@ class NotaFiscalBusiness
         try {
             $this->checkNotaFiscal($notaFiscal);
         } catch (\Exception $e) {
-            if ($e instanceof ViewException && $retornaMotivo) {
+            if ($e instanceof ViewException) {
                 $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Não (' . $e->getMessage() . ')';
                 throw new ViewException($e->getMessage());
             } else {
-                $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Não';
+                $this->syslog->err('Erro ao checkNotaFiscal: ' . $e->getMessage(), $e->getTraceAsString());
+                $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Não (Erro ao checkNotaFiscal)';
             }
             $notaFiscal->jsonData['permiteFaturamento'] = false;
             return false;
