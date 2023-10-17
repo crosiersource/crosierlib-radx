@@ -41,7 +41,13 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
  * )
  * @ApiFilter(PropertyFilter::class)
  *
- * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "nome": "partial", 
+ *     "documento": "exact", 
+ *     "id": "exact",
+ *     "produto.id": "exact",
+ *     "produto.codigo": "exact"
+ * })
  * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Estoque\ProdutoImagemEntityHandler")
@@ -198,6 +204,23 @@ class ProdutoImagem implements EntityId
     {
         $this->descricao = $descricao;
         return $this;
+    }
+
+    /**
+     * @Groups("produtoImagem")
+     */
+    public function getUrl(): ?string
+    {
+        try {
+            return ($_SERVER['CROSIERAPPRADX_URL'] ?? 'radx_url_not_found') .
+                '/images/produtos/' .
+                $this->produto->depto->getId() . '/' .
+                $this->produto->grupo->getId() . '/' .
+                $this->produto->subgrupo->getId() . '/' .
+                $this->imageName;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
 
