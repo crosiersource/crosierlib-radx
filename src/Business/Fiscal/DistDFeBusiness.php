@@ -60,10 +60,15 @@ class DistDFeBusiness
         $this->distDFeEntityHandler = $distDFeEntityHandler;
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
         $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
-        $this->logger = $logger->setApp('radx')->setComponent(self::class);
+        $this->logger = $logger->setApp('radx')->setComponent(self::class));
         $this->nfeUtils = $nfeUtils;
         $this->notaFiscalEventoEntityHandler = $notaFiscalEventoEntityHandler;
         $this->crosierQueueHandler = $crosierQueueHandler;
+    }
+
+    public function setEchoToLogger(): void
+    {
+        $this->logger->setEcho(true);
     }
 
     /**
@@ -711,7 +716,7 @@ class DistDFeBusiness
             $this->logger->info($total . ' distDFe(s) a processar...');
             foreach ($distDFesAProcessar as $distDFeId) {
                 try {
-                    $this->logger->debug("Processando " . $i++ . " de " . $total . ". id = " . $distDFeId);
+                    $this->logger->debug("Processando " . $i++ . " de " . $total . ". id = " . $distDFeId['id']);
                     /** @var DistDFe $distDFe */
                     $distDFe = $repoDistDFe->find($distDFeId);// gzdecode(base64_decode($distDFe->getXml()))
                     $xml = $distDFe->getXMLDecoded();
