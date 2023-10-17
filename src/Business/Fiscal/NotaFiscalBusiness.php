@@ -723,6 +723,10 @@ class NotaFiscalBusiness
      */
     public function checkNotaFiscal(NotaFiscal $notaFiscal): void
     {
+        if (!$notaFiscal->isNossaEmissao()) {
+            return;
+        }
+        
         if (!$notaFiscal) {
             throw new \RuntimeException('Nota Fiscal null');
         }
