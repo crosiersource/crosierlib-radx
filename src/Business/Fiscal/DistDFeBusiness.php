@@ -60,7 +60,7 @@ class DistDFeBusiness
         $this->distDFeEntityHandler = $distDFeEntityHandler;
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
         $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
-        $this->logger = $logger->setApp('radx')->setComponent(self::class));
+        $this->logger = $logger->setApp('radx')->setComponent(self::class);
         $this->nfeUtils = $nfeUtils;
         $this->notaFiscalEventoEntityHandler = $notaFiscalEventoEntityHandler;
         $this->crosierQueueHandler = $crosierQueueHandler;
