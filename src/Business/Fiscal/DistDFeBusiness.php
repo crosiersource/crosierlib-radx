@@ -885,17 +885,17 @@ class DistDFeBusiness
             [
                 ['chave', 'IS_EMPTY'],
                 ['xml', 'NOT_LIKE', 'Nenhum documento localizado'],
-                // ['tpEvento', 'NOT_LIKE', '61%'] // ignora eventos de MDF-e e CT-e
             ], null, 0, -1);
         $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($cnpjEmUso);
         /** @var DistDFe $distDFe */
         foreach ($distDFesSemChave as $distDFe) {
             try {
                 $xml = $distDFe->getXMLDecoded();
-                if (!$xml) continue;
+                if (!$xml) {
+                    continue;
+                }
                 $chave = null;
                 $cnpj = null;
-                // Para XML de <resEvento>
                 $xmlName = $xml->getName();
                 if ($xmlName === 'nfeProc') {
                     $chave = $xml->protNFe->infProt->chNFe->__toString();
@@ -913,15 +913,8 @@ class DistDFeBusiness
                     $cnpj = $xml->evento->infEvento->CNPJ->__toString();
                     $distDFe->tpEvento = (int)$xml->evento->infEvento->tpEvento->__toString();
                     $distDFe->nSeqEvento = (int)$xml->evento->infEvento->nSeqEvento->__toString();
-                }
-                if (!$chave) {
-                    $tpEvento = null;
-                    try {
-                        $tpEvento = $xml->tpEvento->__toString();
-                    } catch (\Exception $e) {
-                        $tpEvento = 'SEM tpEvento';
-                    }
-                    throw new \RuntimeException('Não consegui encontrar a chave (tpEvento: ' . $tpEvento . ')');
+                } else {
+                    throw new ViewException('Tipo de XML não reconhecido: ' . $xmlName);
                 }
                 $distDFe->proprio = $nfeConfigs['cnpj'] === $cnpj;
                 $distDFe->tipoDistDFe = $xml->getName();
