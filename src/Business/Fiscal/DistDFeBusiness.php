@@ -177,7 +177,7 @@ class DistDFeBusiness
      */
     public function obterDistDFesDeNSUsPulados(string $cnpj): int
     {
-        $nsusPulados = $this->getNSUsPulados();
+        $nsusPulados = $this->getNSUsPulados($cnpj);
         $qtde = 0;
         foreach ($nsusPulados as $nsu) {
             $this->obterDistDFeByNSU($nsu, $cnpj);
@@ -355,9 +355,19 @@ class DistDFeBusiness
         $nf->setXmlNota($xml->asXML());
 
         if ($xml->NFe->infNFe->ide->mod->__toString() !== '65') {
-            $nf->documentoDestinatario = $xml->NFe->infNFe->dest->CNPJ->__toString();
-            $nf->xNomeDestinatario = $xml->NFe->infNFe->dest->xNome->__toString();
-            $nf->inscricaoEstadualDestinatario = $xml->NFe->infNFe->dest->IE->__toString();
+            $nf->documentoDestinatario = $xml->NFe->infNFe->dest->CNPJ;
+            $nf->xNomeDestinatario = $xml->NFe->infNFe->dest->xNome;
+            $nf->inscricaoEstadualDestinatario = $xml->NFe->infNFe->dest->IE;
+            $nf->emailDestinatario = $xml->NFe->infNFe->dest->email;
+            if ($xml->NFe->infNFe->dest->enderDest) {
+                $nf->logradouroDestinatario = $xml->NFe->infNFe->dest->enderDest->xLgr;
+                $nf->numeroDestinatario = $xml->NFe->infNFe->dest->enderDest->nro;
+                $nf->bairroDestinatario = $xml->NFe->infNFe->dest->enderDest->xBairro;
+                $nf->cidadeDestinatario = $xml->NFe->infNFe->dest->enderDest->xMun;
+                $nf->estadoDestinatario = $xml->NFe->infNFe->dest->enderDest->UF;
+                $nf->cepDestinatario = $xml->NFe->infNFe->dest->enderDest->CEP;
+                $nf->foneDestinatario = $xml->NFe->infNFe->dest->enderDest->fone;
+            }
         }
 
         $numNf = (int)$xml->NFe->infNFe->ide->nNF->__toString();
@@ -375,6 +385,7 @@ class DistDFeBusiness
         $nf->serie = ((int)$xml->NFe->infNFe->ide->serie->__toString());
         $nf->naturezaOperacao = ($xml->NFe->infNFe->ide->natOp->__toString());
         $nf->dtEmissao = (DateTimeUtils::parseDateStr($xml->NFe->infNFe->ide->dhEmi->__toString()));
+        $nf->dtSaiEnt = $nf->dtEmissao; // Não existe no XML?
 
         if ($xml->NFe->infNFe->ide->dhSaiEnt->__toString() ?: null) {
             $nf->dtSaiEnt = (DateTimeUtils::parseDateStr($xml->NFe->infNFe->ide->dhSaiEnt->__toString()));
@@ -385,13 +396,19 @@ class DistDFeBusiness
             $nf->a03idNfReferenciada = ($xml->NFe->infNFe->ide->NFref->refNFe->__toString());
         }
 
-        $nf->documentoEmitente = $xml->NFe->infNFe->emit->CNPJ->__toString();
-        $nf->xNomeEmitente = $xml->NFe->infNFe->emit->xNome->__toString();
-        $nf->inscricaoEstadualEmitente = $xml->NFe->infNFe->emit->IE->__toString(); // ????
+        $nf->documentoEmitente = $xml->NFe->infNFe->emit->CNPJ;
+        $nf->xNomeEmitente = $xml->NFe->infNFe->emit->xNome;
+        $nf->inscricaoEstadualEmitente = $xml->NFe->infNFe->emit->IE;
+        if ($xml->NFe->infNFe->emit->enderEmit) {
+            $nf->logradouroEmitente = $xml->NFe->infNFe->emit->enderEmit->xLgr;
+            $nf->numeroEmitente = $xml->NFe->infNFe->emit->enderEmit->nro;
+            $nf->bairroEmitente = $xml->NFe->infNFe->emit->enderEmit->xBairro;
+            $nf->cidadeEmitente = $xml->NFe->infNFe->emit->enderEmit->xMun;
+            $nf->estadoEmitente = $xml->NFe->infNFe->emit->enderEmit->UF;
+            $nf->cepEmitente = $xml->NFe->infNFe->emit->enderEmit->CEP;
+            $nf->foneEmitente = $xml->NFe->infNFe->emit->enderEmit->fone;
+        }
 
-//        if ($nf->getId()) {
-//            $nf->deleteAllItens();
-//        }
         $nf->chaveAcesso = $chaveAcesso;
 
         $nf->protocoloAutorizacao = $xml->protNFe->infProt->nProt ?? null;
@@ -677,40 +694,61 @@ class DistDFeBusiness
      */
     public function processarDistDFesParaNFes(string $cnpjEmUso): void
     {
+        $this->logger->info('Iniciando DistDFeBusiness::processarDistDFesParaNFes() para o CNPJ ' . $cnpjEmUso . '...');
+        $distDFesAProcessar = [];
         try {
             /** @var DistDFeRepository $repoDistDFe */
             $repoDistDFe = $this->doctrine->getRepository(DistDFe::class);
             $distDFesAProcessar = $repoDistDFe->findDistDFeNotInNotaFiscal($cnpjEmUso);
-            $total = count($distDFesAProcessar);
-            $i = 1;
-            foreach ($distDFesAProcessar as $distDFeId) {
-                $this->logger->debug("Processando " . $i++ . " de " . $total);
-                /** @var DistDFe $distDFe */
-                $distDFe = $repoDistDFe->find($distDFeId);
-                // gzdecode(base64_decode($distDFe->getXml()))
-                $xml = $distDFe->getXMLDecoded();
-                if (!$xml) {
-                    continue;
-                }
-                $xmlName = $xml->getName();
-
-                if ($xmlName === 'nfeProc') {
-                    $nf = $this->nfeProc2NotaFiscal($cnpjEmUso, $distDFe->getXMLDecoded(), null, $distDFe);
-                    $distDFe->notaFiscal = $nf;
-                    $this->distDFeEntityHandler->save($distDFe);
-                    $this->logger->info('CrosierQueue: DistDFe processado: ' . $distDFe->chave . ' (chamando fiscal.eventos.nova_nf_com_xml)');
-                    $this->crosierQueueHandler->post('fiscal.eventos.nova_nf_com_xml', ['id' => $nf->getId()]);
-                } elseif ($xmlName === 'resNFe') {
-                    $this->resNfe2NotaFiscal($distDFe);
-                } else {
-                    $this->logger->error('Erro ao processar DistDFe: não reconhecido (chave ' . $distDFe->chave . ')');
-                }
-            }
         } catch (\Throwable $e) {
             $this->logger->error('Erro ao processarDistDFesObtidos()');
             $this->logger->error($e->getMessage());
             throw new ViewException('Erro ao processarDistDFesObtidos()');
         }
+        if ($distDFesAProcessar) {
+            $total = count($distDFesAProcessar);
+            $i = 1;
+            $this->logger->info($total . ' distDFe(s) a processar...');
+            foreach ($distDFesAProcessar as $distDFeId) {
+                try {
+                    $this->logger->debug("Processando " . $i++ . " de " . $total . ". id = " . $distDFeId);
+                    /** @var DistDFe $distDFe */
+                    $distDFe = $repoDistDFe->find($distDFeId);// gzdecode(base64_decode($distDFe->getXml()))
+                    $xml = $distDFe->getXMLDecoded();
+                    if (!$xml) {
+                        $this->logger->debug('Sem XML. Pulando...');
+                        continue;
+                    }
+                    $xmlName = $xml->getName();
+                    if ($xmlName === 'nfeProc') {
+                        try {
+                            $this->logger->debug('XML é um nfeProc... Chamando nfeProc2NotaFiscal...');
+                            $nf = $this->nfeProc2NotaFiscal($cnpjEmUso, $distDFe->getXMLDecoded(), null, $distDFe);
+                            $distDFe->notaFiscal = $nf;
+                            $this->distDFeEntityHandler->save($distDFe);
+                            $this->logger->info('CrosierQueue: DistDFe processado: ' . $distDFe->chave . ' (chamando fiscal.eventos.nova_nf_com_xml)');
+                            $this->crosierQueueHandler->post('fiscal.eventos.nova_nf_com_xml', ['id' => $nf->getId()]);
+                        } catch (\Exception $e) {
+                            $this->logger->debug('Erro ao processar nfeProc para notaFiscal');
+                            $this->logger->debug($e->getMessage());
+                        }
+                    } elseif ($xmlName === 'resNFe') {
+                        try {
+                            $this->logger->debug('XML é um nfeProc... Chamando resNfe2NotaFiscal...');
+                            $this->resNfe2NotaFiscal($distDFe);
+                        } catch (\Exception $e) {
+                            $this->logger->debug('Erro ao processar resNFe para notaFiscal');
+                            $this->logger->debug($e->getMessage());
+                        }
+                    } else {
+                        $this->logger->error('Erro ao processar DistDFe: não reconhecido (id ' . $distDFe->getId() . ')');
+                    }
+                } catch (ViewException $e) {
+                    $this->logger->error('Erro geral ao processar DistDFe ' . $distDFe->getId() . '). Continuando...');
+                }
+            }
+        }
+
     }
 
     /**
@@ -838,7 +876,12 @@ class DistDFeBusiness
     {
         /** @var DistDFeRepository $repo */
         $repo = $this->doctrine->getRepository(DistDFe::class);
-        $distDFesSemChave = $repo->findByFiltersSimpl([['chave', 'IS_EMPTY'], ['xml', 'NOT_LIKE', 'Nenhum documento localizado']], null, 0, -1);
+        $distDFesSemChave = $repo->findByFiltersSimpl(
+            [
+                ['chave', 'IS_EMPTY'],
+                ['xml', 'NOT_LIKE', 'Nenhum documento localizado'],
+                // ['tpEvento', 'NOT_LIKE', '61%'] // ignora eventos de MDF-e e CT-e
+            ], null, 0, -1);
         $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($cnpjEmUso);
         /** @var DistDFe $distDFe */
         foreach ($distDFesSemChave as $distDFe) {
@@ -867,7 +910,13 @@ class DistDFeBusiness
                     $distDFe->nSeqEvento = (int)$xml->evento->infEvento->nSeqEvento->__toString();
                 }
                 if (!$chave) {
-                    throw new \RuntimeException('Não consegui encontrar a chave (tpEvento: ' + $xml->tpEvento->__toString() . ')');
+                    $tpEvento = null;
+                    try {
+                        $tpEvento = $xml->tpEvento->__toString();
+                    } catch (\Exception $e) {
+                        $tpEvento = 'SEM tpEvento';
+                    }
+                    throw new \RuntimeException('Não consegui encontrar a chave (tpEvento: ' . $tpEvento . ')');
                 }
                 $distDFe->proprio = $nfeConfigs['cnpj'] === $cnpj;
                 $distDFe->tipoDistDFe = $xml->getName();

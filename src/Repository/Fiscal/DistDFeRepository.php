@@ -50,11 +50,22 @@ class DistDFeRepository extends FilterRepository
      * @param string $documento
      * @return null|array
      */
-    public function findAllNSUs(string $documento): ?array
+    public function findAllNSUs(string $documento, ?bool $apenasUltimos3meses = true): ?array
     {
         /** @var Connection $conn */
         $conn = $this->getEntityManager()->getConnection();
-        return $conn->fetchAllAssociative('SELECT nsu FROM fis_distdfe WHERE nsu IS NOT NULL AND documento = :documento ORDER BY nsu', ['documento' => $documento]);
+        
+        $sqlApenasUltimos3meses = '';
+        if ($apenasUltimos3meses) {
+            $sqlApenasUltimos3meses = ' AND inserted >= DATE_SUB(NOW(), INTERVAL 3 MONTH) ';
+        }
+        
+        return $conn->fetchAllAssociative(
+            "SELECT nsu FROM fis_distdfe 
+           WHERE 
+               nsu IS NOT NULL AND 
+               documento = :documento $sqlApenasUltimos3meses
+           ORDER BY nsu", ['documento' => $documento]);
     }
 
 
