@@ -1330,7 +1330,7 @@ class NotaFiscalBusiness
     public function gerarPDF(NotaFiscal $notaFiscal)
     {
         try {
-            if ($notaFiscal->isPermiteFaturamento()) {
+            if ($notaFiscal->isNossaEmissao() && $notaFiscal->isPermiteFaturamento()) {
                 $notaFiscal = $this->spedNFeBusiness->gerarXML($notaFiscal);
             }
             $xml = $notaFiscal->getXMLDecodedAsString();
