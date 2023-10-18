@@ -122,7 +122,7 @@ class DistDFeBusiness
                 // maxNSU: último na base da sefaz
 
                 if ($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->cStat->__toString() === '137') {
-                    $this->logger->info('Nenhum documento localizado (NSU: ' . $nsu . ')');
+                    $this->logger->info('Nenhum documento localizado (NSU: ' . $nsu . ') CNPJ: ' . $cnpj);
                     // xMotivo: Nenhum documento localizado
                     return 0;
                 }
@@ -137,7 +137,7 @@ class DistDFeBusiness
                 }
 
                 $qtdeDocs = $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip->count();
-                $this->logger->info('Obtidos ' . $qtdeDocs . ' documentos (NSU: ' . $nsu . ')');
+                $this->logger->info('Obtidos ' . $qtdeDocs . ' documentos (NSU: ' . $nsu . ') CNPJ: ' . $cnpj);
 
                 for ($i = 0; $i < $qtdeDocs; $i++) {
                     $doc = $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip[$i];
@@ -162,15 +162,15 @@ class DistDFeBusiness
                 sleep(5);
             } while (true);
         } catch (\Throwable $e) {
-            $this->logger->error('Erro ao obter DFes (NSU: ' . $nsu . ')');
-            $this->logger->error($e->getMessage());
+            $this->logger->error('Erro ao obter DFes (NSU: ' . $nsu . ') para o CNPJ: ' . $cnpj);
+            $this->logger->error('CNPJ: ' . $cnpj . ' - ' . $e->getMessage());
             if ($e instanceof ViewException) {
                 throw $e;
             }
             // else
-            throw new ViewException('Erro ao obter DFes (NSU: ' . $nsu . ')');
+            throw new ViewException('CNPJ: ' . $cnpj . ' - Erro ao obter DFes (NSU: ' . $nsu . ')');
         }
-
+        $this->logger->info($qtdeObtida . ' distDFe(s) obtido(s) com sucesso para o CNPJ: ' . $cnpj);
         return $qtdeObtida;
     }
 
