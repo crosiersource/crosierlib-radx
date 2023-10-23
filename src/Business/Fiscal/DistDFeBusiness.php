@@ -731,8 +731,8 @@ class DistDFeBusiness
                             $nf = $this->nfeProc2NotaFiscal($cnpjEmUso, $distDFe->getXMLDecoded(), null, $distDFe);
                             $distDFe->notaFiscal = $nf;
                             $this->distDFeEntityHandler->save($distDFe);
-                            $this->logger->info('CrosierQueue: DistDFe processado: ' . $distDFe->chave . ' (chamando fiscal.eventos.nova_nf_com_xml)');
-                            $this->crosierQueueHandler->post('fiscal.eventos.nova_nf_com_xml', ['id' => $nf->getId()]);
+                            $this->logger->info('CrosierQueue: DistDFe processado: ' . $distDFe->chave . ' (chamando radx.fiscal.eventos.nova_nf_com_xml)');
+                            $this->crosierQueueHandler->post('radx.fiscal.eventos.nova_nf_com_xml', ['id' => $nf->getId()]);
                         } catch (\Exception $e) {
                             $this->logger->debug('Erro ao processar nfeProc para notaFiscal');
                             $this->logger->debug($e->getMessage());

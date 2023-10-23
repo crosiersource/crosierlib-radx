@@ -419,8 +419,8 @@ class MovimentacaoEntityHandler extends EntityHandler
             return $this->saveEntradaEmCaixaPorCartaoDeCreditoOuDebito($movimentacao);
         }
 
-        if ($this->iniciarSaveDeParcelamento($movimentacao)) {
-            return $this->saveParcelamento($movimentacao);
+        if ($this->deveIniciarSaveDeParcelamentoEmGrupoDeMovimentacao($movimentacao)) {
+            return $this->saveParcelamentoEmGrupoDeMovimentacao($movimentacao);
         } else {
             if ($movimentacao->grupoItem) {
                 $this->corrigirGrupoItemPorDtMoviment($movimentacao);
@@ -1218,12 +1218,13 @@ class MovimentacaoEntityHandler extends EntityHandler
     }
 
 
-    private function iniciarSaveDeParcelamento(
+    private function deveIniciarSaveDeParcelamentoEmGrupoDeMovimentacao(
         Movimentacao $movimentacao
     ): bool
     {
         return
             !$movimentacao->getId() &&
+            $movimentacao->grupoItem && 
             (
                 ($movimentacao->jsonData['dadosParcelamento'] ?? false) ||
                 $movimentacao->qtdeParcelas > 1
@@ -1235,7 +1236,7 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @param Movimentacao $movimentacao
      * @throws ViewException
      */
-    private function saveParcelamento(Movimentacao $movimentacao)
+    private function saveParcelamentoEmGrupoDeMovimentacao(Movimentacao $movimentacao)
     {
         try {
             $this->doctrine->beginTransaction();

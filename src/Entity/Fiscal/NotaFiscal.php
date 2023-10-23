@@ -639,9 +639,6 @@ class NotaFiscal implements EntityId
     public $historicos;
 
 
-    
-    
-
     public function __construct()
     {
         $this->itens = new ArrayCollection();
@@ -1119,7 +1116,7 @@ class NotaFiscal implements EntityId
         }
         return false;
     }
-    
+
     /**
      * @Groups("notaFiscal")
      */
@@ -1156,7 +1153,7 @@ class NotaFiscal implements EntityId
         }
         return false;
     }
-    
+
     /**
      * @Groups("notaFiscal")
      */
@@ -1183,7 +1180,7 @@ class NotaFiscal implements EntityId
      */
     public function isPermiteReimpressaoCancelamento(): bool
     {
-        return ($this->getId() && $this->cStatLote == 101);
+        return $this->isNossaEmissao() && ($this->getId() && $this->cStatLote == 101);
     }
 
     /**
@@ -1202,9 +1199,9 @@ class NotaFiscal implements EntityId
      */
     public function isPermiteCancelamento(): bool
     {
-        return ($this->getId() && (int)$this->cStat === 100);
+        return $this->isNossaEmissao() && ($this->getId() && (int)$this->cStat === 100);
     }
-    
+
     /**
      * @Groups("notaFiscal")
      */
@@ -1221,9 +1218,9 @@ class NotaFiscal implements EntityId
      */
     public function isPermiteCartaCorrecao(): bool
     {
-        return ($this->getId() && (int)$this->cStat === 100);
+        return $this->isNossaEmissao() && ($this->getId() && (int)$this->cStat === 100);
     }
-    
+
     /**
      * @Groups("notaFiscal")
      */
@@ -1252,7 +1249,7 @@ class NotaFiscal implements EntityId
     {
         // verificar o beforeSave() para entender o motivo
         // é lá também onde é setado o msgPermiteFaturamento
-        return $this->jsonData['permiteFaturamento'] ?? false;
+        return $this->isNossaEmissao() && ($this->jsonData['permiteFaturamento'] ?? false);
     }
 
     /**
@@ -1262,4 +1259,13 @@ class NotaFiscal implements EntityId
     {
         return $this->jsonData['venda_id'] ?? null;
     }
+
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function getFinFaturaId(): ?int
+    {
+        return $this->jsonData['fin_fatura_id'] ?? null;
+    }
+
 }

@@ -140,7 +140,7 @@ class Fatura implements EntityId
     /**
      * Data em que a movimentação efetivamente aconteceu.
      *
-     * @ORM\Column(name="dt_vencto", type="datetime")
+     * @ORM\Column(name="dt_vencto", type="datetime", nullable=true)
      * @Groups("fatura")
      *
      * @var DateTime|null
