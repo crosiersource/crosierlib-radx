@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Business\Financeiro;
 
+use CrosierSource\CrosierLibBaseBundle\Business\Config\SyslogBusiness;
 use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Messenger\CrosierQueueHandler;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
@@ -26,16 +27,20 @@ class FaturaBusiness
 
     public CrosierQueueHandler $crosierQueueHandler;
 
+    public SyslogBusiness $syslog;
+
     public function __construct(
         FaturaEntityHandler       $faturaEntityHandler,
         MovimentacaoEntityHandler $movimentacaoEntityHandler,
         NotaFiscalEntityHandler   $notaFiscalEntityHandler,
-        CrosierQueueHandler       $crosierQueueHandler)
+        CrosierQueueHandler       $crosierQueueHandler,
+        SyslogBusiness            $syslog)
     {
         $this->faturaEntityHandler = $faturaEntityHandler;
         $this->movimentacaoEntityHandler = $movimentacaoEntityHandler;
         $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
         $this->crosierQueueHandler = $crosierQueueHandler;
+        $this->syslog = $syslog->setApp('rdp')->setComponent(self::class);
     }
 
 
@@ -45,6 +50,8 @@ class FaturaBusiness
         Categoria  $categoria
     ): void
     {
+        $this->syslog->info('Iniciando lancarDuplicatasPorNotaFiscal para a notaFiscal id = ' . $notaFiscal->getId());
+
         if ($notaFiscal->jsonData['fin_fatura_id'] ?? false) {
             throw new ViewException("Nota Fiscal já possui fatura vinculada (id=" . $notaFiscal->jsonData['fin_fatura_id'] . ")");
         }
@@ -93,6 +100,8 @@ class FaturaBusiness
         $this->faturaEntityHandler->getDoctrine()->commit();
 
         $this->crosierQueueHandler->post('radx.fiscal.fis_nf_2_fin_fatura', $fatura->getId());
+
+        $this->syslog->info('Finalizando com SUCESSO lancarDuplicatasPorNotaFiscal para a notaFiscal id = ' . $notaFiscal->getId());
     }
 
 
