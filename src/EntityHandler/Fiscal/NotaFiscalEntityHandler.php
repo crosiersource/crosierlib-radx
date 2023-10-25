@@ -168,7 +168,7 @@ class NotaFiscalEntityHandler extends EntityHandler
             $nova->randFaturam = null;
             $nova->chaveAcesso = null;
             $nova->dtEmissao = new \DateTime();
-            $nova->dtSaiEnt = null;
+            $nova->dtSaiEnt = $nova->dtEmissao;
             $nova->cStat = null;
             $nova->cStatLote = null;
             $nova->xMotivo = null;
