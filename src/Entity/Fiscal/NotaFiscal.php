@@ -398,14 +398,14 @@ class NotaFiscal implements EntityId
     public ?string $valorTotal = null;
 
     /**
-     * @ORM\Column(name="transp_documento", type="string", nullable=false)
+     * @ORM\Column(name="transp_documento", type="string", nullable=true)
      * @var null|string
      * @Groups("notaFiscal")
      */
     public ?string $transpDocumento = null;
 
     /**
-     * @ORM\Column(name="transp_nome", type="string", nullable=false)
+     * @ORM\Column(name="transp_nome", type="string", nullable=true)
      * @var null|string
      * @Groups("notaFiscal")
      */

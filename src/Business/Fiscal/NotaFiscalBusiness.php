@@ -259,13 +259,14 @@ class NotaFiscalBusiness
                                     $ie = preg_replace("/[^0-9]/", "", $endereco_consultado['dados']['IE'] ?? '');
                                     $notaFiscal->inscricaoEstadualDestinatario = $ie;
                                 }
-                                $notaFiscal->logradouroDestinatario = $endereco_consultado['dados']['logradouro'] ?? '';
-                                $notaFiscal->numeroDestinatario = $endereco_consultado['dados']['numero'] ?? '';
-                                $notaFiscal->complementoDestinatario = ($endereco_consultado['dados']['complemento'] ?? '');
-                                $notaFiscal->bairroDestinatario = $endereco_consultado['dados']['bairro'] ?? '';
-                                $notaFiscal->cepDestinatario = $endereco_consultado['dados']['CEP'] ?? '';
-                                $notaFiscal->cidadeDestinatario = $endereco_consultado['dados']['cidade'] ?? '';
-                                $notaFiscal->estadoDestinatario = $endereco_consultado['dados']['UF'];
+
+                                $notaFiscal->logradouroDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['logradouro'] ?? '', $notaFiscal->logradouroDestinatario);
+                                $notaFiscal->numeroDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['numero'] ?? '', $notaFiscal->numeroDestinatario);
+                                $notaFiscal->complementoDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['complemento'] ?? '', $notaFiscal->complementoDestinatario);
+                                $notaFiscal->bairroDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['bairro'] ?? '', $notaFiscal->bairroDestinatario);
+                                $notaFiscal->cepDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['CEP'] ?? '', $notaFiscal->cepDestinatario);
+                                $notaFiscal->cidadeDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['cidade'] ?? '', $notaFiscal->cidadeDestinatario);
+                                $notaFiscal->estadoDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['UF'] ?? '', $notaFiscal->estadoDestinatario);
                             }
                         }
                     }
