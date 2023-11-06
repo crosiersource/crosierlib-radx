@@ -8,6 +8,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
+use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityId;
 use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
@@ -154,7 +155,15 @@ class Categoria implements EntityId
      */
     public ?int $codigoOrd = null;
 
-
+    /**
+     *
+     * @ORM\Column(name="json_data", type="json")
+     * @var null|array
+     * @NotUppercase()
+     * @Groups("categoria")
+     */
+    public ?array $jsonData = null;
+    
     /**
      */
     public function __construct()
