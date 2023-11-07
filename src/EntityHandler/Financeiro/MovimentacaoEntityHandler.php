@@ -316,7 +316,7 @@ class MovimentacaoEntityHandler extends EntityHandler
     private function verificaPossibilidadeDeEdicao(Movimentacao $movimentacao): void
     {
         $movimentacaoJaSalva = $this->getRegistroDaTabela($movimentacao);
-        if (in_array((int)$movimentacaoJaSalva['modo_id'], [9,10], true)) {
+        if (in_array((int)$movimentacaoJaSalva['modo_id'], [9, 10], true)) {
             if ($movimentacao->modo->getId() !== (int)$movimentacaoJaSalva['modo_id']) {
                 throw new ViewException('Não é possível alterar o modo de uma movimentação de cartão (crédito ou débito)');
             }
@@ -396,7 +396,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         if ($movimentacao->getId()) {
             $this->verificaPossibilidadeDeEdicao($movimentacao);
         }
-        
+
         /** @var TipoLanctoRepository $repoTipoLancto */
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
         /** @var Movimentacao $movimentacao */
@@ -419,8 +419,8 @@ class MovimentacaoEntityHandler extends EntityHandler
             return $this->saveEntradaEmCaixaPorCartaoDeCreditoOuDebito($movimentacao);
         }
 
-        if ($this->deveIniciarSaveDeParcelamentoEmGrupoDeMovimentacao($movimentacao)) {
-            return $this->saveParcelamentoEmGrupoDeMovimentacao($movimentacao);
+        if ($this->deveIniciarSaveDeParcelamento($movimentacao)) {
+            return $this->saveParcelamento($movimentacao);
         } else {
             if ($movimentacao->grupoItem) {
                 $this->corrigirGrupoItemPorDtMoviment($movimentacao);
@@ -987,7 +987,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $movimentacao->carteiraDestino = $movimentacao->operadoraCartao->carteira;
 
         parent::save($movimentacao, false);
-        
+
         /** @var Movimentacao $moviment291 */
         $moviment291 = $this->cloneEntityId($movimentacao);
         $fatura->addMovimentacao($moviment291);
@@ -1033,7 +1033,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $this->faturaEntityHandler->save($fatura);
     }
-    
+
 
     /**
      * Tratamento para casos de movimentação em cadeia.
@@ -1218,13 +1218,12 @@ class MovimentacaoEntityHandler extends EntityHandler
     }
 
 
-    private function deveIniciarSaveDeParcelamentoEmGrupoDeMovimentacao(
+    private function deveIniciarSaveDeParcelamento(
         Movimentacao $movimentacao
     ): bool
     {
         return
             !$movimentacao->getId() &&
-            $movimentacao->grupoItem && 
             (
                 ($movimentacao->jsonData['dadosParcelamento'] ?? false) ||
                 $movimentacao->qtdeParcelas > 1
@@ -1236,61 +1235,40 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @param Movimentacao $movimentacao
      * @throws ViewException
      */
-    private function saveParcelamentoEmGrupoDeMovimentacao(Movimentacao $movimentacao)
+    private function saveParcelamento(Movimentacao $movimentacao)
     {
         try {
             $this->doctrine->beginTransaction();
 
-            $repoGrupoItem = $this->doctrine->getRepository(GrupoItem::class);
-            $gruposItens = [];
-            $dadosParcelamento = $movimentacao->jsonData['dadosParcelamento'] ?? null;
-            if (!$dadosParcelamento) {
+            $qtdeParcelas = null;
 
-                $mesIni = GrupoBusiness::findDtVenctoByDtMoviment(
-                    $movimentacao->grupoItem->pai,
-                    $movimentacao->dtMoviment
-                );
-                $mesFim = DateTimeUtils::incMes($mesIni, $movimentacao->qtdeParcelas - 1);
-                $this->grupoEntityHandler->gerarDesdeAte(
-                    $movimentacao->grupoItem->pai,
-                    $mesIni,
-                    $mesFim
-                );
-
-                // se não tem dadosParcelamento é porque é um save para grupoItem
-                $grupoItem = $repoGrupoItem->findByDtMoviment(
-                    $movimentacao->grupoItem->pai,
-                    $movimentacao->dtMoviment
-                );
-                $gruposItens[] = $grupoItem;
-                for ($i = 1; $i <= $movimentacao->qtdeParcelas; $i++) {
-                    $dadosParcelamento[] = [
-                        'valor' => $movimentacao->valorTotal,
-                        'dtVencto' => $grupoItem->dtVencto->format('Y-m-d'),
-                        'grupoItemId' => $grupoItem->getId()
-                    ];
-                    if ($grupoItem->proximo) {
-                        $grupoItem = $repoGrupoItem->find($grupoItem->proximo->getId());
-                        $gruposItens[] = $grupoItem;
-                    } else {
-                        break; // na verdade já irá sair do for mesmo
-                    }
-                }
+            if ($movimentacao->grupoItem) {
+                $dadosParcelamento = $this->montarGruposItens($movimentacao);
             } else {
-                unset($movimentacao->jsonData['dadosParcelamento']);
+                $dadosParcelamento = $movimentacao->jsonData['dadosParcelamento'] ?? null;
             }
+            if (!$dadosParcelamento) {
+                throw new ViewException("Erro ao montar os dados do parcelamento");
+            }
+            $qtdeParcelas = count($dadosParcelamento);
+
+            unset($movimentacao->jsonData['dadosParcelamento']);
 
             $cadeia = new Cadeia();
             $cadeia->vinculante = true;
             $cadeia->fechada = true;
+            
+            $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia, false);            
 
             $movimentacao->parcelamento = true;
-            $movimentacao->qtdeParcelas = count($dadosParcelamento);
+            $movimentacao->qtdeParcelas = $qtdeParcelas;
             $movimentacao->parcelaNum = 1;
             $movimentacao->cadeia = $cadeia;
-            $movimentacao->cadeiaQtde = count($dadosParcelamento);
+            $movimentacao->cadeiaQtde = $qtdeParcelas;
             $movimentacao->cadeiaOrdem = 1;
-            $movimentacao->grupoItem = $gruposItens[0] ?? null;
+            $movimentacao->grupoItem = $dadosParcelamento[0]['grupoItem'] ?? null;
+            $movimentacao->valor = $dadosParcelamento[0]['valor'];
+            $movimentacao->valorTotal = $dadosParcelamento[0]['valor'];
 
             $cadeia->movimentacoes->add($movimentacao);
 
@@ -1300,23 +1278,27 @@ class MovimentacaoEntityHandler extends EntityHandler
                 /** @var Movimentacao $parcela */
                 $parcela = $this->cloneEntityId($movimentacao);
                 $parcela->parcelamento = true;
-                $parcela->qtdeParcelas = count($dadosParcelamento);
+                $parcela->qtdeParcelas = $qtdeParcelas;
                 $parcela->parcelaNum = $i + 1;
                 $parcela->cadeia = $cadeia;
-                $parcela->cadeiaQtde = count($dadosParcelamento);
+                $parcela->cadeiaQtde = $qtdeParcelas;
                 $parcela->cadeiaOrdem = $i + 1;
                 $parcela->dtVencto = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVencto']);
                 $parcela->dtVenctoEfetiva = null;
                 $parcela->valor = $dadosParcelamento[$i]['valor'];
+                $parcela->valorTotal = $dadosParcelamento[$i]['valor'];
                 $parcela->documentoNum = $dadosParcelamento[$i]['documentoNum'] ?? null;
                 $parcela->chequeNumCheque = $dadosParcelamento[$i]['chequeNumCheque'] ?? null;
-                $parcela->grupoItem = $gruposItens[$i] ?? null;
+                $parcela->grupoItem = $dadosParcelamento[$i]['grupoItem'] ?? null;
                 $cadeia->movimentacoes->add($parcela);
 
                 parent::save($parcela, false);
             }
+
             $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
+
             $this->doctrine->commit();
+
         } catch (ViewException $e) {
             if ($this->doctrine->getConnection()->isTransactionActive()) {
                 try {
@@ -1327,6 +1309,55 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
             throw new ViewException('Erro ao salvar o parcelamento', 0, $e);
         }
+    }
+
+
+    private function montarGruposItens(Movimentacao $movimentacao): array
+    {
+        $repoGrupoItem = $this->doctrine->getRepository(GrupoItem::class);
+
+        $mesIni = GrupoBusiness::findDtVenctoByDtMoviment(
+            $movimentacao->grupoItem->pai,
+            $movimentacao->dtMoviment
+        );
+        
+        $valores = DecimalUtils::gerarParcelas($movimentacao->valorTotal, $movimentacao->qtdeParcelas);
+
+        $mesFim = DateTimeUtils::incMes($mesIni, $movimentacao->qtdeParcelas - 1);
+
+        $this->grupoEntityHandler->gerarDesdeAte(
+            $movimentacao->grupoItem->pai,
+            $mesIni,
+            $mesFim
+        );
+
+        // se não tem dadosParcelamento é porque é um save para grupoItem
+        $grupoItem = $repoGrupoItem->findByDtMoviment(
+            $movimentacao->grupoItem->pai,
+            $movimentacao->dtMoviment
+        );
+        $dadosParcelamento[] = [
+            'valor' => $valores[0],
+            'dtVencto' => $grupoItem->dtVencto->format('Y-m-d'),
+            'grupoItem' => $grupoItem
+        ];
+        if ($grupoItem->proximo) {
+            $grupoItem = $repoGrupoItem->find($grupoItem->proximo->getId());
+            for ($i = 2; $i <= $movimentacao->qtdeParcelas; $i++) {
+                $dadosParcelamento[] = [
+                    'valor' => $valores[$i - 1],
+                    'dtVencto' => $grupoItem->dtVencto->format('Y-m-d'),
+                    'grupoItem' => $grupoItem
+                ];
+                if ($grupoItem->proximo) {
+                    $grupoItem = $repoGrupoItem->find($grupoItem->proximo->getId());
+                } else {
+                    break; // na verdade já irá sair do for mesmo
+                }
+            }
+        }
+
+        return $dadosParcelamento;
     }
 
     /**
