@@ -64,7 +64,7 @@ class NotaFiscalEntityHandler extends EntityHandler
             throw new ViewException('Entrada/Saída não informado');
         }
 
-        if ($notaFiscal->getItens() && $notaFiscal->getItens()->count() > 0) {
+        if ($notaFiscal->isNossaEmissao() && $notaFiscal->getItens() && $notaFiscal->getItens()->count() > 0) {
             $this->calcularTotais($notaFiscal);
         }
 
@@ -112,7 +112,9 @@ class NotaFiscalEntityHandler extends EntityHandler
         
         $notaFiscalBusiness->verificarESetarVenda($notaFiscal);
 
-        $this->calcularTotais($notaFiscal);
+        if ($notaFiscal->isNossaEmissao()) {
+            $this->calcularTotais($notaFiscal);
+        }
     }
     
     private function checkNovaNota(NotaFiscal $notaFiscal): void
