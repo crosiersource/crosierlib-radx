@@ -19,13 +19,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     denormalizationContext={"groups"={"ncm"},"enable_max_depth"=true},
  *
  *     itemOperations={
- *          "get"={"path"="/fis/ncm/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fis/ncm/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "get"={"path"="/fis/ncm/{id}", "security"="is_granted('ROLE_FISCAL')"},
+ *          "put"={"path"="/fis/ncm/{id}", "security"="is_granted('ROLE_FISCAL')"},
  *          "delete"={"path"="/fis/ncm/{id}", "security"="is_granted('ROLE_ADMIN')"}
  *     },
  *     collectionOperations={
- *          "get"={"path"="/fis/ncm", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fis/ncm", "security"="is_granted('ROLE_FINAN')"}
+ *          "get"={"path"="/fis/ncm", "security"="is_granted('ROLE_FISCAL')"},
+ *          "post"={"path"="/fis/ncm", "security"="is_granted('ROLE_FISCAL')"}
  *     },
  *
  *     attributes={

@@ -21,13 +21,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     denormalizationContext={"groups"={"notaFiscalEvento"},"enable_max_depth"=true},
  *
  *     itemOperations={
- *          "get"={"path"="/fis/notaFiscalEvento/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fis/notaFiscalEvento/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "get"={"path"="/fis/notaFiscalEvento/{id}", "security"="is_granted('ROLE_FISCAL')"},
+ *          "put"={"path"="/fis/notaFiscalEvento/{id}", "security"="is_granted('ROLE_FISCAL')"},
  *          "delete"={"path"="/fis/notaFiscalEvento/{id}", "security"="is_granted('ROLE_ADMIN')"}
  *     },
  *     collectionOperations={
- *          "get"={"path"="/fis/notaFiscalEvento", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fis/notaFiscalEvento", "security"="is_granted('ROLE_FINAN')"}
+ *          "get"={"path"="/fis/notaFiscalEvento", "security"="is_granted('ROLE_FISCAL')"},
+ *          "post"={"path"="/fis/notaFiscalEvento", "security"="is_granted('ROLE_FISCAL')"}
  *     },
  *
  *     attributes={

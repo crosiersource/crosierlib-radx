@@ -22,13 +22,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     denormalizationContext={"groups"={"notaFiscalItem"},"enable_max_depth"=true},
  *
  *     itemOperations={
- *          "get"={"path"="/fis/notaFiscalItem/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fis/notaFiscalItem/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "delete"={"path"="/fis/notaFiscalItem/{id}", "security"="is_granted('ROLE_ADMIN')"}
+ *          "get"={"path"="/fis/notaFiscalItem/{id}", "security"="is_granted('ROLE_FISCAL')"},
+ *          "put"={"path"="/fis/notaFiscalItem/{id}", "security"="is_granted('ROLE_FISCAL')"},
+ *          "delete"={"path"="/fis/notaFiscalItem/{id}", "security"="is_granted('ROLE_FISCAL')"}
  *     },
  *     collectionOperations={
- *          "get"={"path"="/fis/notaFiscalItem", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fis/notaFiscalItem", "security"="is_granted('ROLE_FINAN')"}
+ *          "get"={"path"="/fis/notaFiscalItem", "security"="is_granted('ROLE_FISCAL')"},
+ *          "post"={"path"="/fis/notaFiscalItem", "security"="is_granted('ROLE_FISCAL')"}
  *     },
  *
  *     attributes={

@@ -19,13 +19,13 @@ use Doctrine\ORM\Mapping as ORM;
  *     denormalizationContext={"groups"={"notaFiscalVenda"},"enable_max_depth"=true},
  *
  *     itemOperations={
- *          "get"={"path"="/fis/notaFiscalVenda/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/fis/notaFiscalVenda/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "get"={"path"="/fis/notaFiscalVenda/{id}", "security"="is_granted('ROLE_FISCAL')"},
+ *          "put"={"path"="/fis/notaFiscalVenda/{id}", "security"="is_granted('ROLE_FISCAL')"},
  *          "delete"={"path"="/fis/notaFiscalVenda/{id}", "security"="is_granted('ROLE_ADMIN')"}
  *     },
  *     collectionOperations={
- *          "get"={"path"="/fis/notaFiscalVenda", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/fis/notaFiscalVenda", "security"="is_granted('ROLE_FINAN')"}
+ *          "get"={"path"="/fis/notaFiscalVenda", "security"="is_granted('ROLE_FISCAL')"},
+ *          "post"={"path"="/fis/notaFiscalVenda", "security"="is_granted('ROLE_FISCAL')"}
  *     },
  *
  *     attributes={
