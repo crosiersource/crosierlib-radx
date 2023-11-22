@@ -4,6 +4,7 @@ namespace CrosierSource\CrosierLibRadxBundle\Repository\Vendas;
 
 
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
+use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\RH\Colaborador;
 use CrosierSource\CrosierLibRadxBundle\Entity\Vendas\Venda;
 use CrosierSource\CrosierLibRadxBundle\Repository\RH\ColaboradorRepository;
@@ -107,7 +108,11 @@ class VendaRepository extends FilterRepository
     public function findTotalVendasPorPeriodoVendedores(\DateTime $dtIni, \DateTime $dtFim, $codVendedorIni = null, $codVendedorFim = null)
     {
 
-        $sql = 'SELECT vendedor.id as vendedor_id, sum(valor_total) as total ' .
+        $sql = 'SELECT 
+                    vendedor.id as vendedor_id, 
+                    vendedor.nome_ekt as nome, 
+                    vendedor.codigo as codigo,
+                    sum(valor_total) as total ' .
             'FROM ven_venda v, rh_colaborador vendedor, ven_plano_pagto pp ' .
             'WHERE v.vendedor_id = vendedor.id AND ' .
             'v.plano_pagto_id = pp.id AND ' .
@@ -132,6 +137,8 @@ class VendaRepository extends FilterRepository
 //        $qry->getSQL();
 //        $qry->getParameters();
         $rsm->addScalarResult('vendedor_id', 'vendedor_id');
+        $rsm->addScalarResult('nome', 'nome');
+        $rsm->addScalarResult('codigo', 'codigo');
         $rsm->addScalarResult('total', 'total');
         $results = $qry->getResult();
 
@@ -142,13 +149,13 @@ class VendaRepository extends FilterRepository
         $rc['rs'] = [];
 
 
-        /** @var ColaboradorRepository $repoColaborador */
-        $repoColaborador = $this->getEntityManager()->getRepository(Colaborador::class);
+//        /** @var ColaboradorRepository $repoColaborador */
+//        $repoColaborador = $this->getEntityManager()->getRepository(Colaborador::class);
 
 
         foreach ($results as $r) {
-            $vendedor = $repoColaborador->find($r['vendedor_id']);
-            $rc['rs'][] = ['vendedor' => $vendedor, 'total' => $r['total']];
+            // $vendedor = $repoColaborador->find($r['vendedor_id']);
+            $rc['rs'][] = ['vendedor' => StringUtils::strpad($r['codigo'], 2) . ' - ' . $r['nome'], 'total' => $r['total']];
             $total = bcadd($total, $r['total'], 2);
         }
 
