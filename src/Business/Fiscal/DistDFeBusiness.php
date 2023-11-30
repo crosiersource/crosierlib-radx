@@ -861,7 +861,14 @@ class DistDFeBusiness
             $zip = $xml[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip ?? null;
             if ($zip) {
                 $notaFiscal->setXmlNota($zip->__toString());
-                $this->nfeProc2NotaFiscal($notaFiscal->documentoDestinatario, $notaFiscal->getXMLDecoded(), $notaFiscal);
+                $xml = $notaFiscal->getXMLDecoded();
+                if ($xml->getName() === 'nfeProc') {
+                    $this->nfeProc2NotaFiscal($notaFiscal->documentoDestinatario, $xml, $notaFiscal);
+                } elseif ($xml->getName() === 'resNFe') {
+                    $repoDistDfe = $this->doctrine->getRepository(DistDFe::class);
+                    $distDfe = $repoDistDfe->findOneByFiltersSimpl([['chave', 'EQ', $notaFiscal->chaveAcesso]]);
+                    $this->resNfe2NotaFiscal($distDfe);
+                }
             } else {
                 $this->logger->error('Erro ao obter XML (download zip) para a chave: ' . $notaFiscal->chaveAcesso);
             }

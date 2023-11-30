@@ -947,7 +947,20 @@ class SpedNFeBusiness
             $response = $tools->sefazManifesta($notaFiscal->chaveAcesso, $tpEvento, $xJust, $nSeqEvento);
             $st = new Standardize($response);
 
-            if ($st->simpleXml()->cStat === '128') {
+            $cStat = null;
+
+            $retorno = null;
+            
+            try {
+                $cStat = (int)$st->simpleXml()->retEvento->infEvento->cStat;
+                $retorno = $st->simpleXml()->retEvento->infEvento->cStat . ' - ' . $st->simpleXml()->retEvento->infEvento->xMotivo;
+            } catch (\Exception $e) {
+                $cStat = 0;
+            }
+
+            $notaFiscal->dtManifestDest = new \DateTime();
+            
+            if ((int)$cStat === 135) {
                 $operacoes =
                     [
                         210210 => '210210 - CIÊNCIA DA OPERAÇÃO',
@@ -957,8 +970,10 @@ class SpedNFeBusiness
                     ];
 
                 $notaFiscal->manifestDest = $operacoes[$codManifest];
+            } else {
+                $notaFiscal->manifestDest = $retorno;
             }
-            $notaFiscal->dtManifestDest = new \DateTime();
+            $notaFiscal->jsonData['retorno_manifest'] = $retorno;
 
             $this->notaFiscalEntityHandler->save($notaFiscal);
 

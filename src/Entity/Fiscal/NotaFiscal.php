@@ -1267,5 +1267,13 @@ class NotaFiscal implements EntityId
     {
         return $this->jsonData['fin_fatura_id'] ?? null;
     }
+    
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function getRetornoManifest(): ?string
+    {
+        return $this->jsonData['retorno_manifest'] ?? null;
+    }
 
 }
