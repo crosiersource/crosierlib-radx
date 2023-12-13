@@ -64,7 +64,7 @@ class CalculoPreco
 
         $precoPrazo_centavosComDezenaExata = DecimalUtils::round($precoPrazo, 1, DecimalUtils::ROUND_HALF_UP);
 
-        $descontoAVista = 1.00 - 0.1;
+        $descontoAVista = 1.00 - (float)$preco['custoFinanceiro'];
 
         $precoVista = bcmul($precoPrazo_centavosComDezenaExata, $descontoAVista, 2);
 
