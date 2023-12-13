@@ -10,6 +10,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+use CrosierSource\CrosierLibBaseBundle\ApiPlatform\Filter\NotLikeFilter;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\NotUppercase;
 use CrosierSource\CrosierLibBaseBundle\Doctrine\Annotations\TrackDateOnly;
@@ -68,10 +69,10 @@ use Symfony\Component\Validator\Constraints as Assert;
  * })
  *
  * @ApiFilter(DateFilter::class, properties={
- *     "dtMoviment", 
- *     "dtUtil", 
- *     "dtVenctoEfetiva", 
- *     "dtVencto", 
+ *     "dtMoviment",
+ *     "dtUtil",
+ *     "dtVenctoEfetiva",
+ *     "dtVencto",
  *     "dtPagto"
  * })
  *
@@ -96,6 +97,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     "modo.codigo",
  *     "updated"
  * }, arguments={"orderParameterName"="order"})
+ *
+ * @ApiFilter(NotLikeFilter::class, properties={"status"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\MovimentacaoEntityHandler")
  *
@@ -656,7 +659,6 @@ class Movimentacao implements EntityId
             }
         }
 
-        
 
         if ($this->numCartao) {
             $sufixo .= ' (**** ' . $this->numCartao . ')';

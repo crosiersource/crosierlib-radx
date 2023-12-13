@@ -180,5 +180,16 @@ class CaixaOperacao implements EntityId
         $this->valor = $valor;
     }
 
+    /**
+     * @Groups("caixaOperacao")
+     */
+    public function getStatus(): string
+    {
+        if ($this->operacao === 'ABERTURA') {
+            return 'ABERTO';
+        }
+        return 'FECHADO';
+    }
+
 
 }
