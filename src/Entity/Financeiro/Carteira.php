@@ -61,10 +61,10 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "operadoraCartao": "exact"})
  *
  * @ApiFilter(OrderFilter::class, properties={
- *     "id", 
- *     "codigo", 
- *     "descricao", 
- *     "dtConsolidado", 
+ *     "id",
+ *     "codigo",
+ *     "descricao",
+ *     "dtConsolidado",
  *     "atual",
  *     "updated"
  * }, arguments={"orderParameterName"="order"})
@@ -89,12 +89,14 @@ class Carteira implements EntityId
      */
     public ?int $codigo = null;
 
+
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=40)
      * @Groups("carteira")
      */
     public ?string $descricao = null;
+
 
     /**
      * Movimentações desta carteira não poderão ter suas datas alteradas para antes desta.
@@ -103,6 +105,7 @@ class Carteira implements EntityId
      * @Groups("carteira")
      */
     public ?DateTime $dtConsolidado = null;
+
 
     /**
      * Uma Carteira concreta é aquela em que podem ser efetuados créditos e
@@ -118,6 +121,7 @@ class Carteira implements EntityId
      */
     public ?bool $concreta = false;
 
+
     /**
      * Informa se esta carteira pode conter movimentações com status ABERTA.
      *
@@ -125,6 +129,7 @@ class Carteira implements EntityId
      * @Groups("carteira")
      */
     public ?bool $abertas = false;
+
 
     /**
      * Informa se esta carteira é um caixa (ex.: caixa a vista, caixa a prazo).
@@ -134,6 +139,7 @@ class Carteira implements EntityId
      */
     public ?bool $caixa = false;
 
+
     /**
      * ABERTO / FECHADO / null
      * @ORM\Column(name="caixa_status", type="string", nullable=true, length=20)
@@ -141,6 +147,7 @@ class Carteira implements EntityId
      * @var null|string
      */
     public ?string $caixaStatus = '';
+
 
     /**
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibBaseBundle\Entity\Security\User")
@@ -151,6 +158,15 @@ class Carteira implements EntityId
      */
     public ?User $caixaResponsavel = null;
 
+
+    /**
+     * @ORM\Column(name="caixa_dt_ultima_operacao", type="datetime", nullable=true)
+     * @Groups("carteira")
+     * @var null|\DateTime
+     */
+    public ?\DateTime $caixaDtUltimaOperacao = null;
+
+
     /**
      * Informa se esta carteira possui talão de cheques.
      *
@@ -158,6 +174,7 @@ class Carteira implements EntityId
      * @Groups("carteira")
      */
     public ?bool $cheque = false;
+
 
     /**
      * No caso da Carteira ser uma conta de banco, informa qual.
@@ -168,6 +185,7 @@ class Carteira implements EntityId
      */
     public ?Banco $banco = null;
 
+
     /**
      * Código da agência (sem o dígito verificador).
      *
@@ -175,6 +193,7 @@ class Carteira implements EntityId
      * @Groups("carteira")
      */
     public ?string $agencia = null;
+
 
     /**
      * Número da conta no banco (não segue um padrão).
@@ -184,6 +203,7 @@ class Carteira implements EntityId
      */
     public ?string $conta = null;
 
+
     /**
      * Utilizado para informar o limite disponível.
      *
@@ -191,6 +211,7 @@ class Carteira implements EntityId
      *
      */
     public ?float $limite = null;
+
 
     /**
      *
@@ -211,6 +232,7 @@ class Carteira implements EntityId
      */
     public ?bool $atual = false;
 
+    
     /**
      *
      * @ORM\Column(name="json_data", type="json")

@@ -4,6 +4,7 @@ namespace CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro;
 
 use CrosierSource\CrosierLibBaseBundle\EntityHandler\EntityHandler;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\CaixaOperacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
 
 /**
@@ -29,7 +30,7 @@ class CarteiraEntityHandler extends EntityHandler
         if (!$carteira->dtConsolidado) {
             $carteira->dtConsolidado = DateTimeUtils::parseDateStr('1900-01-01');
         }
-        
+
         if (!$carteira->codigo) {
             $rs = $this->getDoctrine()->getConnection()->fetchAllAssociative('SELECT MAX(codigo) as max FROM fin_carteira');
             $carteira->codigo = (int)$rs[0]['max'] + 1;

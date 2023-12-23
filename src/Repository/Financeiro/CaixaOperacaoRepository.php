@@ -21,7 +21,8 @@ class CaixaOperacaoRepository extends FilterRepository
 
     public function getUltimaOperacao(Carteira $carteira): ?CaixaOperacao
     {
-        return $this->findOneByFiltersSimpl([['carteira', 'EQ', $carteira->getId()]], ['dtOperacao' => 'DESC']);
+        $rs = $this->findByFiltersSimpl([['carteira', 'EQ', $carteira->getId()]], ['id' => 'DESC'], 0, 1);
+        return $rs[0] ?? null;
     }
 
     public function getDtCaixaAberto(Carteira $carteira): ?\DateTime
