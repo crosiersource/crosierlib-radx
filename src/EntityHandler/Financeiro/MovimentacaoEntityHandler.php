@@ -842,10 +842,10 @@ class MovimentacaoEntityHandler extends EntityHandler
     }
 
 
-    private function saveEntradaPorCartaoDebito(Movimentacao $movimentacao): void
+    private function saveEntradaPorCartaoDebito(Movimentacao $moviment110): void
     {
-        if ($movimentacao->getId()) {
-            $this->editaEntradaPorCartaoDebito($movimentacao);
+        if ($moviment110->getId()) {
+            $this->editaEntradaPorCartaoDebito($moviment110);
             return;
         }
 
@@ -860,16 +860,16 @@ class MovimentacaoEntityHandler extends EntityHandler
         /** @var Cadeia $cadeia */
         $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia);
 
-        $cadeiaQtde = 3; // 101 + 291 + 191
+        $cadeiaQtde = 3; // 110 + 291 + 191
 
-        $movimentacao->cadeia = $cadeia;
-        $movimentacao->cadeiaOrdem = 1;
-        $movimentacao->cadeiaQtde = $cadeiaQtde;
-        $movimentacao->carteiraDestino = $movimentacao->operadoraCartao->carteira;
-        parent::save($movimentacao);
+        $moviment110->cadeia = $cadeia;
+        $moviment110->cadeiaOrdem = 1;
+        $moviment110->cadeiaQtde = $cadeiaQtde;
+        $moviment110->carteiraDestino = $moviment110->operadoraCartao->carteira;
+        parent::save($moviment110);
 
         /** @var Movimentacao $moviment291 */
-        $moviment291 = $this->cloneEntityId($movimentacao);
+        $moviment291 = $this->cloneEntityId($moviment110);
         $moviment291->cadeia = $cadeia;
         $moviment291->cadeiaOrdem = 2;
         $moviment291->cadeiaQtde = 3;
@@ -878,18 +878,18 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         parent::save($moviment291);
 
-        $moviment191 = $this->cloneEntityId($movimentacao);
+        $moviment191 = $this->cloneEntityId($moviment110);
         $moviment191->cadeia = $cadeia;
         $moviment191->cadeiaOrdem = 3;
         $moviment291->cadeiaQtde = 3;
-        $moviment191->carteira = $movimentacao->carteiraDestino;
-        $moviment191->carteiraDestino = $movimentacao->carteira;
+        $moviment191->carteira = $moviment110->carteiraDestino;
+        $moviment191->carteiraDestino = $moviment110->carteira;
         $moviment191->categoria = $categ191;
-        $moviment191->status = 'ABERTA'; // se torna 'REALIZADA' na consolidação do extrato
+        $moviment191->status = 'REALIZADA';
 
         // Em débito, pode ser no próximo dia útil, ou 2 dias depois.
         $moviment191->dtVencto =
-            (clone $movimentacao->dtMoviment)->add(new \DateInterval('P1D'));
+            (clone $moviment110->dtMoviment)->add(new \DateInterval('P1D'));
         $moviment191->dtVenctoEfetiva = clone($moviment191->dtVencto);
         parent::save($moviment191);
     }
