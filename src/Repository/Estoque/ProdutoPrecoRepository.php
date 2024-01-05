@@ -22,7 +22,7 @@ class ProdutoPrecoRepository extends FilterRepository
 
     public function findPrecoEmDataVenda(Produto $produto, $dtVenda): ?ProdutoPreco
     {
-        $ql = "SELECT pp FROM CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco pp JOIN CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto p WHERE pp.produto = p AND p = :produto AND pp.dtPrecoVenda <= :dtVenda ORDER BY pp.dtPrecoVenda DESC";
+        $ql = "SELECT pp FROM CrosierSource\CrosierLibRadxBundle\Entity\Estoque\ProdutoPreco pp JOIN CrosierSource\CrosierLibRadxBundle\Entity\Estoque\Produto p WHERE pp.produto = p AND p = :produto AND pp.dtPrecoVenda <= :dtVenda ORDER BY pp.inserted DESC";
         $query = $this->getEntityManager()->createQuery($ql);
         $query->setParameters(array(
             'produto' => $produto,
