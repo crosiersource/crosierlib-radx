@@ -265,8 +265,11 @@ class NotaFiscalBusiness
                                 $notaFiscal->complementoDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['complemento'] ?? '', $notaFiscal->complementoDestinatario);
                                 $notaFiscal->bairroDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['bairro'] ?? '', $notaFiscal->bairroDestinatario);
                                 $notaFiscal->cepDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['CEP'] ?? '', $notaFiscal->cepDestinatario);
-                                $notaFiscal->cidadeDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['cidade'] ?? '', $notaFiscal->cidadeDestinatario);
-                                $notaFiscal->estadoDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['UF'] ?? '', $notaFiscal->estadoDestinatario);
+
+                                if (($endereco_consultado['dados']['cidade'])->__toString() !== 'INFORMACAO NAO DISPONIVEL') {
+                                    $notaFiscal->cidadeDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['cidade'] ?? '', $notaFiscal->cidadeDestinatario);
+                                    $notaFiscal->estadoDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['UF'] ?? '', $notaFiscal->estadoDestinatario);
+                                }
                             }
                         }
                     }
@@ -560,10 +563,10 @@ class NotaFiscalBusiness
     {
         try {
             $mudou = false;
-            
+
             $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($notaFiscal->documentoEmitente);
             $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
-            
+
             if (!$notaFiscal->uuid) {
                 $notaFiscal->uuid = md5(uniqid(mt_rand(), true));
                 $mudou = true;
@@ -727,7 +730,7 @@ class NotaFiscalBusiness
         if (!$notaFiscal->isNossaEmissao()) {
             return;
         }
-        
+
         if (!$notaFiscal) {
             throw new \RuntimeException('Nota Fiscal null');
         }
@@ -1366,7 +1369,7 @@ class NotaFiscalBusiness
             throw new \RuntimeException('Ocorreu um erro durante o processamento :' . $e->getMessage());
         }
     }
-    
+
     public function verificarESetarVenda(NotaFiscal $notaFiscal): void
     {
         $temVenda = $this->conn->fetchAssociative(
