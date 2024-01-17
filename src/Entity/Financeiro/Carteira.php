@@ -141,6 +141,15 @@ class Carteira implements EntityId
 
 
     /**
+     * Informa se esta carteira pode receber sangrias.
+     *
+     * @ORM\Column(name="destino_sangrias", type="boolean", nullable=false)
+     * @Groups("carteira")
+     */
+    public ?bool $destinoDeSangrias = false;
+
+
+    /**
      * ABERTO / FECHADO / null
      * @ORM\Column(name="caixa_status", type="string", nullable=true, length=20)
      * @Groups("carteira")

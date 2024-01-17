@@ -2,6 +2,7 @@
 
 namespace CrosierSource\CrosierLibRadxBundle\Repository\Financeiro;
 
+use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Repository\FilterRepository;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Grupo;
@@ -29,10 +30,14 @@ class GrupoItemRepository extends FilterRepository
 
     public function findByMesAnoAndGrupo(\DateTime $mesAno, Grupo $grupo): ?GrupoItem
     {
-        return $this->findOneByFiltersSimpl([
-            ['dtVencto', 'BETWEEN_MESANO', $mesAno],
-            ['pai', 'EQ', $grupo]
-        ]);
+        try {
+            return $this->findOneByFiltersSimpl([
+                ['dtVencto', 'BETWEEN_MESANO', $mesAno],
+                ['pai', 'EQ', $grupo]
+            ]);
+        } catch (ViewException $e) {
+            throw new ViewException('Existem dois registros para o grupo ' . $grupo->descricao . ' no mês ' . $mesAno->format('m/Y') . '.');
+        }
     }
 
     public function findByDtMoviment(Grupo $grupo, \DateTime $dtMoviment): ?GrupoItem
