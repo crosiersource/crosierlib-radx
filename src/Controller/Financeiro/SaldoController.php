@@ -68,8 +68,7 @@ class SaldoController extends AbstractController
                 'totalPendencias' => $saldo->totalPendencias,
             ];
         }
-        $r["hydra:member"] = $rs;
-        return new JsonResponse($r);
+        return new JsonResponse($rs);
     }
 
 
