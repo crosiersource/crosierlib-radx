@@ -50,7 +50,8 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "concreta",
  *     "abertas",
  *     "caixaStatus",
- *     "cheque"
+ *     "cheque",
+ *     "destinoDeSangrias"
  * })
  *
  * @ApiFilter(SearchFilter::class, properties={
