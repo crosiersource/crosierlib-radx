@@ -73,8 +73,15 @@ class SaldoController extends AbstractController
     }
 
 
-    private function handleParams(array $dtSaldo, string $carteiraUri): void
+    private function handleParams($dtSaldo, string $carteiraUri): void
     {
+        if (!is_array($dtSaldo)) {
+            $dtSaldo = 
+                [
+                    'after' => $dtSaldo,
+                    'before' => $dtSaldo
+                ];
+        }
         $saldos = [];
 
         $this->dtIni = DateTimeUtils::parseDateStr($dtSaldo['after']);
@@ -160,7 +167,7 @@ class SaldoController extends AbstractController
     {
         return $this->repoSaldo->findByFiltersSimpl([
             ['carteira', 'EQ', $this->carteira],
-            ['dtSaldo', 'BETWEEN_DATE', [$this->dtIni, $this->dtFim]]
+            ['dtSaldo', 'BETWEEN_DATE', [$this->dtIni, $this->dtFim], 'date']
         ], ['dtSaldo' => 'ASC'], 0, null);
     }
 
