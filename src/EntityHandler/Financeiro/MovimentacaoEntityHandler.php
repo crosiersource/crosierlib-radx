@@ -401,7 +401,11 @@ class MovimentacaoEntityHandler extends EntityHandler
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
         /** @var Movimentacao $movimentacao */
         if (!$movimentacao->tipoLancto) {
-            $movimentacao->tipoLancto = $repoTipoLancto->findOneBy(['codigo' => 20]);
+            if (in_array($movimentacao->categoria->codigo, [199,299], true)) {
+                $movimentacao->tipoLancto = $repoTipoLancto->findOneBy(['codigo' => 60]);
+            } else {
+                $movimentacao->tipoLancto = $repoTipoLancto->findOneBy(['codigo' => 20]);
+            }
         }
 
         // 60 - TRANSFERÊNCIA ENTRE CARTEIRAS
@@ -449,6 +453,10 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
         $this->getDoctrine()->beginTransaction();
 
+        if (!$movimentacao->descricao) {
+            $movimentacao->descricao = 'TRANSFERÊNCIA ENTRE CARTEIRAS';
+        }
+        
         if (!$movimentacao->modo) {
             /** @var ModoRepository $repoModo */
             $repoModo = $this->doctrine->getRepository(Modo::class);
