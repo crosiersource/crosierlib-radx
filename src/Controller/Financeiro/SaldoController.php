@@ -1,12 +1,9 @@
 <?php
 
-namespace CrosierSource\CrosierLibRadxBundle\ApiPlatform\DataProvider\Financeiro;
+namespace CrosierSource\CrosierLibRadxBundle\Controller\Financeiro;
 
-use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
-use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
-use App\Entity\Clinica\Especialidade;
-use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibBaseBundle\Utils\EntityIdUtils\EntityIdUtils;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Carteira;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Saldo;
@@ -14,15 +11,21 @@ use CrosierSource\CrosierLibRadxBundle\EntityHandler\Financeiro\SaldoEntityHandl
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\MovimentacaoRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Financeiro\SaldoRepository;
 use Doctrine\DBAL\Connection;
+use Psr\Container\ContainerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
+ * Controller interno do bundle com métodos/rotas que devem estar disponíveis em quaisquer apps.
+ *
  * @author Carlos Eduardo Pauluk
  */
-class SaldoDataProvider implements ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface
+class SaldoController extends AbstractController
 {
 
     public SaldoEntityHandler $saldoEntityHandler;
-    
+
     private SaldoRepository $repoSaldo;
 
     public Connection $conn;
@@ -37,50 +40,50 @@ class SaldoDataProvider implements ContextAwareCollectionDataProviderInterface, 
 
     private Carteira $carteira;
 
-
-    public function __construct(SaldoEntityHandler $saldoEntityHandler)
+    public function __construct(
+        ContainerInterface $container,
+        SaldoEntityHandler $saldoEntityHandler
+    )
     {
+        $this->container = $container;
         $this->saldoEntityHandler = $saldoEntityHandler;
         $this->repoSaldo = $this->saldoEntityHandler->getDoctrine()->getRepository(Saldo::class);
         $this->conn = $this->saldoEntityHandler->getDoctrine()->getConnection();
     }
 
-    public function supports(string $resourceClass, string $operationName = null, array $context = []): bool
-    {
-        return Saldo::class === $resourceClass &&
-            ($context['filters']['carteira'] ?? null) &&
-            ($context['filters']['dtSaldo'] ?? null);
-    }
 
-    /**
-     * @throws ViewException
-     */
-    public function getCollection(
-        string $resourceClass,
-        string $operationName = null,
-        array  $context = []
-    ): iterable
+    public function getSaldos(Request $request): JsonResponse
     {
-        $this->handleParams($context);
+        $dtSaldo = $request->get('dtSaldo');
+        $carteiraUri = $request->get('carteira');
+        $this->handleParams($dtSaldo, $carteiraUri);
         $this->verificaSaldosParaCadaDia();
-        return $this->getSaldos();
+        $saldos = $this->doGetSaldos();
+        $rs = [];
+        foreach ($saldos as $saldo) {
+            $rs[] = [
+                'id' => $saldo->getId(),
+                'dtSaldo' => $saldo->dtSaldo->format('Y-m-d'),
+                'totalRealizadas' => $saldo->totalRealizadas,
+                'totalPendencias' => $saldo->totalPendencias,
+            ];
+        }
+        $r["hydra:member"] = $rs;
+        return new JsonResponse($r);
     }
 
-    private function handleParams(array $context): void
+
+    private function handleParams(array $dtSaldo, string $carteiraUri): void
     {
         $saldos = [];
 
-        if (!is_array($context['filters']['dtSaldo'])) {
-            $dtSaldo = $context['filters']['dtSaldo'];
-            $context['filters']['dtSaldo'] = ['after' => $dtSaldo, 'before' => $dtSaldo];
-        }
-        $this->dtIni = DateTimeUtils::parseDateStr($context['filters']['dtSaldo']['after']);
-        $this->dtFim = DateTimeUtils::parseDateStr($context['filters']['dtSaldo']['before']);
+        $this->dtIni = DateTimeUtils::parseDateStr($dtSaldo['after']);
+        $this->dtFim = DateTimeUtils::parseDateStr($dtSaldo['before']);
         if (DateTimeUtils::dataMaiorQue($this->dtIni, $this->dtFim)) {
             throw new \Exception('dtIni > dtFim');
         }
 
-        $carteiraId = substr($context['filters']['carteira'], strrpos($context['filters']['carteira'], '/') + 1);
+        $carteiraId = EntityIdUtils::extrairIdDeUri($carteiraUri);
         $repoCarteira = $this->saldoEntityHandler->getDoctrine()->getRepository(Carteira::class);
         $this->carteira = $repoCarteira->find($carteiraId);
 
@@ -102,6 +105,7 @@ class SaldoDataProvider implements ContextAwareCollectionDataProviderInterface, 
             }
         }
     }
+
 
     private function buildSaldosByData(): void
     {
@@ -151,8 +155,8 @@ class SaldoDataProvider implements ContextAwareCollectionDataProviderInterface, 
         }
     }
 
-
-    private function getSaldos(): array
+    
+    private function doGetSaldos(): array
     {
         return $this->repoSaldo->findByFiltersSimpl([
             ['carteira', 'EQ', $this->carteira],

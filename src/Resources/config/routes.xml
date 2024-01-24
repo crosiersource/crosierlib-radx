@@ -12,5 +12,11 @@
     <requirement key="produto">\d+</requirement>
   </route>
 
+  <!-- SaldoController -->
+  <route id="api_fin_saldo_getSaldos"
+         controller="crosier_source.crosier_lib_radx_bundle.controller.financeiro.saldo_controller::getSaldos"
+         path="/api/fin/saldo">
+  </route>
+
 
 </routes>
