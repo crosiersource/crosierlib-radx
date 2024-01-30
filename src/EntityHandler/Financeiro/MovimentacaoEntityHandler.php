@@ -1291,7 +1291,10 @@ class MovimentacaoEntityHandler extends EntityHandler
                 $parcela->cadeia = $cadeia;
                 $parcela->cadeiaQtde = $qtdeParcelas;
                 $parcela->cadeiaOrdem = $i + 1;
-                $parcela->dtVencto = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVencto']);
+                $parcela->dtVencto = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtVencto'] ?? $dadosParcelamento[$i]['dtPagto']);
+                if ($dadosParcelamento[$i]['dtPagto'] ?? null) {
+                    $parcela->dtPagto = DateTimeUtils::parseDateStr($dadosParcelamento[$i]['dtPagto']);
+                }
                 $parcela->dtVenctoEfetiva = null;
                 $parcela->valor = $dadosParcelamento[$i]['valor'];
                 $parcela->valorTotal = $dadosParcelamento[$i]['valor'];
