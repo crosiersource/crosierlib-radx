@@ -288,22 +288,17 @@ class MovimentacaoEntityHandler extends EntityHandler
         });
 
         if ($movimentacao->fatura) {
-            // aqui seria a lógica padrão de uma fatura...
-            $movimentacao->cedenteDocumento = $movimentacao->fatura->cedenteDocumento;
-            $movimentacao->cedenteNome = $movimentacao->fatura->cedenteNome;
-            $movimentacao->sacadoDocumento = $movimentacao->fatura->sacadoDocumento;
-            $movimentacao->sacadoNome = $movimentacao->fatura->sacadoNome;
-
-            // aqui onde ela se inverte...
-            if (
-                (in_array($movimentacao->fatura->cedenteDocumento, $filiaisCnpjs, true) && $movimentacao->categoria->codigoSuper === 2)
-                ||
-                (in_array($movimentacao->fatura->sacadoDocumento, $filiaisCnpjs, true) && $movimentacao->categoria->codigoSuper === 1)
-            ) {
-                $movimentacao->cedenteDocumento = $movimentacao->fatura->sacadoDocumento;
-                $movimentacao->cedenteNome = $movimentacao->fatura->sacadoNome;
-                $movimentacao->sacadoDocumento = $movimentacao->fatura->cedenteDocumento;
-                $movimentacao->sacadoNome = $movimentacao->fatura->cedenteNome;
+            if (!$movimentacao->cedenteDocumento) {
+                $movimentacao->cedenteDocumento = $movimentacao->fatura->cedenteDocumento;
+            }
+            if (!$movimentacao->cedenteNome) {
+                $movimentacao->cedenteNome = $movimentacao->fatura->cedenteNome;
+            }
+            if (!$movimentacao->sacadoDocumento) {
+                $movimentacao->sacadoDocumento = $movimentacao->fatura->sacadoDocumento;
+            }
+            if (!$movimentacao->sacadoNome) {
+                $movimentacao->sacadoNome = $movimentacao->fatura->sacadoNome;
             }
         }
 
@@ -401,7 +396,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
         /** @var Movimentacao $movimentacao */
         if (!$movimentacao->tipoLancto) {
-            if (in_array($movimentacao->categoria->codigo, [199,299], true)) {
+            if (in_array($movimentacao->categoria->codigo, [199, 299], true)) {
                 $movimentacao->tipoLancto = $repoTipoLancto->findOneBy(['codigo' => 60]);
             } else {
                 $movimentacao->tipoLancto = $repoTipoLancto->findOneBy(['codigo' => 20]);
@@ -456,7 +451,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         if (!$movimentacao->descricao) {
             $movimentacao->descricao = 'TRANSFERÊNCIA ENTRE CARTEIRAS';
         }
-        
+
         if (!$movimentacao->modo) {
             /** @var ModoRepository $repoModo */
             $repoModo = $this->doctrine->getRepository(Modo::class);
@@ -1265,8 +1260,8 @@ class MovimentacaoEntityHandler extends EntityHandler
             $cadeia = new Cadeia();
             $cadeia->vinculante = true;
             $cadeia->fechada = true;
-            
-            $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia, false);            
+
+            $cadeia = $this->faturaEntityHandler->cadeiaEntityHandler->save($cadeia, false);
 
             $movimentacao->parcelamento = true;
             $movimentacao->qtdeParcelas = $qtdeParcelas;
@@ -1331,7 +1326,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->grupoItem->pai,
             $movimentacao->dtMoviment
         );
-        
+
         $valores = DecimalUtils::gerarParcelas($movimentacao->valorTotal, $movimentacao->qtdeParcelas);
 
         $mesFim = DateTimeUtils::incMes($mesIni, $movimentacao->qtdeParcelas - 1);
