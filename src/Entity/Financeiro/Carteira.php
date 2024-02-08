@@ -49,7 +49,6 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "caixa",
  *     "concreta",
  *     "abertas",
- *     "caixaStatus",
  *     "cheque",
  *     "destinoDeSangrias"
  * })
@@ -59,7 +58,9 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "descricao": "partial",
  *     "caixaResponsavel": "exact",
  *     "id": "exact",
- *     "operadoraCartao": "exact"})
+ *     "operadoraCartao": "exact",
+ *     "caixaStatus": "exact"
+ * })
  *
  * @ApiFilter(OrderFilter::class, properties={
  *     "id",
@@ -67,6 +68,8 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     "descricao",
  *     "dtConsolidado",
  *     "atual",
+ *     "caixa",
+ *     "destinoDeSangrias",
  *     "updated"
  * }, arguments={"orderParameterName"="order"})
  *
