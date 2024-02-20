@@ -9,12 +9,13 @@
             "email": "carlospauluk@gmail.com"
         }
     ],
-    "require": {        
+    "require": {
         "crosiersource/crosierlib-base": "^1.10.2",
         "vich/uploader-bundle": "^1.13",
         "nfephp-org/sped-common": "^5.1",
         "nfephp-org/sped-da": "^1.1",
         "nfephp-org/sped-nfe": "^5.1",
+        "nfephp-org/sped-cte": "^5.0",
         "econea/nusoap": "^0.9.7"
     },
     "config": {
