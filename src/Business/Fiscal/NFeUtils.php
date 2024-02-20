@@ -12,6 +12,7 @@ use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use NFePHP\Common\Certificate;
+use NFePHP\NFe\Common\Tools as ToolsCommon;
 use NFePHP\NFe\Tools;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -190,16 +191,13 @@ class NFeUtils
 
     /**
      * Retorna o Tools a partir do nfeConfigs de um CNPJ específico.
-     *
-     * @param string $cnpj
-     * @return Tools
      * @throws ViewException
      */
-    public function getToolsByCNPJ(string $cnpj): Tools
+    public function getToolsByCNPJ(string $cnpj, ?bool $ctes = false): ToolsCommon
     {
         try {
             $idNfeConfigs = $this->getNFeConfigsByCNPJ($cnpj);
-            return $this->getTools($idNfeConfigs['id']);
+            return $this->getTools($idNfeConfigs['id'], $ctes);
         } catch (\Throwable $e) {
             $this->logger->error('Erro ao obter tools do cachê');
             $this->logger->error($e->getMessage());
@@ -212,7 +210,7 @@ class NFeUtils
      * @return Tools
      * @throws ViewException
      */
-    private function getTools(int $idNfeConfigs): Tools
+    private function getTools(int $idNfeConfigs, ?bool $ctes = false): ToolsCommon
     {
         /** @var AppConfigRepository $repoAppConfig */
         $repoAppConfig = $this->appConfigEntityHandler->getDoctrine()->getRepository(AppConfig::class);
@@ -238,7 +236,11 @@ class NFeUtils
         } catch (\Throwable $e) {
             throw new ViewException('Erro ao ler certificado');
         }
-        return new Tools(json_encode($configs), $certificate);
+        if ($ctes) {
+            return new \NFePHP\CTe\Tools($configs, $certificate);
+        } else {
+            return new Tools(json_encode($configs), $certificate);
+        }
     }
 
 

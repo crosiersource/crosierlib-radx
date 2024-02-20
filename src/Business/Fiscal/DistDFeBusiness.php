@@ -21,6 +21,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\DistDFeRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use NFePHP\NFe\Common\Tools as ToolsCommon;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
@@ -76,14 +77,15 @@ class DistDFeBusiness
      * @return int
      * @throws ViewException
      */
-    public function obterDistDFesAPartirDoUltimoNSU(string $cnpj): int
+    public function obterDistDFesAPartirDoUltimoNSU(string $cnpj, ?bool $ctes = false): int
     {
         /** @var DistDFeRepository $repo */
         $repo = $this->doctrine->getRepository(DistDFe::class);
-        $ultNSU = $repo->findUltimoNSU($cnpj);
-        return $this->obterDistDFes($ultNSU, $cnpj);
+        $ultNSU = $repo->findUltimoNSU($cnpj, $ctes);
+        return $this->obterDistDFes($ultNSU, $cnpj, $ctes);
     }
 
+    
     /**
      * Obtém as DistDFes emitidas contra o CNPJ a partir do $nsu informado
      *
@@ -92,12 +94,13 @@ class DistDFeBusiness
      * @return int
      * @throws ViewException
      */
-    public function obterDistDFes(int $nsu, string $cnpj): int
+    public function obterDistDFes(int $nsu, string $cnpj, ?bool $ctes = false): int
     {
         $qtdeObtida = 0;
 
         try {
-            $tools = $this->nfeUtils->getToolsByCNPJ($cnpj);
+            /** @var ToolsCommon $tools */
+            $tools = $this->nfeUtils->getToolsByCNPJ($cnpj, $ctes);
             $tools->model('55');
             $tools->setEnvironment(1);
             /** @var DistDFeRepository $repo */

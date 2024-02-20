@@ -31,16 +31,19 @@ class DistDFeRepository extends FilterRepository
         return $r[0]['primeiro_nsu'];
     }
 
-    /**
-     *
-     * @param string $documento
-     * @return int
-     */
-    public function findUltimoNSU(string $documento): int
+
+    public function findUltimoNSU(string $documento, ?bool $ctes = false): int
     {
         /** @var Connection $conn */
         $conn = $this->getEntityManager()->getConnection();
-        $r = $conn->fetchAllAssociative('SELECT max(nsu) as ultimo_nsu FROM fis_distdfe WHERE documento = :documento', ['documento' => $documento]);
+        $r = $conn->fetchAllAssociative(
+            'SELECT max(nsu) as ultimo_nsu FROM fis_distdfe 
+                              WHERE 
+                                  documento = :documento AND cte = :cte',
+            [
+                'documento' => $documento,
+                'cte' => $ctes
+            ]);
         return $r[0]['ultimo_nsu'] ?? 0;
     }
 
@@ -54,12 +57,12 @@ class DistDFeRepository extends FilterRepository
     {
         /** @var Connection $conn */
         $conn = $this->getEntityManager()->getConnection();
-        
+
         $sqlApenasUltimos3meses = '';
         if ($apenasUltimos3meses) {
             $sqlApenasUltimos3meses = ' AND inserted >= DATE_SUB(NOW(), INTERVAL 3 MONTH) ';
         }
-        
+
         return $conn->fetchAllAssociative(
             "SELECT nsu FROM fis_distdfe 
            WHERE 
@@ -91,13 +94,13 @@ class DistDFeRepository extends FilterRepository
 //                  (nota_fiscal_id IS NULL OR 
 //                    (tipo_distdfe = \'RESNFE\' AND chnfe IN (SELECT chnfe FROM fis_distdfe WHERE tipo_distdfe = \'NFEPROC\' AND nota_fiscal_id IS NULL)))', 
 //            ['documento' => $documento]);
-        
+
         return $conn->fetchAllAssociative('SELECT id FROM fis_distdfe 
             WHERE documento = :documento AND 
                   tipo_distdfe IN (\'NFEPROC\',\'RESNFE\') AND 
-                  nota_fiscal_id IS NULL', 
+                  nota_fiscal_id IS NULL',
             ['documento' => $documento]);
-        
+
     }
 
     /**
