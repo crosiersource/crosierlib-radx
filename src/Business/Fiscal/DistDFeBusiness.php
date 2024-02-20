@@ -7,12 +7,14 @@ use CrosierSource\CrosierLibBaseBundle\Exception\ViewException;
 use CrosierSource\CrosierLibBaseBundle\Messenger\CrosierQueueHandler;
 use CrosierSource\CrosierLibBaseBundle\Utils\APIUtils\CrosierApiResponse;
 use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\Cte;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\DistDFe;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\FinalidadeNF;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\ModalidadeFrete;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalEvento;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
+use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\CteEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\DistDFeEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEventoEntityHandler;
@@ -47,6 +49,8 @@ class DistDFeBusiness
 
     private CrosierQueueHandler $crosierQueueHandler;
 
+    private CteEntityHandler $cteEntityHandler;
+
 
     public function __construct(EntityManagerInterface        $doctrine,
                                 DistDFeEntityHandler          $distDFeEntityHandler,
@@ -55,7 +59,8 @@ class DistDFeBusiness
                                 SyslogBusiness                $logger,
                                 NFeUtils                      $nfeUtils,
                                 NotaFiscalEventoEntityHandler $notaFiscalEventoEntityHandler,
-                                CrosierQueueHandler           $crosierQueueHandler)
+                                CrosierQueueHandler           $crosierQueueHandler,
+                                CteEntityHandler              $cteEntityHandler)
     {
         $this->doctrine = $doctrine;
         $this->distDFeEntityHandler = $distDFeEntityHandler;
@@ -65,6 +70,7 @@ class DistDFeBusiness
         $this->nfeUtils = $nfeUtils;
         $this->notaFiscalEventoEntityHandler = $notaFiscalEventoEntityHandler;
         $this->crosierQueueHandler = $crosierQueueHandler;
+        $this->cteEntityHandler = $cteEntityHandler;
     }
 
     public function setEchoToLogger(): void
@@ -85,7 +91,7 @@ class DistDFeBusiness
         return $this->obterDistDFes($ultNSU, $cnpj, $ctes);
     }
 
-    
+
     /**
      * Obtém as DistDFes emitidas contra o CNPJ a partir do $nsu informado
      *
@@ -124,35 +130,51 @@ class DistDFeBusiness
                 // ultNSU: último consultado
                 // maxNSU: último na base da sefaz
 
-                if ($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->cStat->__toString() === '137') {
+                $ret = null;
+                try {
+                    $ret = $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt;
+                } catch (\Exception $e) {
+                    try {
+                        $ret = $r[0]->cteDistDFeInteresseResponse->cteDistDFeInteresseResult->retDistDFeInt;
+                    } catch (\Exception $e) {
+                        $err = 'Erro ao obter distDFes. Erro ao obter resposta parseada do xml (NSU: ' . $nsu . ' - ctes: ' . $ctes . ' - CNPJ: ' . $cnpj . ')';
+                        $this->logger->error($err);
+                        $this->logger->error($e->getMessage());
+                        throw new ViewException($err);
+                    }
+                }
+
+                if ($ret->cStat->__toString() === '137') {
                     $this->logger->info('Nenhum documento localizado (NSU: ' . $nsu . ') CNPJ: ' . $cnpj);
                     // xMotivo: Nenhum documento localizado
                     return 0;
                 }
 
-                if (!($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip ?? false)) {
+                if (!($ret->loteDistDFeInt->docZip ?? false)) {
                     $this->logger->info('Interrompendo a busca (NSU: ' . $nsu . ')');
-                    if ($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo ?? false) {
-                        $this->logger->info('Motivo: ' . $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo);
-                        throw new ViewException($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->xMotivo);
+                    if ($ret->xMotivo ?? false) {
+                        $this->logger->info('Motivo: ' . $ret->xMotivo);
+                        throw new ViewException($ret->xMotivo);
                     }
                     break;
                 }
 
-                $qtdeDocs = $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip->count();
+                $qtdeDocs = $ret->loteDistDFeInt->docZip->count();
                 $this->logger->info('Obtidos ' . $qtdeDocs . ' documentos (NSU: ' . $nsu . ') CNPJ: ' . $cnpj);
 
                 for ($i = 0; $i < $qtdeDocs; $i++) {
-                    $doc = $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip[$i];
+                    $doc = $ret->loteDistDFeInt->docZip[$i];
                     $nsu = (int)$doc->attributes()['NSU'];
                     $existe = $repo->findOneByFiltersSimpl([
                         ['nsu', 'EQ', $nsu],
+                        ['cte', 'EQ', $ctes],
                         ['documento', 'EQ', $cnpj],
                     ]);
                     if (!$existe) {
                         $xml = $doc->__toString();
                         $dfe = new DistDFe();
                         $dfe->nsu = $nsu;
+                        $dfe->cte = $ctes;
                         $dfe->xml = $xml;
                         $dfe->documento = $cnpj;
                         $this->distDFeEntityHandler->save($dfe);
@@ -271,8 +293,8 @@ class DistDFeBusiness
             $xmlResp->registerXPathNamespace('soap', 'http://www.w3.org/2003/05/soap-envelope');
             $r = $xmlResp->xpath('//soap:Body');
 
-            if ($r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip ?: false) {
-                $doc = $r[0]->nfeDistDFeInteresseResponse->nfeDistDFeInteresseResult->retDistDFeInt->loteDistDFeInt->docZip[0];
+            if ($ret->loteDistDFeInt->docZip ?: false) {
+                $doc = $ret->loteDistDFeInt->docZip[0];
                 $nsuRetornado = (int)$doc->attributes()['NSU'];
                 if ($nsuRetornado === $nsu) {
                     $xml = $doc->__toString();
@@ -328,10 +350,6 @@ class DistDFeBusiness
     /**
      * XML de NF completa!
      * Processa um elemento do tipo nfeProc (que pode vir de um DistDFe ou de uma nota fiscal baixada).
-     *
-     * @param \SimpleXMLElement $xml
-     * @param NotaFiscal|null $nf
-     * @return NotaFiscal
      * @throws ViewException
      */
     public function nfeProc2NotaFiscal(string $cnpjEmUso, \SimpleXMLElement $xml, NotaFiscal $nf = null, ?DistDFe $distDFe = null): ?NotaFiscal
@@ -544,6 +562,91 @@ class DistDFeBusiness
 
 
     /**
+     * XML de um CTe.
+     * Processa um elemento do tipo cteProc.
+     * @throws ViewException
+     */
+    public function cteProc2Cte(string $cnpjEmUso, \SimpleXMLElement $xml, Cte $cte = null, ?DistDFe $distDFe = null): ?Cte
+    {
+        $chaveAcesso = $xml->protCTe->infProt->chCTe->__toString();
+        if (!$cte) {
+            $cte = $this->doctrine->getRepository(Cte::class)->findOneBy(['chaveAcesso' => $chaveAcesso]);
+            if (!$cte) {
+                $cte = new Cte();
+            }
+        }
+
+        $jsonData = $cte->jsonData ?? [];
+
+        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($cnpjEmUso);
+        $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
+        $cte->ambiente = $ambiente;
+        $cte->setXml($xml->asXML());
+
+        $cte->documentoDestinatario = $xml->CTe->infCte->dest->CNPJ;
+        $cte->xNomeDestinatario = $xml->CTe->infCte->dest->xNome;
+        $cte->inscricaoEstadualDestinatario = $xml->CTe->infCte->dest->IE;
+        $cte->emailDestinatario = $xml->CTe->infCte->dest->email;
+        if ($xml->CTe->infCte->dest->enderDest) {
+            $cte->logradouroDestinatario = $xml->CTe->infCte->dest->enderDest->xLgr;
+            $cte->numeroDestinatario = $xml->CTe->infCte->dest->enderDest->nro;
+            $cte->bairroDestinatario = $xml->CTe->infCte->dest->enderDest->xBairro;
+            $cte->cidadeDestinatario = $xml->CTe->infCte->dest->enderDest->xMun;
+            $cte->estadoDestinatario = $xml->CTe->infCte->dest->enderDest->UF;
+            $cte->cepDestinatario = $xml->CTe->infCte->dest->enderDest->CEP;
+            $cte->foneDestinatario = $xml->CTe->infCte->dest->enderDest->fone;
+        }
+
+        $nct = (int)$xml->CTe->infCte->ide->nCT->__toString();
+        if (!$nct) {
+            throw new ViewException('nCT n/d');
+        }
+        $cte->numero = $nct;
+
+        $mod = (int)$xml->CTe->infCte->ide->mod->__toString();
+        $cte->tipoCte = $mod;
+
+        $cte->serie = ((int)$xml->CTe->infCte->ide->serie->__toString());
+        $cte->naturezaOperacao = ($xml->CTe->infCte->ide->natOp->__toString());
+        $cte->dtEmissao = (DateTimeUtils::parseDateStr($xml->CTe->infCte->ide->dhEmi->__toString()));
+
+        $cte->documentoEmitente = $xml->CTe->infCte->emit->CNPJ;
+        $cte->xNomeEmitente = $xml->CTe->infCte->emit->xNome;
+        $cte->inscricaoEstadualEmitente = $xml->CTe->infCte->emit->IE;
+        if ($xml->CTe->infCte->emit->enderEmit) {
+            $cte->logradouroEmitente = $xml->CTe->infCte->emit->enderEmit->xLgr;
+            $cte->numeroEmitente = $xml->CTe->infCte->emit->enderEmit->nro;
+            $cte->bairroEmitente = $xml->CTe->infCte->emit->enderEmit->xBairro;
+            $cte->cidadeEmitente = $xml->CTe->infCte->emit->enderEmit->xMun;
+            $cte->estadoEmitente = $xml->CTe->infCte->emit->enderEmit->UF;
+            $cte->cepEmitente = $xml->CTe->infCte->emit->enderEmit->CEP;
+            $cte->foneEmitente = $xml->CTe->infCte->emit->enderEmit->fone;
+        }
+
+        $cte->chaveAcesso = $chaveAcesso;
+
+        /** @var Cte $cte */
+        $cte = $this->cteEntityHandler->save($cte, false);
+        
+        $valorPago = (float)($xml->CTe->infCte->vPrest->vTPrest->__toString() ?? 0.0);
+
+        $cte->valorTotal = $valorPago;
+
+        if ($distDFe) {
+            $jsonData['distdfe_id'] = $distDFe->getId();
+            $jsonData['distdfe_tipo'] = 'cteProc';
+        }
+
+        $cte->jsonData = $jsonData;
+        
+        /** @var Cte $cte */
+        $cte = $this->cteEntityHandler->save($cte);
+
+        return $cte;
+    }
+
+
+    /**
      * Se o XML for de resumo...
      *
      * @param DistDFe $distDFe
@@ -690,7 +793,8 @@ class DistDFeBusiness
         $cnpjEmUso = $cnpj ?? $this->nfeUtils->getNFeConfigsEmUso()['cnpj'];
         $this->extrairChaveETipoDosDistDFes($cnpjEmUso);
         // Primeiro processa os DistDFes dos tipos NFEPROC e RESNFE
-        $this->processarDistDFesParaNFes($cnpjEmUso);
+        $this->processarDistDFes($cnpjEmUso);
+
         // Depois processa os DistDFes dos tipos PROCEVENTONFE e RESEVENTO
         $this->processarDistDFesParaEventos($cnpjEmUso);
     }
@@ -700,18 +804,18 @@ class DistDFeBusiness
      *
      * @throws ViewException
      */
-    public function processarDistDFesParaNFes(string $cnpjEmUso): void
+    public function processarDistDFes(string $cnpjEmUso): void
     {
         $this->logger->info('Iniciando DistDFeBusiness::processarDistDFesParaNFes() para o CNPJ ' . $cnpjEmUso . '...');
         $distDFesAProcessar = [];
         try {
             /** @var DistDFeRepository $repoDistDFe */
             $repoDistDFe = $this->doctrine->getRepository(DistDFe::class);
-            $distDFesAProcessar = $repoDistDFe->findDistDFeNotInNotaFiscal($cnpjEmUso);
+            $distDFesAProcessar = $repoDistDFe->findDistDFeNaoProcessados($cnpjEmUso);
         } catch (\Throwable $e) {
-            $this->logger->error('Erro ao processarDistDFesObtidos()');
+            $this->logger->error('Erro ao findDistDFeNaoProcessados()');
             $this->logger->error($e->getMessage());
-            throw new ViewException('Erro ao processarDistDFesObtidos()');
+            throw new ViewException('Erro ao findDistDFeNaoProcessados()');
         }
         if ($distDFesAProcessar) {
             $total = count($distDFesAProcessar);
@@ -748,6 +852,16 @@ class DistDFeBusiness
                             $this->logger->debug('Erro ao processar resNFe para notaFiscal');
                             $this->logger->debug($e->getMessage());
                         }
+                    } elseif ($xmlName === 'cteProc') {
+                        try {
+                            $this->logger->debug('XML é um cteProc... Chamando cteProc2Cte...');
+                            $cte = $this->cteProc2Cte($cnpjEmUso, $distDFe->getXMLDecoded(), null, $distDFe);
+                            $distDFe->fisCte = $cte;
+                            $this->distDFeEntityHandler->save($distDFe);
+                        } catch (\Exception $e) {
+                            $this->logger->debug('Erro ao processar cteProc para cte');
+                            $this->logger->debug($e->getMessage());
+                        }
                     } else {
                         $this->logger->error('Erro ao processar DistDFe: não reconhecido (id ' . $distDFe->getId() . ')');
                     }
@@ -756,7 +870,6 @@ class DistDFeBusiness
                 }
             }
         }
-
     }
 
     /**
@@ -909,7 +1022,7 @@ class DistDFeBusiness
                 $xmlName = $xml->getName();
                 if ($xmlName === 'nfeProc') {
                     $chave = $xml->protNFe->infProt->chNFe->__toString();
-                    $cnpj = $xml->NFe->infNFe->emit->CNPJ->__toString();;
+                    $cnpj = $xml->NFe->infNFe->emit->CNPJ->__toString();
                 } elseif ($xmlName === 'resNFe') {
                     $chave = $xml->chNFe->__toString();
                     $cnpj = $xml->CNPJ->__toString();
@@ -923,6 +1036,14 @@ class DistDFeBusiness
                     $cnpj = $xml->evento->infEvento->CNPJ->__toString();
                     $distDFe->tpEvento = (int)$xml->evento->infEvento->tpEvento->__toString();
                     $distDFe->nSeqEvento = (int)$xml->evento->infEvento->nSeqEvento->__toString();
+                } elseif ($xmlName === 'procEventoCTe') {
+                    $chave = $xml->eventoCTe->infEvento->chCTe->__toString();
+                    $cnpj = $xml->eventoCTe->infEvento->CNPJ->__toString();
+                    $distDFe->tpEvento = (int)$xml->eventoCTe->infEvento->tpEvento->__toString();
+                    $distDFe->nSeqEvento = (int)$xml->eventoCTe->infEvento->nSeqEvento->__toString();
+                } elseif ($xmlName === 'cteProc') {
+                    $chave = $xml->protCTe->infProt->chCTe->__toString();
+                    $cnpj = $xml->CTe->infCte->emit->CNPJ->__toString();
                 } else {
                     throw new ViewException('Tipo de XML não reconhecido: ' . $xmlName);
                 }

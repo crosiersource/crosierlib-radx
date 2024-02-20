@@ -18,7 +18,6 @@ use Doctrine\ORM\Mapping as ORM;
 use SimpleXMLElement;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
-use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 
 /**
@@ -86,6 +85,21 @@ class Cte implements EntityId
     public ?string $uuid = null;
 
     /**
+     * @ORM\Column(name="cct", type="string", nullable=true, length=8)
+     * @Groups("cte")
+     * @var null|string
+     */
+    public ?string $cct = null;
+
+    /**
+     * @ORM\Column(name="natureza_operacao", type="string", nullable=true, length=60)
+     * @Groups("cte")
+     * @var null|string
+     */
+    public ?string $naturezaOperacao = null;
+
+
+    /**
      * @ORM\Column(name="chave_acesso", type="string", nullable=true, length=44)
      * @Groups("cte")
      * @var null|string
@@ -107,13 +121,6 @@ class Cte implements EntityId
     public ?string $ambiente = null;
 
     /**
-     * @ORM\Column(name="dt_saient", type="datetime", nullable=true)
-     * @var null|DateTime
-     * @Groups("cte")
-     */
-    public ?DateTime $dtSaiEnt = null;
-
-    /**
      * @ORM\Column(name="numero", type="integer", nullable=false)
      * @var null|int
      * @Groups("cte")
@@ -121,7 +128,7 @@ class Cte implements EntityId
     public ?int $numero = null;
 
     /**
-     * @ORM\Column(name="xml_nota", type="string", nullable=true)
+     * @ORM\Column(name="xml", type="string", nullable=true)
      * @var null|string
      * @NotUppercase()
      */
@@ -288,117 +295,6 @@ class Cte implements EntityId
      */
     public ?string $emailDestinatario = null;
 
-    /**
-     * @ORM\Column(name="valor_total", type="decimal", nullable=false, precision=15, scale=2)
-     * @Groups("N")
-     * @Assert\Type(type="string")
-     */
-    public ?string $valorTotal = null;
-
-    /**
-     * @ORM\Column(name="transp_documento", type="string", nullable=true)
-     * @var null|string
-     * @Groups("cte")
-     */
-    public ?string $transpDocumento = null;
-
-    /**
-     * @ORM\Column(name="transp_nome", type="string", nullable=true)
-     * @var null|string
-     * @Groups("cte")
-     */
-    public ?string $transpNome = null;
-
-    /**
-     * @ORM\Column(name="transp_inscr_est", type="string", nullable=true)
-     * @var null|string
-     * @Groups("cte")
-     */
-    public ?string $transpInscricaoEstadual = null;
-
-    /**
-     * @ORM\Column(name="transp_endereco", type="string", nullable=true)
-     * @var null|string
-     * @Groups("cte")
-     */
-    public ?string $transpEndereco = null;
-
-    /**
-     * @ORM\Column(name="transp_cidade", type="string", nullable=true, length=120)
-     * @var string|null
-     * @Groups("cte")
-     */
-    public ?string $transpCidade = null;
-
-    /**
-     * @ORM\Column(name="transp_estado", type="string", nullable=true, length=2)
-     * @var string|null
-     * @Groups("cte")
-     */
-    public ?string $transpEstado = null;
-
-    /**
-     * @ORM\Column(name="transp_especie_volumes", type="string", nullable=true, length=200)
-     * @var null|string
-     * @Groups("cte")
-     */
-    public ?string $transpEspecieVolumes = null;
-
-    /**
-     * @ORM\Column(name="transp_marca_volumes", type="string", nullable=true, length=200)
-     * @var null|string
-     * @Groups("cte")
-     */
-    public ?string $transpMarcaVolumes = null;
-
-    /**
-     * @ORM\Column(name="transp_modalidade_frete", type="string", nullable=false, length=30)
-     * @var null|string
-     * @Groups("cte")
-     */
-    public ?string $transpModalidadeFrete = null;
-
-    /**
-     * @ORM\Column(name="transp_numeracao_volumes", type="string", nullable=true, length=200)
-     * @var null|string
-     * @Groups("cte")
-     */
-    public ?string $transpNumeracaoVolumes = null;
-
-    /**
-     * @ORM\Column(name="transp_peso_bruto", type="decimal", nullable=true, precision=15, scale=2)
-     * @Groups("N")
-     * @Assert\Type(type="string")
-     */
-    public ?string $transpPesoBruto = null;
-
-    /**
-     * @ORM\Column(name="transp_peso_liquido", type="decimal", nullable=true, precision=15, scale=2)
-     * @Groups("N")
-     * @Assert\Type(type="string")
-     */
-    public ?string $transpPesoLiquido = null;
-
-    /**
-     * @ORM\Column(name="transp_qtde_volumes", type="decimal", nullable=true, precision=15, scale=2)
-     * @Groups("N")
-     * @Assert\Type(type="string")
-     */
-    public ?string $transpQtdeVolumes = null;
-
-    /**
-     * @ORM\Column(name="transp_valor_total_frete", type="decimal", nullable=true, precision=15, scale=2)
-     * @Groups("N")
-     * @Assert\Type(type="string")
-     */
-    public ?string $transpValorTotalFrete = null;
-
-    /**
-     * @ORM\Column(name="indicador_forma_pagto", type="string", nullable=false, length=30)
-     * @var null|string
-     * @Groups("cte")
-     */
-    public ?string $indicadorFormaPagto = null;
 
     /**
      * @ORM\Column(name="json_data", type="json")

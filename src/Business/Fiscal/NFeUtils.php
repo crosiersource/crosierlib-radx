@@ -193,24 +193,24 @@ class NFeUtils
      * Retorna o Tools a partir do nfeConfigs de um CNPJ específico.
      * @throws ViewException
      */
-    public function getToolsByCNPJ(string $cnpj, ?bool $ctes = false): ToolsCommon
+    public function getToolsByCNPJ(string $cnpj, ?bool $ctes = false)
     {
         try {
             $idNfeConfigs = $this->getNFeConfigsByCNPJ($cnpj);
             return $this->getTools($idNfeConfigs['id'], $ctes);
         } catch (\Throwable $e) {
-            $this->logger->error('Erro ao obter tools do cachê');
+            $erro = "Erro ao obter tools por cnpj: $cnpj (CTEs: " . ($ctes ? 'SIM' : 'NÃO') . '). ';
+            $erro .= $e->getMessage();
+            $this->logger->error($erro);
             $this->logger->error($e->getMessage());
-            throw new ViewException('Erro ao obter tools do cachê');
+            throw new ViewException($erro);
         }
     }
 
     /**
-     * @param int $idNfeConfigs
-     * @return Tools
      * @throws ViewException
      */
-    private function getTools(int $idNfeConfigs, ?bool $ctes = false): ToolsCommon
+    private function getTools(int $idNfeConfigs, ?bool $ctes = false)
     {
         /** @var AppConfigRepository $repoAppConfig */
         $repoAppConfig = $this->appConfigEntityHandler->getDoctrine()->getRepository(AppConfig::class);
@@ -237,7 +237,7 @@ class NFeUtils
             throw new ViewException('Erro ao ler certificado');
         }
         if ($ctes) {
-            return new \NFePHP\CTe\Tools($configs, $certificate);
+            return new \NFePHP\CTe\Tools(json_encode($configs), $certificate);
         } else {
             return new Tools(json_encode($configs), $certificate);
         }

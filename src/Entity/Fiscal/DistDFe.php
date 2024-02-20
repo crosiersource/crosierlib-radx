@@ -77,6 +77,16 @@ class DistDFe implements EntityId
      */
     public ?bool $proprio = null;
 
+
+    /**
+     * Se é referente a um DF de cte.
+     *
+     * @ORM\Column(name="cte", type="boolean")
+     * @var null|bool
+     * @Groups("distDFe")
+     */
+    public ?bool $cte = null;
+
     /**
      *
      * @ORM\Column(name="chnfe", type="string", length=44)
@@ -136,6 +146,16 @@ class DistDFe implements EntityId
      */
     public ?NotaFiscal $notaFiscal = null;
 
+
+    /**
+     *
+     * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\Cte")
+     * @ORM\JoinColumn(name="cte_id")
+     *
+     * @var $fisCte null|Cte
+     */
+    public ?Cte $fisCte = null;
+
     /**
      *
      * @ORM\ManyToOne(targetEntity="CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalEvento")
@@ -158,7 +178,7 @@ class DistDFe implements EntityId
         return null;
     }
 
-    
+
     public function getXMLDecodedAsString(): ?string
     {
         if ($this->xml && $this->xml !== 'Nenhum documento localizado') {
