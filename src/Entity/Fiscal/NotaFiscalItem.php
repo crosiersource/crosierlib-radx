@@ -124,7 +124,7 @@ class NotaFiscalItem implements EntityId
 
     /**
      * Código Especificador da Substituição Tributária.
-     * 
+     *
      * @ORM\Column(name="cest", type="string",  length=20, nullable=true)
      * @Groups("notaFiscalItem")
      * @var null|string
@@ -133,7 +133,7 @@ class NotaFiscalItem implements EntityId
 
     /**
      * Código da Situação Tributária.
-     * 
+     *
      * @ORM\Column(name="cst", type="string", nullable=true)
      * @Groups("notaFiscalItem")
      * @var null|string
@@ -334,7 +334,7 @@ class NotaFiscalItem implements EntityId
     {
         $this->valorUnit = $valorUnit;
     }
-    
+
     /**
      * Para aceitar tanto em string quanto em double.
      * @Groups("notaFiscalItem")
@@ -592,9 +592,14 @@ class NotaFiscalItem implements EntityId
             $this->subtotal = $subtotal;
         }
 
+        if (!$this->valorTotal) {
+            $this->valorTotal = 0.0;
+        }
+
         if ((float)$this->valorTotal !== (float)$this->subtotal) {
             $this->valorTotal = $this->subtotal;
         }
+        
     }
-    
+
 }
