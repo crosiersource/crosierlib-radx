@@ -143,9 +143,9 @@ class SpedNFeBusiness
         $nfe->infNFe->ide->finNFe = $finNFe;
 
         // Devolução
-        if ($finNFe === 4) {
+        if (in_array($finNFe, [2, 4], true)) {
             if (!$notaFiscal->a03idNfReferenciada) {
-                throw new \RuntimeException('Nota fiscal de devolução sem Id NF Referenciada.');
+                throw new \RuntimeException('Nota fiscal ' . ($finNFe === 4 ? 'de devolução' : 'complementar') . ' sem Id NF Referenciada.');
             }
             // else
             $nfe->infNFe->ide->NFref->refNFe = $notaFiscal->a03idNfReferenciada;
@@ -347,7 +347,7 @@ class SpedNFeBusiness
             if ($rateioFrete) {
                 $itemXML->prod->vFrete = number_format($rateioFrete[$i - 1], 2, '.', '');
             }
-            
+
             $this->syslog->info('Verificando desconto do item (' . $nfItem->valorDesconto . ')');
             if (bccomp($nfItem->valorDesconto, 0.00, 2)) {
                 $itemXML->prod->vDesc = number_format(abs($nfItem->valorDesconto), 2, '.', '');
@@ -950,7 +950,7 @@ class SpedNFeBusiness
             $cStat = null;
 
             $retorno = null;
-            
+
             try {
                 $cStat = (int)$st->simpleXml()->retEvento->infEvento->cStat;
                 $retorno = $st->simpleXml()->retEvento->infEvento->cStat . ' - ' . $st->simpleXml()->retEvento->infEvento->xMotivo;
@@ -959,7 +959,7 @@ class SpedNFeBusiness
             }
 
             $notaFiscal->dtManifestDest = new \DateTime();
-            
+
             if ((int)$cStat === 135) {
                 $operacoes =
                     [
