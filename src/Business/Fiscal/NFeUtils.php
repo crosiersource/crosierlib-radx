@@ -12,7 +12,6 @@ use CrosierSource\CrosierLibBaseBundle\Utils\DateTimeUtils\DateTimeUtils;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use NFePHP\Common\Certificate;
-use NFePHP\NFe\Common\Tools as ToolsCommon;
 use NFePHP\NFe\Tools;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -33,13 +32,6 @@ class NFeUtils
     public Security $security;
 
 
-    /**
-     * NFeUtils constructor.
-     * @param Connection $conn
-     * @param SyslogBusiness $logger
-     * @param AppConfigEntityHandler $appConfigEntityHandler
-     * @param Security $security
-     */
     public function __construct(
         Connection             $conn,
         SyslogBusiness         $logger,
@@ -329,6 +321,33 @@ class NFeUtils
             return $cnpjs;
         } catch (Exception $e) {
             throw new ViewException('Erro ao pesquisar CNPJs em entradas nfeConfigs_%');
+        }
+    }
+
+
+    /**
+     * @throws ViewException
+     */
+    public function getNFeConfigs(): array
+    {
+        try {
+            $rsNfeConfigs = $this->conn->fetchAllAssociative(
+                'SELECT id, valor FROM cfg_app_config 
+                 WHERE 
+                     app_uuid = :appUUID AND 
+                     chave LIKE :chave',
+                [
+                    'appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a',
+                    'chave' => 'nfeConfigs_%'
+                ]
+            );
+            $nfeConfigs = [];
+            foreach ($rsNfeConfigs as $nfeConfig) {
+                $nfeConfigs[] = json_decode($nfeConfig['valor'], true);
+            }
+            return $nfeConfigs;
+        } catch (Exception $e) {
+            throw new ViewException('Erro ao pesquisar nfeConfigs');
         }
     }
 

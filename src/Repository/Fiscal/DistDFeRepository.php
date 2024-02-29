@@ -44,7 +44,7 @@ class DistDFeRepository extends FilterRepository
                 'documento' => $documento,
                 'cte' => $ctes
             ]);
-        return $r[0]['ultimo_nsu'] ?? 0;
+        return $r[0]['ultimo_nsu'] ?? 1;
     }
 
 
