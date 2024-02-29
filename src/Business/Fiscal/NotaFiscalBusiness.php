@@ -335,19 +335,41 @@ class NotaFiscalBusiness
                         $descontoPorItemMock = bcdiv($vendaItem->desconto, $qtdeItens, 2);
                     }
                     $totalDescontoMock = 0.0;
+
+                    // Verifica se foi vendido com o mesmo valor do sistema (pode acontecer de trocarem direto lá
+                    // na webstorm ou no mercadolivre), aí precisa ajustar aqui
+                    $precoTotalItensComposicao = 0.0;
+                    foreach ($vendaItem->produto->composicoes as $produtoComposicao) {
+                        $precoTotalItensComposicao = bcadd($precoTotalItensComposicao, $produtoComposicao->precoComposicao, 2);
+                    }
+
+                    $fatorDiferencaValorVenda = bcdiv($vendaItem->precoVenda, $precoTotalItensComposicao, 10);
+
+                    $somatorioPrecosVendaItensComposicao = 0.0;
+
                     /** @var ProdutoComposicao $produtoComposicao */
                     foreach ($vendaItem->produto->composicoes as $produtoComposicao) {
                         $mockItem = new VendaItem();
                         $mockItem->produto = $produtoComposicao->produtoFilho;
                         $mockItem->qtde = bcmul($vendaItem->qtde, $produtoComposicao->qtde, 3);
-                        $mockItem->precoVenda = $produtoComposicao->precoComposicao;
+                        $mockItem->precoVenda = bcmul($produtoComposicao->precoComposicao, $fatorDiferencaValorVenda, 10);
+                        $mockItem->precoVenda = DecimalUtils::roundUp($mockItem->precoVenda, 2);
+                        $somatorioPrecosVendaItensComposicao = bcadd($somatorioPrecosVendaItensComposicao, $mockItem->precoVenda, 2);
                         $mockItem->desconto = $descontoPorItemMock;
                         $this->syslog->info('Desconto dividido: ' . $descontoPorItemMock);
                         $totalDescontoMock = bcadd($totalDescontoMock, $descontoPorItemMock, 2);
                         $itensNaNota[] = $mockItem;
                     }
-                    // Caso dê diferente, ajusta
+
                     $mockItem = $itensNaNota[0];
+
+                    // Se o somatório após o ajuste for maior, acrescenta a diferença no primeiro
+                    if ($somatorioPrecosVendaItensComposicao > $vendaItem->precoVenda) {
+                        $difSomatorioPrecosVendaItensComposicao = bcsub($somatorioPrecosVendaItensComposicao, $vendaItem->precoVenda, 2);
+                        $mockItem->precoVenda += $difSomatorioPrecosVendaItensComposicao;
+                    }
+
+                    // Mesma coisa: caso o desconto dê diferente, ajusta o desconto no primeiro
                     if ($totalDescontoMock > $vendaItem->desconto) {
                         $mockItem->desconto = bcsub($mockItem->desconto, bcsub($totalDescontoMock, $vendaItem->desconto, 2), 2);
                     } elseif ($vendaItem->desconto > $totalDescontoMock) {
