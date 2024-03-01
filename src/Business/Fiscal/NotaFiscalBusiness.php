@@ -340,7 +340,7 @@ class NotaFiscalBusiness
                     // na webstorm ou no mercadolivre), aí precisa ajustar aqui
                     $precoTotalItensComposicao = 0.0;
                     foreach ($vendaItem->produto->composicoes as $produtoComposicao) {
-                        $precoTotalItensComposicao = bcadd($precoTotalItensComposicao, $produtoComposicao->precoComposicao, 2);
+                        $precoTotalItensComposicao = bcadd($precoTotalItensComposicao, $produtoComposicao->getTotalComposicao(), 2);
                     }
 
                     $fatorDiferencaValorVenda = bcdiv($vendaItem->precoVenda, $precoTotalItensComposicao, 10);
