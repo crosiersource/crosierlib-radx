@@ -354,7 +354,7 @@ class NotaFiscalBusiness
                         $mockItem->qtde = bcmul($vendaItem->qtde, $produtoComposicao->qtde, 3);
                         $mockItem->precoVenda = bcmul($produtoComposicao->precoComposicao, $fatorDiferencaValorVenda, 10);
                         $mockItem->precoVenda = DecimalUtils::roundUp($mockItem->precoVenda, 2);
-                        $somatorioPrecosVendaItensComposicao = bcadd($somatorioPrecosVendaItensComposicao, $mockItem->precoVenda, 2);
+                        $somatorioPrecosVendaItensComposicao = bcadd($somatorioPrecosVendaItensComposicao, bcmul($mockItem->precoVenda, $mockItem->qtde, 2), 2);
                         $mockItem->desconto = $descontoPorItemMock;
                         $this->syslog->info('Desconto dividido: ' . $descontoPorItemMock);
                         $totalDescontoMock = bcadd($totalDescontoMock, $descontoPorItemMock, 2);
@@ -366,7 +366,7 @@ class NotaFiscalBusiness
                     // Se o somatório após o ajuste for maior, acrescenta a diferença no primeiro
                     if ($somatorioPrecosVendaItensComposicao > $vendaItem->precoVenda) {
                         $difSomatorioPrecosVendaItensComposicao = bcsub($somatorioPrecosVendaItensComposicao, $vendaItem->precoVenda, 2);
-                        $mockItem->precoVenda += $difSomatorioPrecosVendaItensComposicao;
+                        $mockItem->desconto += $difSomatorioPrecosVendaItensComposicao;
                     }
 
                     // Mesma coisa: caso o desconto dê diferente, ajusta o desconto no primeiro
