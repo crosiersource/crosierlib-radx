@@ -365,7 +365,7 @@ class NotaFiscalBusiness
 
                     // Se o somatório após o ajuste for maior, acrescenta a diferença no primeiro
                     if ($somatorioPrecosVendaItensComposicao > $vendaItem->precoVenda) {
-                        $difSomatorioPrecosVendaItensComposicao = bcsub($somatorioPrecosVendaItensComposicao, $vendaItem->precoVenda, 2);
+                        $difSomatorioPrecosVendaItensComposicao = bcsub($somatorioPrecosVendaItensComposicao, $vendaItem->total, 2);
                         $mockItem->desconto += $difSomatorioPrecosVendaItensComposicao;
                     }
 
