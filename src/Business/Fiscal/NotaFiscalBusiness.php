@@ -766,9 +766,25 @@ class NotaFiscalBusiness
                 ['municipioNome', 'EQ', $notaFiscal->cidadeDestinatario],
                 ['ufSigla', 'EQ', $notaFiscal->estadoDestinatario]
             ]);
+            
+            if (!$r) {
+                if (strpos($notaFiscal->cidadeDestinatario, '´') !== false) {
+                    $cidadeDestinatario = str_replace('´', "'", $notaFiscal->cidadeDestinatario);
+                    $r = $repoMunicipio->findOneByFiltersSimpl([
+                        ['municipioNome', 'EQ', $cidadeDestinatario],
+                        ['ufSigla', 'EQ', $notaFiscal->estadoDestinatario]
+                    ]);
+                } elseif (strpos($notaFiscal->cidadeDestinatario, '\'') !== false) {
+                    $cidadeDestinatario = str_replace("'", '´', $notaFiscal->cidadeDestinatario);
+                    $r = $repoMunicipio->findOneByFiltersSimpl([
+                        ['municipioNome', 'EQ', $cidadeDestinatario],
+                        ['ufSigla', 'EQ', $notaFiscal->estadoDestinatario]
+                    ]);
+                }
+            }
+            
 
-
-            if (!$r || strtoupper(StringUtils::removerAcentos($r->municipioNome)) !== strtoupper(StringUtils::removerAcentos($notaFiscal->cidadeDestinatario))) {
+            if (!$r) {
                 throw new ViewException('Município inválido: [' . $notaFiscal->cidadeDestinatario . '-' . $notaFiscal->estadoDestinatario . ']');
             }
         } else {
