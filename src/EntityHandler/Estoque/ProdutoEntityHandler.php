@@ -301,6 +301,19 @@ class ProdutoEntityHandler extends EntityHandler
         }
     }
 
+
+    public function clonarParaComposicao($e)
+    {
+        $this->getDoctrine()->beginTransaction();
+        $clone = $this->cloneEntityId($e);
+        $clone->jsonData['produto_id_original'] = $produto->getId();
+        $clone->composicao = 'S';
+        $this->afterClone($clone, $e);
+        $this->save($clone);
+        $this->getDoctrine()->commit();
+        return $clone;
+    }
+
     /**
      * @param $clone
      * @param $old
