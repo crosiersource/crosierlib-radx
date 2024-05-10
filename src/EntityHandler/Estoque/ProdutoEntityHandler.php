@@ -139,6 +139,10 @@ class ProdutoEntityHandler extends EntityHandler
         $this->calcPorcentPreench($produto);
 
         $this->corrigirEstoqueProdutoComposicao($produto);
+        
+        if ($produto->composicao === 'S' && !($produto->jsonData['produto_id_original'] ?? false)) {
+            throw new ViewException("Produto não clonado não pode ser marcado como composição!");
+        }
 
         $this->verificaPathDasImagens($produto);
 
