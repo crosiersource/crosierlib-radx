@@ -16,7 +16,10 @@
         "nfephp-org/sped-da": "^1.1",
         "nfephp-org/sped-nfe": "^5.1",
         "nfephp-org/sped-cte": "^5.0",
-        "econea/nusoap": "^0.9.7"
+        "econea/nusoap": "^0.9.7",
+        "ext-bcmath": "*",
+        "ext-simplexml": "*",
+        "ext-http": "*"
     },
     "config": {
         "minimum-stability": "dev",

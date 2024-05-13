@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1a2a3897ff87178ad21c4ec8a1553ae8",
+    "content-hash": "daa08720e8a65081138e22c07b340083",
     "packages": [
         {
             "name": "api-platform/core",
@@ -1761,16 +1761,16 @@
         },
         {
             "name": "econea/nusoap",
-            "version": "v0.9.16",
+            "version": "v0.9.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f00b4r/nusoap.git",
-                "reference": "9ead68ec7ad8d1e14943658ce1559435247d14bf"
+                "reference": "ac2322f37808ecb1a2b84ed469cba9c51648eb8d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f00b4r/nusoap/zipball/9ead68ec7ad8d1e14943658ce1559435247d14bf",
-                "reference": "9ead68ec7ad8d1e14943658ce1559435247d14bf",
+                "url": "https://api.github.com/repos/f00b4r/nusoap/zipball/ac2322f37808ecb1a2b84ed469cba9c51648eb8d",
+                "reference": "ac2322f37808ecb1a2b84ed469cba9c51648eb8d",
                 "shasum": ""
             },
             "require": {
@@ -1817,7 +1817,7 @@
             ],
             "support": {
                 "issues": "https://github.com/f00b4r/nusoap/issues",
-                "source": "https://github.com/f00b4r/nusoap/tree/v0.9.16"
+                "source": "https://github.com/f00b4r/nusoap/tree/v0.9.17"
             },
             "funding": [
                 {
@@ -1825,7 +1825,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-07-19T12:40:31+00:00"
+            "time": "2024-01-25T09:08:59+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -3082,16 +3082,16 @@
         },
         {
             "name": "nfephp-org/sped-nfe",
-            "version": "v5.1.21",
+            "version": "v5.1.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-nfe.git",
-                "reference": "c659273d43f2200f8918d2da7c1f89f05fe8321c"
+                "reference": "c54d8b6a577fc2df97afde3e14c9fa1ba0b15f3e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/c659273d43f2200f8918d2da7c1f89f05fe8321c",
-                "reference": "c659273d43f2200f8918d2da7c1f89f05fe8321c",
+                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/c54d8b6a577fc2df97afde3e14c9fa1ba0b15f3e",
+                "reference": "c54d8b6a577fc2df97afde3e14c9fa1ba0b15f3e",
                 "shasum": ""
             },
             "require": {
@@ -3158,9 +3158,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-nfe/issues",
-                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.1.21"
+                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.1.24"
             },
-            "time": "2024-02-12T15:05:55+00:00"
+            "time": "2024-05-02T20:24:29+00:00"
         },
         {
             "name": "phenx/php-font-lib",
@@ -10959,7 +10959,11 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-bcmath": "*",
+        "ext-simplexml": "*",
+        "ext-http": "*"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }

@@ -39,7 +39,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 class SpedNFeBusiness
 {
-
+    
     private EntityManagerInterface $doctrine;
 
     private NotaFiscalEntityHandler $notaFiscalEntityHandler;
@@ -665,7 +665,7 @@ class SpedNFeBusiness
 
             if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) && !isset($notaFiscal->getXMLDecoded()->Signature)) {
                 $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
-                $notaFiscal->jsonData['xml_assinado'][] = $nfe->asXML();
+                $notaFiscal->jsonData['xml_assinado'][] = $xmlAssinado;
                 $notaFiscal->setXmlNota($xmlAssinado);
                 $this->notaFiscalEntityHandler->save($notaFiscal);
             } else {
