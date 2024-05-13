@@ -301,6 +301,27 @@ class ProdutoEntityHandler extends EntityHandler
         }
     }
 
+
+    public function clonarParaComposicao($produto)
+    {
+        $this->getDoctrine()->beginTransaction();
+        $clone = $this->cloneEntityId($produto);
+        $clone->jsonData['produto_id_original'] = $produto->getId();
+        
+        $clone->composicao = 'S';
+        
+        $clone->jsonData['ecommerce_dt_integr'] = null;
+        $clone->jsonData['ecommerce_integr_por'] = null;
+        $clone->jsonData['ecommerce_dt_primeira_integracao'] = null;
+        $clone->jsonData['ecommerce_integrado_primeiro_por'] = null;
+        $clone->jsonData['ecommerce_id'] = null;
+        
+        $this->afterClone($clone, $produto);
+        $this->save($clone);
+        $this->getDoctrine()->commit();
+        return $clone;
+    }
+
     /**
      * @param $clone
      * @param $old
