@@ -494,6 +494,7 @@ class SpedNFeBusiness
         $this->notaFiscalEntityHandler->save($notaFiscal);
 
         $notaFiscal->setXmlNota($nfe->asXML());
+        $notaFiscal->jsonData['xml_gerado'][] = $nfe->asXML();
 
         /** @var NotaFiscal $notaFiscal */
         $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
@@ -664,6 +665,7 @@ class SpedNFeBusiness
 
             if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) && !isset($notaFiscal->getXMLDecoded()->Signature)) {
                 $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
+                $notaFiscal->jsonData['xml_assinado'][] = $nfe->asXML();
                 $notaFiscal->setXmlNota($xmlAssinado);
                 $this->notaFiscalEntityHandler->save($notaFiscal);
             } else {
@@ -703,6 +705,7 @@ class SpedNFeBusiness
                     if ($notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
                         try {
                             $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $resp);
+                            $notaFiscal->jsonData['xml_toAuthorize'][] = $r;
                             $notaFiscal->setXmlNota($r);
                         } catch (\Exception $e) {
                             $this->syslog->error($e->getMessage());
@@ -746,6 +749,7 @@ class SpedNFeBusiness
         //$numeroRecibo = número do recíbo do envio do lote
         $tpAmb = $notaFiscal->ambiente === 'PROD' ? '1' : '2';
         $xmlResp = $tools->sefazConsultaChave($notaFiscal->chaveAcesso, $tpAmb);
+        $notaFiscal->jsonData['xmlResp_sefazConsultaChave'][] = $xmlResp;
         //transforma o xml de retorno em um stdClass
         $st = new Standardize();
         $std = $st->toStd($xmlResp);
@@ -764,10 +768,12 @@ class SpedNFeBusiness
                     if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) &&
                         !isset($notaFiscal->getXMLDecoded()->Signature)) {
                         $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
+                        $notaFiscal->jsonData['xml_assinado'][] = $xmlAssinado;
                         $notaFiscal->setXmlNota($xmlAssinado);
                         $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
                     }
                     $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $xmlResp);
+                    $notaFiscal->jsonData['xml_toAuthorize'][] = $r;
                     $notaFiscal->setXmlNota($r);
                 } catch (\Exception $e) {
                     $this->syslog->error($e->getMessage());
@@ -1110,10 +1116,12 @@ class SpedNFeBusiness
                         if (!isset($notaFiscal->getXMLDecoded()->infNFe->Signature) &&
                             !isset($notaFiscal->getXMLDecoded()->Signature)) {
                             $xmlAssinado = $tools->signNFe($notaFiscal->getXmlNota());
+                            $notaFiscal->jsonData['xml_assinado'][] = $xmlAssinado;
                             $notaFiscal->setXmlNota($xmlAssinado);
                             $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
                         }
                         $r = Complements::toAuthorize($notaFiscal->getXmlNota(), $xmlResp);
+                        $notaFiscal->jsonData['xml_toAuthorize'][] = $r;
                         $notaFiscal->setXmlNota($r);
                     } catch (\Exception $e) {
                         $this->syslog->error($e->getMessage());
