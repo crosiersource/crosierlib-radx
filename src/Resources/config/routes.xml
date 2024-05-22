@@ -18,5 +18,10 @@
          path="/api/fin/saldo">
   </route>
 
+  <!-- ClienteController -->
+  <route id="api_crm_cliente_findProxCodigo"
+         controller="crosier_source.crosier_lib_radx_bundle.controller.crm.cliente_controller::findProxCodigo"
+         path="/crm/cliente/findProxCodigo">
+  </route>
 
 </routes>

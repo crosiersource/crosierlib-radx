@@ -68,7 +68,7 @@ class ClienteRepository extends FilterRepository
     public function findProxCodCliente(): int
     {
         try {
-            $sql = 'SELECT max(cod_cliente)+1 as prox FROM crm_clientes';
+            $sql = 'SELECT max(codigo)+1 as prox FROM crm_cliente';
             $r = $this->getEntityManager()->getConnection()->fetchAssociative($sql);
             if ($r['prox'] ?: false) {
                 return $r['prox'];

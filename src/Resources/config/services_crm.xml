@@ -25,6 +25,12 @@
     <service id="CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler"
              alias="crosier_source.crosier_lib_radx_bundle.entity_handler.crm.cliente_entity_handler"  public="true" />
 
+    <!-- ClienteController -->
+    <service id="crosier_source.crosier_lib_radx_bundle.controller.crm.cliente_controller"
+             class="CrosierSource\CrosierLibRadxBundle\Controller\CRM\ClienteController" public="true">
+      <argument type="service" id="service_container"/>
+      <argument type="service" id="doctrine" />
+    </service>
 
   </services>
 </container>

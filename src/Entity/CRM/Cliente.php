@@ -15,6 +15,7 @@ use CrosierSource\CrosierLibBaseBundle\Entity\EntityIdTrait;
 use CrosierSource\CrosierLibBaseBundle\Utils\StringUtils\StringUtils;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -23,13 +24,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     denormalizationContext={"groups"={"cliente"},"enable_max_depth"=true},
  *
  *     itemOperations={
- *          "get"={"path"="/crm/cliente/{id}", "security"="is_granted('ROLE_FINAN')"},
- *          "put"={"path"="/crm/cliente/{id}", "security"="is_granted('ROLE_FINAN')"},
+ *          "get"={"path"="/crm/cliente/{id}", "security"="is_granted('ROLE_CRM')"},
+ *          "put"={"path"="/crm/cliente/{id}", "security"="is_granted('ROLE_CRM')"},
  *          "delete"={"path"="/crm/cliente/{id}", "security"="is_granted('ROLE_ADMIN')"}
  *     },
  *     collectionOperations={
- *          "get"={"path"="/crm/cliente", "security"="is_granted('ROLE_FINAN')"},
- *          "post"={"path"="/crm/cliente", "security"="is_granted('ROLE_FINAN')"}
+ *          "get"={"path"="/crm/cliente", "security"="is_granted('ROLE_CRM')"},
+ *          "post"={"path"="/crm/cliente", "security"="is_granted('ROLE_CRM')"}
  *     },
  *
  *     attributes={
@@ -56,11 +57,10 @@ class Cliente implements EntityId
 
 
     /**
-     * @ORM\Column(name="codigo", type="string")
-     * @var null|string
+     * @ORM\Column(name="codigo", type="string", nullable=false)
      * @Groups("cliente")
      */
-    public ?string $codigo = null;
+    public $codigo = null;
 
     /**
      * @ORM\Column(name="nome", type="string", nullable="false", length=255)
@@ -139,6 +139,14 @@ class Cliente implements EntityId
 
 
     /**
+     * @ORM\Column(name="email", type="string", nullable=true, length=50)
+     * @Groups("cliente")
+     * @var string|null
+     */
+    public ?string $email = null;
+
+
+    /**
      * @ORM\Column(name="cep", type="string", nullable=true, length=8)
      * @var string|null
      * @Groups("cliente")
@@ -202,7 +210,13 @@ class Cliente implements EntityId
      * @Groups("cliente")
      */
     public ?bool $ativo = null;
-    
+
+    /**
+     * @ORM\Column(name="obs", type="string", nullable=true)
+     * @Groups("cliente")
+     * @var string|null
+     */
+    public ?string $obs = null;
 
     /**
      * @ORM\Column(name="json_data", type="json")
@@ -310,5 +324,6 @@ class Cliente implements EntityId
             ];
         }
     }
+
 
 }
