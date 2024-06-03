@@ -40,8 +40,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * )
  * @ApiFilter(PropertyFilter::class)
  *
- * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "nomeFantasia": "partial", "documento": "exact", "id": "exact"})
+ * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "nomeFantasia", "updated"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\CRM\ClienteEntityHandler")
  * @ORM\Entity(repositoryClass="CrosierSource\CrosierLibRadxBundle\Repository\CRM\ClienteRepository")

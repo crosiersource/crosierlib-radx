@@ -18,15 +18,16 @@ class ClienteEntityHandler extends EntityHandler
         return Cliente::class;
     }
     
-    public function getProxCodigo(): int {
-        $rsProxCodigo = $this->getDoctrine()->getConnection()->fetchAssociative('SELECT max(codigo)+1 as prox FROM crm_cliente WHERE codigo < 2147483647');
+    public function getProxCodigo(): int {        
+        $sql = 'SELECT MAX(CAST(codigo AS UNSIGNED)) + 1 as prox FROM crm_cliente WHERE codigo < 2147483647';
+        $rsProxCodigo = $this->getDoctrine()->getConnection()->fetchAssociative($sql);
         return $rsProxCodigo['prox'] ?? 1;
     }
 
     public function beforeSave(/** @var Cliente $cliente */ $cliente)
     {
         if (!$cliente->codigo) {
-            $cliente->codigo = StringUtils::guidv4();
+            $cliente->codigo = $this->getProxCodigo();
         }
         $cliente->ativo = $cliente->ativo === NULL ? true : $cliente->ativo;
         // CPF/CNPJ que comecem com 'G' são considerados "gerados", apenas para marcar posição.
