@@ -197,7 +197,7 @@ class SpedNFeBusiness
                 if ($notaFiscal->jsonData['idDest'] ?? false) {
                     $idDest = $notaFiscal->jsonData['idDest'];
                 } else {
-                    if (($notaFiscal->estadoDestinatario === $nfeConfigs['siglaUF']) || ($nfeConfigs[' t_sempre1'] ?? false)) {
+                    if (($notaFiscal->estadoDestinatario === $nfeConfigs['siglaUF']) || ($nfeConfigs['idDest_sempre1'] ?? false)) {
                         $idDest = 1;
                     } else {
                         $idDest = 2;
