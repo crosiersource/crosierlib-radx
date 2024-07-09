@@ -61,7 +61,9 @@ use Throwable;
  *     "nsu": "exact",
  *     "manifestDest": "exact",
  *     "entradaSaida": "exact",
- *     "id": "exact"
+ *     "id": "exact",
+ *     "naturezaOperacao": "partial",
+ *     "finalidadeNf": "exact"
  * })
  *
  * @ApiFilter(DateFilter::class, properties={"dtEmissao"})
