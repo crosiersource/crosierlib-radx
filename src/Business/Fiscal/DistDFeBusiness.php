@@ -627,7 +627,7 @@ class DistDFeBusiness
 
         /** @var Cte $cte */
         $cte = $this->cteEntityHandler->save($cte, false);
-        
+
         $valorPago = (float)($xml->CTe->infCte->vPrest->vTPrest->__toString() ?? 0.0);
 
         $cte->valorTotal = $valorPago;
@@ -638,7 +638,7 @@ class DistDFeBusiness
         }
 
         $cte->jsonData = $jsonData;
-        
+
         /** @var Cte $cte */
         $cte = $this->cteEntityHandler->save($cte);
 
@@ -817,6 +817,7 @@ class DistDFeBusiness
             $this->logger->error($e->getMessage());
             throw new ViewException('Erro ao findDistDFeNaoProcessados()');
         }
+        $this->logger->info(count($distDFesAProcessar) . ' distDFe(s) a processar...'); 
         if ($distDFesAProcessar) {
             $total = count($distDFesAProcessar);
             $i = 1;
@@ -1002,16 +1003,15 @@ class DistDFeBusiness
      */
     public function extrairChaveETipoDosDistDFes(string $cnpjEmUso): void
     {
+        $this->logger->info('Extraindo chave e tipo dos DistDFes para o CNPJ ' . $cnpjEmUso . '...');
         /** @var DistDFeRepository $repo */
         $repo = $this->doctrine->getRepository(DistDFe::class);
-        $distDFesSemChave = $repo->findByFiltersSimpl(
-            [
-                ['chave', 'IS_EMPTY'],
-                ['xml', 'NOT_LIKE', 'Nenhum documento localizado'],
-            ], null, 0, -1);
+        $distDFesSemChave = $repo->findDistDfesSemChavePorCnpj($cnpjEmUso);
+        $qtdeDistDFesSemChave = count($distDFesSemChave);
+        $this->logger->info("Temos " . $qtdeDistDFesSemChave . " DistDFes sem chave para processar...");
         $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($cnpjEmUso);
         /** @var DistDFe $distDFe */
-        foreach ($distDFesSemChave as $distDFe) {
+        foreach ($distDFesSemChave as $i => $distDFe) {
             try {
                 $xml = $distDFe->getXMLDecoded();
                 if (!$xml) {
@@ -1020,6 +1020,7 @@ class DistDFeBusiness
                 $chave = null;
                 $cnpj = null;
                 $xmlName = $xml->getName();
+                $this->logger->info("Processando " . ($i + 1) . " de " . $qtdeDistDFesSemChave . ". id = " . $distDFe->getId() . " - xmlName = " . $xmlName);
                 if ($xmlName === 'nfeProc') {
                     $chave = $xml->protNFe->infProt->chNFe->__toString();
                     $cnpj = $xml->NFe->infNFe->emit->CNPJ->__toString();

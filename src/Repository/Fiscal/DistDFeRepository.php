@@ -81,7 +81,8 @@ class DistDFeRepository extends FilterRepository
     {
         /** @var Connection $conn */
         $conn = $this->getEntityManager()->getConnection();
-        // Pego todos os distdfes que não foram salvos como uma NF ou aqueles que são do tipo RESNFE e que não tem o correspondente NFEPROC sem uma NF vinculada
+        // Pego todos os distdfes que não foram salvos como uma NF ou aqueles que são do tipo RESNFE e que não tem o
+        // correspondente NFEPROC sem uma NF vinculada
         // Isso porque o rumo normal é:
         // 1-Ter um RESNFE sem NF.
         // 2-Esse RESNFE gerar uma NF.
@@ -91,7 +92,7 @@ class DistDFeRepository extends FilterRepository
 
 
         return $conn->fetchAllAssociative(
-                'SELECT id FROM fis_distdfe 
+            'SELECT id FROM fis_distdfe 
             WHERE 
                 documento = :documento AND
                 (cte IS FALSE AND tipo_distdfe IN (\'NFEPROC\',\'RESNFE\') AND nota_fiscal_id IS NULL)
@@ -114,6 +115,23 @@ class DistDFeRepository extends FilterRepository
         return $conn->fetchAllAssociative('SELECT id FROM fis_distdfe WHERE tipo_distdfe IN(\'PROCEVENTONFE\',\'RESEVENTO\') AND 
                                  (chnfe,tp_evento,nseq_evento) NOT IN (SELECT nf.chave_acesso, evento.tp_evento, evento.nseq_evento FROM fis_nf nf, fis_nf_evento evento WHERE evento.nota_fiscal_id = nf.id) 
                                  AND chnfe IN (SELECT chave_acesso FROM fis_nf)', ['documento' => $documento]);
+    }
+
+
+    public function findDistDfesSemChavePorCnpj(string $cnpj): array
+    {
+        $sql = "SELECT id FROM fis_distdfe WHERE (chnfe IS NULL OR chnfe = '') AND documento = :documento AND xml != :xml ORDER BY id";
+        $conn = $this->getEntityManager()->getConnection();
+        $rs = $conn->fetchAllAssociative(
+            $sql,
+            ['documento' => $cnpj, 'xml' => 'Nenhum documento localizado']
+        );
+        $return = [];
+        foreach ($rs as $r) {
+            $distDfe = $this->find($r['id']);
+            $return[] = $distDfe;
+        }
+        return $return;
     }
 
 }
