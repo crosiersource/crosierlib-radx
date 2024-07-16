@@ -295,7 +295,7 @@ class NotaFiscal implements EntityId
     public ?string $xNomeDestinatario = null;
 
     /**
-     * @ORM\Column(name="inscr_est", type="string", nullable=false)
+     * @ORM\Column(name="inscr_est", type="string", nullable=true)
      * @var null|string
      * @Groups("notaFiscal")
      */
