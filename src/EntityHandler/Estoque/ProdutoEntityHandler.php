@@ -315,6 +315,8 @@ class ProdutoEntityHandler extends EntityHandler
         $clone->jsonData['ecommerce_dt_primeira_integracao'] = null;
         $clone->jsonData['ecommerce_integrado_primeiro_por'] = null;
         $clone->jsonData['ecommerce_id'] = null;
+        $clone->jsonData['ecommerce_item_venda_id'] = null;
+        $clone->jsonData['status'] = 'INATIVO';
         
         $this->afterClone($clone, $produto);
         $this->save($clone);
