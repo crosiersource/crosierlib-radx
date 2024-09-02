@@ -266,7 +266,8 @@ class NotaFiscalBusiness
                                 $notaFiscal->bairroDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['bairro'] ?? '', $notaFiscal->bairroDestinatario);
                                 $notaFiscal->cepDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['CEP'] ?? '', $notaFiscal->cepDestinatario);
 
-                                if (($endereco_consultado['dados']['cidade'])->__toString() !== 'INFORMACAO NAO DISPONIVEL') {
+                                if (($endereco_consultado['dados']['cidade'] ?? false) and
+                                    (($endereco_consultado['dados']['cidade'])->__toString() !== 'INFORMACAO NAO DISPONIVEL')) {
                                     $notaFiscal->cidadeDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['cidade'] ?? '', $notaFiscal->cidadeDestinatario);
                                     $notaFiscal->estadoDestinatario = StringUtils::getFirstNonEmpty($endereco_consultado['dados']['UF'] ?? '', $notaFiscal->estadoDestinatario);
                                 }
