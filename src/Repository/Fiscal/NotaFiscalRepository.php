@@ -176,7 +176,7 @@ class NotaFiscalRepository extends FilterRepository
                 $p['nome'] = $ultimo->getXNomeDestinatario();
                 $p['ie'] = $ultimo->getInscricaoEstadualDestinatario();
             }
-            
+
             $ultimoComEndereco = $this->findByFiltersSimpl([['documentoDestinatario', 'EQ', $documento], ['logradouroDestinatario', 'IS_NOT_NULL']], ['updated' => 'DESC']);
             /** @var NotaFiscal $ultimoComEndereco */
             $ultimoComEndereco = $ultimoComEndereco[0] ?? null;
@@ -205,7 +205,23 @@ class NotaFiscalRepository extends FilterRepository
         }
 
         return $p;
+    }
 
+
+    public function findNumerosNfPulados(string $documento): array
+    {
+        $sql = 'SELECT numero FROM fis_nf WHERE serie = 2 AND documento_emitente = :documento AND tipo = \'NFE\' AND ambiente = \'PROD\' AND numero IS NOT NULL ORDER BY numero';
+        $rs = $this->doctrine->getConnection()->fetchAllAssociative($sql, ['documento' => $documento]);
+        $ret = [];
+        $n = 0;
+        $primeira = $rs[0]['numero'];
+        $ultima = $rs[count($rs) - 1]['numero'];
+        for ($i = $primeira ; $i <= $ultima ; $i++) {
+            if (!($rs[$i]['numero'] ?? false)) {
+                $ret[] = $i;
+            }
+        }
+        return $ret;
     }
 
 }
