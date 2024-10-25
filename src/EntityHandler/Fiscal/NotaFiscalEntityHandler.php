@@ -107,7 +107,7 @@ class NotaFiscalEntityHandler extends EntityHandler
             $notaFiscal->resumo) {
             $notaFiscal->resumo = false;
         }
-        
+
         $notaFiscalBusiness->permiteFaturamento($notaFiscal);
         
         $notaFiscalBusiness->verificarESetarVenda($notaFiscal);
@@ -116,7 +116,14 @@ class NotaFiscalEntityHandler extends EntityHandler
             $this->calcularTotais($notaFiscal);
         }
     }
-    
+
+    public function afterSave($notaFiscal)
+    {
+        $notaFiscalBusiness = $this->container->get(NotaFiscalBusiness::class);
+        $notaFiscalBusiness->permiteFaturamento($notaFiscal);
+    }
+
+
     private function checkNovaNota(NotaFiscal $notaFiscal): void
     {
         if (!$notaFiscal->tipoNotaFiscal) {

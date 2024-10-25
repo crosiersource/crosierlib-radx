@@ -816,6 +816,11 @@ class NotaFiscalBusiness
             $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Não (sem itens)';
             return false;
         }
+        if ($notaFiscal->jsonData['retorno_inutilizacao_numeracao'] ?? false) {
+            $notaFiscal->jsonData['permiteFaturamento'] = false;
+            $notaFiscal->jsonData['msgPermiteFaturamento'] = 'Não (numeração inutilizada)';
+            return false;
+        }
 
         try {
             $this->checkNotaFiscal($notaFiscal);

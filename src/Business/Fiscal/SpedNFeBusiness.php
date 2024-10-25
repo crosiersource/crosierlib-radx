@@ -1072,15 +1072,16 @@ class SpedNFeBusiness
      * @param int $numero
      * @return array
      */
-    public function inutilizaNumeracao(string $tipoNotaFiscal, int $serie, int $numero)
+    public function inutilizaNumeracao(string $cnpjEmitente, string $tipoNotaFiscal, int $serie, int $numero)
     {
         try {
-            $tools = $this->nfeUtils->getToolsEmUso();
+            $tools = $this->nfeUtils->getToolsByCNPJ($cnpjEmitente);
             $tools->model($tipoNotaFiscal === 'NFE' ? '55' : '65');
             $xJust = 'Erro de digitação dos números sequencias das notas';
             $response = $tools->sefazInutiliza($serie, $numero, $numero, $xJust, 1);
-            $stdCl = new Standardize($response);
-            return $stdCl->toArray();
+            //$stdCl = new Standardize($response);
+            //return $stdCl->toArray();
+            return $response;
         } catch (\Exception $e) {
             echo $e->getMessage();
         }

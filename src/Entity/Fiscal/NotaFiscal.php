@@ -1240,7 +1240,7 @@ class NotaFiscal implements EntityId
      */
     public function getMsgPermiteFaturamento(): string
     {
-        return $this->jsonData['msgPermiteFaturamento'] ?? false;
+        return $this->jsonData['msgPermiteFaturamento'] ?? ($this->isPermiteFaturamento() ? 'Sim' : 'Não');
     }
 
     /**
@@ -1251,8 +1251,28 @@ class NotaFiscal implements EntityId
     {
         // verificar o beforeSave() para entender o motivo
         // é lá também onde é setado o msgPermiteFaturamento
-        return $this->isNossaEmissao() && ($this->jsonData['permiteFaturamento'] ?? false);
+        return 
+            $this->getId() && 
+            $this->isNossaEmissao() && 
+            ($this->jsonData['permiteFaturamento'] ?? false) &&
+            !($this->jsonData['retorno_inutilizacao_numeracao'] ?? false);
     }
+
+    /**
+     * @Groups("notaFiscal")
+     */
+    public function isPermiteInutilizacaoDaNumeracao(): bool
+    {
+        return 
+            $this->isNossaEmissao() && 
+            $this->getId() && 
+            $this->numero &&
+            $this->serie &&
+            $this->documentoEmitente &&
+            !$this->isPermiteCancelamento()
+            ;
+    }
+
 
     /**
      * @Groups("notaFiscal")
@@ -1277,5 +1297,7 @@ class NotaFiscal implements EntityId
     {
         return $this->jsonData['retorno_manifest'] ?? null;
     }
+    
+    
 
 }
