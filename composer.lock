@@ -243,7 +243,7 @@
         },
         {
             "name": "crosiersource/crosierlib-base",
-            "version": "v1.13.17",
+            "version": "v1.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
@@ -356,7 +356,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
-                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.13.17"
+                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.14.0"
             },
             "time": "2024-10-31T20:50:11+00:00"
         },
