@@ -124,7 +124,7 @@ class NFeUtils
                 $appConfig_nfeConfigsIdEmUso_padrao = $repoAppConfig->findByFiltersSimpl(
                     [
                         ['appUUID', 'EQ', $_SERVER['CROSIERAPPRADX_UUID']],
-                        ['chave', 'LIKE', 'nfeConfigs_%']
+                        ['chave', 'LIKE', 'nfeConfigs\_%']
                     ]);
                 if (!$appConfig_nfeConfigsIdEmUso_padrao) {
                     throw new ViewException('Nenhuma nfeConfigs encontrada');
@@ -310,7 +310,7 @@ class NFeUtils
     {
         try {
             $nfeConfigs = $this->conn->fetchAllAssociative('SELECT id, valor FROM cfg_app_config WHERE app_uuid = :appUUID AND chave LIKE :chave',
-                ['appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a', 'chave' => 'nfeConfigs_%']);
+                ['appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a', 'chave' => 'nfeConfigs\_%']);
             $cnpjs = [];
             foreach ($nfeConfigs as $nfeConfig) {
                 $nfeConfigDecoded = json_decode($nfeConfig['valor'], true);
@@ -338,7 +338,7 @@ class NFeUtils
                      chave LIKE :chave',
                 [
                     'appUUID' => '9121ea11-dc5d-4a22-9596-187f5452f95a',
-                    'chave' => 'nfeConfigs_%'
+                    'chave' => 'nfeConfigs\_%'
                 ]
             );
             $nfeConfigs = [];
