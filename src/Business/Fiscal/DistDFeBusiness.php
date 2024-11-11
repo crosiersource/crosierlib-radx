@@ -743,6 +743,7 @@ class DistDFeBusiness
             $tpEvento = null;
             $nSeqEvento = null;
             $descEvento = null;
+            $detEventoXJust = null;
             if ($xmlName === 'resEvento') {
                 $tpEvento = (int)$xml->tpEvento->__toString();
                 $nSeqEvento = (int)$xml->nSeqEvento->__toString();
@@ -752,6 +753,7 @@ class DistDFeBusiness
                 $tpEvento = (int)$xml->evento->infEvento->tpEvento->__toString();
                 $nSeqEvento = (int)$xml->evento->infEvento->nSeqEvento->__toString();
                 $descEvento = $xml->evento->infEvento->detEvento->descEvento->__toString();
+                $detEventoXJust = $xml?->evento?->infEvento?->detEvento?->xJust?->__toString();
             }
             if (!$tpEvento || !$nSeqEvento) {
                 throw new ViewException('tpEvento, nSeqEvento ou descEvento não encontrados (tpEvento = ' . $tpEvento . ', nSeqEvento = ' . $nSeqEvento . ')' . ', descEvento = ' . $descEvento . ')');
@@ -769,6 +771,12 @@ class DistDFeBusiness
                 $distDFe->notaFiscalEvento = $nfEvento;
                 $distDFe->notaFiscal = $nfEvento->notaFiscal;
                 $distDFe->status = 'PROCESSADO';
+                if ($tpEvento === 110111) {
+                    $nf->cStat = 101;
+                    $nf->xMotivo = $descEvento;
+                    $nf->motivoCancelamento = $detEventoXJust;
+                    $this->notaFiscalEntityHandler->save($nf);
+                }
             } catch (\Exception $e) {
                 throw new ViewException('Erro ao salvar fis_nf ou fis_distdfe (chave ' . $distDFe->chave . ')');
             }
