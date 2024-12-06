@@ -437,6 +437,20 @@ class Produto implements EntityId
     {
         $this->qtdeMinima = $qtdeMinima;
     }
+    
+    public function getDescricaoMontadaComposicao(): ?string
+    {
+        if ($this->composicao === 'S') {
+            $desc = '';
+            foreach ($this->composicoes as $composicao) {
+                if ($composicao->produtoFilho) {
+                    $desc .= $composicao->qtde . " - " . $composicao->produtoFilho->getDescricaoMontada() . PHP_EOL;
+                }
+            }
+            return $desc;
+        }
+        return null;
+    }
 
 
 }
