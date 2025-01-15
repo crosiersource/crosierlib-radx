@@ -38,7 +38,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * @ApiFilter(PropertyFilter::class)
  *
  * @ApiFilter(SearchFilter::class, properties={"nome": "partial", "documento": "exact", "id": "exact"})
- * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated"}, arguments={"orderParameterName"="order"})
+ * @ApiFilter(OrderFilter::class, properties={"id", "documento", "nome", "updated", "nsu"}, arguments={"orderParameterName"="order"})
  *
  * @EntityHandler(entityHandlerClass="CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\DistDFeEntityHandler")
  *
@@ -166,7 +166,7 @@ class DistDFe implements EntityId
     public ?NotaFiscalEvento $notaFiscalEvento = null;
 
 
-    /**
+    /**     * 
      * @return SimpleXMLElement|null
      */
     public function getXMLDecoded(): ?SimpleXMLElement
@@ -178,7 +178,10 @@ class DistDFe implements EntityId
         return null;
     }
 
-
+    /**
+     * @Groups("distDFe")
+     * @return string|null
+     */
     public function getXMLDecodedAsString(): ?string
     {
         if ($this->xml && $this->xml !== 'Nenhum documento localizado') {
