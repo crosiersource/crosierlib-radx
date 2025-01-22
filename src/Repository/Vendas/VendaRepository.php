@@ -34,7 +34,7 @@ class VendaRepository extends FilterRepository
     public function findByDtVendaAndPV(\DateTime $dtVenda, $pv): ?Venda
     {
         $r = $this->getEntityManager()->getConnection()
-            ->fetchAllAssociative('SELECT id FROM ven_venda WHERE json_data->>"$.pv" = :pv AND date(dt_venda) = :dtVenda',
+            ->fetchAllAssociative('SELECT id FROM ven_venda WHERE pv = :pv AND date(dt_venda) = :dtVenda',
                 [
                     'pv' => $pv,
                     'dtVenda' => $dtVenda->format('Y-m-d')
