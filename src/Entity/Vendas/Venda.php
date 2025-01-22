@@ -56,6 +56,13 @@ class Venda implements EntityId
     use EntityIdTrait;
 
     /**
+     * @ORM\Column(name="pv", type="integer", nullable=true)
+     * @Groups("venda")
+     * @var null|int
+     */
+    public ?int $pv = null;
+    
+    /**
      * @ORM\Column(name="dt_venda", type="datetime", nullable=false)
      * @Groups("venda")
      * @var null|DateTime
