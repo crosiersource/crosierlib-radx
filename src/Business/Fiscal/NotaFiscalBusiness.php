@@ -471,6 +471,10 @@ class NotaFiscalBusiness
                 $produtoNome = trim($vendaItem->produto ? $vendaItem->produto->nome : '');
                 $produtoNomeJson = trim($vendaItem->jsonData['produto']['descricao'] ?? '');
                 $descricaoDoItemNaNota = $descricaoNoItem ?: $produtoNome ?: $produtoNomeJson;
+                $sufixoCodigoProduto = '(' . $vendaItem->produto->codigo . ')';
+                if (strpos($descricaoDoItemNaNota, $sufixoCodigoProduto) === false) {
+                    $descricaoDoItemNaNota .= ' ' . $sufixoCodigoProduto;
+                }
 
                 // Ordem de preferência para setar o código do item na nota
                 $codigoDoItemNaNota = null;
@@ -767,7 +771,7 @@ class NotaFiscalBusiness
                 ['municipioNome', 'EQ', $notaFiscal->cidadeDestinatario],
                 ['ufSigla', 'EQ', $notaFiscal->estadoDestinatario]
             ]);
-            
+
             if (!$r) {
                 if (strpos($notaFiscal->cidadeDestinatario, '´') !== false) {
                     $cidadeDestinatario = str_replace('´', "'", $notaFiscal->cidadeDestinatario);
@@ -783,7 +787,7 @@ class NotaFiscalBusiness
                     ]);
                 }
             }
-            
+
 
             if (!$r) {
                 throw new ViewException('Município inválido: [' . $notaFiscal->cidadeDestinatario . '-' . $notaFiscal->estadoDestinatario . ']');
