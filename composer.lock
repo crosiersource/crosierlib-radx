@@ -243,16 +243,16 @@
         },
         {
             "name": "crosiersource/crosierlib-base",
-            "version": "v1.14.2",
+            "version": "v1.14.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
-                "reference": "0af06c7fc5eb13e33bb3d14ee6cc3a9ffeaeb0a8"
+                "reference": "f3ddce0979c87bda2fac7933ef9835a80a0305c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/0af06c7fc5eb13e33bb3d14ee6cc3a9ffeaeb0a8",
-                "reference": "0af06c7fc5eb13e33bb3d14ee6cc3a9ffeaeb0a8",
+                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/f3ddce0979c87bda2fac7933ef9835a80a0305c7",
+                "reference": "f3ddce0979c87bda2fac7933ef9835a80a0305c7",
                 "shasum": ""
             },
             "require": {
@@ -356,9 +356,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
-                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.14.2"
+                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.14.3"
             },
-            "time": "2024-11-11T19:01:32+00:00"
+            "time": "2025-02-06T18:38:59+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -1504,16 +1504,16 @@
         },
         {
             "name": "doctrine/orm",
-            "version": "2.20.1",
+            "version": "2.20.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/orm.git",
-                "reference": "e3cabade99ebccc6ba078884c1c5f250866a494e"
+                "reference": "19912de9270fa6abb3d25a1a37784af6b818d534"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/orm/zipball/e3cabade99ebccc6ba078884c1c5f250866a494e",
-                "reference": "e3cabade99ebccc6ba078884c1c5f250866a494e",
+                "url": "https://api.github.com/repos/doctrine/orm/zipball/19912de9270fa6abb3d25a1a37784af6b818d534",
+                "reference": "19912de9270fa6abb3d25a1a37784af6b818d534",
                 "shasum": ""
             },
             "require": {
@@ -1600,9 +1600,9 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/orm/issues",
-                "source": "https://github.com/doctrine/orm/tree/2.20.1"
+                "source": "https://github.com/doctrine/orm/tree/2.20.2"
             },
-            "time": "2024-12-19T06:48:36+00:00"
+            "time": "2025-02-04T19:17:01+00:00"
         },
         {
             "name": "doctrine/persistence",
