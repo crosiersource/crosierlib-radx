@@ -477,7 +477,7 @@ class SpedNFeBusiness
             $nfe->infNFe->infAdic->infCpl = trim($infoCompl);
         }
 
-        $nfe->infNFe->infRespTec->CNPJ = $nfeConfigs['cnpj'];
+        $nfe->infNFe->infRespTec->CNPJ = $nfeConfigs['infRespTec_cnpj'];
         $nfe->infNFe->infRespTec->xContato = $nfeConfigs['infRespTec_xContato'];
         $nfe->infNFe->infRespTec->email = $nfeConfigs['infRespTec_email'];
         $nfe->infNFe->infRespTec->fone = preg_replace('/\D/', '', $nfeConfigs['telefone']);
