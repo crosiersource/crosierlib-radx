@@ -576,11 +576,14 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
         $this->getDoctrine()->beginTransaction();
 
-        /** @var TipoLanctoRepository $repoTipoLancto */
-        $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
-        $tipoLancto_transferenciaEntradaDeCaixa = $repoTipoLancto->findOneBy(['codigo' => 61]);
-        $movimentacao->tipoLancto = $tipoLancto_transferenciaEntradaDeCaixa;
 
+        /** @var TipoLanctoRepository $repoTipoLancto */
+        
+        if (!in_array($movimentacao->tipoLancto->codigo, [61,64], true)) {
+            $repoTipoLancto = $this->doctrine->getRepository(TipoLancto::class);
+            $tipoLancto_transferenciaEntradaDeCaixa = $repoTipoLancto->findOneBy(['codigo' => 61]);
+            $movimentacao->tipoLancto = $tipoLancto_transferenciaEntradaDeCaixa;
+        }
 
         /** @var Categoria $categ299 */
         $categ299 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
@@ -624,7 +627,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $categoriasIds = $this->appConfigBusiness->getValor('categoria_ids_saveTransfEntradaCaixa.json') ?? [101, 102, 110];
         if (!in_array($movimentacao->categoria->codigo, $categoriasIds, true)) {
-            throw new ViewException('TRANSFERÊNCIA DE ENTRADA DE CAIXA precisa ser lançada a partir de uma movimentação de categoria 1.01 ou 1.02');
+            throw new ViewException('TRANSFERÊNCIA DE ENTRADA DE CAIXA precisa ser lançada a partir de uma movimentação de categoria 1.01 , 1.02 ou 1.10');
         }
 
         $cadeia = new Cadeia();
