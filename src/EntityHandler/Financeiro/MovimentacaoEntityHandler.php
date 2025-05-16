@@ -324,6 +324,18 @@ class MovimentacaoEntityHandler extends EntityHandler
         if ($movimentacao->fatura) {
             $this->faturaEntityHandler->save($movimentacao->fatura);
         }
+        if ($movimentacao->dtPagto || $movimentacao->status === 'ESTORNADA') {
+            $this->limparSaldos($movimentacao->carteira, $movimentacao->dtPagto);
+        }
+    }
+    
+    
+    public function limparSaldos(Carteira $carteira, \DateTime $dtMoviment): void
+    {
+        $this->doctrine->getConnection()->executeQuery('DELETE FROM fin_saldo WHERE carteira_id = :carteiraId AND dt_saldo >= :dtSaldo', [
+            'carteiraId' => $carteira->getId(),
+            'dtSaldo' => $dtMoviment->format('Y-m-d')
+        ]);
     }
 
 
