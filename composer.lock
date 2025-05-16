@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4d07aace98e2157b1d6567d5960880a2",
+    "content-hash": "b526b117f3c9e39a9e8d2e1d6180a9b4",
     "packages": [
         {
             "name": "api-platform/core",
@@ -243,16 +243,16 @@
         },
         {
             "name": "crosiersource/crosierlib-base",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
-                "reference": "3d2917ebb09070f61c98d03884b5411b628d0333"
+                "reference": "20fc99317bbcc3a6552a38497af0c576180cf811"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/3d2917ebb09070f61c98d03884b5411b628d0333",
-                "reference": "3d2917ebb09070f61c98d03884b5411b628d0333",
+                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/20fc99317bbcc3a6552a38497af0c576180cf811",
+                "reference": "20fc99317bbcc3a6552a38497af0c576180cf811",
                 "shasum": ""
             },
             "require": {
@@ -356,9 +356,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
-                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.15.0"
+                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.16.0"
             },
-            "time": "2025-02-07T17:58:19+00:00"
+            "time": "2025-05-16T17:00:17+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -1821,16 +1821,16 @@
         },
         {
             "name": "econea/nusoap",
-            "version": "v0.9.18",
+            "version": "v0.9.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contributte/nusoap.git",
-                "reference": "6e855b70a024444d79cf1e9d87b660b1d98268ff"
+                "reference": "cb1e79595e5edf9dac17ad1bec963c4d119fc2fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contributte/nusoap/zipball/6e855b70a024444d79cf1e9d87b660b1d98268ff",
-                "reference": "6e855b70a024444d79cf1e9d87b660b1d98268ff",
+                "url": "https://api.github.com/repos/contributte/nusoap/zipball/cb1e79595e5edf9dac17ad1bec963c4d119fc2fe",
+                "reference": "cb1e79595e5edf9dac17ad1bec963c4d119fc2fe",
                 "shasum": ""
             },
             "require": {
@@ -1877,7 +1877,7 @@
             ],
             "support": {
                 "issues": "https://github.com/contributte/nusoap/issues",
-                "source": "https://github.com/contributte/nusoap/tree/v0.9.18"
+                "source": "https://github.com/contributte/nusoap/tree/v0.9.19"
             },
             "funding": [
                 {
@@ -1889,7 +1889,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-02-08T17:47:57+00:00"
+            "time": "2025-02-28T08:27:16+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -2906,16 +2906,16 @@
         },
         {
             "name": "nfephp-org/sped-common",
-            "version": "v5.1.14",
+            "version": "v5.1.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-common.git",
-                "reference": "32e23b0b1b60fcb41beae421f2d93e5fd3280041"
+                "reference": "28fff42b24d5857e8a6a624dcb4461f36c0b51b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-common/zipball/32e23b0b1b60fcb41beae421f2d93e5fd3280041",
-                "reference": "32e23b0b1b60fcb41beae421f2d93e5fd3280041",
+                "url": "https://api.github.com/repos/nfephp-org/sped-common/zipball/28fff42b24d5857e8a6a624dcb4461f36c0b51b5",
+                "reference": "28fff42b24d5857e8a6a624dcb4461f36c0b51b5",
                 "shasum": ""
             },
             "require": {
@@ -2978,9 +2978,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-common/issues",
-                "source": "https://github.com/nfephp-org/sped-common/tree/v5.1.14"
+                "source": "https://github.com/nfephp-org/sped-common/tree/v5.1.15"
             },
-            "time": "2023-11-17T19:28:38+00:00"
+            "time": "2025-04-24T12:11:16+00:00"
         },
         {
             "name": "nfephp-org/sped-cte",
@@ -3218,16 +3218,16 @@
         },
         {
             "name": "nfephp-org/sped-nfe",
-            "version": "v5.1.28",
+            "version": "v5.1.29",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-nfe.git",
-                "reference": "839020d43bf28b5fa4aa841cdd96a005f0e8cb6d"
+                "reference": "e7bb543fd47eae8fb10bc45d23cac00c6aa50c8c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/839020d43bf28b5fa4aa841cdd96a005f0e8cb6d",
-                "reference": "839020d43bf28b5fa4aa841cdd96a005f0e8cb6d",
+                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/e7bb543fd47eae8fb10bc45d23cac00c6aa50c8c",
+                "reference": "e7bb543fd47eae8fb10bc45d23cac00c6aa50c8c",
                 "shasum": ""
             },
             "require": {
@@ -3294,9 +3294,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-nfe/issues",
-                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.1.28"
+                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.1.29"
             },
-            "time": "2025-02-10T17:47:52+00:00"
+            "time": "2025-04-25T14:46:54+00:00"
         },
         {
             "name": "phenx/php-font-lib",
