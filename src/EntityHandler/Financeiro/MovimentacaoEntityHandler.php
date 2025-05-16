@@ -421,7 +421,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
 
         // 61 - TRANSFERÊNCIA DE ENTRADA DE CAIXA
-        if ($movimentacao->tipoLancto->getCodigo() === 61) {
+        if (in_array($movimentacao->tipoLancto->getCodigo(), [61, 64], true)) {
             return $this->saveTransfEntradaCaixa($movimentacao);
         }
 
@@ -622,7 +622,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
         // else
 
-        $categoriasIds = $this->appConfigBusiness->getValor('categoria_ids_saveTransfEntradaCaixa.json') ?? [101, 102];
+        $categoriasIds = $this->appConfigBusiness->getValor('categoria_ids_saveTransfEntradaCaixa.json') ?? [101, 102, 110];
         if (!in_array($movimentacao->categoria->codigo, $categoriasIds, true)) {
             throw new ViewException('TRANSFERÊNCIA DE ENTRADA DE CAIXA precisa ser lançada a partir de uma movimentação de categoria 1.01 ou 1.02');
         }

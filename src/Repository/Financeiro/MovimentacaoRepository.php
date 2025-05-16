@@ -262,5 +262,31 @@ class MovimentacaoRepository extends FilterRepository
         }
     }
 
+    public function getNaoEstornadasPorDtMovtoCategoriasCarteiras(
+        \DateTime $dtMovtoIni,
+        \DateTime $dtMovtoFim,
+        array     $categoriasIds,
+        array     $carteirasIds
+    ): array
+    {
+        $dql = 'SELECT m 
+                    FROM CrosierSource\CrosierLibRadxBundle\Entity\Financeiro\Movimentacao m
+                    JOIN m.carteira c
+                    JOIN m.categoria cat
+                WHERE 
+                cat.id IN (:categoriasIds)
+                AND c.id IN (:carteirasIds) 
+                AND date(m.dtMoviment) BETWEEN :dtIni AND :dtFim 
+                AND m.status != \'ESTORNADA\'
+                ORDER BY m.dtMoviment';
+
+        $qry = $this->doctrine->createQuery($dql);
+        $qry->setParameter('categoriasIds', $categoriasIds);
+        $qry->setParameter('carteirasIds', $carteirasIds);
+        $qry->setParameter('dtIni', $dtMovtoIni->format('Y-m-d'));
+        $qry->setParameter('dtFim', $dtMovtoFim->format('Y-m-d'));
+        return $qry->getResult();
+    }
+
 
 }
