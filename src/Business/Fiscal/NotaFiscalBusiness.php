@@ -471,15 +471,17 @@ class NotaFiscalBusiness
                 $produtoNome = trim($vendaItem->produto ? $vendaItem->produto->nome : '');
                 $produtoNomeJson = trim($vendaItem->jsonData['produto']['descricao'] ?? '');
                 $descricaoDoItemNaNota = $descricaoNoItem ?: $produtoNome ?: $produtoNomeJson;
-                $sufixoCodigoProduto = '(' . $vendaItem->produto->codigo . ')';
-                if (strpos($descricaoDoItemNaNota, $sufixoCodigoProduto) === false) {
-                    $descricaoDoItemNaNota .= ' ' . $sufixoCodigoProduto;
+                if ($vendaItem?->produto?->codigo) {
+                    $sufixoCodigoProduto = '(' . $vendaItem->produto->codigo . ')';
+                    if (strpos($descricaoDoItemNaNota, $sufixoCodigoProduto) === false) {
+                        $descricaoDoItemNaNota .= ' ' . $sufixoCodigoProduto;
+                    }
                 }
 
                 // Ordem de preferência para setar o código do item na nota
                 $codigoDoItemNaNota = null;
                 if ($codigoPadraoDoProduto) {
-                    if (strpos($codigoPadraoDoProduto, 'produto.jsonData.') !== FALSE) {
+                    if ($vendaItem?->produto && strpos($codigoPadraoDoProduto, 'produto.jsonData.') !== FALSE) {
                         $codigoDoItemNaNota = $vendaItem->produto->jsonData[str_replace('produto.jsonData.', '', $codigoPadraoDoProduto)] ?? null;
                     } elseif (strpos($codigoPadraoDoProduto, 'jsonData.') !== FALSE) {
                         $codigoDoItemNaNota = $vendaItem->jsonData[str_replace('jsonData.', '', $codigoPadraoDoProduto)] ?? null;
@@ -490,8 +492,12 @@ class NotaFiscalBusiness
                 if (!$codigoDoItemNaNota) {
                     if ($vendaItem->produto) {
                         $codigoDoItemNaNota = $vendaItem->produto->getId();
-                    } else {
+                    }
+                    if (!$codigoDoItemNaNota) {
                         $codigoDoItemNaNota = $vendaItem->ordem;
+                    }
+                    if (!$codigoDoItemNaNota) {
+                        $codigoDoItemNaNota = $vendaItem->jsonData['produto']['reduzido'] ?? null;
                     }
                 }
 
