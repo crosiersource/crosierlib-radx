@@ -79,7 +79,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiFilter(RangeFilter::class, properties={"valorTotal"})
  *
  * @ApiFilter(BooleanFilter::class, properties={
- *     "recorrente"
+ *     "recorrente",
+ *     "carteira.caixa"
  * })
  *
  * @ApiFilter(OrderFilter::class, properties={
