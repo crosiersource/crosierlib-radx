@@ -43,6 +43,7 @@ use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NCMRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Fiscal\NotaFiscalRepository;
 use CrosierSource\CrosierLibRadxBundle\Repository\Vendas\VendaRepository;
 use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\ResultSetMapping;
 use NFePHP\Common\Exception\ValidatorException;
 use NFePHP\DA\NFe\Danfe;
@@ -87,6 +88,7 @@ class NotaFiscalBusiness
      * @var NotaFiscalRepository
      */
     private NotaFiscalRepository $repoNotaFiscal;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(Connection                       $conn,
                                 LoggerInterface                  $logger,
@@ -416,6 +418,9 @@ class NotaFiscalBusiness
                 $codigoPadraoDoProduto = $codigoPadraoDoProduto['valor'];
             }
 
+
+            $icmsECFOPPorEstado = $this->obterIcmsECFOPPorEstado();
+
             /** @var VendaItem $vendaItem */
             foreach ($itensNaNota as $vendaItem) {
                 $this->syslog->info('Processando item da venda: ' . $vendaItem->descricao);
@@ -455,6 +460,10 @@ class NotaFiscalBusiness
 
                 $cfop = $vendaItem->produto->jsonData['cfop_' . $dentro_ou_fora] ?? ($dentro_ou_fora === 'dentro' ? $cfop_padrao_dentro_do_estado : $cfop_padrao_fora_do_estado);
                 $nfItem->cfop = $cfop;
+
+                if ($icmsECFOPPorEstado && ($icmsECFOPPorEstado[$notaFiscal->estadoDestinatario] ?? false)) {
+                    $nfItem->cfop = $icmsECFOPPorEstado[$notaFiscal->estadoDestinatario]['CFOP'];
+                }
 
 
                 if ($vendaItem->unidade && $vendaItem->unidade->getId()) {
@@ -514,9 +523,15 @@ class NotaFiscalBusiness
                 $nfItem->cst = $vendaItem->produto->jsonData['cst_icms'] ?? null;
                 $nfItem->cest = $vendaItem->produto->jsonData['cest'] ?? null;
 
-                if (isset($vendaItem->produto->jsonData['aliquota_icms']) && ($vendaItem->produto->jsonData['aliquota_icms'] > 0)) {
-                    $nfItem->icmsAliquota = $vendaItem->produto->jsonData['aliquota_icms'];
-                    $icmsValor = DecimalUtils::round(bcmul(bcdiv($vendaItem->produto->jsonData['aliquota_icms'], 100.0, 6), $nfItem->subTotal, 4));
+                $icmsAliquota = $vendaItem->produto->jsonData['aliquota_icms'];
+
+                if ($icmsECFOPPorEstado && ($icmsECFOPPorEstado[$notaFiscal->estadoDestinatario] ?? false)) {
+                    $icmsAliquota = $icmsECFOPPorEstado[$notaFiscal->estadoDestinatario]['ICMS'];
+                }
+
+                if ($icmsAliquota > 0) {
+                    $nfItem->icmsAliquota = $icmsAliquota;
+                    $icmsValor = DecimalUtils::round(bcmul(bcdiv($icmsAliquota, 100.0, 6), $nfItem->subTotal, 4));
                     $nfItem->icmsValor = $icmsValor;
                     $nfItem->icmsValorBc = $nfItem->subTotal;
                     $nfItem->icmsModBC = $vendaItem->produto->jsonData['modalidade_icms'] ?? null;
@@ -1435,6 +1450,24 @@ class NotaFiscalBusiness
         if ($temVenda) {
             $notaFiscal->jsonData['venda_id'] = $temVenda['venda_id'];
         }
+    }
+
+    private function obterIcmsECFOPPorEstado(): ?array
+    {
+        // FOR UPDATE para garantir que ninguém vai alterar este valor antes de terminar esta transação
+        $sql = "SELECT id, valor FROM cfg_app_config WHERE app_uuid = :app_uuid AND chave LIKE 'icms_e_cfop_por_estado'";
+
+        /** @var Connection $conn */
+        $conn = $this->appConfigEntityHandler->getDoctrine()->getConnection();
+        $rs = $conn->fetchAssociative($sql, ['app_uuid' => $_SERVER['CROSIERAPP_UUID']]);
+        if ($rs['valor'] ?? false) {
+            $icmsECFOP = json_decode($rs['valor'], true);
+            if (is_array($icmsECFOP)) {
+                return $icmsECFOP;
+            }
+        }
+
+        return null;
     }
 
 }
