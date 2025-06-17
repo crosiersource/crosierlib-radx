@@ -521,6 +521,11 @@ class NotaFiscalBusiness
                 }
                 $nfItem->csosn = $csosn;
                 $nfItem->cst = $vendaItem->produto->jsonData['cst_icms'] ?? null;
+
+                if ($icmsECFOPPorEstado && ($icmsECFOPPorEstado[$notaFiscal->estadoDestinatario] ?? false)) {
+                    $nfItem->cst = $icmsECFOPPorEstado[$notaFiscal->estadoDestinatario]['CST'];
+                }
+                
                 $nfItem->cest = $vendaItem->produto->jsonData['cest'] ?? null;
 
                 $icmsAliquota = $vendaItem->produto->jsonData['aliquota_icms'];
