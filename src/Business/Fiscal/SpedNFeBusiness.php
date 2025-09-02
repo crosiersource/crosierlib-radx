@@ -256,7 +256,7 @@ class SpedNFeBusiness
                 if (($notaFiscal->inscricaoEstadualDestinatario === 'ISENTO') || !$notaFiscal->inscricaoEstadualDestinatario) {
                     unset($nfe->infNFe->dest->IE);
                     // Rejeição 805: A SEFAZ do destinatário não permite Contribuinte Isento de Inscrição Estadual
-                    if (in_array($notaFiscal->estadoDestinatario, ['AM', 'BA', 'CE', 'GO', 'MG', 'MS', 'MT', 'PA', 'PE', 'RN', 'SE', 'SP'])) {
+                    if (in_array($notaFiscal->estadoDestinatario, ['AM', 'BA', 'CE', 'GO', 'MG', 'MS', 'MT', 'PA', 'PE', 'RN', 'RS', 'SE', 'SP'])) {
                         $nfe->infNFe->dest->indIEDest = 9;
                         if (strlen($notaFiscal->documentoDestinatario) === 11) {
                             $nfe->infNFe->ide->indFinal = 1; // nesses casos, sendo CPF considera sempre como consumidor final
