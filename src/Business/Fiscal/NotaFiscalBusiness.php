@@ -428,7 +428,14 @@ class NotaFiscalBusiness
                 $nfItem = new NotaFiscalItem();
                 $nfItem->notaFiscal = $notaFiscal;
 
-                $ncm = $vendaItem->jsonData['ncm'] ?? $vendaItem->produto->jsonData['ncm'] ?? $ncmPadrao ?? '00000000';
+                $ncm = $vendaItem->jsonData['ncm'] ?? null;
+                if (empty($ncm)) {
+                    $ncm = $vendaItem->produto->jsonData['ncm'] ?? null;
+                }
+                if (empty($ncm)) {
+                    $ncm = $ncmPadrao ?? '00000000';
+                }
+
 
                 $nfItem->ncm = $ncm;
 
@@ -528,7 +535,7 @@ class NotaFiscalBusiness
                 
                 $nfItem->cest = $vendaItem->produto->jsonData['cest'] ?? null;
 
-                $icmsAliquota = $vendaItem->produto->jsonData['aliquota_icms'];
+                $icmsAliquota = $vendaItem->produto->jsonData['aliquota_icms'] ?? 0.0;
 
                 if ($icmsECFOPPorEstado && ($icmsECFOPPorEstado[$notaFiscal->estadoDestinatario] ?? false)) {
                     $icmsAliquota = $icmsECFOPPorEstado[$notaFiscal->estadoDestinatario]['ICMS'];
