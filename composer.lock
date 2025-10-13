@@ -1825,16 +1825,16 @@
         },
         {
             "name": "econea/nusoap",
-            "version": "v0.9.19",
+            "version": "v0.9.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contributte/nusoap.git",
-                "reference": "cb1e79595e5edf9dac17ad1bec963c4d119fc2fe"
+                "reference": "802484f443cf16495eb085f04351076456077f99"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contributte/nusoap/zipball/cb1e79595e5edf9dac17ad1bec963c4d119fc2fe",
-                "reference": "cb1e79595e5edf9dac17ad1bec963c4d119fc2fe",
+                "url": "https://api.github.com/repos/contributte/nusoap/zipball/802484f443cf16495eb085f04351076456077f99",
+                "reference": "802484f443cf16495eb085f04351076456077f99",
                 "shasum": ""
             },
             "require": {
@@ -1881,7 +1881,7 @@
             ],
             "support": {
                 "issues": "https://github.com/contributte/nusoap/issues",
-                "source": "https://github.com/contributte/nusoap/tree/v0.9.19"
+                "source": "https://github.com/contributte/nusoap/tree/v0.9.20"
             },
             "funding": [
                 {
@@ -1893,7 +1893,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-02-28T08:27:16+00:00"
+            "time": "2025-07-15T07:09:21+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -2910,16 +2910,16 @@
         },
         {
             "name": "nfephp-org/sped-common",
-            "version": "v5.1.15",
+            "version": "v5.1.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-common.git",
-                "reference": "28fff42b24d5857e8a6a624dcb4461f36c0b51b5"
+                "reference": "1c6b03dd06b396ee3680d07c9c071b82f869fd42"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-common/zipball/28fff42b24d5857e8a6a624dcb4461f36c0b51b5",
-                "reference": "28fff42b24d5857e8a6a624dcb4461f36c0b51b5",
+                "url": "https://api.github.com/repos/nfephp-org/sped-common/zipball/1c6b03dd06b396ee3680d07c9c071b82f869fd42",
+                "reference": "1c6b03dd06b396ee3680d07c9c071b82f869fd42",
                 "shasum": ""
             },
             "require": {
@@ -2982,22 +2982,22 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-common/issues",
-                "source": "https://github.com/nfephp-org/sped-common/tree/v5.1.15"
+                "source": "https://github.com/nfephp-org/sped-common/tree/v5.1.16"
             },
-            "time": "2025-04-24T12:11:16+00:00"
+            "time": "2025-07-02T12:34:43+00:00"
         },
         {
             "name": "nfephp-org/sped-cte",
-            "version": "v5.0.0",
+            "version": "v5.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-cte.git",
-                "reference": "60fd307f64dc016c0f2f334cba5cb50d0fe3feaa"
+                "reference": "4f6ec80dd3bb0dafc1d4f23acdfd253e335013a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-cte/zipball/60fd307f64dc016c0f2f334cba5cb50d0fe3feaa",
-                "reference": "60fd307f64dc016c0f2f334cba5cb50d0fe3feaa",
+                "url": "https://api.github.com/repos/nfephp-org/sped-cte/zipball/4f6ec80dd3bb0dafc1d4f23acdfd253e335013a1",
+                "reference": "4f6ec80dd3bb0dafc1d4f23acdfd253e335013a1",
                 "shasum": ""
             },
             "require": {
@@ -3057,9 +3057,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-cte/issues",
-                "source": "https://github.com/nfephp-org/sped-cte/tree/v5.0.0"
+                "source": "https://github.com/nfephp-org/sped-cte/tree/v5.0.1"
             },
-            "time": "2023-09-10T13:29:51+00:00"
+            "time": "2025-06-06T19:01:16+00:00"
         },
         {
             "name": "nfephp-org/sped-da",
@@ -3140,16 +3140,16 @@
         },
         {
             "name": "nfephp-org/sped-gtin",
-            "version": "v1.1.1",
+            "version": "v1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-gtin.git",
-                "reference": "759a902e1c01f4755b27eee4e9fa30153d6b29d3"
+                "reference": "a00b9bc26f91bd5583f24ec341b7e5149a9769a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-gtin/zipball/759a902e1c01f4755b27eee4e9fa30153d6b29d3",
-                "reference": "759a902e1c01f4755b27eee4e9fa30153d6b29d3",
+                "url": "https://api.github.com/repos/nfephp-org/sped-gtin/zipball/a00b9bc26f91bd5583f24ec341b7e5149a9769a1",
+                "reference": "a00b9bc26f91bd5583f24ec341b7e5149a9769a1",
                 "shasum": ""
             },
             "require": {
@@ -3216,22 +3216,22 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-gtin/issues",
-                "source": "https://github.com/nfephp-org/sped-gtin/tree/v1.1.1"
+                "source": "https://github.com/nfephp-org/sped-gtin/tree/v1.1.2"
             },
-            "time": "2022-06-01T18:08:50+00:00"
+            "time": "2025-05-30T20:52:05+00:00"
         },
         {
             "name": "nfephp-org/sped-nfe",
-            "version": "v5.1.29",
+            "version": "v5.1.33",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-nfe.git",
-                "reference": "e7bb543fd47eae8fb10bc45d23cac00c6aa50c8c"
+                "reference": "7fd6e5d6d21dc8f084face1df6286fea6b1c2972"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/e7bb543fd47eae8fb10bc45d23cac00c6aa50c8c",
-                "reference": "e7bb543fd47eae8fb10bc45d23cac00c6aa50c8c",
+                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/7fd6e5d6d21dc8f084face1df6286fea6b1c2972",
+                "reference": "7fd6e5d6d21dc8f084face1df6286fea6b1c2972",
                 "shasum": ""
             },
             "require": {
@@ -3298,9 +3298,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-nfe/issues",
-                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.1.29"
+                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.1.33"
             },
-            "time": "2025-04-25T14:46:54+00:00"
+            "time": "2025-07-07T13:03:36+00:00"
         },
         {
             "name": "phenx/php-font-lib",
