@@ -18,6 +18,7 @@ use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalCartaCorrecao;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalEvento;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\NotaFiscalItem;
+use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\RegrasIBSCBS;
 use CrosierSource\CrosierLibRadxBundle\Entity\Fiscal\TipoNotaFiscal;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalCartaCorrecaoEntityHandler;
 use CrosierSource\CrosierLibRadxBundle\EntityHandler\Fiscal\NotaFiscalEntityHandler;
@@ -358,6 +359,7 @@ class SpedNFeBusiness
             $itemXML->prod->indTot = '1';
 
             $this->handleImpostos($nfe, $nfItem, $itemXML);
+            $this->handleIbscbs($nfe, $nfItem, $itemXML);
 
             $total_bcICMS += $nfItem->icmsValorBc;
             $total_vICMS += $nfItem->icmsValor;
@@ -501,8 +503,80 @@ class SpedNFeBusiness
     }
 
     /**
-     * @param NotaFiscalItem $nfItem
-     * @param \SimpleXMLElement $itemXML
+     * @throws ViewException
+     */
+    /**
+     * @throws ViewException
+     */
+    public function handleIbscbs(
+        $nfe,
+        NotaFiscalItem $nfItem,
+        \SimpleXMLElement $itemXML
+    ): void {
+
+        
+        $repoRegrasIBSCBS = $this->doctrine->getRepository(RegrasIBSCBS::class);
+        
+        // 1) Buscar regra
+        $regra = $repoRegrasIBSCBS->findBestRule($nfItem);
+
+        if (!$regra) {
+            throw new ViewException("Nenhuma regra IBS/CBS encontrada para este item");
+        }
+
+        // 2) Criar nó IBSCBS se não existir
+        if (!isset($itemXML->imposto->IBSCBS)) {
+            $itemXML->imposto->addChild('IBSCBS');
+        }
+
+        // 3) Setar valores principais (direto no XML)
+        $itemXML->imposto->IBSCBS->CST = $regra->cst ?? '000';
+        $itemXML->imposto->IBSCBS->cClassTrib = $regra->cClassTrib ?? '000001';
+
+        // 4) Bloco gIBSCBS (com base de cálculo)
+        if (!isset($itemXML->imposto->IBSCBS->gIBSCBS)) {
+            $itemXML->imposto->IBSCBS->addChild('gIBSCBS');
+        }
+
+        $itemXML->imposto->IBSCBS->gIBSCBS->vBC =
+            bcmul($nfItem->icmsValorBc, 1, 2);
+
+        // 5) gIBSUF (IBS Estadual)
+        if (!isset($itemXML->imposto->IBSCBS->gIBSCBS->gIBSUF)) {
+            $itemXML->imposto->IBSCBS->gIBSCBS->addChild('gIBSUF');
+        }
+
+        $itemXML->imposto->IBSCBS->gIBSCBS->gIBSUF->pIBSUF =
+            $regra->aliqIbsEst !== null ? number_format($regra->aliqIbsEst, 4, '.', '') : '0.0000';
+
+        $itemXML->imposto->IBSCBS->gIBSCBS->gIBSUF->vIBSUF =
+            bcmul($itemXML->imposto->IBSCBS->gIBSCBS->vBC, $regra->aliqIbsEst ?? 0, 2);
+
+        // 6) gIBSMun (IBS Municipal)
+        if (!isset($itemXML->imposto->IBSCBS->gIBSCBS->gIBSMun)) {
+            $itemXML->imposto->IBSCBS->gIBSCBS->addChild('gIBSMun');
+        }
+
+        $itemXML->imposto->IBSCBS->gIBSCBS->gIBSMun->pIBSMun =
+            $regra->aliqIbsMun !== null ? number_format($regra->aliqIbsMun, 4, '.', '') : '0.0000';
+
+        $itemXML->imposto->IBSCBS->gIBSCBS->gIBSMun->vIBSMun =
+            bcmul($itemXML->imposto->IBSCBS->gIBSCBS->vBC, $regra->aliqIbsMun ?? 0, 2);
+
+        // 7) gCBS (CBS Federal)
+        if (!isset($itemXML->imposto->IBSCBS->gIBSCBS->gCBS)) {
+            $itemXML->imposto->IBSCBS->gIBSCBS->addChild('gCBS');
+        }
+
+        $itemXML->imposto->IBSCBS->gIBSCBS->gCBS->pCBS =
+            $regra->aliqCbsFed !== null ? number_format($regra->aliqCbsFed, 4, '.', '') : '0.0000';
+
+        $itemXML->imposto->IBSCBS->gIBSCBS->gCBS->vCBS =
+            bcmul($itemXML->imposto->IBSCBS->gIBSCBS->vBC, $regra->aliqCbsFed ?? 0, 2);
+    }
+
+
+    /**
      * @throws ViewException
      */
     public function handleImpostos($nfe, NotaFiscalItem $nfItem, \SimpleXMLElement $itemXML): void
@@ -1171,4 +1245,6 @@ class SpedNFeBusiness
         }
 
     }
+
+    
 }
