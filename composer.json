@@ -10,7 +10,6 @@
         }
     ],
     "require": {
-        "crosiersource/crosierlib-base": "^1.16.0",
         "vich/uploader-bundle": "^1.13",
         "nfephp-org/sped-common": "^5.1",
         "nfephp-org/sped-da": "^1.1",
@@ -18,7 +17,8 @@
         "nfephp-org/sped-cte": "^5.0",
         "econea/nusoap": "^0.9.7",
         "ext-bcmath": "*",
-        "ext-simplexml": "*"
+        "ext-simplexml": "*",
+        "crosiersource/crosierlib-base": "^1.16.4"
     },
     "config": {
         "minimum-stability": "dev",
