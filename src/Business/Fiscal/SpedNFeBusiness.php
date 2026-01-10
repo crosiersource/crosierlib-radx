@@ -403,6 +403,8 @@ class SpedNFeBusiness
         $totalNota = bcadd($notaFiscal->valorTotal, $notaFiscal->transpValorTotalFrete ?? '0.00', 2);
         $nfe->infNFe->total->ICMSTot->vNF = number_format($totalNota, 2, '.', '');
         $nfe->infNFe->total->ICMSTot->vTotTrib = '0.00';
+        
+        $this->handleIbscbsTotal($nfe);
 
         if ($notaFiscal->tipoNotaFiscal === 'NFCE') {
             $nfe->infNFe->transp->modFrete = 9;
@@ -505,20 +507,18 @@ class SpedNFeBusiness
     /**
      * @throws ViewException
      */
-    /**
-     * @throws ViewException
-     */
     public function handleIbscbs(
         $nfe,
         NotaFiscalItem $nfItem,
         \SimpleXMLElement $itemXML
-    ): void {
-
-        
+    ): void
+    {
         $repoRegrasIBSCBS = $this->doctrine->getRepository(RegrasIBSCBS::class);
-        
+
+        $nfeConfigs = $this->nfeUtils->getNFeConfigsByCNPJ($nfItem->notaFiscal->documentoEmitente);
+
         // 1) Buscar regra
-        $regra = $repoRegrasIBSCBS->findBestRule($nfItem);
+        $regra = $repoRegrasIBSCBS->findBestRule($nfItem, $nfeConfigs);
 
         if (!$regra) {
             throw new ViewException("Nenhuma regra IBS/CBS encontrada para este item");
@@ -528,52 +528,204 @@ class SpedNFeBusiness
         if (!isset($itemXML->imposto->IBSCBS)) {
             $itemXML->imposto->addChild('IBSCBS');
         }
+        $ibscbs = $itemXML->imposto->IBSCBS;
 
-        // 3) Setar valores principais (direto no XML)
-        $itemXML->imposto->IBSCBS->CST = $regra->cst ?? '000';
-        $itemXML->imposto->IBSCBS->cClassTrib = $regra->cClassTrib ?? '000001';
-
-        // 4) Bloco gIBSCBS (com base de cálculo)
-        if (!isset($itemXML->imposto->IBSCBS->gIBSCBS)) {
-            $itemXML->imposto->IBSCBS->addChild('gIBSCBS');
+        // 3) CST e cClassTrib
+        if (!isset($ibscbs->CST)) {
+            $ibscbs->addChild('CST', (string)($regra->cst ?? '000'));
+        } else {
+            $ibscbs->CST = (string)($regra->cst ?? '000');
         }
 
-        $itemXML->imposto->IBSCBS->gIBSCBS->vBC =
-            bcmul($nfItem->icmsValorBc, 1, 2);
-
-        // 5) gIBSUF (IBS Estadual)
-        if (!isset($itemXML->imposto->IBSCBS->gIBSCBS->gIBSUF)) {
-            $itemXML->imposto->IBSCBS->gIBSCBS->addChild('gIBSUF');
+        if (!isset($ibscbs->cClassTrib)) {
+            $ibscbs->addChild('cClassTrib', (string)($regra->cClassTrib ?? '000001'));
+        } else {
+            $ibscbs->cClassTrib = (string)($regra->cClassTrib ?? '000001');
         }
 
-        $itemXML->imposto->IBSCBS->gIBSCBS->gIBSUF->pIBSUF =
-            $regra->aliqIbsEst !== null ? number_format($regra->aliqIbsEst, 4, '.', '') : '0.0000';
+        // 4) gIBSCBS
+        if (!isset($ibscbs->gIBSCBS)) {
+            $ibscbs->addChild('gIBSCBS');
+        }
+        $gIBSCBS = $ibscbs->gIBSCBS;
 
-        $itemXML->imposto->IBSCBS->gIBSCBS->gIBSUF->vIBSUF =
-            bcmul($itemXML->imposto->IBSCBS->gIBSCBS->vBC, $regra->aliqIbsEst ?? 0, 2);
-
-        // 6) gIBSMun (IBS Municipal)
-        if (!isset($itemXML->imposto->IBSCBS->gIBSCBS->gIBSMun)) {
-            $itemXML->imposto->IBSCBS->gIBSCBS->addChild('gIBSMun');
+        // Base de cálculo vBC (2 casas)
+        $vBC = number_format((float)($nfItem->valorTotal ?? 0), 2, '.', '');
+        if (!isset($gIBSCBS->vBC)) {
+            $gIBSCBS->addChild('vBC', $vBC);
+        } else {
+            $gIBSCBS->vBC = $vBC;
         }
 
-        $itemXML->imposto->IBSCBS->gIBSCBS->gIBSMun->pIBSMun =
-            $regra->aliqIbsMun !== null ? number_format($regra->aliqIbsMun, 4, '.', '') : '0.0000';
+        // Helper: percentual (4 casas) e valores (2 casas)
+        $pIBSUF  = number_format((float)($regra->aliqIbsEst ?? 0), 4, '.', '');
+        $pIBSMun = number_format((float)($regra->aliqIbsMun ?? 0), 4, '.', '');
+        $pCBS    = number_format((float)($regra->aliqCbsFed ?? 0), 4, '.', '');
 
-        $itemXML->imposto->IBSCBS->gIBSCBS->gIBSMun->vIBSMun =
-            bcmul($itemXML->imposto->IBSCBS->gIBSCBS->vBC, $regra->aliqIbsMun ?? 0, 2);
+        // 5) gIBSUF
+        if (!isset($gIBSCBS->gIBSUF)) {
+            $gIBSCBS->addChild('gIBSUF');
+        }
+        $gIBSUF = $gIBSCBS->gIBSUF;
 
-        // 7) gCBS (CBS Federal)
-        if (!isset($itemXML->imposto->IBSCBS->gIBSCBS->gCBS)) {
-            $itemXML->imposto->IBSCBS->gIBSCBS->addChild('gCBS');
+        if (!isset($gIBSUF->pIBSUF)) {
+            $gIBSUF->addChild('pIBSUF', $pIBSUF);
+        } else {
+            $gIBSUF->pIBSUF = $pIBSUF;
         }
 
-        $itemXML->imposto->IBSCBS->gIBSCBS->gCBS->pCBS =
-            $regra->aliqCbsFed !== null ? number_format($regra->aliqCbsFed, 4, '.', '') : '0.0000';
+        // vIBSUF = vBC * pIBSUF / 100  (porque p vem como percentual, ex 0.1000 = 0,10%)
+        $vIBSUF = bcdiv(bcmul($vBC, $pIBSUF, 6), '100', 2);
+        if (!isset($gIBSUF->vIBSUF)) {
+            $gIBSUF->addChild('vIBSUF', $vIBSUF);
+        } else {
+            $gIBSUF->vIBSUF = $vIBSUF;
+        }
 
-        $itemXML->imposto->IBSCBS->gIBSCBS->gCBS->vCBS =
-            bcmul($itemXML->imposto->IBSCBS->gIBSCBS->vBC, $regra->aliqCbsFed ?? 0, 2);
+        // 6) gIBSMun
+        if (!isset($gIBSCBS->gIBSMun)) {
+            $gIBSCBS->addChild('gIBSMun');
+        }
+        $gIBSMun = $gIBSCBS->gIBSMun;
+
+        if (!isset($gIBSMun->pIBSMun)) {
+            $gIBSMun->addChild('pIBSMun', $pIBSMun);
+        } else {
+            $gIBSMun->pIBSMun = $pIBSMun;
+        }
+
+        // vIBSMun = vBC * pIBSMun / 100
+        $vIBSMun = bcdiv(bcmul($vBC, $pIBSMun, 6), '100', 2);
+        if (!isset($gIBSMun->vIBSMun)) {
+            $gIBSMun->addChild('vIBSMun', $vIBSMun);
+        } else {
+            $gIBSMun->vIBSMun = $vIBSMun;
+        }
+
+        // 7) vIBS (soma IBS UF + IBS Mun)
+        $vIBS = bcadd($vIBSUF, $vIBSMun, 2);
+        if (!isset($gIBSCBS->vIBS)) {
+            $gIBSCBS->addChild('vIBS', $vIBS);
+        } else {
+            $gIBSCBS->vIBS = $vIBS;
+        }
+
+        // 8) gCBS
+        if (!isset($gIBSCBS->gCBS)) {
+            $gIBSCBS->addChild('gCBS');
+        }
+        $gCBSNode = $gIBSCBS->gCBS;
+
+        if (!isset($gCBSNode->pCBS)) {
+            $gCBSNode->addChild('pCBS', $pCBS);
+        } else {
+            $gCBSNode->pCBS = $pCBS;
+        }
+
+        // vCBS = vBC * pCBS / 100
+        $vCBS = bcdiv(bcmul($vBC, $pCBS, 6), '100', 2);
+        if (!isset($gCBSNode->vCBS)) {
+            $gCBSNode->addChild('vCBS', $vCBS);
+        } else {
+            $gCBSNode->vCBS = $vCBS;
+        }
     }
+
+
+    public function handleIbscbsTotal(\SimpleXMLElement $nfeXml): void
+    {
+        // helpers
+        $set = static function (\SimpleXMLElement $parent, string $name, string $value): \SimpleXMLElement {
+            if (!isset($parent->{$name})) {
+                return $parent->addChild($name, $value);
+            }
+            $parent->{$name} = $value;
+            return $parent->{$name};
+        };
+
+        $node = static function (\SimpleXMLElement $parent, string $name): \SimpleXMLElement {
+            if (!isset($parent->{$name})) {
+                $parent->addChild($name);
+            }
+            return $parent->{$name};
+        };
+
+        $fmt2 = static function (string $v): string {
+            // garante 2 casas
+            return number_format((float)$v, 2, '.', '');
+        };
+
+        // 1) localizar/garantir <total><IBSCBSTot>
+        // Ajuste aqui se o seu XML não tiver infNFe como filho direto.
+        $infNFe = isset($nfeXml->NFe->infNFe) ? $nfeXml->NFe->infNFe : (isset($nfeXml->infNFe) ? $nfeXml->infNFe : $nfeXml);
+
+        $total = $node($infNFe, 'total');
+        $ibscbsTot = $node($total, 'IBSCBSTot');
+
+        // 2) somatórios
+        $sumVBC   = '0.00';
+        $sumIBSUF = '0.00';
+        $sumIBSM  = '0.00';
+        $sumIBS   = '0.00';
+        $sumCBS   = '0.00';
+
+        if (isset($infNFe->det)) {
+            foreach ($infNFe->det as $det) {
+                $g = $det->imposto->IBSCBS->gIBSCBS ?? null;
+                if (!$g) {
+                    continue;
+                }
+
+                $vBC   = $fmt2((string)($g->vBC ?? '0.00'));
+                $vIBSUF = $fmt2((string)($g->gIBSUF->vIBSUF ?? '0.00'));
+                $vIBSM  = $fmt2((string)($g->gIBSMun->vIBSMun ?? '0.00'));
+                $vIBS   = $fmt2((string)($g->vIBS ?? bcadd($vIBSUF, $vIBSM, 2)));
+                $vCBS   = $fmt2((string)($g->gCBS->vCBS ?? '0.00'));
+
+                $sumVBC   = bcadd($sumVBC,   $vBC,   2);
+                $sumIBSUF = bcadd($sumIBSUF, $vIBSUF, 2);
+                $sumIBSM  = bcadd($sumIBSM,  $vIBSM,  2);
+                $sumIBS   = bcadd($sumIBS,   $vIBS,   2);
+                $sumCBS   = bcadd($sumCBS,   $vCBS,   2);
+            }
+        }
+
+        // 3) escrever <IBSCBSTot>
+        $set($ibscbsTot, 'vBCIBSCBS', $sumVBC);
+
+        $gIBS = $node($ibscbsTot, 'gIBS');
+
+        $gIBSUF = $node($gIBS, 'gIBSUF');
+        $set($gIBSUF, 'vDif', '0.00');
+        $set($gIBSUF, 'vDevTrib', '0.00');
+        $set($gIBSUF, 'vIBSUF', $sumIBSUF);
+
+        $gIBSMun = $node($gIBS, 'gIBSMun');
+        $set($gIBSMun, 'vDif', '0.00');
+        $set($gIBSMun, 'vDevTrib', '0.00');
+        $set($gIBSMun, 'vIBSMun', $sumIBSM);
+
+        $set($gIBS, 'vIBS', $sumIBS);
+        $set($gIBS, 'vCredPres', '0.00');
+        $set($gIBS, 'vCredPresCondSus', '0.00');
+
+        $gCBS = $node($ibscbsTot, 'gCBS');
+        $set($gCBS, 'vDif', '0.00');
+        $set($gCBS, 'vDevTrib', '0.00');
+        $set($gCBS, 'vCBS', $sumCBS);
+        $set($gCBS, 'vCredPres', '0.00');
+        $set($gCBS, 'vCredPresCondSus', '0.00');
+
+        // bloco gMono (zerado, como no teu exemplo)
+        $gMono = $node($ibscbsTot, 'gMono');
+        $set($gMono, 'vIBSMono', '0.00');
+        $set($gMono, 'vCBSMono', '0.00');
+        $set($gMono, 'vIBSMonoReten', '0.00');
+        $set($gMono, 'vCBSMonoReten', '0.00');
+        $set($gMono, 'vIBSMonoRet', '0.00');
+        $set($gMono, 'vCBSMonoRet', '0.00');
+    }
+
 
 
     /**
