@@ -1115,6 +1115,8 @@ class NotaFiscal implements EntityId
             if (substr($this->cStat, 0, 1) !== '1') {
                 return true;
             }
+        } else {
+            $this->msgPermiteSalvar = 'Emissão por terceiros, não é permitido salvar';
         }
         return false;
     }

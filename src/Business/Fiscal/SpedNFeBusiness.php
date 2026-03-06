@@ -403,7 +403,7 @@ class SpedNFeBusiness
         $totalNota = bcadd($notaFiscal->valorTotal, $notaFiscal->transpValorTotalFrete ?? '0.00', 2);
         $nfe->infNFe->total->ICMSTot->vNF = number_format($totalNota, 2, '.', '');
         $nfe->infNFe->total->ICMSTot->vTotTrib = '0.00';
-        
+
         $this->handleIbscbsTotal($nfe);
 
         if ($notaFiscal->tipoNotaFiscal === 'NFCE') {
@@ -481,11 +481,18 @@ class SpedNFeBusiness
             $nfe->infNFe->infAdic->infCpl = trim($infoCompl);
         }
 
+
         $nfe->infNFe->infRespTec->CNPJ = $nfeConfigs['infRespTec_cnpj'];
         $nfe->infNFe->infRespTec->xContato = $nfeConfigs['infRespTec_xContato'];
         $nfe->infNFe->infRespTec->email = $nfeConfigs['infRespTec_email'];
         $nfe->infNFe->infRespTec->fone = preg_replace('/\D/', '', $nfeConfigs['telefone']);
-
+        if (!empty($nfeConfigs['infRespTec_CSRT_' . $notaFiscal->ambiente]) && !empty($nfeConfigs['infRespTec_idCSRT_' . $notaFiscal->ambiente])) {
+            $nfe->infNFe->infRespTec->idCSRT = (string)$nfeConfigs['infRespTec_idCSRT_' . $notaFiscal->ambiente];
+            $nfe->infNFe->infRespTec->hashCSRT = base64_encode(
+                sha1((string)$nfeConfigs['infRespTec_CSRT_' . $notaFiscal->ambiente] . $notaFiscal->chaveAcesso, true)
+            );
+        }
+        
 
         // Número randômico para que não aconteça de pegar XML de retorno de tentativas de faturamento anteriores
         $rand = random_int(10000000, 99999999);
@@ -558,9 +565,9 @@ class SpedNFeBusiness
         }
 
         // Helper: percentual (4 casas) e valores (2 casas)
-        $pIBSUF  = number_format((float)($regra->aliqIbsEst ?? 0), 4, '.', '');
+        $pIBSUF = number_format((float)($regra->aliqIbsEst ?? 0), 4, '.', '');
         $pIBSMun = number_format((float)($regra->aliqIbsMun ?? 0), 4, '.', '');
-        $pCBS    = number_format((float)($regra->aliqCbsFed ?? 0), 4, '.', '');
+        $pCBS = number_format((float)($regra->aliqCbsFed ?? 0), 4, '.', '');
 
         // 5) gIBSUF
         if (!isset($gIBSCBS->gIBSUF)) {
@@ -663,11 +670,11 @@ class SpedNFeBusiness
         $ibscbsTot = $node($total, 'IBSCBSTot');
 
         // 2) somatórios
-        $sumVBC   = '0.00';
+        $sumVBC = '0.00';
         $sumIBSUF = '0.00';
-        $sumIBSM  = '0.00';
-        $sumIBS   = '0.00';
-        $sumCBS   = '0.00';
+        $sumIBSM = '0.00';
+        $sumIBS = '0.00';
+        $sumCBS = '0.00';
 
         if (isset($infNFe->det)) {
             foreach ($infNFe->det as $det) {
@@ -676,17 +683,17 @@ class SpedNFeBusiness
                     continue;
                 }
 
-                $vBC   = $fmt2((string)($g->vBC ?? '0.00'));
+                $vBC = $fmt2((string)($g->vBC ?? '0.00'));
                 $vIBSUF = $fmt2((string)($g->gIBSUF->vIBSUF ?? '0.00'));
-                $vIBSM  = $fmt2((string)($g->gIBSMun->vIBSMun ?? '0.00'));
-                $vIBS   = $fmt2((string)($g->vIBS ?? bcadd($vIBSUF, $vIBSM, 2)));
-                $vCBS   = $fmt2((string)($g->gCBS->vCBS ?? '0.00'));
+                $vIBSM = $fmt2((string)($g->gIBSMun->vIBSMun ?? '0.00'));
+                $vIBS = $fmt2((string)($g->vIBS ?? bcadd($vIBSUF, $vIBSM, 2)));
+                $vCBS = $fmt2((string)($g->gCBS->vCBS ?? '0.00'));
 
-                $sumVBC   = bcadd($sumVBC,   $vBC,   2);
+                $sumVBC = bcadd($sumVBC, $vBC, 2);
                 $sumIBSUF = bcadd($sumIBSUF, $vIBSUF, 2);
-                $sumIBSM  = bcadd($sumIBSM,  $vIBSM,  2);
-                $sumIBS   = bcadd($sumIBS,   $vIBS,   2);
-                $sumCBS   = bcadd($sumCBS,   $vCBS,   2);
+                $sumIBSM = bcadd($sumIBSM, $vIBSM, 2);
+                $sumIBS = bcadd($sumIBS, $vIBS, 2);
+                $sumCBS = bcadd($sumCBS, $vCBS, 2);
             }
         }
 
@@ -725,7 +732,6 @@ class SpedNFeBusiness
         $set($gMono, 'vIBSMonoRet', '0.00');
         $set($gMono, 'vCBSMonoRet', '0.00');
     }
-
 
 
     /**
@@ -924,8 +930,8 @@ class SpedNFeBusiness
                 try {
                     // Para notas síncronas não precisa consultar depois o protocolo, portanto a lógica é diferente
                     // da consultaRecibo()
-                    $notaFiscal->cStat = $std->protNFe->infProt->cStat;
-                    $notaFiscal->xMotivo = $std->protNFe->infProt->xMotivo;
+                    $notaFiscal->cStat = $std?->protNFe?->infProt?->cStat ?? $std?->cStat ?? -100;
+                    $notaFiscal->xMotivo = $std?->protNFe?->infProt?->xMotivo ?? $std?->xMotivo ?? 'AGUARDANDO RETORNO SEFAZ';
 
                     if ($notaFiscal->getXMLDecoded()->getName() !== 'nfeProc') {
                         try {
@@ -937,7 +943,7 @@ class SpedNFeBusiness
                             $this->syslog->error('Erro no Complements::toAuthorize para $notaFiscal->id = ' . $notaFiscal->getId());
                         }
                     }
-                    if (in_array($std->protNFe->infProt->cStat, ['100', '302'])) { //DENEGADAS
+                    if (in_array($std?->protNFe?->infProt?->cStat ?? '', ['100', '302'])) { //DENEGADAS
                         $notaFiscal->protocoloAutorizacao = $std->protNFe->infProt->nProt;
                         $notaFiscal->dtProtocoloAutorizacao = DateTimeUtils::parseDateStr($std->protNFe->infProt->dhRecbto);
                     }
@@ -1398,5 +1404,5 @@ class SpedNFeBusiness
 
     }
 
-    
+
 }

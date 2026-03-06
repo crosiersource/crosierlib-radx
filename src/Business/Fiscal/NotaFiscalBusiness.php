@@ -180,6 +180,8 @@ class NotaFiscalBusiness
             $notaFiscal->entradaSaida = 'S';
             $ambiente = $nfeConfigs['tpAmb'] === 1 ? 'PROD' : 'HOM';
             $notaFiscal->ambiente = $ambiente;
+            
+            $ncmPadrao = $rNcmPadrao[0]['valor'] ?? null;
 
             if ($notaFiscal->tipoNotaFiscal === 'NFE') {
                 if ($venda->cliente) {
@@ -191,7 +193,11 @@ class NotaFiscalBusiness
                         $notaFiscal->xNomeDestinatario = $venda->cliente->nome;
                     }
                     if (!$notaFiscal->foneDestinatario) {
-                        $notaFiscal->foneDestinatario = $venda->cliente->jsonData['fone1'] ?? '(00) 00000-0000';
+                        $fone =
+                            $venda->cliente?->jsonData['fone1'] ??
+                            $venda->cliente?->jsonData['fone2'] ??
+                            '00000000000';
+                        $notaFiscal->foneDestinatario = $fone;
                     }
                     if (!$notaFiscal->emailDestinatario) {
                         $notaFiscal->emailDestinatario = $venda->cliente->jsonData['email'] ?? '';
@@ -236,6 +242,16 @@ class NotaFiscalBusiness
                         $notaFiscal->cepDestinatario = $endereco_faturamento['cep'] ?? '';
                         $notaFiscal->cidadeDestinatario = $endereco_faturamento['cidade'] ?? '';
                         $notaFiscal->estadoDestinatario = $endereco_faturamento['estado'];
+
+                        $idDestPadrao2ParaUfs = $conn->fetchAssociative("SELECT valor FROM cfg_app_config WHERE chave = 'fiscal.idDestPadrao2ParaUfs'");
+                        if ($idDestPadrao2ParaUfs) {
+                            $ufsPadrao2 = explode(',', $idDestPadrao2ParaUfs['valor']);
+                            if (in_array($notaFiscal->estadoDestinatario, $ufsPadrao2, true)) {
+                                $notaFiscal->setIdDest(2);
+                            } else {
+                                $notaFiscal->setIdDest(1);
+                            }
+                        }
 
 
                         if (strlen($notaFiscal->documentoDestinatario) === 14 &&
