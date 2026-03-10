@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c5e085f124a586d23843ce6b909a3ec3",
+    "content-hash": "03dc2896b488be5f8459ff13d0d3c515",
     "packages": [
         {
             "name": "api-platform/core",
@@ -243,16 +243,16 @@
         },
         {
             "name": "crosiersource/crosierlib-base",
-            "version": "v1.16.5",
+            "version": "v1.16.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crosiersource/crosierlib-base.git",
-                "reference": "6cf5d564d8b871a57b8f75909338f6e2e5f80ebb"
+                "reference": "3c4542fde5ea02856084a681629afd33487608f7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/6cf5d564d8b871a57b8f75909338f6e2e5f80ebb",
-                "reference": "6cf5d564d8b871a57b8f75909338f6e2e5f80ebb",
+                "url": "https://api.github.com/repos/crosiersource/crosierlib-base/zipball/3c4542fde5ea02856084a681629afd33487608f7",
+                "reference": "3c4542fde5ea02856084a681629afd33487608f7",
                 "shasum": ""
             },
             "require": {
@@ -356,9 +356,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crosiersource/crosierlib-base/issues",
-                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.16.5"
+                "source": "https://github.com/crosiersource/crosierlib-base/tree/v1.16.7"
             },
-            "time": "2026-01-10T17:41:31+00:00"
+            "time": "2026-03-10T20:05:53+00:00"
         },
         {
             "name": "doctrine/annotations",
