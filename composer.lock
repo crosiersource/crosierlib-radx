@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c9de8a7514da3e9a362a5ac0d9eedd3a",
+    "content-hash": "c5e085f124a586d23843ce6b909a3ec3",
     "packages": [
         {
             "name": "api-platform/core",
@@ -2551,16 +2551,16 @@
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "5.3.1",
+            "version": "5.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jsonrainbow/json-schema.git",
-                "reference": "b5a44b6391a3bbb75c9f2b73e1ef03d6045e1e20"
+                "reference": "2f7abf648939847a789c55c206d4cb9dd0d53e2c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/b5a44b6391a3bbb75c9f2b73e1ef03d6045e1e20",
-                "reference": "b5a44b6391a3bbb75c9f2b73e1ef03d6045e1e20",
+                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/2f7abf648939847a789c55c206d4cb9dd0d53e2c",
+                "reference": "2f7abf648939847a789c55c206d4cb9dd0d53e2c",
                 "shasum": ""
             },
             "require": {
@@ -2610,9 +2610,9 @@
             ],
             "support": {
                 "issues": "https://github.com/jsonrainbow/json-schema/issues",
-                "source": "https://github.com/jsonrainbow/json-schema/tree/5.3.1"
+                "source": "https://github.com/jsonrainbow/json-schema/tree/5.3.2"
             },
-            "time": "2025-12-12T08:56:22+00:00"
+            "time": "2026-02-27T12:33:19+00:00"
         },
         {
             "name": "laminas/laminas-code",
@@ -3225,16 +3225,16 @@
         },
         {
             "name": "nfephp-org/sped-nfe",
-            "version": "v5.2.3",
+            "version": "v5.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nfephp-org/sped-nfe.git",
-                "reference": "8a61d24a179ec7c28f36fbd283628db745441b1d"
+                "reference": "f49d543e735d30afacd92c3fe286c677a7d0ee35"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/8a61d24a179ec7c28f36fbd283628db745441b1d",
-                "reference": "8a61d24a179ec7c28f36fbd283628db745441b1d",
+                "url": "https://api.github.com/repos/nfephp-org/sped-nfe/zipball/f49d543e735d30afacd92c3fe286c677a7d0ee35",
+                "reference": "f49d543e735d30afacd92c3fe286c677a7d0ee35",
                 "shasum": ""
             },
             "require": {
@@ -3301,9 +3301,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nfephp-org/sped-nfe/issues",
-                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.2.3"
+                "source": "https://github.com/nfephp-org/sped-nfe/tree/v5.2.5"
             },
-            "time": "2026-01-06T19:06:24+00:00"
+            "time": "2026-02-04T13:27:20+00:00"
         },
         {
             "name": "phenx/php-font-lib",
