@@ -23,6 +23,18 @@
     "config": {
         "minimum-stability": "dev",
         "prefer-stable": false,
+        "audit": {
+            "ignore": {
+                "PKSA-gs8r-6kz6-pp56": {
+                    "apply": "block",
+                    "reason": "Transitive advisory from crosierlib-base/api-platform 2.7; this project remains on Symfony 5.4 and does not enable GraphQL."
+                },
+                "PKSA-gnn4-pxdg-q76m": {
+                    "apply": "block",
+                    "reason": "Transitive advisory from crosierlib-base/api-platform 2.7; this project remains on Symfony 5.4 and does not enable GraphQL."
+                }
+            }
+        },
         "allow-plugins": {
             "symfony/flex": true,
             "symfony/runtime": true,
